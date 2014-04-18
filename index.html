@@ -53,9 +53,40 @@
             alternative to IOStreams.
           </p>
         </div>
+        <div class="section">
+          <h1>Features</h1>
+          <h2>Format API</h2>
+          The replacement-based Format API provides a type-safe alternative to <code>printf</code>,
+          <code>sprintf</code> and friends while being as fast or even
+          <a href="http://zverovich.net/2013/09/07/integer-to-string-conversion-in-cplusplus.html">
+          faster</a>. The <a href="http://cppformat.github.io/format#format-string-syntax">format
+          string syntax</a> is similar to the one used by
+          <a href="http://docs.python.org/2/library/stdtypes.html#str.format">str.format</a> in
+          Python:
+          <pre>Format("The answer is {}", 42);</pre>
+          The Format API supports positional arguments useful for localization. <!-- TODO: link to localization -->
+          <h2>Write API</h2>
+          The concatenation-based Write API (experimental) provides a
+          <a href="http://zverovich.net/2013/09/07/integer-to-string-conversion-in-cplusplus.html">fast</a>
+          and easy to use alternative to IOStreams:
+          <pre>Writer w;
+w << "The answer in hexadecimal is " << hex(42);</pre>
+          <h2>Safety</h2>
+          <p>
+          <!-- TODO: link to automatic memory management -->
+          The library is fully type safe, errors in format strings are reported using exceptions,
+          automatic memory management prevents buffer overflow errors. For example, the code
+          <pre>Format("The answer is {:d}", "forty-two");</pre>
+          throws a <code>FormatError</code> exception with description
+          "unknown format code 'd' for string", because the argument
+          <code>"forty-two"</code> is a string while the format code <code>d</code>
+          only applies to integers.
+          <!-- Moreover, some errors are catched at compile time. -->
+          </p>
+        </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container text-center">
       <iframe src="http://ghbtns.com/github-btn.html?user=cppformat&repo=format&type=watch&count=true"
               allowtransparency="true" frameborder="0" scrolling="0" width="100" height="20"></iframe>
     </div>
