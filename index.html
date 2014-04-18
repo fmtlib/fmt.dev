@@ -78,7 +78,7 @@ w << "The answer in hexadecimal is " << hex(42);</pre>
           <h2>Safety</h2>
           <p>
             <!-- TODO: link to automatic memory management -->
-            The library is fully type safe, errors in format strings are reported using exceptions,
+            The library is completely type safe, errors in format strings are reported using exceptions,
             automatic memory management prevents buffer overflow errors. For example, the code
             <pre>Format("The answer is {:d}", "forty-two");</pre>
             throws a <code>FormatError</code> exception with description
@@ -86,6 +86,24 @@ w << "The answer in hexadecimal is " << hex(42);</pre>
             <code>"forty-two"</code> is a string while the format code <code>d</code>
             only applies to integers.
             <!-- Moreover, some errors are catched at compile time. -->
+          </p>
+          <h2>Portability</h2>
+          <p>
+            C++ Format is fully portable. Here is an incomplete list of operating systems and
+            compilers where it is known to work:
+            <ul>
+            <li>64-bit (amd64) GNU/Linux with GCC 4.4.3, 4.6.3, 4.7.2, 4.8.1 and
+                Intel C++ Compiler (ICC) 14.0.2
+            <li>32-bit (i386) GNU/Linux with GCC 4.4.3, 4.6.3
+            <li>Mac OS X with GCC 4.2.1 and Clang 4.2, 5.1.0
+            <li>64-bit Windows with Visual C++ 2010
+            <li>32-bit Windows with Visual C++ 2010
+            </ul>
+            Although the library uses C++11 features if available, it also works with legacy
+            compilers that only support older standards. For example, if the compiler doesn't
+            support initializer lists, you can use <code>&lt;&lt;</code> operator to feed
+            arbitrary arguments into the <code>Format</code> function:
+            <pre>Format("The answer is {}") << 42;</pre>
           </p>
           <h2>Ease of Use</h2>
           <p>
