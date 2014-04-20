@@ -98,7 +98,20 @@ w &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
             "unknown format code 'd' for string", because the argument
             <code>"forty-two"</code> is a string while the format code <code>d</code>
             only applies to integers.
-            <!-- Moreover, some errors are catched at compile time. -->
+          <p>
+          </p>
+            Where possible, errors are catched at compile time. For example, the code
+          </p>
+          <pre>Format("Cyrillic letter {}", L'ю');</pre>
+          <p>
+            produces a compile-time error because wide character <code>L'ю'</code> cannot be formatted
+            into a narrow string. You can use a wide format string instead:
+          </p>
+          <pre>Format(L"Cyrillic letter {}", L'ю');</pre>
+          <p>
+            For comparison, writing a wide character to <code>std::ostream</code> results in
+            its numeric value being written to the stream (i.e. 1102 instead of 'ю') which is
+            rarely what is needed.
           </p>
           <h2 id="portability">Portability</h2>
           <p>
