@@ -84,11 +84,19 @@
             "The answer is 42". This object can be efficiently converted to
             <code>std::string</code> or a C string:
           </p>
-          <pre>str(Format("The answer is {}", 42));   // returns std::string
-c_str(Format("The answer is {}", 42)); // returns a C string (const char*)</pre>
+          <pre>str(Format("Look, a {}", "string"));     // returns std::string
+c_str(Format("Look, a {} string", 'C')); // returns a C string (const char*)</pre>
           <p>
-            The Format API also supports positional arguments useful for localization.
+            To implement variadic functions, the C++ Format library relies on C++11 features
+            such as variadic templates and rvalue references. If your compiler doesn't support
+            these features, you can use <code>&lt;&lt;</code> operator to feed arbitrary arguments
+            into the <code>Format</code> function which works with any C++ compiler:
           </p>
+          <pre>Format("I miss C++{} features") &lt;&lt; 11;</pre>
+          <p>
+            The Format API also supports positional arguments useful for localization:
+          </p>
+          <pre>Format("I'd rather be {1} than {0}.", "right", "happy");</pre>
           <h2 id="write-api">Write API</h2>
           <p>
             The concatenation-based Write API (experimental) provides a
@@ -99,7 +107,7 @@ c_str(Format("The answer is {}", 42)); // returns a C string (const char*)</pre>
 out &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
           <h2 id="safety">Safety</h2>
           <p>
-            The library is fully type safe, automatic memory management prevents buffer overflow errors,
+            The library is fully type safe, automatic memory management prevents buffer overflow,
             errors in format strings are reported using exceptions. For example, the code
           </p>
           <pre>Format("The answer is {:d}", "forty-two");</pre>
@@ -138,12 +146,10 @@ out &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
           <li>32-bit Windows with Visual C++ 2010
           </ul>
           <p>
-            Although the library uses C++11 features if available, it also works with legacy
-            compilers that only support older standards. For example, if the compiler doesn't
-            support variadic templates, you can use <code>&lt;&lt;</code> operator to feed
-            arbitrary arguments into the <code>Format</code> function:
+            Although the library uses C++11 features when available, it also works with older
+            compilers and standard library implementations.
           </p>
-          <pre>Format("The answer is {}") &lt;&lt; 42;</pre>
+          </p>
           <h2 id="ease-of-use">Ease of Use</h2>
           <p>
             C++ Format has small self-contained code base consisting of a single header file and
