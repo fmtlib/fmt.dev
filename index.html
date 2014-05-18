@@ -61,7 +61,7 @@
           </div>
           <p class="lead">
             C++ Format (cppformat) is an open-source formatting library for C++.
-            It can be used as a type-safe alternative to printf or as a fast
+            It can be used as a safe alternative to printf or as a fast
             alternative to IOStreams.
           </p>
         </div>
@@ -71,7 +71,7 @@
           </div>
           <h2 id="format-api">Format API</h2>
           <p>
-            The replacement-based Format API provides a type-safe alternative to <code>printf</code>,
+            The replacement-based Format API provides a safe alternative to <code>printf</code>,
             <code>sprintf</code> and friends while being as fast or even
             <a href="http://zverovich.net/2013/09/07/integer-to-string-conversion-in-cplusplus.html">
             faster</a>. The <a href="doc/latest/index.html#format-string-syntax">format
@@ -87,6 +87,16 @@
           </p>
           <pre>str(Format("Look, a {}", "string"));     // returns std::string
 c_str(Format("Look, a {} string", 'C')); // returns a C string (const char*)</pre>
+          <p>
+            The <code>Print</code> function performs formatting and writes the result
+            to a file:
+          </p>
+          <pre>Print(stderr, "System error code = {}\n", errno);</pre>
+          <p>
+            The file argument can be omitted in which case it prints to
+            <code>stdout</code>:
+          </p>
+          <pre>Print("Don't {}\n", "panic");</pre>
           <p>
             To implement variadic functions, the C++ Format library relies on C++11 features
             such as variadic templates and rvalue references. If your compiler doesn't support
@@ -183,7 +193,7 @@ out &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
          of the document when changing this. -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    
+
     <script>
       // Fall back to the local scripts if CDN don't work for some reason or
       // when loading the page from a local filesystem. Make sure to update
