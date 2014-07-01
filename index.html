@@ -42,11 +42,12 @@
         <p class="lead">Small, safe and fast formatting library for C++</p>
         <div class="btn-group">
           <a class="btn btn-success"
-             href="https://github.com/cppformat/cppformat/releases/download/v0.9.0/cppformat-0.9.0.zip">
+             href="https://github.com/cppformat/cppformat/releases/download/v0.10.0/cppformat-0.10.0.zip">
                <span class="glyphicon glyphicon-download"></span> Download
           </a>
           <button data-toggle="dropdown" class="btn btn-success dropdown-toggle"><span class="caret"></span></button>
           <ul class="dropdown-menu">
+            <li><a href="https://github.com/cppformat/cppformat/releases/download/v0.10.0/cppformat-0.10.0.zip">Version 0.10.0</a></li>
             <li><a href="https://github.com/cppformat/cppformat/releases/download/v0.9.0/cppformat-0.9.0.zip">Version 0.9.0</a></li>
             <li><a href="https://github.com/cppformat/cppformat/releases/download/v0.8.0/cppformat-0.8.0.zip">Version 0.8.0</a></li>
           </ul>
@@ -79,35 +80,34 @@
             <a href="http://docs.python.org/2/library/stdtypes.html#str.format">str.format</a> in
             Python:
           </p>
-          <pre>Format("The answer is {}", 42);</pre>
+          <pre>format("The answer is {}", 42);</pre>
           <p>
-            The <code>Format</code> function returns an object representing string
-            "The answer is 42". This object can be efficiently converted to
-            <code>std::string</code> or a C string:
+            The <code>format</code> function returns a string "The answer is 42". To avoid
+            constructing `std::string` you can use `Writer` instead:
           </p>
-          <pre>str(Format("Look, a {}", "string"));     // returns std::string
-c_str(Format("Look, a {} string", 'C')); // returns a C string (const char*)</pre>
+          <pre>fmt::Writer w;
+w.write("Look, a {} string", 'C');
+w.c_str(); // returns a C string (const char*)</pre>
           <p>
-            The <code>Print</code> function performs formatting and writes the result
+            The <code>print</code> function performs formatting and writes the result
             to a file:
           </p>
-          <pre>Print(stderr, "System error code = {}\n", errno);</pre>
+          <pre>print(stderr, "System error code = {}\n", errno);</pre>
           <p>
-            The file argument can be omitted in which case it prints to
+            The file argument can be omitted in which case the function prints to
             <code>stdout</code>:
           </p>
-          <pre>Print("Don't {}\n", "panic");</pre>
+          <pre>print("Don't {}\n", "panic");</pre>
           <p>
-            To implement variadic functions, the C++ Format library relies on C++11 features
-            such as variadic templates and rvalue references. If your compiler doesn't support
-            these features, you can use <code>&lt;&lt;</code> operator to feed arbitrary arguments
-            into the <code>Format</code> function which works with any C++ compiler:
+            If your compiler supports C++11, then the formatting functions are implemented
+            with variadic templates. Otherwise variadic functions are emulated by generating
+            a set of lightweight wrappers. This ensures compatibility with older compilers
+            while providing a natural API.
           </p>
-          <pre>Format("I miss C++{} features") &lt;&lt; 11;</pre>
           <p>
             The Format API also supports positional arguments useful for localization:
           </p>
-          <pre>Format("I'd rather be {1} than {0}.", "right", "happy");</pre>
+          <pre>print("I'd rather be {1} than {0}.", "right", "happy");</pre>
           <h2 id="write-api">Write API</h2>
           <p>
             The concatenation-based Write API (experimental) provides a
@@ -121,7 +121,7 @@ out &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
             The library is fully type safe, automatic memory management prevents buffer overflow,
             errors in format strings are reported using exceptions. For example, the code
           </p>
-          <pre>Format("The answer is {:d}", "forty-two");</pre>
+          <pre>format("The answer is {:d}", "forty-two");</pre>
           <p>
             throws a <code>FormatError</code> exception with description
             "unknown format code 'd' for string", because the argument
@@ -131,12 +131,12 @@ out &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
           <p>
             Where possible, errors are catched at compile time. For example, the code
           </p>
-          <pre>Format("Cyrillic letter {}", L'\x42e');</pre>
+          <pre>format("Cyrillic letter {}", L'\x42e');</pre>
           <p>
             produces a compile-time error because wide character <code>L'\x42e'</code> cannot be
             formatted into a narrow string. You can use a wide format string instead:
           </p>
-          <pre>Format(L"Cyrillic letter {}", L'\x42e');</pre>
+          <pre>format(L"Cyrillic letter {}", L'\x42e');</pre>
           <p>
             For comparison, writing a wide character to <code>std::ostream</code> results in
             its numeric value being written to the stream (i.e. 1070 instead of letter 'ю' which
@@ -166,7 +166,7 @@ out &lt;&lt; "The answer in hexadecimal is " &lt;&lt; hex(42);</pre>
             formatting a floating-point infinity always gives <code>inf</code> while the output
             of <code>printf</code> is platform-dependent in this case. For example,
           </p>
-          <pre>Print("{}", std::numeric_limits&lt;double>::infinity());</pre>
+          <pre>print("{}", std::numeric_limits&lt;double>::infinity());</pre>
           <p>
             always prints <code>inf</code>.
           </p>
