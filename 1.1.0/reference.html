@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>API Reference &mdash; C++ Format 1.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/breathe.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.2.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.2.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="C++ Format 1.1.0 documentation" href="index.html" />
+    <link rel="next" title="Format String Syntax" href="syntax.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+          <div class="navbar-header">
+            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="index.html">
+              C++ Format</a>
+            <span class="navbar-text navbar-version pull-left"><b>1.1.0</b></span>
+          </div>
+
+          <div class="collapse navbar-collapse nav-collapse">
+            <ul class="nav navbar-nav">
+              
+              
+                <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="syntax.html">Format String Syntax</a></li>
+</ul>
+</ul>
+</li>
+                
+                  <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">API Reference</a><ul>
+<li><a class="reference internal" href="#formatting-functions">Formatting functions</a></li>
+<li><a class="reference internal" href="#printf-formatting-functions">Printf formatting functions</a></li>
+<li><a class="reference internal" href="#write-api">Write API</a></li>
+<li><a class="reference internal" href="#utilities">Utilities</a></li>
+<li><a class="reference internal" href="#system-errors">System Errors</a></li>
+<li><a class="reference internal" href="#custom-allocators">Custom allocators</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+                
+              
+              
+              
+              
+              
+            </ul>
+
+            
+              
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2 col-md-12">
+      
+  <div class="section" id="api-reference">
+<span id="string-formatting-api"></span><h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<p>All functions and classes provided by the C++ Format library reside
+in namespace <tt class="docutils literal"><span class="pre">fmt</span></tt> and macros have prefix <tt class="docutils literal"><span class="pre">FMT_</span></tt>. For brevity the
+namespace is usually omitted in examples.</p>
+<div class="section" id="formatting-functions">
+<h2>Formatting functions<a class="headerlink" href="#formatting-functions" title="Permalink to this headline">¶</a></h2>
+<p>The following functions use <a class="reference internal" href="syntax.html#syntax"><em>format string syntax</em></a> similar
+to the one used by Python&#8217;s <a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str.format">str.format</a> function.
+They take <em>format_str</em> and <em>args</em> as arguments.</p>
+<p><em>format_str</em> is a format string that contains literal text and replacement
+fields surrounded by braces <tt class="docutils literal"><span class="pre">{}</span></tt>. The fields are replaced with formatted
+arguments in the resulting string.</p>
+<p><em>args</em> is an argument list representing arbitrary arguments.</p>
+<span class="target" id="format"></span><dl class="function">
+<dt id="fmt::format__StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1a49ed8c032e54c66fcdd8b6f4139786cc"></span>std::string <tt class="descclassname">fmt::</tt><tt class="descname">format</tt><big>(</big>StringRef <em>format_str</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::format__StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Formats arguments and returns the result as a string.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<span class="target" id="print"></span><dl class="function">
+<dt id="fmt::print__StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1aee4f9a5f5515970793f1c7e0de02df53"></span>void <tt class="descclassname">fmt::</tt><tt class="descname">print</tt><big>(</big>StringRef <em>format_str</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::print__StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to <tt class="docutils literal"><span class="pre">stdout</span></tt>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {0:.2f} seconds&quot;</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::print__std::FILEP.StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1aa440312b8f82c9074e9fba43635c2735"></span>void <tt class="descclassname">fmt::</tt><tt class="descname">print</tt><big>(</big>std::FILE* <em>f</em>, StringRef <em>format_str</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::print__std::FILEP.StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the file <em>f</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">print</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t {}!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::print__osR.StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1a82ee6c270205dc7636a7b8eef5e328a6"></span>void <tt class="descclassname">fmt::</tt><tt class="descname">print</tt><big>(</big>std::ostream&amp; <em>os</em>, StringRef <em>format_str</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::print__osR.StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the stream <em>os</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">print</span><span class="p">(</span><span class="n">cerr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t {}!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+</div>
+<div class="section" id="printf-formatting-functions">
+<h2>Printf formatting functions<a class="headerlink" href="#printf-formatting-functions" title="Permalink to this headline">¶</a></h2>
+<p>The following functions use <a class="reference external" href="http://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html">printf format string syntax</a> with
+a POSIX extension for positional arguments.</p>
+<dl class="function">
+<dt id="fmt::printf__StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1a6af204dce73f465b1e55ee5b92623e8a"></span>int <tt class="descclassname">fmt::</tt><tt class="descname">printf</tt><big>(</big>StringRef <em>format</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::printf__StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to <tt class="docutils literal"><span class="pre">stdout</span></tt>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">fmt</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Elapsed time: %.2f seconds&quot;</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::fprintf__std::FILEP.StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1ac98fc8595f5508ae46a91247393aede1"></span>int <tt class="descclassname">fmt::</tt><tt class="descname">fprintf</tt><big>(</big>std::FILE* <em>f</em>, StringRef <em>format</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::fprintf__std::FILEP.StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the file <em>f</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t %s!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::sprintf__StringRef.ArgList">
+<span class="target" id="project0namespacefmt_1ad40ad1d5576f0dded9236526572909b1"></span>std::string <tt class="descclassname">fmt::</tt><tt class="descname">sprintf</tt><big>(</big>StringRef <em>format</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::sprintf__StringRef.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Formats arguments and returns the result as a string.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">sprintf</span><span class="p">(</span><span class="s">&quot;The answer is %d&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+</div>
+<div class="section" id="write-api">
+<h2>Write API<a class="headerlink" href="#write-api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt>
+<span class="target" id="project0classfmt_1_1_basic_writer"></span>template &lt;typename Char&gt;</dt>
+<dt id="fmt::BasicWriter">
+<em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">BasicWriter</tt><a class="headerlink" href="#fmt::BasicWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>This template provides operations for formatting and writing data into
+a character stream. The output is stored in a buffer provided by a subclass
+such as <a class="reference internal" href="#fmt::BasicMemoryWriter" title="fmt::BasicMemoryWriter"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicMemoryWriter</span></tt></a>.</p>
+<p>You can use one of the following typedefs for common character types:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="29%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Definition</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Writer</td>
+<td>BasicWriter&lt;char&gt;</td>
+</tr>
+<tr class="row-odd"><td>WWriter</td>
+<td>BasicWriter&lt;wchar_t&gt;</td>
+</tr>
+</tbody>
+</table>
+ </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::~BasicWriter">
+virtual <span class="target" id="project0classfmt_1_1_basic_writer_1a25f6fc2e43d3bcfb3de9ac33afe6050d"></span> <tt class="descname">~BasicWriter</tt><big>(</big><big>)</big><a class="headerlink" href="#fmt::BasicWriter:Char:::~BasicWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Destroys a <tt class="docutils literal"><span class="pre">BasicWriter</span></tt> object. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::size">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a1b6721b4ba4d3fa18ac781a36616cc2a"></span>std::size_t <tt class="descname">size</tt><big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicWriter:Char:::size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the total number of characters written. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::data">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a62d1c7b5be9c3580326320d5d178d096"></span>const Char* <tt class="descname">data</tt><big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicWriter:Char:::data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pointer to the output buffer content. </p>
+<p>No terminating null character is appended. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::c_str">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a8b68001f5c1c0ea851ddaef27dcbc691"></span>const Char* <tt class="descname">c_str</tt><big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicWriter:Char:::c_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pointer to the output buffer content with terminating null character appended. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::str">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a91f06ced6e063ee77a99740e0e79faf6"></span>std::basic_string&lt;Char&gt; <tt class="descname">str</tt><big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicWriter:Char:::str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the content of the output buffer as an <tt class="docutils literal"><span class="pre">std::string</span></tt>. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::write__BasicStringRef:Char:.ArgList">
+<span class="target" id="project0classfmt_1_1_basic_writer_1ad8d2e21a471e0ed16ac1118516d67dd4"></span>void <tt class="descname">write</tt><big>(</big>BasicStringRef&lt;Char&gt; <em>format</em>, ArgList <em>args</em><big>)</big><a class="headerlink" href="#fmt::BasicWriter:Char:::write__BasicStringRef:Char:.ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Writes formatted data.</p>
+<p><em>args</em> is an argument list representing arbitrary arguments.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">MemoryWriter</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">out</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;Current point:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="n">out</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;({:+f}, {:+f})&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.14</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This will write the following output to the <tt class="docutils literal"><span class="pre">out</span></tt> object:</p>
+<div class="highlight-none"><div class="highlight"><pre>Current point:
+(-3.140000, +3.140000)
+</pre></div>
+</div>
+<p>The output can be accessed using <tt class="xref cpp cpp-func docutils literal"><span class="pre">data()</span></tt>, <tt class="xref cpp cpp-func docutils literal"><span class="pre">c_str()</span></tt> or
+<tt class="xref cpp cpp-func docutils literal"><span class="pre">str()</span></tt> methods.</p>
+<p>See also <a class="reference internal" href="syntax.html#syntax"><em>Format String Syntax</em></a>.</p>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::lshift-operator__ULongLong">
+<span class="target" id="project0classfmt_1_1_basic_writer_1afb01c45f06b2c13027343b74ce973a40"></span>BasicWriter&amp; <tt class="descname">operator&lt;&lt;</tt><big>(</big>ULongLong <em>value</em><big>)</big><a class="headerlink" href="#fmt::BasicWriter:Char:::lshift-operator__ULongLong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats <em>value</em> and writes it to the stream. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::lshift-operator__double-l">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a90215ced4a6a9fcd5065f1ffd4105a4b"></span>BasicWriter&amp; <tt class="descname">operator&lt;&lt;</tt><big>(</big>double long <em>value</em><big>)</big><a class="headerlink" href="#fmt::BasicWriter:Char:::lshift-operator__double-l" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats <em>value</em> using the general format for floating-point numbers (<tt class="docutils literal"><span class="pre">'g'</span></tt>) and writes it to the stream. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::lshift-operator__c">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a4c7d6b3a40b4083f351de3f9ee0b3818"></span>BasicWriter&amp; <tt class="descname">operator&lt;&lt;</tt><big>(</big>char <em>value</em><big>)</big><a class="headerlink" href="#fmt::BasicWriter:Char:::lshift-operator__c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a character to the stream. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicWriter:Char:::lshift-operator__fmt::BasicStringRef:Char:">
+<span class="target" id="project0classfmt_1_1_basic_writer_1a5f07d053b9f215b548ba3623e7a09212"></span>BasicWriter&amp; <tt class="descname">operator&lt;&lt;</tt><big>(</big>fmt::BasicStringRef&lt;Char&gt; <em>value</em><big>)</big><a class="headerlink" href="#fmt::BasicWriter:Char:::lshift-operator__fmt::BasicStringRef:Char:" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes <em>value</em> to the stream. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="project0classfmt_1_1_basic_memory_writer"></span>template &lt;typename Char, typename Allocator = std::allocator&lt;Char&gt;&gt;</dt>
+<dt id="fmt::BasicMemoryWriter">
+<em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">BasicMemoryWriter</tt><a class="headerlink" href="#fmt::BasicMemoryWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>This class template provides operations for formatting and writing data
+into a character stream. The output is stored in a memory buffer that grows
+dynamically.</p>
+<p>You can use one of the following typedefs for common character types
+and the standard allocator:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Definition</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>MemoryWriter</td>
+<td>BasicMemoryWriter&lt;char, std::allocator&lt;char&gt;&gt;</td>
+</tr>
+<tr class="row-odd"><td>WMemoryWriter</td>
+<td>BasicMemoryWriter&lt;wchar_t, std::allocator&lt;wchar_t&gt;&gt;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">MemoryWriter</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">out</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;The answer is &quot;</span> <span class="o">&lt;&lt;</span> <span class="mi">42</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+<span class="n">out</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;({:+f}, {:+f})&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.14</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This will write the following output to the <tt class="docutils literal"><span class="pre">out</span></tt> object:</p>
+<div class="highlight-none"><div class="highlight"><pre>The answer is 42
+(-3.140000, +3.140000)
+</pre></div>
+</div>
+<p>The output can be converted to an <tt class="docutils literal"><span class="pre">std::string</span></tt> with <tt class="docutils literal"><span class="pre">out.str()</span></tt> or
+accessed as a C string with <tt class="docutils literal"><span class="pre">out.c_str()</span></tt>.</p>
+ </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::BasicMemoryWriter:Char.Allocator:::BasicMemoryWriter__BasicMemoryWriterRR">
+<span class="target" id="project0classfmt_1_1_basic_memory_writer_1a245047763a93566d0a7c1f90e8901672"></span> <tt class="descname">BasicMemoryWriter</tt><big>(</big>BasicMemoryWriter&amp;&amp; <em>other</em><big>)</big><a class="headerlink" href="#fmt::BasicMemoryWriter:Char.Allocator:::BasicMemoryWriter__BasicMemoryWriterRR" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#fmt::BasicMemoryWriter" title="fmt::BasicMemoryWriter"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicMemoryWriter</span></tt></a> object moving the content
+of the other object to it.</p>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicMemoryWriter:Char.Allocator:::assign-operator__BasicMemoryWriterRR">
+<span class="target" id="project0classfmt_1_1_basic_memory_writer_1abed7d7e6b63a86a6b1f2fc1800bf0c67"></span>BasicMemoryWriter&amp; <tt class="descname">operator=</tt><big>(</big>BasicMemoryWriter&amp;&amp; <em>other</em><big>)</big><a class="headerlink" href="#fmt::BasicMemoryWriter:Char.Allocator:::assign-operator__BasicMemoryWriterRR" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Moves the content of the other <tt class="docutils literal"><span class="pre">BasicMemoryWriter</span></tt> object to this one.</p>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="project0classfmt_1_1_basic_array_writer"></span>template &lt;typename Char&gt;</dt>
+<dt id="fmt::BasicArrayWriter">
+<em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">BasicArrayWriter</tt><a class="headerlink" href="#fmt::BasicArrayWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>This class template provides operations for formatting and writing data
+into a fixed-size array. For writing into a dynamically growing buffer
+use <a class="reference internal" href="#fmt::BasicMemoryWriter" title="fmt::BasicMemoryWriter"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicMemoryWriter</span></tt></a>.</p>
+<p>Any write method will throw <tt class="docutils literal"><span class="pre">std::runtime_error</span></tt> if the output doesn&#8217;t fit
+into the array.</p>
+<p>You can use one of the following typedefs for common character types:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Definition</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ArrayWriter</td>
+<td>BasicArrayWriter&lt;char&gt;</td>
+</tr>
+<tr class="row-odd"><td>WArrayWriter</td>
+<td>BasicArrayWriter&lt;wchar_t&gt;</td>
+</tr>
+</tbody>
+</table>
+ </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::BasicArrayWriter:Char:::BasicArrayWriter__CharP.std::s">
+<span class="target" id="project0classfmt_1_1_basic_array_writer_1a7559ecce2ffb3ecbb275dac5d2cc05e9"></span> <tt class="descname">BasicArrayWriter</tt><big>(</big>Char* <em>array</em>, std::size_t <em>size</em><big>)</big><a class="headerlink" href="#fmt::BasicArrayWriter:Char:::BasicArrayWriter__CharP.std::s" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#fmt::BasicArrayWriter" title="fmt::BasicArrayWriter"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicArrayWriter</span></tt></a> object for <em>array</em> of the
+given size.</p>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::bin__i">
+<span class="target" id="project0namespacefmt_1a73baa9bfe9b6f660313ca71317a241bc"></span>IntFormatSpec&lt;int, TypeSpec&lt;'b'&gt;&gt; <tt class="descclassname">fmt::</tt><tt class="descname">bin</tt><big>(</big>int <em>value</em><big>)</big><a class="headerlink" href="#fmt::bin__i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an integer format specifier to format the value in base 2. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::oct__i">
+<span class="target" id="project0namespacefmt_1a2d84223df5715510de007ff274cd6c3d"></span>IntFormatSpec&lt;int, TypeSpec&lt;'o'&gt;&gt; <tt class="descclassname">fmt::</tt><tt class="descname">oct</tt><big>(</big>int <em>value</em><big>)</big><a class="headerlink" href="#fmt::oct__i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an integer format specifier to format the value in base 8. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::hex__i">
+<span class="target" id="project0namespacefmt_1aed8f2728309382ece798b4666722af7a"></span>IntFormatSpec&lt;int, TypeSpec&lt;'x'&gt;&gt; <tt class="descclassname">fmt::</tt><tt class="descname">hex</tt><big>(</big>int <em>value</em><big>)</big><a class="headerlink" href="#fmt::hex__i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an integer format specifier to format the value in base 16 using lower-case letters for the digits above 9. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::hexu__i">
+<span class="target" id="project0namespacefmt_1a992ca088208c70c6625468d3d5248f38"></span>IntFormatSpec&lt;int, TypeSpec&lt;'X'&gt;&gt; <tt class="descclassname">fmt::</tt><tt class="descname">hexu</tt><big>(</big>int <em>value</em><big>)</big><a class="headerlink" href="#fmt::hexu__i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an integer formatter format specifier to format in base 16 using upper-case letters for the digits above 9. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+template &lt;char <em>TYPE_CODE</em>, typename Char&gt;</dt>
+<dt id="fmt::pad__i.unsigned-i.Char">
+<span class="target" id="project0namespacefmt_1a48d6010061d1710d807853ad9125d825"></span>IntFormatSpec&lt;int, AlignTypeSpec&lt;TYPE_CODE&gt;, Char&gt; <tt class="descclassname">fmt::</tt><tt class="descname">pad</tt><big>(</big>int <em>value</em>, unsigned int <em>width</em>, Char <em>fill</em><big>)</big><a class="headerlink" href="#fmt::pad__i.unsigned-i.Char" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Returns an integer format specifier to pad the formatted argument with the
+fill character to the specified width using the default (right) numeric
+alignment.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="n">MemoryWriter</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">out</span> <span class="o">&lt;&lt;</span> <span class="n">pad</span><span class="p">(</span><span class="n">hex</span><span class="p">(</span><span class="mh">0xcafe</span><span class="p">),</span> <span class="mi">8</span><span class="p">,</span> <span class="sc">&#39;0&#39;</span><span class="p">);</span>
+<span class="c1">// out.str() == &quot;0000cafe&quot;</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+</div>
+<div class="section" id="utilities">
+<h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
+<dl class="define">
+<dt>
+<span class="target" id="project0format_8h_1a65215c7dfcc0e942cd0798860877e86b"></span><strong>FMT_VARIADIC</strong>(<em>ReturnType</em>, <em>func</em>, <em>...</em>)</dt>
+<dd><p><p>Defines a variadic function with the specified return type, function name
+and argument types passed as variable arguments to this macro.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="kt">void</span> <span class="nf">print_error</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">file</span><span class="p">,</span> <span class="kt">int</span> <span class="n">line</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">format</span><span class="p">,</span>
+                 <span class="n">fmt</span><span class="o">::</span><span class="n">ArgList</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}: {}: &quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">line</span><span class="p">);</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">format</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">FMT_VARIADIC</span><span class="p">(</span><span class="kt">void</span><span class="p">,</span> <span class="n">print_error</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">FMT_VARIADIC</span></tt> is used for compatibility with legacy C++ compilers that
+don&#8217;t implement variadic templates. You don&#8217;t have to use this macro if
+you don&#8217;t need legacy compiler support and can use variadic templates
+directly:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">print_error</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">file</span><span class="p">,</span> <span class="kt">int</span> <span class="n">line</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">format</span><span class="p">,</span>
+                 <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span> <span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}: {}: &quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">line</span><span class="p">);</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">format</span><span class="p">,</span> <span class="n">args</span><span class="p">...);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="class">
+<dt id="fmt::ArgList">
+<span class="target" id="project0classfmt_1_1_arg_list"></span><em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">ArgList</tt><a class="headerlink" href="#fmt::ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p>An argument list. </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::ArgList::subscript-operator__unsigned-i">
+<span class="target" id="project0classfmt_1_1_arg_list_1ad2c2672388e003aa70d9c948ac8140cd"></span>internal::Arg <tt class="descname">operator[]</tt><big>(</big>unsigned int <em>index</em><big>)</big> const<a class="headerlink" href="#fmt::ArgList::subscript-operator__unsigned-i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the argument at specified index. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="project0classfmt_1_1_basic_string_ref"></span>template &lt;typename <em>Char</em>&gt;</dt>
+<dt id="fmt::BasicStringRef">
+<em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">BasicStringRef</tt><a class="headerlink" href="#fmt::BasicStringRef" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>A string reference. It can be constructed from a C string or
+<tt class="docutils literal"><span class="pre">std::string</span></tt>.</p>
+<p>You can use one of the following typedefs for common character types:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Definition</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>StringRef</td>
+<td>BasicStringRef&lt;char&gt;</td>
+</tr>
+<tr class="row-odd"><td>WStringRef</td>
+<td>BasicStringRef&lt;wchar_t&gt;</td>
+</tr>
+</tbody>
+</table>
+<p>This class is most useful as a parameter type to allow passing
+different types of strings to a function, for example:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">format</span><span class="p">(</span><span class="n">StringRef</span> <span class="n">format_str</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span> <span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+
+<span class="n">format</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+<span class="n">format</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">),</span> <span class="mi">42</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::BasicStringRef:Char:::BasicStringRef__CharCP.std::s">
+<span class="target" id="project0classfmt_1_1_basic_string_ref_1adc7198e4dbd3eefff16081aae819181a"></span> <tt class="descname">BasicStringRef</tt><big>(</big>const Char* <em>s</em>, std::size_t <em>size</em><big>)</big><a class="headerlink" href="#fmt::BasicStringRef:Char:::BasicStringRef__CharCP.std::s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a string reference object from a C string and a size. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicStringRef:Char:::BasicStringRef__CharCP">
+<span class="target" id="project0classfmt_1_1_basic_string_ref_1a5e3875071c0be193aa706d6c8e7bf29c"></span> <tt class="descname">BasicStringRef</tt><big>(</big>const Char* <em>s</em><big>)</big><a class="headerlink" href="#fmt::BasicStringRef:Char:::BasicStringRef__CharCP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a string reference object from a C string computing the size with <tt class="docutils literal"><span class="pre">std::char_traits&lt;Char&gt;length</span></tt>. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicStringRef:Char:::BasicStringRef__std::basic_string:Char:CR">
+<span class="target" id="project0classfmt_1_1_basic_string_ref_1afd8ffd0c6d2ccac657f277a4faea3889"></span> <tt class="descname">BasicStringRef</tt><big>(</big>const std::basic_string&lt;Char&gt;&amp; <em>s</em><big>)</big><a class="headerlink" href="#fmt::BasicStringRef:Char:::BasicStringRef__std::basic_string:Char:CR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a string reference from an <tt class="docutils literal"><span class="pre">std::string</span></tt> object. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicStringRef:Char:::castto-std::basic_string:Char:-operator">
+<span class="target" id="project0classfmt_1_1_basic_string_ref_1ab39d249c0412e8beb3ea15ba480c85d7"></span> <tt class="descname">operator</tt> std::basic_string&lt;Char&gt;<big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicStringRef:Char:::castto-std::basic_string:Char:-operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string reference to an <tt class="docutils literal"><span class="pre">std::string</span></tt> object. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicStringRef:Char:::c_str">
+<span class="target" id="project0classfmt_1_1_basic_string_ref_1a3aecb5de1a62d0954c382eba43ce72ad"></span>const Char* <tt class="descname">c_str</tt><big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicStringRef:Char:::c_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the pointer to a C string. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fmt::BasicStringRef:Char:::size">
+<span class="target" id="project0classfmt_1_1_basic_string_ref_1ae38d9106dd5bec69488e5464aedc266a"></span>std::size_t <tt class="descname">size</tt><big>(</big><big>)</big> const<a class="headerlink" href="#fmt::BasicStringRef:Char:::size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the string size. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="system-errors">
+<h2>System Errors<a class="headerlink" href="#system-errors" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fmt::SystemError">
+<span class="target" id="project0classfmt_1_1_system_error"></span><em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">SystemError</tt><a class="headerlink" href="#fmt::SystemError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An error returned by an operating system or a language runtime, for example a file opening error. </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::SystemError::SystemError__i.StringRef">
+<span class="target" id="project0classfmt_1_1_system_error_1a14fb9aa480a54d40b94ec75e954fc361"></span> <tt class="descname">SystemError</tt><big>(</big>int <em>error_code</em>, StringRef <em>message</em><big>)</big><a class="headerlink" href="#fmt::SystemError::SystemError__i.StringRef" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#fmt::SystemError" title="fmt::SystemError"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::SystemError</span></tt></a> object with the description
+of the form</p>
+<pre class="literal-block">
+<em>&lt;message&gt;</em>: <em>&lt;system-message&gt;</em>
+</pre>
+<p>where <em>&lt;message&gt;</em> is the formatted message and <em>&lt;system-message&gt;</em> is
+the system message corresponding to the error code.
+<em>error_code</em> is a system error code as given by <tt class="docutils literal"><span class="pre">errno</span></tt>.
+If <em>error_code</em> is not a valid error code such as -1, the system message
+may look like &#8220;Unknown error -1&#8221; and is platform-dependent.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// This throws a SystemError with the description</span>
+<span class="c1">//   cannot open file &#39;madeup&#39;: No such file or directory</span>
+<span class="c1">// or similar (system message may vary).</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;madeup&quot;</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="n">file</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">fopen</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">file</span><span class="p">)</span>
+  <span class="k">throw</span> <span class="n">fmt</span><span class="o">::</span><span class="n">SystemError</span><span class="p">(</span><span class="n">errno</span><span class="p">,</span> <span class="s">&quot;cannot open file &#39;{}&#39;&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="fmt::WindowsError">
+<span class="target" id="project0classfmt_1_1_windows_error"></span><em class="property">class </em><tt class="descclassname">fmt::</tt><tt class="descname">WindowsError</tt><a class="headerlink" href="#fmt::WindowsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Windows error. </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="fmt::WindowsError::WindowsError__i.StringRef">
+<span class="target" id="project0classfmt_1_1_windows_error_1a0b1dd3785a64d5e2718563c21b3d1a06"></span> <tt class="descname">WindowsError</tt><big>(</big>int <em>error_code</em>, StringRef <em>message</em><big>)</big><a class="headerlink" href="#fmt::WindowsError::WindowsError__i.StringRef" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#fmt::WindowsError" title="fmt::WindowsError"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::WindowsError</span></tt></a> object with the description
+of the form</p>
+<pre class="literal-block">
+<em>&lt;message&gt;</em>: <em>&lt;system-message&gt;</em>
+</pre>
+<p>where <em>&lt;message&gt;</em> is the formatted message and <em>&lt;system-message&gt;</em> is the
+system message corresponding to the error code.
+<em>error_code</em> is a Windows error code as given by <tt class="docutils literal"><span class="pre">GetLastError</span></tt>.
+If <em>error_code</em> is not a valid error code such as -1, the system message
+will look like &#8220;error -1&#8221;.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="c1">// This throws a WindowsError with the description</span>
+<span class="c1">//   cannot open file &#39;madeup&#39;: The system cannot find the file specified.</span>
+<span class="c1">// or similar (system message may vary).</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;madeup&quot;</span><span class="p">;</span>
+<span class="n">LPOFSTRUCT</span> <span class="n">of</span> <span class="o">=</span> <span class="n">LPOFSTRUCT</span><span class="p">();</span>
+<span class="n">HFILE</span> <span class="n">file</span> <span class="o">=</span> <span class="n">OpenFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">of</span><span class="p">,</span> <span class="n">OF_READ</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">file</span> <span class="o">==</span> <span class="n">HFILE_ERROR</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">throw</span> <span class="n">fmt</span><span class="o">::</span><span class="n">WindowsError</span><span class="p">(</span><span class="n">GetLastError</span><span class="p">(),</span>
+                          <span class="s">&quot;cannot open file &#39;{}&#39;&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="custom-allocators">
+<span id="formatstrings"></span><h2>Custom allocators<a class="headerlink" href="#custom-allocators" title="Permalink to this headline">¶</a></h2>
+<p>The C++ Format library supports custom dynamic memory allocators.
+A custom allocator class can be specified as a template argument to
+<a class="reference internal" href="#fmt::BasicMemoryWriter" title="fmt::BasicMemoryWriter"><tt class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicMemoryWriter</span></tt></a>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="k">typedef</span> <span class="n">fmt</span><span class="o">::</span><span class="n">BasicMemoryWriter</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">CustomAllocator</span><span class="o">&gt;</span> <span class="n">CustomMemoryWriter</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>It is also possible to write a formatting function that uses a custom
+allocator:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">basic_string</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">char_traits</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">CustomAllocator</span><span class="o">&gt;</span> <span class="n">CustomString</span><span class="p">;</span>
+
+<span class="n">CustomString</span> <span class="nf">format</span><span class="p">(</span><span class="n">CustomAllocator</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">StringRef</span> <span class="n">format_str</span><span class="p">,</span>
+                    <span class="n">fmt</span><span class="o">::</span><span class="n">ArgList</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">CustomMemoryWriter</span> <span class="n">writer</span><span class="p">(</span><span class="n">alloc</span><span class="p">);</span>
+  <span class="n">writer</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">CustomString</span><span class="p">(</span><span class="n">writer</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">writer</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">alloc</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">FMT_VARIADIC</span><span class="p">(</span><span class="n">CustomString</span><span class="p">,</span> <span class="n">format</span><span class="p">,</span> <span class="n">CustomAllocator</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">StringRef</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <p class="pull-right">
+          <a href="#">Back to top</a>
+          
+            <br/>
+            
+<div id="sourcelink">
+  <a href="_sources/reference.txt"
+     rel="nofollow">Source</a>
+</div>
+          
+        </p>
+        <p>
+            &copy; Copyright 2012-2014, Victor Zverovich.<br/>
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-20116650-4', 'cppformat.github.io');
+  ga('send', 'pageview');
+</script>
+
+  </body>
+</html>
