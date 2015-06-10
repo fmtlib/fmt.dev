@@ -123,15 +123,18 @@ copied unchanged to the output.  If you need to include a brace character in the
 literal text, it can be escaped by doubling: <code class="docutils literal"><span class="pre">{{</span></code> and <code class="docutils literal"><span class="pre">}}</span></code>.</p>
 <p>The grammar for a replacement field is as follows:</p>
 <pre>
-<strong id="grammar-token-replacement_field">replacement_field</strong> ::=  &quot;{&quot; [<a class="reference internal" href="#grammar-token-arg_field"><code class="xref docutils literal"><span class="pre">arg_field</span></code></a>] [&quot;:&quot; <a class="reference internal" href="#grammar-token-format_spec"><code class="xref docutils literal"><span class="pre">format_spec</span></code></a>] &quot;}&quot;
-<strong id="grammar-token-arg_field">arg_field        </strong> ::=  <a class="reference internal" href="#grammar-token-arg_index"><code class="xref docutils literal"><span class="pre">arg_index</span></code></a> | <a class="reference internal" href="#grammar-token-arg_name"><code class="xref docutils literal"><span class="pre">arg_name</span></code></a>
-<strong id="grammar-token-arg_index">arg_index        </strong> ::=  <code class="xref docutils literal"><span class="pre">integer</span></code>
-<strong id="grammar-token-arg_name">arg_name         </strong> ::=  \^[a-zA-Z_][a-zA-Z0-9_]*$\
+<strong id="grammar-token-replacement_field">replacement_field</strong> ::=  &quot;{&quot; [<a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a>] [&quot;:&quot; <a class="reference internal" href="#grammar-token-format_spec"><code class="xref docutils literal"><span class="pre">format_spec</span></code></a>] &quot;}&quot;
+<strong id="grammar-token-arg_id">arg_id           </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | <a class="reference internal" href="#grammar-token-identifier"><code class="xref docutils literal"><span class="pre">identifier</span></code></a>
+<strong id="grammar-token-integer">integer          </strong> ::=  <a class="reference internal" href="#grammar-token-digit"><code class="xref docutils literal"><span class="pre">digit</span></code></a>+
+<strong id="grammar-token-digit">digit            </strong> ::=  &quot;0&quot;...&quot;9&quot;
+<strong id="grammar-token-identifier">identifier       </strong> ::=  <a class="reference internal" href="#grammar-token-id_start"><code class="xref docutils literal"><span class="pre">id_start</span></code></a> <a class="reference internal" href="#grammar-token-id_continue"><code class="xref docutils literal"><span class="pre">id_continue</span></code></a>*
+<strong id="grammar-token-id_start">id_start         </strong> ::=  &quot;a&quot;...&quot;z&quot; | &quot;A&quot;...&quot;Z&quot; | &quot;_&quot;
+<strong id="grammar-token-id_continue">id_continue      </strong> ::=  <a class="reference internal" href="#grammar-token-id_start"><code class="xref docutils literal"><span class="pre">id_start</span></code></a> | <a class="reference internal" href="#grammar-token-digit"><code class="xref docutils literal"><span class="pre">digit</span></code></a>
 </pre>
-<p>In less formal terms, the replacement field can start with an <em>arg_field</em>
+<p>In less formal terms, the replacement field can start with an <em>arg_id</em>
 that specifies the argument whose value is to be formatted and inserted into
 the output instead of the replacement field.
-The <em>arg_field</em> is optionally followed by a <em>format_spec</em>, which is preceded
+The <em>arg_id</em> is optionally followed by a <em>format_spec</em>, which is preceded
 by a colon <code class="docutils literal"><span class="pre">':'</span></code>.  These specify a non-default format for the replacement value.</p>
 <p>See also the <a class="reference internal" href="#formatspec"><span>Format Specification Mini-Language</span></a> section.</p>
 <p>If the numerical arg_indexes in a format string are 0, 1, 2, ... in sequence,
@@ -170,8 +173,8 @@ although some of the formatting options are only supported by the numeric types.
 <strong id="grammar-token-fill">fill       </strong> ::=  &lt;a character other than '{' or '}'&gt;
 <strong id="grammar-token-align">align      </strong> ::=  &quot;&lt;&quot; | &quot;&gt;&quot; | &quot;=&quot; | &quot;^&quot;
 <strong id="grammar-token-sign">sign       </strong> ::=  &quot;+&quot; | &quot;-&quot; | &quot; &quot;
-<strong id="grammar-token-width">width      </strong> ::=  <code class="xref docutils literal"><span class="pre">integer</span></code> | &quot;{&quot; <a class="reference internal" href="#grammar-token-arg_field"><code class="xref docutils literal"><span class="pre">arg_field</span></code></a> &quot;}&quot;
-<strong id="grammar-token-precision">precision  </strong> ::=  <code class="xref docutils literal"><span class="pre">integer</span></code> | &quot;{&quot; <a class="reference internal" href="#grammar-token-arg_field"><code class="xref docutils literal"><span class="pre">arg_field</span></code></a> &quot;}&quot;
+<strong id="grammar-token-width">width      </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | &quot;{&quot; <a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a> &quot;}&quot;
+<strong id="grammar-token-precision">precision  </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | &quot;{&quot; <a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a> &quot;}&quot;
 <strong id="grammar-token-type">type       </strong> ::=  <a class="reference internal" href="#grammar-token-int_type"><code class="xref docutils literal"><span class="pre">int_type</span></code></a> | &quot;c&quot; | &quot;e&quot; | &quot;E&quot; | &quot;f&quot; | &quot;F&quot; | &quot;g&quot; | &quot;G&quot; | &quot;p&quot; | &quot;s&quot;
 <strong id="grammar-token-int_type">int_type   </strong> ::=  &quot;b&quot; | &quot;B&quot; | &quot;d&quot; | &quot;o&quot; | &quot;x&quot; | &quot;X&quot;
 </pre>
