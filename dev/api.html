@@ -230,13 +230,40 @@ appropriate lifetimes.</p>
 <h3>Argument formatters<a class="headerlink" href="#argument-formatters" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt>
+<span class="target" id="formatclassfmt_1_1_arg_visitor"></span><em class="property">template </em>&lt;typename <em>Impl</em>, typename <em>Result</em>&gt;</dt>
+<dt id="_CPPv2N3fmt10ArgVisitorE">
+<span id="fmt::ArgVisitor"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">ArgVisitor</code><a class="headerlink" href="#_CPPv2N3fmt10ArgVisitorE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>An argument visitor.
+To use <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a> define a subclass that implements some or all of the
+visit methods with the same signatures as the methods in <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a>,
+for example, <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int(int)</span></code>.
+Pass the subclass as the <em>Impl</em> template parameter. Then calling
+<code class="xref cpp cpp-any docutils literal"><span class="pre">visit</span></code> for some argument will dispatch to a visit method
+specific to the argument type. For example, if the argument type is
+<code class="docutils literal"><span class="pre">double</span></code> then <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double(double)</span></code> method of a subclass will be called.
+If the subclass doesn&#8217;t contain a method with this signature, then
+a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a> will be called.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyArgVisitor</span> <span class="o">:</span> <span class="k">public</span> <span class="n">fmt</span><span class="o">::</span><span class="n">ArgVisitor</span><span class="o">&lt;</span><span class="n">MyArgVisitor</span><span class="p">,</span> <span class="kt">void</span><span class="o">&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="kt">void</span> <span class="n">visit_int</span><span class="p">(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span> <span class="p">}</span>
+  <span class="kt">void</span> <span class="n">visit_double</span><span class="p">(</span><span class="kt">double</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">value</span> <span class="p">);</span> <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a> uses the <a class="reference external" href="http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template pattern</a>.</p>
+ </p>
+</dd></dl>
+
+<dl class="class">
+<dt>
 <span class="target" id="formatclassfmt_1_1_basic_arg_formatter"></span><em class="property">template </em>&lt;typename <em>Impl</em>, typename <em>Char</em>&gt;</dt>
 <dt id="_CPPv2N3fmt17BasicArgFormatterE">
 <span id="fmt::BasicArgFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">BasicArgFormatter</code><a class="headerlink" href="#_CPPv2N3fmt17BasicArgFormatterE" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>An argument formatter.
-To use <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> define a subclass that implements some or all
-of the visit methods with the same signatures as the methods in <code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code>,
-for example, <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int(int)</span></code>.
+To use <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> define a subclass that implements some or
+all of the visit methods with the same signatures as the methods in
+<a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a>, for example, <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int(int)</span></code>.
 Pass the subclass as the <em>Impl</em> template parameter. When a formatting
 function processes an argument, it will dispatch to a visit method
 specific to the argument type. For example, if the argument type is
