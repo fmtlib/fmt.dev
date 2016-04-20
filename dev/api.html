@@ -187,7 +187,7 @@ arguments in the resulting string.</p>
 
 <dl class="class">
 <dt>
-<span class="target" id="formatclassfmt_1_1_basic_formatter"></span><em class="property">template </em>&lt;typename <em>CharType</em>, typename <em>ArgFormatter</em> = fmt::ArgFormatter&lt;CharType&gt;&gt;</dt>
+<span class="target" id="formatclassfmt_1_1_basic_formatter"></span><em class="property">template </em>&lt;typename <em>CharType</em>, typename <em>ArgFormatter</em> = <a class="reference internal" href="#formatclassfmt_1_1_arg_formatter"><span class="std std-ref">fmt::ArgFormatter</span></a>&lt;CharType&gt;&gt;</dt>
 <dt id="_CPPv2N3fmt14BasicFormatterE">
 <span id="fmt::BasicFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">BasicFormatter</code><a class="headerlink" href="#_CPPv2N3fmt14BasicFormatterE" title="Permalink to this definition">¶</a></dt>
 <dd><p>This template formats data and writes the output to a writer. </p>
@@ -226,6 +226,92 @@ appropriate lifetimes.</p>
 </div>
 </dd></dl>
 
+<div class="section" id="argument-formatters">
+<h3>Argument formatters<a class="headerlink" href="#argument-formatters" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt>
+<span class="target" id="formatclassfmt_1_1_basic_arg_formatter"></span><em class="property">template </em>&lt;typename <em>Impl</em>, typename <em>Char</em>&gt;</dt>
+<dt id="_CPPv2N3fmt17BasicArgFormatterE">
+<span id="fmt::BasicArgFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">BasicArgFormatter</code><a class="headerlink" href="#_CPPv2N3fmt17BasicArgFormatterE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>An argument formatter.
+To use <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> define a subclass that implements some or all
+of the visit methods with the same signatures as the methods in <code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code>,
+for example, <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int(int)</span></code>.
+Pass the subclass as the <em>Impl</em> template parameter. When a formatting
+function processes an argument, it will dispatch to a visit method
+specific to the argument type. For example, if the argument type is
+<code class="docutils literal"><span class="pre">double</span></code> then <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double(double)</span></code> method of a subclass will be called.
+If the subclass doesn&#8217;t contain a method with this signature, then
+a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> or its superclass will be
+called.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="c1">// A custom argument formatter that formats negative integers as unsigned</span>
+<span class="c1">// with the ``x`` format specifier.</span>
+<span class="k">class</span> <span class="nc">CustomArgFormatter</span> <span class="o">:</span>
+  <span class="k">public</span> <span class="n">fmt</span><span class="o">::</span><span class="n">BasicArgFormatter</span><span class="o">&lt;</span><span class="n">CustomArgFormatter</span><span class="p">,</span> <span class="kt">char</span><span class="o">&gt;</span>  <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">CustomArgFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">BasicFormatter</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">CustomArgFormatter</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">f</span><span class="p">,</span>
+                     <span class="n">fmt</span><span class="o">::</span><span class="n">FormatSpec</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">fmt</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">fmt</span><span class="o">::</span><span class="n">BasicArgFormatter</span><span class="o">&lt;</span><span class="n">CustomArgFormatter</span><span class="p">,</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="kt">void</span> <span class="n">visit_int</span><span class="p">(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">::</span><span class="n">FormatSpec</span> <span class="o">&amp;</span><span class="n">spec</span> <span class="o">=</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">spec</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="sc">&#39;x&#39;</span><span class="p">)</span>
+      <span class="n">visit_uint</span><span class="p">(</span><span class="n">value</span><span class="p">);</span> <span class="c1">// convert to unsigned and format</span>
+    <span class="k">else</span>
+      <span class="n">fmt</span><span class="o">::</span><span class="n">BasicArgFormatter</span><span class="o">&lt;</span><span class="n">CustomArgFormatter</span><span class="p">,</span> <span class="kt">char</span><span class="o">&gt;::</span><span class="n">visit_int</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">custom_format</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">ArgList</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">MemoryWriter</span> <span class="n">writer</span><span class="p">;</span>
+  <span class="c1">// Pass custom argument formatter to BasicFormatter.</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">BasicFormatter</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">CustomArgFormatter</span><span class="o">&gt;</span> <span class="n">formatter</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">writer</span><span class="p">);</span>
+  <span class="n">formatter</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="n">format_str</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">writer</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="n">FMT_VARIADIC</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">custom_format</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">)</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">custom_format</span><span class="p">(</span><span class="s">&quot;{:x}&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">42</span><span class="p">);</span> <span class="c1">// s == &quot;ffffffd6&quot;</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> uses the <a class="reference external" href="http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template pattern</a>.</p>
+ </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt17BasicArgFormatter17BasicArgFormatterER14BasicFormatterI4Char4ImplER10FormatSpecPK4Char">
+<span id="fmt::BasicArgFormatter::BasicArgFormatter__BasicFormatter:Char.Impl:R.FormatSpecR.CharCP"></span><span class="target" id="formatclassfmt_1_1_basic_arg_formatter_1aea0b957ec836f3ba71809ec4078a90d3"></span><code class="descname">BasicArgFormatter</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt14BasicFormatterE" title="fmt::BasicFormatter">BasicFormatter</a>&lt;Char, Impl&gt; &amp;<em>f</em>, FormatSpec &amp;<em>s</em>, <em class="property">const</em> Char *<em>fmt</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt17BasicArgFormatter17BasicArgFormatterER14BasicFormatterI4Char4ImplER10FormatSpecPK4Char" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an argument formatter object. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt17BasicArgFormatter12visit_customEN8internal3Arg11CustomValueE">
+<span id="fmt::BasicArgFormatter::visit_custom__internal::Arg::CustomValue"></span><span class="target" id="formatclassfmt_1_1_basic_arg_formatter_1ae0aab0f90c9c93e3513203fc84c2c4dc"></span>void <code class="descname">visit_custom</code><span class="sig-paren">(</span>internal::Arg::CustomValue <em>c</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt17BasicArgFormatter12visit_customEN8internal3Arg11CustomValueE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats argument of a custom (user-defined) type. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="formatclassfmt_1_1_arg_formatter"></span><em class="property">template </em>&lt;<em class="property">typename</em> Char&gt;</dt>
+<dt id="_CPPv2N3fmt12ArgFormatterE">
+<span id="fmt::ArgFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">ArgFormatter</code><a class="headerlink" href="#_CPPv2N3fmt12ArgFormatterE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default argument formatter. </p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt12ArgFormatter12ArgFormatterER14BasicFormatterI4CharER10FormatSpecPK4Char">
+<span id="fmt::ArgFormatter::ArgFormatter__BasicFormatter:Char:R.FormatSpecR.CharCP"></span><span class="target" id="formatclassfmt_1_1_arg_formatter_1ae4f6f5954c291017e984316a12c87f8c"></span><code class="descname">ArgFormatter</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt14BasicFormatterE" title="fmt::BasicFormatter">BasicFormatter</a>&lt;Char&gt; &amp;<em>f</em>, FormatSpec &amp;<em>s</em>, <em class="property">const</em> Char *<em>fmt</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt12ArgFormatter12ArgFormatterER14BasicFormatterI4CharER10FormatSpecPK4Char" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an argument formatter object. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
 <div class="section" id="printf-formatting-functions">
 <h3>Printf formatting functions<a class="headerlink" href="#printf-formatting-functions" title="Permalink to this headline">¶</a></h3>
 <p>The following functions use <a class="reference external" href="http://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html">printf format string syntax</a> with
@@ -338,7 +424,7 @@ such as <a class="reference internal" href="#_CPPv2N3fmt17BasicMemoryWriterE" ti
 <dl class="function">
 <dt id="_CPPv2N3fmt11BasicWriter3strEv">
 <span id="fmt::BasicWriter::str"></span><span class="target" id="formatclassfmt_1_1_basic_writer_1a91f06ced6e063ee77a99740e0e79faf6"></span>std::basic_string&lt;Char&gt; <code class="descname">str</code><span class="sig-paren">(</span><span class="sig-paren">)</span> const<a class="headerlink" href="#_CPPv2N3fmt11BasicWriter3strEv" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>Returns the content of the output buffer as an <cite>std::string</cite>.</p>
+<dd><p><p>Returns the content of the output buffer as an <code class="xref cpp cpp-any docutils literal"><span class="pre">std::string</span></code>.</p>
  </p>
 </dd></dl>
 
