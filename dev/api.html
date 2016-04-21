@@ -236,13 +236,13 @@ appropriate lifetimes.</p>
 <dd><p><p>An argument visitor based on the <a class="reference external" href="http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template pattern</a>.</p>
 <p>To use <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a> define a subclass that implements some or all of the
 visit methods with the same signatures as the methods in <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a>,
-for example, <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int(int)</span></code>.
+for example, <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor9visit_intEi" title="fmt::ArgVisitor::visit_int"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int()</span></code></a>.
 Pass the subclass as the <em>Impl</em> template parameter. Then calling
 <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor5visitERK3Arg" title="fmt::ArgVisitor::visit"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit()</span></code></a> for some argument will dispatch to a visit method
 specific to the argument type. For example, if the argument type is
-<code class="docutils literal"><span class="pre">double</span></code> then <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double(double)</span></code> method of a subclass will be called.
-If the subclass doesn&#8217;t contain a method with this signature, then
-a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a> will be called.</p>
+<code class="docutils literal"><span class="pre">double</span></code> then the <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor12visit_doubleEd" title="fmt::ArgVisitor::visit_double"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double()</span></code></a> method of a subclass
+will be called. If the subclass doesn&#8217;t contain a method with this signature,
+then a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a> will be called.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyArgVisitor</span> <span class="o">:</span> <span class="k">public</span> <span class="n">fmt</span><span class="o">::</span><span class="n">ArgVisitor</span><span class="o">&lt;</span><span class="n">MyArgVisitor</span><span class="p">,</span> <span class="kt">void</span><span class="o">&gt;</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
@@ -295,7 +295,7 @@ a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt10ArgV
 <em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2N3fmt10ArgVisitor13visit_any_intE1T">
 <span id="fmt::ArgVisitor::visit_any_int__T"></span><span class="target" id="formatclassfmt_1_1_arg_visitor_1a5e33c073c34ca49a6f1dd82181e2d98f"></span>Result <code class="descname">visit_any_int</code><span class="sig-paren">(</span>T<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt10ArgVisitor13visit_any_intE1T" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visits an argument of any integer type. </p>
+<dd><p>Visits an argument of any integral type. </p>
 </dd></dl>
 
 <dl class="function">
@@ -351,8 +351,11 @@ a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt10ArgV
 <dl class="function">
 <dt id="_CPPv2N3fmt10ArgVisitor5visitERK3Arg">
 <span id="fmt::ArgVisitor::visit__ArgCR"></span><span class="target" id="formatclassfmt_1_1_arg_visitor_1a19a979776fc789baaf038ab216e245bb"></span>Result <code class="descname">visit</code><span class="sig-paren">(</span><em class="property">const</em> Arg &amp;<em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt10ArgVisitor5visitERK3Arg" title="Permalink to this definition">¶</a></dt>
-<dd><p>Visits an argument dispatching to the appropriate visit method based on the argument type. </p>
-<p>For example, if the argument type is <code class="docutils literal"><span class="pre">double</span></code> then <code class="docutils literal"><span class="pre">visit_double(double)</span></code> method of the <code class="docutils literal"><span class="pre">Impl</span></code> class will be called. </p>
+<dd><p><p>Visits an argument dispatching to the appropriate visit method based on
+the argument type. For example, if the argument type is <code class="docutils literal"><span class="pre">double</span></code> then
+the <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor12visit_doubleEd" title="fmt::ArgVisitor::visit_double"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double()</span></code></a> method of the <em>Impl</em> class will be
+called.</p>
+ </p>
 </dd></dl>
 
 </div>
@@ -366,14 +369,14 @@ a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt10ArgV
 <dd><p><p>An argument formatter based on the <a class="reference external" href="http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template pattern</a>.</p>
 <p>To use <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> define a subclass that implements some or
 all of the visit methods with the same signatures as the methods in
-<a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a>, for example, <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int(int)</span></code>.
+<a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a>, for example, <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor9visit_intEi" title="fmt::ArgVisitor::visit_int"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int()</span></code></a>.
 Pass the subclass as the <em>Impl</em> template parameter. When a formatting
 function processes an argument, it will dispatch to a visit method
 specific to the argument type. For example, if the argument type is
-<code class="docutils literal"><span class="pre">double</span></code> then <code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double(double)</span></code> method of a subclass will be called.
-If the subclass doesn&#8217;t contain a method with this signature, then
-a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> or its superclass will be
-called.</p>
+<code class="docutils literal"><span class="pre">double</span></code> then the <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor12visit_doubleEd" title="fmt::ArgVisitor::visit_double"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double()</span></code></a> method of a subclass
+will be called. If the subclass doesn&#8217;t contain a method with this signature,
+then a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt17BasicArgFormatterE" title="fmt::BasicArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicArgFormatter</span></code></a> or its superclass
+will be called.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="c1">// A custom argument formatter that formats negative integers as unsigned</span>
 <span class="c1">// with the ``x`` format specifier.</span>
