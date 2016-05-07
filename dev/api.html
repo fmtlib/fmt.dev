@@ -174,20 +174,6 @@ arguments in the resulting string.</p>
  </p>
 </dd></dl>
 
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;print&#8221; with arguments (std::ostream&amp;, CStringRef, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span><span class="o">&gt;</span>
-  <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">CStringRef</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-<span class="o">-</span> <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">CStringRef</span><span class="p">,</span> <span class="n">ArgList</span><span class="p">)</span>
-<span class="o">-</span> <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">CStringRef</span><span class="p">,</span> <span class="n">ArgList</span><span class="p">)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span><span class="o">&gt;</span>
-  <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">CStringRef</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-</pre></div>
-</div>
-</div>
 <dl class="class">
 <dt>
 <span class="target" id="formatclassfmt_1_1_basic_formatter"></span><em class="property">template </em>&lt;typename <em>CharType</em>, typename <em>ArgFormatter</em> = <a class="reference internal" href="#formatclassfmt_1_1_arg_formatter"><span class="std std-ref">fmt::ArgFormatter</span></a>&lt;CharType&gt;&gt;</dt>
@@ -242,6 +228,49 @@ date and time formatting:</p>
 </div>
 <p>The format string syntax is described in the documentation of
 <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a>.</p>
+</div>
+<div class="section" id="std-ostream-support">
+<h3><code class="docutils literal"><span class="pre">std::ostream</span></code> support<a class="headerlink" href="#std-ostream-support" title="Permalink to this headline">¶</a></h3>
+<p>The header <code class="docutils literal"><span class="pre">fmt/ostream.h</span></code> provides <code class="docutils literal"><span class="pre">std::ostream</span></code> support including
+formatting of user-defined types that have overloaded <code class="docutils literal"><span class="pre">operator&lt;&lt;</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;fmt/ostream.h&quot;</span><span class="cp"></span>
+
+<span class="k">class</span> <span class="nc">Date</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">year_</span><span class="p">,</span> <span class="n">month_</span><span class="p">,</span> <span class="n">day_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+  <span class="n">Date</span><span class="p">(</span><span class="kt">int</span> <span class="n">year</span><span class="p">,</span> <span class="kt">int</span> <span class="n">month</span><span class="p">,</span> <span class="kt">int</span> <span class="n">day</span><span class="p">)</span> <span class="o">:</span> <span class="n">year_</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">month_</span><span class="p">(</span><span class="n">month</span><span class="p">),</span> <span class="n">day_</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="k">friend</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="n">os</span><span class="p">,</span> <span class="k">const</span> <span class="n">Date</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">os</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">year_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">month_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">day_</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The date is {}&quot;</span><span class="p">,</span> <span class="n">Date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">));</span>
+<span class="c1">// s == &quot;The date is 2012-12-9&quot;</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="_CPPv2N3fmt5printERNSt7ostreamE10CStringRef7ArgList">
+<span id="fmt::print__osR.CStringRef.ArgList"></span><span class="target" id="formatnamespacefmt_1a7ef9196e61600e71d751a14b3facea2e"></span>void <code class="descclassname">fmt::</code><code class="descname">print</code><span class="sig-paren">(</span>std::ostream &amp;<em>os</em>, CStringRef <em>format_str</em>, <a class="reference internal" href="#_CPPv2N3fmt7ArgListE" title="fmt::ArgList">ArgList</a> <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt5printERNSt7ostreamE10CStringRef7ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the stream <em>os</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">print</span><span class="p">(</span><span class="n">cerr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t {}!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt7fprintfERNSt7ostreamE10CStringRef7ArgList">
+<span id="fmt::fprintf__osR.CStringRef.ArgList"></span><span class="target" id="formatnamespacefmt_1adf9e00e4ddf5cad224a101333cfac9e8"></span>int <code class="descclassname">fmt::</code><code class="descname">fprintf</code><span class="sig-paren">(</span>std::ostream &amp;<em>os</em>, CStringRef <em>format_str</em>, <a class="reference internal" href="#_CPPv2N3fmt7ArgListE" title="fmt::ArgList">ArgList</a> <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt7fprintfERNSt7ostreamE10CStringRef7ArgList" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the stream <em>os</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fprintf</span><span class="p">(</span><span class="n">cerr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t %s!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
 </div>
 <div class="section" id="argument-formatters">
 <h3>Argument formatters<a class="headerlink" href="#argument-formatters" title="Permalink to this headline">¶</a></h3>
@@ -491,17 +520,6 @@ a POSIX extension for positional arguments.</p>
  </p>
 </dd></dl>
 
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;fprintf&#8221; with arguments (std::ostream&amp;, CStringRef, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">CStringRef</span><span class="p">,</span> <span class="n">ArgList</span><span class="p">)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span><span class="o">&gt;</span>
-  <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">CStringRef</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-</pre></div>
-</div>
-</div>
 <dl class="function">
 <dt id="_CPPv2N3fmt7sprintfE10CStringRef7ArgList">
 <span id="fmt::sprintf__CStringRef.ArgList"></span><span class="target" id="formatnamespacefmt_1a956d655d1291fb85203c58fadd4bba1a"></span>std::string <code class="descclassname">fmt::</code><code class="descname">sprintf</code><span class="sig-paren">(</span>CStringRef <em>format</em>, <a class="reference internal" href="#_CPPv2N3fmt7ArgListE" title="fmt::ArgList">ArgList</a> <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt7sprintfE10CStringRef7ArgList" title="Permalink to this definition">¶</a></dt>
