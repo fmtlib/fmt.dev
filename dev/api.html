@@ -585,7 +585,7 @@ such as <a class="reference internal" href="#_CPPv2N3fmt17BasicMemoryWriterE" ti
 </tbody>
 </table>
  </p>
-<p>Subclassed by <a class="reference internal" href="#formatclassfmt_1_1_basic_array_writer"><span class="std std-ref">fmt::BasicArrayWriter&lt; Char &gt;</span></a>, <a class="reference internal" href="#formatclassfmt_1_1_basic_memory_writer"><span class="std std-ref">fmt::BasicMemoryWriter&lt; Char, Allocator &gt;</span></a></p>
+<p>Subclassed by <a class="reference internal" href="#formatclassfmt_1_1_basic_array_writer"><span class="std std-ref">fmt::BasicArrayWriter&lt; Char &gt;</span></a>, <a class="reference internal" href="#formatclassfmt_1_1_basic_memory_writer"><span class="std std-ref">fmt::BasicMemoryWriter&lt; Char, Allocator &gt;</span></a>, <a class="reference internal" href="#formatclassfmt_1_1_basic_string_writer"><span class="std std-ref">fmt::BasicStringWriter&lt; Char &gt;</span></a></p>
 <div class="breathe-sectiondef container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
@@ -787,6 +787,66 @@ given size.</p>
 <span class="target" id="formatclassfmt_1_1_basic_array_writer_1ab8787cfc9b1500c0f2765074f64e5088"></span><code class="descname">BasicArrayWriter</code><span class="sig-paren">(</span>Char (&amp;<em>array</em>)[SIZE]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt16BasicArrayWriter16BasicArrayWriterERASIZE_4Char" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Constructs a <a class="reference internal" href="#_CPPv2N3fmt16BasicArrayWriterE" title="fmt::BasicArrayWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicArrayWriter</span></code></a> object for <em>array</em> of the
 size known at compile time.</p>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="formatclassfmt_1_1_basic_string_writer"></span><em class="property">template </em>&lt;<em class="property">typename</em> Char&gt;</dt>
+<dt id="_CPPv2N3fmt17BasicStringWriterE">
+<span id="fmt::BasicStringWriter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">BasicStringWriter</code><a class="headerlink" href="#_CPPv2N3fmt17BasicStringWriterE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>This class template provides operations for formatting and writing data
+into a character stream. The output is stored in <code class="docutils literal"><span class="pre">std::string</span></code> that grows
+dynamically.</p>
+<p>You can use one of the following typedefs for common character types
+and the standard allocator:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="35%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Definition</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>StringWriter</td>
+<td>BasicStringWriter&lt;char&gt;</td>
+</tr>
+<tr class="row-odd"><td>WStringWriter</td>
+<td>BasicStringWriter&lt;wchar_t&gt;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">StringWriter</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">out</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;The answer is &quot;</span> <span class="o">&lt;&lt;</span> <span class="mi">42</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>This will write the following output to the <code class="docutils literal"><span class="pre">out</span></code> object:</p>
+<div class="highlight-none"><div class="highlight"><pre><span></span>The answer is 42
+</pre></div>
+</div>
+<p>The output can be moved to an <code class="docutils literal"><span class="pre">std::string</span></code> with <code class="docutils literal"><span class="pre">out.move_to()</span></code>.</p>
+ </p>
+<p>Inherits from <a class="reference internal" href="#formatclassfmt_1_1_basic_writer"><span class="std std-ref">fmt::BasicWriter&lt; Char &gt;</span></a></p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt17BasicStringWriter17BasicStringWriterEv">
+<span id="fmt::BasicStringWriter::BasicStringWriter"></span><span class="target" id="formatclassfmt_1_1_basic_string_writer_1a7dd722d6571cf3813b47662b3e3b9324"></span><code class="descname">BasicStringWriter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt17BasicStringWriter17BasicStringWriterEv" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#_CPPv2N3fmt17BasicStringWriterE" title="fmt::BasicStringWriter"><code class="xref cpp cpp-class docutils literal"><span class="pre">fmt::BasicStringWriter</span></code></a> object.</p>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt17BasicStringWriter7move_toERNSt6stringE">
+<span id="fmt::BasicStringWriter::move_to__ssR"></span><span class="target" id="formatclassfmt_1_1_basic_string_writer_1a838fcb7ed712eb1036f5e6d6acbfb2c0"></span>void <code class="descname">move_to</code><span class="sig-paren">(</span>std::string &amp;<em>str</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt17BasicStringWriter7move_toERNSt6stringE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Moves the buffer content to <em>str</em> clearing the buffer.</p>
  </p>
 </dd></dl>
 
