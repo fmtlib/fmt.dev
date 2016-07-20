@@ -230,8 +230,8 @@ appropriate lifetimes.</p>
 
 <div class="section" id="date-and-time-formatting">
 <h3>Date and time formatting<a class="headerlink" href="#date-and-time-formatting" title="Permalink to this headline">¶</a></h3>
-<p>The library supports <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a>-like
-date and time formatting:</p>
+<p>The library supports <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a>-like date and time
+formatting:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;fmt/time.h&quot;</span><span class="cp"></span>
 
 <span class="n">std</span><span class="o">::</span><span class="kt">time_t</span> <span class="n">t</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">time</span><span class="p">(</span><span class="k">nullptr</span><span class="p">);</span>
@@ -251,7 +251,7 @@ formatting of user-defined types that have overloaded <code class="docutils lite
 <span class="k">class</span> <span class="nc">Date</span> <span class="p">{</span>
   <span class="kt">int</span> <span class="n">year_</span><span class="p">,</span> <span class="n">month_</span><span class="p">,</span> <span class="n">day_</span><span class="p">;</span>
 <span class="k">public</span><span class="o">:</span>
-  <span class="n">Date</span><span class="p">(</span><span class="kt">int</span> <span class="n">year</span><span class="p">,</span> <span class="kt">int</span> <span class="n">month</span><span class="p">,</span> <span class="kt">int</span> <span class="n">day</span><span class="p">)</span> <span class="o">:</span> <span class="n">year_</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">month_</span><span class="p">(</span><span class="n">month</span><span class="p">),</span> <span class="n">day_</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="n">Date</span><span class="p">(</span><span class="kt">int</span> <span class="n">year</span><span class="p">,</span> <span class="kt">int</span> <span class="n">month</span><span class="p">,</span> <span class="kt">int</span> <span class="n">day</span><span class="p">)</span><span class="o">:</span> <span class="n">year_</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">month_</span><span class="p">(</span><span class="n">month</span><span class="p">),</span> <span class="n">day_</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="p">{}</span>
 
   <span class="k">friend</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="n">os</span><span class="p">,</span> <span class="k">const</span> <span class="n">Date</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">os</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">year_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">month_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">day_</span><span class="p">;</span>
@@ -509,10 +509,13 @@ to the part of the format string being parsed for custom argument types.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="printf-formatting-functions">
-<h3>Printf formatting functions<a class="headerlink" href="#printf-formatting-functions" title="Permalink to this headline">¶</a></h3>
-<p>The following functions use <a class="reference external" href="http://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html">printf format string syntax</a> with
-a POSIX extension for positional arguments.</p>
+<div class="section" id="printf-formatting">
+<h3>Printf formatting<a class="headerlink" href="#printf-formatting" title="Permalink to this headline">¶</a></h3>
+<p>The header <code class="docutils literal"><span class="pre">fmt/printf.h</span></code> provides <code class="docutils literal"><span class="pre">printf</span></code>-like formatting functionality.
+The following functions use <a class="reference external" href="http://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html">printf format string syntax</a> with
+the POSIX extension for positional arguments. Unlike their standard
+counterparts, the <code class="docutils literal"><span class="pre">fmt</span></code> functions are type-safe and throw an exception if an
+argument type doesn&#8217;t match its format specification.</p>
 <dl class="function">
 <dt id="_CPPv2N3fmt6printfE10CStringRef7ArgList">
 <span id="fmt::printf__CStringRef.ArgList"></span><span class="target" id="formatnamespacefmt_1aa936ffccf89f4609cd9fce18825f0b14"></span>int <code class="descclassname">fmt::</code><code class="descname">printf</code><span class="sig-paren">(</span>CStringRef <em>format</em>, <a class="reference internal" href="#_CPPv2N3fmt7ArgListE" title="fmt::ArgList">ArgList</a> <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt6printfE10CStringRef7ArgList" title="Permalink to this definition">¶</a></dt>
@@ -546,6 +549,33 @@ a POSIX extension for positional arguments.</p>
  </p>
 </dd></dl>
 
+<dl class="class">
+<dt>
+<span class="target" id="formatclassfmt_1_1_printf_formatter"></span><em class="property">template </em>&lt;typename <em>Char</em>, typename <em>ArgFormatter</em> = internal::PrintfArgFormatter&lt;Char&gt;&gt;</dt>
+<dt id="_CPPv2N3fmt15PrintfFormatterE">
+<span id="fmt::PrintfFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">PrintfFormatter</code><a class="headerlink" href="#_CPPv2N3fmt15PrintfFormatterE" title="Permalink to this definition">¶</a></dt>
+<dd><p>This template formats data and writes the output to a writer. </p>
+<p>Inherits from fmt::internal::FormatterBase</p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt15PrintfFormatter15PrintfFormatterERK7ArgListR11BasicWriterI4CharE">
+<span id="fmt::PrintfFormatter::PrintfFormatter__ArgListCR.BasicWriter:Char:R"></span><span class="target" id="formatclassfmt_1_1_printf_formatter_1a08e27f97564935cbeac71fb8a0628f35"></span><code class="descname">PrintfFormatter</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv2N3fmt7ArgListE" title="fmt::ArgList">ArgList</a> &amp;<em>args</em>, <a class="reference internal" href="#_CPPv2N3fmt11BasicWriterE" title="fmt::BasicWriter">BasicWriter</a>&lt;Char&gt; &amp;<em>w</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt15PrintfFormatter15PrintfFormatterERK7ArgListR11BasicWriterI4CharE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <code class="docutils literal"><span class="pre">PrintfFormatter</span></code> object. References to the arguments and
+the writer are stored in the formatter object so make sure they have
+appropriate lifetimes.</p>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt15PrintfFormatter6formatE15BasicCStringRefI4CharE">
+<span id="fmt::PrintfFormatter::format__BasicCStringRef:Char:"></span><span class="target" id="formatclassfmt_1_1_printf_formatter_1a295c50e11b9a77720c8078f287040e5c"></span>void <code class="descname">format</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt15BasicCStringRefE" title="fmt::BasicCStringRef">BasicCStringRef</a>&lt;Char&gt; <em>format_str</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt15PrintfFormatter6formatE15BasicCStringRefI4CharE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats stored arguments and writes the output to the writer. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 </div>
 <div class="section" id="write-api">
@@ -553,8 +583,8 @@ a POSIX extension for positional arguments.</p>
 <p>The write API provides classes for writing formatted data into character
 streams. It is usually faster than the <a class="reference internal" href="#format-api">format API</a> but, as IOStreams,
 may result in larger compiled code size. The main writer class is
-<a class="reference internal" href="#_CPPv2N3fmt17BasicMemoryWriterE" title="fmt::BasicMemoryWriter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicMemoryWriter</span></code></a> which stores its output in a memory buffer and provides
-direct access to it. It is possible to create custom writers that
+<a class="reference internal" href="#_CPPv2N3fmt17BasicMemoryWriterE" title="fmt::BasicMemoryWriter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicMemoryWriter</span></code></a> which stores its output in a memory buffer and
+provides direct access to it. It is possible to create custom writers that
 store output elsewhere by subclassing <a class="reference internal" href="#_CPPv2N3fmt11BasicWriterE" title="fmt::BasicWriter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicWriter</span></code></a>.</p>
 <dl class="class">
 <dt>
@@ -1297,7 +1327,8 @@ A custom allocator class can be specified as a template argument to
 </div>
 <p>It is also possible to write a formatting function that uses a custom
 allocator:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">basic_string</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">char_traits</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">CustomAllocator</span><span class="o">&gt;</span> <span class="n">CustomString</span><span class="p">;</span>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">basic_string</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">char_traits</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">CustomAllocator</span><span class="o">&gt;</span>
+        <span class="n">CustomString</span><span class="p">;</span>
 
 <span class="n">CustomString</span> <span class="nf">format</span><span class="p">(</span><span class="n">CustomAllocator</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">CStringRef</span> <span class="n">format_str</span><span class="p">,</span>
                     <span class="n">fmt</span><span class="o">::</span><span class="n">ArgList</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
