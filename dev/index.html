@@ -161,9 +161,9 @@ alternative to C++ IOStreams.</p>
 <div class="panel panel-default">
   <div class="panel-heading">What users say:</div>
   <div class="panel-body">
-    Thanks for creating this library. It’s been a hole in C++ for a long time.
-    I’ve used both boost::format and loki::SPrintf, and neither felt like the
-    right answer. This does.
+    Thanks for creating this library. It’s been a hole in C++ for a long
+    time. I’ve used both boost::format and loki::SPrintf, and neither felt
+    like the right answer. This does.
   </div>
 </div><div class="section" id="format-api">
 <span id="id1"></span><h2>Format API<a class="headerlink" href="#format-api" title="Permalink to this headline">¶</a></h2>
@@ -223,8 +223,7 @@ literal operators, they must be made visible with the directive
 </div>
 <div class="section" id="write-api">
 <span id="id2"></span><h2>Write API<a class="headerlink" href="#write-api" title="Permalink to this headline">¶</a></h2>
-<p>The concatenation-based Write API (experimental) provides a
-<a class="reference external" href="http://zverovich.net/2013/09/07/integer-to-string-conversion-in-cplusplus.html">fast</a>
+<p>The concatenation-based Write API (experimental) provides a <a class="reference external" href="http://zverovich.net/2013/09/07/integer-to-string-conversion-in-cplusplus.html">fast</a>
 stateless alternative to IOStreams:</p>
 <div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">MemoryWriter</span> <span class="n">out</span><span class="p">;</span>
 <span class="n">out</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;The answer in hexadecimal is &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">hex</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
@@ -233,8 +232,9 @@ stateless alternative to IOStreams:</p>
 </div>
 <div class="section" id="safety">
 <span id="id3"></span><h2>Safety<a class="headerlink" href="#safety" title="Permalink to this headline">¶</a></h2>
-<p>The library is fully type safe, automatic memory management prevents buffer overflow,
-errors in format strings are reported using exceptions. For example, the code</p>
+<p>The library is fully type safe, automatic memory management prevents buffer
+overflow, errors in format strings are reported using exceptions. For example,
+the code</p>
 <div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">,</span> <span class="s">&quot;forty-two&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -252,36 +252,38 @@ formatted into a narrow string. You can use a wide format string instead:</p>
 </pre></div>
 </div>
 <p>For comparison, writing a wide character to <code class="docutils literal"><span class="pre">std::ostream</span></code> results in
-its numeric value being written to the stream (i.e. 1070 instead of letter &#8216;ю&#8217; which
-is represented by <code class="docutils literal"><span class="pre">L'\x42e'</span></code> if we use Unicode) which is rarely what is needed.</p>
+its numeric value being written to the stream (i.e. 1070 instead of letter &#8216;ю&#8217;
+which is represented by <code class="docutils literal"><span class="pre">L'\x42e'</span></code> if we use Unicode) which is rarely what is
+needed.</p>
 </div>
 <div class="section" id="portability">
 <span id="id4"></span><h2>Portability<a class="headerlink" href="#portability" title="Permalink to this headline">¶</a></h2>
-<p>The library is highly portable. Here is an incomplete list of operating systems and
-compilers where it has been tested and known to work:</p>
+<p>The library is highly portable. Here is an incomplete list of operating systems
+and compilers where it has been tested and known to work:</p>
 <ul class="simple">
-<li>64-bit (amd64) GNU/Linux with GCC 4.4.3, <a class="reference external" href="https://travis-ci.org/fmtlib/fmt">4.6.3</a>,
-4.7.2, 4.8.1 and Intel C++ Compiler (ICC) 14.0.2</li>
+<li>64-bit (amd64) GNU/Linux with GCC 4.4.3,
+<a class="reference external" href="https://travis-ci.org/fmtlib/fmt">4.6.3</a>, 4.7.2, 4.8.1, and Intel C++
+Compiler (ICC) 14.0.2</li>
 <li>32-bit (i386) GNU/Linux with GCC 4.4.3, 4.6.3</li>
 <li>Mac OS X with GCC 4.2.1 and Clang 4.2, 5.1.0</li>
 <li>64-bit Windows with Visual C++ 2010, 2013 and
 <a class="reference external" href="https://ci.appveyor.com/project/vitaut/fmt">2015</a></li>
 <li>32-bit Windows with Visual C++ 2010</li>
 </ul>
-<p>Although the library uses C++11 features when available, it also works with older
-compilers and standard library implementations. The only thing to keep in mind
-for C++98 portability:</p>
+<p>Although the library uses C++11 features when available, it also works with
+older compilers and standard library implementations. The only thing to keep in
+mind for C++98 portability:</p>
 <ul class="simple">
 <li>Variadic templates: minimum GCC 4.4, Clang 2.9 or VS2013. This feature allows
-the Format API to accept an unlimited number of arguments. With older compilers
-the maximum is 15.</li>
+the Format API to accept an unlimited number of arguments. With older
+compilers the maximum is 15.</li>
 <li>User-defined literals: minimum GCC 4.7, Clang 3.1 or VS2015. The suffixes
 <code class="docutils literal"><span class="pre">_format</span></code> and <code class="docutils literal"><span class="pre">_a</span></code> are functionally equivalent to the functions
 <code class="docutils literal"><span class="pre">fmt::format</span></code> and <code class="docutils literal"><span class="pre">fmt::arg</span></code>.</li>
 </ul>
-<p>The output of all formatting functions is consistent across platforms. In particular,
-formatting a floating-point infinity always gives <code class="docutils literal"><span class="pre">inf</span></code> while the output
-of <code class="docutils literal"><span class="pre">printf</span></code> is platform-dependent in this case. For example,</p>
+<p>The output of all formatting functions is consistent across platforms. In
+particular, formatting a floating-point infinity always gives <code class="docutils literal"><span class="pre">inf</span></code> while the
+output of <code class="docutils literal"><span class="pre">printf</span></code> is platform-dependent in this case. For example,</p>
 <div class="code highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">infinity</span><span class="p">());</span>
 </pre></div>
 </div>
@@ -289,9 +291,10 @@ of <code class="docutils literal"><span class="pre">printf</span></code> is plat
 </div>
 <div class="section" id="ease-of-use">
 <span id="id7"></span><h2>Ease of Use<a class="headerlink" href="#ease-of-use" title="Permalink to this headline">¶</a></h2>
-<p>fmt has a small self-contained code base consisting of a single header file
-and a single source file and no external dependencies. A permissive BSD <a class="reference external" href="https://github.com/fmtlib/fmt#license">license</a> allows using the library both
-in open-source and commercial projects.</p>
+<p>fmt has a small self-contained code base with the core library consisting of
+a single header file and a single source file and no external dependencies.
+A permissive BSD <a class="reference external" href="https://github.com/fmtlib/fmt#license">license</a> allows
+using the library both in open-source and commercial projects.</p>
 <a class="btn btn-success" href="https://github.com/fmtlib/fmt">GitHub Repository</a>
 
 <div class="section footer">
