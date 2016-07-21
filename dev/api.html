@@ -484,7 +484,7 @@ to the part of the format string being parsed for custom argument types.</p>
 <dl class="function">
 <dt id="_CPPv2N3fmt17BasicArgFormatter12visit_customEN8internal3Arg11CustomValueE">
 <span id="fmt::BasicArgFormatter::visit_custom__internal::Arg::CustomValue"></span><span class="target" id="formatclassfmt_1_1_basic_arg_formatter_1ae0aab0f90c9c93e3513203fc84c2c4dc"></span>void <code class="descname">visit_custom</code><span class="sig-paren">(</span>internal::Arg::CustomValue <em>c</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt17BasicArgFormatter12visit_customEN8internal3Arg11CustomValueE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Formats argument of a custom (user-defined) type. </p>
+<dd><p>Formats an argument of a custom (user-defined) type. </p>
 </dd></dl>
 
 </div>
@@ -551,7 +551,7 @@ argument type doesn&#8217;t match its format specification.</p>
 
 <dl class="class">
 <dt>
-<span class="target" id="formatclassfmt_1_1_printf_formatter"></span><em class="property">template </em>&lt;typename <em>Char</em>, typename <em>ArgFormatter</em> = internal::PrintfArgFormatter&lt;Char&gt;&gt;</dt>
+<span class="target" id="formatclassfmt_1_1_printf_formatter"></span><em class="property">template </em>&lt;typename <em>Char</em>, typename <em>ArgFormatter</em> = <a class="reference internal" href="#formatclassfmt_1_1_printf_arg_formatter"><span class="std std-ref">PrintfArgFormatter</span></a>&lt;Char&gt;&gt;</dt>
 <dt id="_CPPv2N3fmt15PrintfFormatterE">
 <span id="fmt::PrintfFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">PrintfFormatter</code><a class="headerlink" href="#_CPPv2N3fmt15PrintfFormatterE" title="Permalink to this definition">¶</a></dt>
 <dd><p>This template formats data and writes the output to a writer. </p>
@@ -571,6 +571,87 @@ appropriate lifetimes.</p>
 <dt id="_CPPv2N3fmt15PrintfFormatter6formatE15BasicCStringRefI4CharE">
 <span id="fmt::PrintfFormatter::format__BasicCStringRef:Char:"></span><span class="target" id="formatclassfmt_1_1_printf_formatter_1a295c50e11b9a77720c8078f287040e5c"></span>void <code class="descname">format</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt15BasicCStringRefE" title="fmt::BasicCStringRef">BasicCStringRef</a>&lt;Char&gt; <em>format_str</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt15PrintfFormatter6formatE15BasicCStringRefI4CharE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formats stored arguments and writes the output to the writer. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter"></span><em class="property">template </em>&lt;typename <em>Impl</em>, typename <em>Char</em>&gt;</dt>
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatterE">
+<span id="fmt::BasicPrintfArgFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">BasicPrintfArgFormatter</code><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatterE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>A <code class="docutils literal"><span class="pre">printf</span></code> argument formatter based on the <a class="reference external" href="http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern">curiously recurring template
+pattern</a>.</p>
+<p>To use <a class="reference internal" href="#_CPPv2N3fmt23BasicPrintfArgFormatterE" title="fmt::BasicPrintfArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicPrintfArgFormatter</span></code></a> define a subclass that implements some
+or all of the visit methods with the same signatures as the methods in
+<a class="reference internal" href="#_CPPv2N3fmt10ArgVisitorE" title="fmt::ArgVisitor"><code class="xref cpp cpp-any docutils literal"><span class="pre">ArgVisitor</span></code></a>, for example, <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor9visit_intEi" title="fmt::ArgVisitor::visit_int"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_int()</span></code></a>.
+Pass the subclass as the <em>Impl</em> template parameter. When a formatting
+function processes an argument, it will dispatch to a visit method
+specific to the argument type. For example, if the argument type is
+<code class="docutils literal"><span class="pre">double</span></code> then the <a class="reference internal" href="#_CPPv2N3fmt10ArgVisitor12visit_doubleEd" title="fmt::ArgVisitor::visit_double"><code class="xref cpp cpp-any docutils literal"><span class="pre">visit_double()</span></code></a> method of a subclass
+will be called. If the subclass doesn&#8217;t contain a method with this signature,
+then a corresponding method of <a class="reference internal" href="#_CPPv2N3fmt23BasicPrintfArgFormatterE" title="fmt::BasicPrintfArgFormatter"><code class="xref cpp cpp-any docutils literal"><span class="pre">BasicPrintfArgFormatter</span></code></a> or its
+superclass will be called.</p>
+ </p>
+<p>Inherits from fmt::internal::ArgFormatterBase&lt; Impl, Char &gt;</p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatter23BasicPrintfArgFormatterER11BasicWriterI4CharER10FormatSpec">
+<span id="fmt::BasicPrintfArgFormatter::BasicPrintfArgFormatter__BasicWriter:Char:R.FormatSpecR"></span><span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter_1a3e148332a5cbd6bee951ba8ad2b248b7"></span><code class="descname">BasicPrintfArgFormatter</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt11BasicWriterE" title="fmt::BasicWriter">BasicWriter</a>&lt;Char&gt; &amp;<em>writer</em>, FormatSpec &amp;<em>spec</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatter23BasicPrintfArgFormatterER11BasicWriterI4CharER10FormatSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs an argument formatter object.
+<em>writer</em> is a reference to the output writer and <em>spec</em> contains format
+specifier information for standard argument types.</p>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatter10visit_boolEb">
+<span id="fmt::BasicPrintfArgFormatter::visit_bool__b"></span><span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter_1ad7e0c109d588a2e2be9d90f7deee59a2"></span>void <code class="descname">visit_bool</code><span class="sig-paren">(</span>bool <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatter10visit_boolEb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats an argument of type <code class="docutils literal"><span class="pre">bool</span></code>. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatter10visit_charEi">
+<span id="fmt::BasicPrintfArgFormatter::visit_char__i"></span><span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter_1a97f26086d50a4553280fbe831ef7e947"></span>void <code class="descname">visit_char</code><span class="sig-paren">(</span>int <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatter10visit_charEi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats a character. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatter13visit_cstringEPKc">
+<span id="fmt::BasicPrintfArgFormatter::visit_cstring__cCP"></span><span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter_1a4d5af89db6690ef2507ffc8cc8b38497"></span>void <code class="descname">visit_cstring</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatter13visit_cstringEPKc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats a null-terminated C string. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatter13visit_pointerEPKv">
+<span id="fmt::BasicPrintfArgFormatter::visit_pointer__voidCP"></span><span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter_1a61962abc13a85ba6a69e839fb06270c5"></span>void <code class="descname">visit_pointer</code><span class="sig-paren">(</span><em class="property">const</em> void *<em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatter13visit_pointerEPKv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats a pointer. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt23BasicPrintfArgFormatter12visit_customEN8internal3Arg11CustomValueE">
+<span id="fmt::BasicPrintfArgFormatter::visit_custom__internal::Arg::CustomValue"></span><span class="target" id="formatclassfmt_1_1_basic_printf_arg_formatter_1a4bc1a6a180bd532d300c953f0dbafc1e"></span>void <code class="descname">visit_custom</code><span class="sig-paren">(</span>internal::Arg::CustomValue <em>c</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt23BasicPrintfArgFormatter12visit_customEN8internal3Arg11CustomValueE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Formats an argument of a custom (user-defined) type. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<span class="target" id="formatclassfmt_1_1_printf_arg_formatter"></span><em class="property">template </em>&lt;<em class="property">typename</em> Char&gt;</dt>
+<dt id="_CPPv2N3fmt18PrintfArgFormatterE">
+<span id="fmt::PrintfArgFormatter"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">PrintfArgFormatter</code><a class="headerlink" href="#_CPPv2N3fmt18PrintfArgFormatterE" title="Permalink to this definition">¶</a></dt>
+<dd><p>The default printf argument formatter. </p>
+<p>Inherits from <a class="reference internal" href="#formatclassfmt_1_1_basic_printf_arg_formatter"><span class="std std-ref">fmt::BasicPrintfArgFormatter&lt; PrintfArgFormatter&lt; Char &gt;, Char &gt;</span></a></p>
+<div class="breathe-sectiondef container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt18PrintfArgFormatter18PrintfArgFormatterER11BasicWriterI4CharER10FormatSpec">
+<span id="fmt::PrintfArgFormatter::PrintfArgFormatter__BasicWriter:Char:R.FormatSpecR"></span><span class="target" id="formatclassfmt_1_1_printf_arg_formatter_1aa4b9526d3c614205d607f63918c33245"></span><code class="descname">PrintfArgFormatter</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt11BasicWriterE" title="fmt::BasicWriter">BasicWriter</a>&lt;Char&gt; &amp;<em>w</em>, FormatSpec &amp;<em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt18PrintfArgFormatter18PrintfArgFormatterER11BasicWriterI4CharER10FormatSpec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an argument formatter object. </p>
 </dd></dl>
 
 </div>
