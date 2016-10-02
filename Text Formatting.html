@@ -396,6 +396,7 @@ arguments, for example:
 <code>namespace std {
   class format_error;
 
+  class format_arg;
   class format_args;
 
   template &lt;class Char&gt;
@@ -826,9 +827,59 @@ exceptions to report errors from the formatting library.
 </dd>
 </dl>
 
+<h3>Class <code>format_arg</code></h3>
+
+<pre>
+<code>class format_arg {
+public:
+  TODO: operator bool
+};</code>
+</pre>
+
+<p>
+An object of type <code>format_arg</code> represents a reference to a formatting
+argument.
+</p>
+
 <h3>Class <code>format_args</code></h3>
 
-<p>TODO</p>
+<pre>
+<code>class format_args {
+public:
+  typedef size_t size_type;
+
+  format_args() noexcept;
+
+  // TODO: ctor from arg store
+
+  format_arg operator[](size_type i) const;
+};</code>
+</pre>
+
+<p>
+An object of type <code>format_args</code> provides access to formatting
+arguments. Copying a <code>format_args</code> object does not copy the
+arguments.
+</p>
+
+<dl>
+<dt><code>format_args() noexcept;</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs an empty <code>format_args</code> object.</p>
+<p><i>Postcondition</i>: <code>!(*this)[0]</code>.</p>
+</dd>
+</dl>
+
+<dl>
+<dt><code>format_arg operator[](size_type i) const;</code></dt>
+<dd>
+<p><i>Requires</i>: <code>i &lt;=</code> the number of formatting arguments
+represented by the <code>format_args</code> object.</p>
+<p><i>Returns</i>: A <code>format_arg</code> object that represents an argument
+at index <code>i</code> if <code>i &lt;</code> the number of arguments.
+Otherwise, returns an empty <code>format_arg</code> object.</p>
+</dd>
+</dl>
 
 <h3>Function template <code>format</code></h3>
 
