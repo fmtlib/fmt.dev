@@ -242,6 +242,35 @@ formatting:</p>
 <p>The format string syntax is described in the documentation of
 <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a>.</p>
 </div>
+<div class="section" id="formatting-user-defined-types">
+<h3>Formatting User-Defined types<a class="headerlink" href="#formatting-user-defined-types" title="Permalink to this headline">¶</a></h3>
+<p>A custom <code class="docutils literal"><span class="pre">format_arg</span></code> function may be implemented and used to format any user-
+defined type. That is how date and time formatting described in the previous
+section is implemented in <code class="file docutils literal"><span class="pre">fmt/time.h</span></code>. The following example shows how to implement custom formatting for a user-defined structure.</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">MyStruct</span> <span class="p">{</span> <span class="kt">double</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">;</span> <span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">format_arg</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">BasicFormatter</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">f</span><span class="p">,</span>
+    <span class="k">const</span> <span class="kt">char</span> <span class="o">*&amp;</span><span class="n">format_str</span><span class="p">,</span> <span class="k">const</span> <span class="n">MyStruct</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">f</span><span class="p">.</span><span class="n">writer</span><span class="p">().</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;[MyStruct: a={:.1f}, b={:.2f}, c={:.3f}, d={:.4f}]&quot;</span><span class="p">,</span>
+        <span class="n">s</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">b</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">c</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">d</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">MyStruct</span> <span class="n">m</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">};</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;m={}&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">);</span>
+    <span class="c1">// s == &quot;m=[MyStruct: a=1.0, b=2.00, c=3.000, d=4.0000]&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note in the example above the <code class="docutils literal"><span class="pre">format_arg</span></code> function ignores the contents of
+<code class="docutils literal"><span class="pre">format_str</span></code> so the type will always be formatted as specified. See
+<code class="docutils literal"><span class="pre">format_arg</span></code> in <code class="file docutils literal"><span class="pre">fmt/time.h</span></code> for an advanced example of how to use
+the <code class="docutils literal"><span class="pre">format_str</span></code> argument to customize the formatted output.</p>
+<p>This section shows how to define a custom format function for a user-defined
+type. The next section describes how to get <code class="docutils literal"><span class="pre">fmt</span></code> to use a conventional stream
+output <code class="docutils literal"><span class="pre">operator&lt;&lt;</span></code> when one is defined for a user-defined type.</p>
+</div>
 <div class="section" id="std-ostream-support">
 <h3><code class="docutils literal"><span class="pre">std::ostream</span></code> support<a class="headerlink" href="#std-ostream-support" title="Permalink to this headline">¶</a></h3>
 <p>The header <code class="docutils literal"><span class="pre">fmt/ostream.h</span></code> provides <code class="docutils literal"><span class="pre">std::ostream</span></code> support including
