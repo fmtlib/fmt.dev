@@ -296,7 +296,7 @@ for <code>put_time</code>-like date and time formatting
 std::string date = std::format("The date is {0:%Y-%m-%d}.", *std::localtime(&amp;t));</code>
 </pre>
 
-<p>by providing an overload of <code>std::format_arg</code> for
+<p>by providing an overload of <code>std::format_value</code> for
 <code>std::tm</code>:</p>
 
 <pre class="example">
@@ -396,15 +396,18 @@ arguments, for example:
 
 <pre>
 <code>namespace std {
-  class format_arg;
+  template &lt;class Char&gt;
+  class basic_format_arg;
 
-  template &lt;class Visitor&gt;
-  <i>see below</i> visit(Visitor&amp;&amp; vis, format_arg arg);
+  typedef basic_format_arg&lt;char&gt; format_arg;
+
+  template &lt;class Visitor, class Char&gt;
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Char&gt; arg);
 
   template &lt;class Context, class ...Args&gt;
   class format_arg_store;
 
-  template &lt;class Context&gt;
+  template &lt;class Context, class Char&gt;
   class basic_format_args;
 
   template &lt;class Char&gt;
@@ -412,7 +415,7 @@ arguments, for example:
 
   typedef basic_format_context&lt;char&gt; format_context;
 
-  typedef basic_format_args&lt;format_context&gt; format_args;
+  typedef basic_format_args&lt;format_context, char&gt; format_args;
 
   template &lt;class ...Args&gt;
   format_arg_store&lt;format_context, Args...&gt;
@@ -868,9 +871,16 @@ format string.</p>
 <h3>Formatting argument</code></h3>
 
 <pre>
-<code>class format_arg {
+<code>template &lt;class Char&gt;
+class basic_format_arg {
 public:
   explicit operator bool() const noexcept;
+
+  bool is_integral() const;
+  bool is_numeric() const;
+  bool is_pointer() const;
+  // TODO: document is_* functions and say that they are O(1), indep of the
+  // number of possible types that can be stored in basic_format_arg.
 };</code>
 </pre>
 
@@ -881,10 +891,15 @@ argument. It can hold a value of one of the following types:
 <li><code>int</code>
 <li><code>unsigned int</code>
 <li>integral types larger than <code>int</code>
+<li><code>bool</code>
+<li><code>Char</code>
 <li><code>double</code>
 <li>floating-point types larger than <code>double</code>
+<li><code>const char*</code>
 <li><code>string_view</code>
-<li>TODO
+<li><code>basic_string_view&lt;Char&gt;</code> if different from <code>string_view</code>
+<li><code>const void*</code>
+<li>reference to an object of a user-defined type (implementation-defined)
 </ul>
 The value can be accessed via the visitation interface defined in the next
 section.
@@ -922,8 +937,8 @@ types.
 the number of possible values types of a formatting argument.
 </p>
 <p><i>Example:</i><pre>
-<code>auto int_value = visit([](auto&amp;&amp; value) {
-  if constexpr (std::is_integral_v&lt;delctype(value)&gt)
+<code>auto uint_value = visit([](auto value) {
+  if constexpr (std::is_unsigned_v&lt;delctype(value)&gt;)
     return value;
   return 0;
 }, arg);</code>
