@@ -874,6 +874,8 @@ format string.</p>
 <code>template &lt;class Char&gt;
 class basic_format_arg {
 public:
+  basic_format_arg();
+
   explicit operator bool() const noexcept;
 
   bool is_integral() const;
@@ -883,8 +885,9 @@ public:
 </pre>
 
 <p>
-An object of type <code>format_arg</code> represents a reference to a formatting
-argument. It can hold a value of one of the following types:
+An object of type <code>basic_format_arg&lt;Char&gt;</code> represents a
+reference to a formatting argument. It can hold a value of one of the following
+types:
 <ul>
 <li><code>int</code>
 <li><code>unsigned int</code>
@@ -895,15 +898,25 @@ argument. It can hold a value of one of the following types:
 <li>floating-point types larger than <code>double</code>
 <li><code>const char*</code>
 <li><code>string_view</code>
-<li><code>basic_string_view&lt;Char&gt;</code> if different from <code>string_view</code>
+<li><code>basic_string_view&lt;Char&gt;</code> if different from
+    <code>string_view</code>
 <li><code>const void*</code>
 <li>reference to an object of a user-defined type (implementation-defined)
+<li><code>std::monostate</code> representing an empty state, i.e. when the
+    object doesn't refer to an argument
 </ul>
 The value can be accessed via the visitation interface defined in the next
 section.
 </p>
 
 <dl>
+<dt><code>basic_format_arg();</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
+doesn't refer to an argument.
+</p>
+<p><i>Postcondition</i>: <code>!(*this)</code>.</p>
+</dd>
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> refers to an
@@ -928,7 +941,7 @@ argument of type <code>const void*</code>.</p>
 
 <p><i>Complexity:</i> The invocation of <code>is_integral</code>,
 <code>is_numeric</code>, and <code>is_pointer</code> does not depend on
-the number of possible values types of a formatting argument.
+the number of possible value types of a formatting argument.
 </p>
 
 <h3>Formatting argument visitation</h3>
