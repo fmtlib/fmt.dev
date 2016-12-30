@@ -396,13 +396,11 @@ arguments, for example:
 
 <pre>
 <code>namespace std {
-  template &lt;class Char&gt;
+  template &lt;class Context&gt;
   class basic_format_arg;
 
-  typedef basic_format_arg&lt;char&gt; format_arg;
-
-  template &lt;class Visitor, class Char&gt;
-  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Char&gt; arg);
+  template &lt;class Visitor, class Context&gt;
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
   template &lt;class Context, class ...Args&gt;
   class format_arg_store;
@@ -414,7 +412,7 @@ arguments, for example:
   class basic_format_context;
 
   typedef basic_format_context&lt;char&gt; format_context;
-
+  typedef basic_format_arg&lt;format_context&gt; format_arg;
   typedef basic_format_args&lt;format_context, char&gt; format_args;
 
   template &lt;class ...Args&gt;
@@ -871,7 +869,7 @@ format string.</p>
 <h3>Formatting argument</code></h3>
 
 <pre>
-<code>template &lt;class Char&gt;
+<code>template &lt;class Context&gt;
 class basic_format_arg {
 public:
   basic_format_arg();
@@ -885,7 +883,7 @@ public:
 </pre>
 
 <p>
-An object of type <code>basic_format_arg&lt;Char&gt;</code> represents a
+An object of type <code>basic_format_arg&lt;Context&gt;</code> represents a
 reference to a formatting argument. It can hold a value of one of the following
 types:
 <ul>
@@ -905,6 +903,7 @@ types:
 <li><code>std::monostate</code> representing an empty state, i.e. when the
     object doesn't refer to an argument
 </ul>
+where <code>Char</code> is <code>typename Context::char_type</code>.
 The value can be accessed via the visitation interface defined in the next
 section.
 </p>
@@ -947,8 +946,8 @@ the number of possible value types of a formatting argument.
 <h3>Formatting argument visitation</h3>
 
 <dl>
-<dt><code>template &lt;class Visitor&gt;<br>
-  <i>see below</i> visit(Visitor&amp;&amp; vis, format_arg arg);</code></dt>
+<dt><code>template &lt;class Visitor, class Context&gt;<br>
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></dt>
 <dd>
 <p><i>Requires:</i>
 The expression in the Effects section shall be a valid expression of the same
