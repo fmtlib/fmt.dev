@@ -423,12 +423,30 @@ arguments, for example:
   format_arg_store&lt;Context, Args...&gt;
       make_xformat_args(const Args&amp;... args);
 
+  template &lt;class Char&gt;
+  class basic_writer;
+
   class format_error;
 
   template &lt;class ...Args&gt;
   string format(const char* fmt, const Args&amp;... args);
 
   string vformat(const char* fmt, format_args args);
+
+  namespace fmt {
+    template &lt;class T, format_spec_tag&gt;
+    class format_spec {
+    public:
+      using value_type = T;
+
+      explicit format_spec(T value);
+
+      T value() const;
+    };
+
+    template &lt;class Char&gt;
+    using fill_spec = format_spec&lt;Char, fill_tag&gt;;
+  }
 }</code>
 </pre>
 
@@ -866,7 +884,7 @@ format string.</p>
 </dd>
 </dl>
 
-<h3>Formatting argument</code></h3>
+<h3>Formatting argument</h3>
 
 <pre>
 <code>template &lt;class Context&gt;
@@ -1103,9 +1121,84 @@ passed to the constructor of this <code>basic_format_context</code> object.</p>
 </dd>
 </dl>
 
-TODO: writer
+<h3>Format specifiers</h3>
 
-<h3>Class <code>format_error</code></h3>
+<pre><code>namespace fmt {
+  enum format_spec_tag {fill_tag, align_tag, width_tag, precision_tag, type_tag};
+}</code>
+</pre>
+
+Format specifier tags are used to distinguish between different format
+specifiers.
+
+<pre>
+<code>namespace fmt {
+  template &lt;class T, format_spec_tag&gt;
+  class format_spec {
+  public:
+    using value_type = T;
+
+    explicit format_spec(T value);
+
+    T value() const;
+  };
+
+  template &lt;class Char&gt;
+  using fill_spec = format_spec&lt;Char, fill_tag&gt;;
+}</code>
+</pre>
+
+<p>
+The <code>format_spec&lt;T, format_spec_tag&gt;</code> class represents a format
+specifier.
+</p>
+
+<dl>
+<dt><code>explicit format_spec(T value);</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs an object of class <code>format_spec</code>
+and initializes the stored value with the one passed as an argument.
+</p>
+<p><i>Postcondition</i>: <code>value() == value</code>.</p>
+</dd>
+<dt><code>T value();</code></dt>
+<dd>
+<p><i>Effects</i>: Returns the value of the format specifier.</p>
+</dd>
+</dl>
+
+TODO: document fill_spec
+
+<h3>Class template <code>basic_writer</code></h3>
+
+<pre>
+<code>template &lt;class Char&gt;
+class basic_writer {
+public:
+  basic_writer();
+
+  template &lt;class T, class... FormatSpecs&gt;
+  void write(const T&amp; value, FormatSpecs... specs);
+};</code>
+</pre>
+
+<p>
+The class <code>basic_writer&lt;Char&gt;</code> provides output operations on
+character buffers.
+</p>
+
+<dl>
+<dt><code>template &lt;class T, class... FormatSpecs&gt;<br>
+void write(const T&amp; value, FormatSpecs... specs);</code></dt>
+<dd>
+<p><i>Effects</i>: Formats <code>value</code> according to the format specifiers
+<code>specs</code> and writes the output to the buffer.</p>
+</dd>
+</dl>
+
+TODO: specify which types (including specs) basic_writer takes
+
+<h3>Error reporting</h3>
 
 <pre>
 <code>class format_error : public std::runtime_error {
