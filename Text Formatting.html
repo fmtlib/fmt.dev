@@ -129,7 +129,7 @@ Victor Zverovich, victor.zverovich@gmail.com
 <h2><a name="Introduction">Introduction</a></h2>
 
 <p>
-This paper proposes a new text formatting functionality that can be used as a
+This paper proposes a new text formatting library that can be used as a
 safe and extensible alternative to the <code>printf</code> family of functions.
 It is intended to complement the existing C++ I/O streams library and reuse
 some of its infrastructure such as overloaded insertion operators for
@@ -282,7 +282,7 @@ provide functions that do parsing and formatting for such types.
 <p>The general syntax of a replacement field in a format string is
 
 <pre>
-<code>replacement-field ::=  '{' [arg-id] [':' format-spec] '}'</code>
+<code>replacement-field ::= '{' [arg-id] [':' format-spec] '}'</code>
 </pre>
 
 <p>
@@ -300,7 +300,7 @@ std::string date = std::format("The date is {0:%Y-%m-%d}.", *std::localtime(&amp
 <code>std::tm</code>:</p>
 
 <pre class="example">
-<code>void format_value(std::writer &amp;w, const std::tm &amp;tm, std::format_context &amp;ctx);</code>
+<code>void format_value(std::writer&amp; w, const std::tm&amp; tm, std::format_context&amp; ctx);</code>
 </pre>
 
 <h3><a name="Safety">Safety</a></h3>
@@ -384,7 +384,20 @@ arguments, for example:
 
 <h3><a name="Locale">Performance</a></h3>
 
-<p>TODO</p>
+<p>
+For performance reasons this proposal tries to minimize the number of virtual
+function calls and dynamic memory allocations required by design. In particular,
+if formatting output can fit into a fixed-size buffer allocated on stack, it
+should be possible to avoid them altogether by using a suitable API.
+</p>
+
+<p>
+To achieve this requirement we introduce a buffer abstraction represented by
+the <code>basic_formatbuf</code> template. A buffer is a contiguous block of
+memory that can be accessed directly and can optionally grow. Only one virtual
+function, <code>grow</code>, needs to be called during formatting and only
+when the buffer is not large enough.
+</p>
 
 <h3><a name="Footprint">Binary footprint</a></h3>
 
@@ -434,6 +447,8 @@ arguments, for example:
   string vformat(const char* fmt, format_args args);
 
   namespace fmt {
+    enum format_spec_tag {fill_tag, align_tag, width_tag, precision_tag, type_tag};
+
     template &lt;class T, format_spec_tag&gt;
     class format_spec {
     public:
@@ -1142,9 +1157,6 @@ specifiers.
 
     T value() const;
   };
-
-  template &lt;class Char&gt;
-  using fill_spec = format_spec&lt;Char, fill_tag&gt;;
 }</code>
 </pre>
 
@@ -1167,7 +1179,17 @@ and initializes the stored value with the one passed as an argument.
 </dd>
 </dl>
 
-TODO: document fill_spec
+<pre><code>namespace fmt {
+  template &lt;class Char&gt;
+  using fill_spec = format_spec&lt;Char, fill_tag&gt;;
+  using align_spec = format_spec&lt;alignment, align_tag&gt;;
+  using width_spec = format_spec&lt;int, width_tag&gt;;
+  using precision_spec = format_spec&lt;int, precision_tag&gt;;
+  using type_spec = format_spec&lt;char, type_tag&gt;;
+}</code>
+</pre>
+
+TODO: alignment
 
 <h3>Class template <code>basic_writer</code></h3>
 
