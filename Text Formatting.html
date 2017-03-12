@@ -415,8 +415,8 @@ improve performance.
 
 <p>
 Most of the formatting API is defined in a sub-namespace to reduce the
-probability of name clashes when user code employs `using namespace std`.
-Otherwise it should not break any existing C++ code.
+probability of name clashes when user code employs <code>using namespace
+std</code>. Otherwise it should not break any existing C++ code.
 </p>
 
 <h2><a name="Wording">Proposed wording</a></h2>
@@ -1163,9 +1163,9 @@ public:
   void append(InputIterator first, InputIterator last);
 
 protected:
-  basic_buffer();
+  basic_buffer() noexcept;
 
-  void set(Char* s, size_type n);
+  void set(Char* s, size_type n) noexcept;
 
   virtual void grow(size_type n) = 0;
 };</code>
@@ -1182,12 +1182,12 @@ all <code>0 &lt;= n &lt; d.size()</code>.
 </p>
 
 <dl>
-<dt><code>basic_buffer();</code></dt>
+<dt><code>basic_buffer() noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Constructs an empty buffer.</p>
   <p><i>Postcondition</i>: <code>size() == 0</code>.</p>
 </dd>
-<dt><code>set(Char* s, size_type n);</code></dt>
+<dt><code>set(Char* s, size_type n) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Sets data and capacity.</p>
   <p><i>Postcondition</i>: <code>data() == s</code> and
@@ -1231,17 +1231,37 @@ all <code>0 &lt;= n &lt; d.size()</code>.
   <code>n</code> in a way that is defined separately for each class derived
   from <code>basic_buffer</code>.</p>
   <p><i>Throws</i>: <code>length_error</code> if <code>n</code> exceeds a limit
-  defined by a derived class or if the latter does not support reallocation.</p>
+  defined by a derived class, in particular, if the latter has a fixed capacity.
+  </p>
 </dd>
-<dt><code>Char* data() noexcept;</code></dt>
-<dt><code>const Char* data() const noexcept;</code></dt>
+<dt><code>Char* data() noexcept;<br>
+  const Char* data() const noexcept;</code></dt>
 <dd>
   <p><i>Returns</i>: A pointer such that <code>[data(), data() + size())</code>
   is a valid range.</p>
 </dd>
+<dt><code>void push_back(const Char&amp; x);</code></dt>
+<dd>
+  <p><i>Effects</i>: Equivalent to <code>append(&amp;x, &amp;x + 1)</code>.</p>
+</dd>
+<dt><code>template &lt;class InputIterator&gt;<br>
+  void append(InputIterator first, InputIterator last);</code>
+  <p>Let <code>n</code> be the number of elements in the range
+    <code>[first, last)</code>.</p>
+</dt>
+<dd>
+  <p><i>Requires</i>: <code>[first, last)</code> is a valid range.</p>
+  <p><i>Throws</i>: <code>length_error</code> if <code>size() + n &gt;
+  capacity()</code> and exceeds the capacity limit defined by a derived
+  class.</p>
+  <p><i>Effects</i>: The function replaces the buffer controlled by
+  <code>*this</code> with a buffer of length <code>size() + n</code> whose first
+  <code>size()</code> elements are a copy of the original buffer controlled by
+  <code>*this</code> and whose remaining elements are a copy of the elements
+  in the range.
+  </p>
+</dd>
 </dl>
-
-TODO: document push_back and append
 
 <h3>Error reporting</h3>
 
@@ -1261,13 +1281,16 @@ exceptions to report errors from the formatting library.
 <dl>
 <dt><code>format_error(const string&amp; what_arg);</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs an object of class <code>format_error</code>.</p>
-<p><i>Postcondition</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.</p>
+  <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
+  </p>
+  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
+  </p>
 </dd>
 <dt><code>format_error(const char* what_arg);</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs an object of class <code>format_error</code>.</p>
-<p><i>Postcondition</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
+  <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
+  </p>
+  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
 </dd>
 </dl>
 
