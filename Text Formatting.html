@@ -296,12 +296,16 @@ for <code>put_time</code>-like date and time formatting
 std::string date = std::format("The date is {0:%Y-%m-%d}.", *std::localtime(&amp;t));</code>
 </pre>
 
-<p>by providing an overload of <code>std::format_value</code> for
+<p>by providing an overload of <code>format_value</code> for
 <code>std::tm</code>:</p>
 
 <pre class="example">
 <code>void format_value(std::fmt::buffer&amp; buf, const std::tm&amp; tm, std::fmt::context&amp; ctx);</code>
 </pre>
+
+The <code>format_value</code> function parses the portion of the format
+string corresponding to the current argument and formats the value into
+<code>buf</code> using <code>format_to</code> or the buffer API.
 
 <h3><a name="Safety">Safety</a></h3>
 
@@ -902,6 +906,44 @@ format string.</p>
 </dd>
 </dl>
 
+<dl>
+<dt>
+<code>template &lt;class ...Args&gt;<br>
+&nbsp;&nbsp;void format_to(buffer&amp; buf, const char* fmt, const Args&amp;... args);</code>
+</dt>
+<dd>
+
+<p><i>Requires</i>: <code>fmt</code> shall not be a null pointer.</p>
+<p>
+<i>Effects</i>: The function appends to <code>buf</code> the format string
+<code>fmt</code> with each replacement field substituted with the character
+representation of the argument it refers to, formatted according to the
+specification given in the field.
+</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a valid
+format string.</p>
+</dd>
+</dl>
+
+<dl>
+<dt>
+<code>template &lt;class ...Args&gt;<br>
+&nbsp;&nbsp;void vformat_to(buffer&amp; buf, const char* fmt, fmt::args args);</code>
+</dt>
+<dd>
+
+<p><i>Requires</i>: <code>fmt</code> shall not be a null pointer.</p>
+<p>
+<i>Effects</i>: The function appends to <code>buf</code> the format string
+<code>fmt</code> with each replacement field substituted with the character
+representation of the argument it refers to, formatted according to the
+specification given in the field.
+</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a valid
+format string.</p>
+</dd>
+</dl>
+
 <h3>Formatting argument</h3>
 
 <pre>
@@ -1030,14 +1072,14 @@ references to them.
 <code>template &lt;class Context&gt;
 class basic_args {
 public:
-  typedef unsigned size_type;
+  typedef <i>implementation-defined</i> size_type;
 
   basic_args() noexcept;
 
   template &lt;class ...Args&gt;
   basic_args(const arg_store&lt;Context, Args...&gt;&amp; store);
 
-  arg operator[](size_type i) const;
+  basic_arg operator[](size_type i) const;
 };</code>
 </pre>
 
@@ -1067,13 +1109,13 @@ provides access to the agruments in <code>store</code>.
 </dl>
 
 <dl>
-<dt><code>arg operator[](size_type i) const;</code></dt>
+<dt><code>basic_arg operator[](size_type i) const;</code></dt>
 <dd>
 <p><i>Requires</i>: <code>i &lt;=</code> the number of formatting arguments
 represented by the <code>basic_args</code> object.</p>
-<p><i>Returns</i>: A <code>arg</code> object that represents an argument
+<p><i>Returns</i>: A <code>basic_arg</code> object that represents an argument
 at index <code>i</code> if <code>i &lt;</code> the number of arguments.
-Otherwise, returns an empty <code>arg</code> object.</p>
+Otherwise, returns an empty <code>basic_arg</code> object.</p>
 </dd>
 </dl>
 
@@ -1095,7 +1137,7 @@ formatting arguments.</p>
 </dd>
 </dl>
 
-<h3>Class template <code>basic_context</code></h3>
+<h3>Formatting context</h3>
 
 <pre>
 <code>template &lt;class Char&gt;
