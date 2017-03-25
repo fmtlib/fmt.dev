@@ -307,6 +307,9 @@ The <code>format_value</code> function parses the portion of the format
 string corresponding to the current argument and formats the value into
 <code>buf</code> using <code>format_to</code> or the buffer API.
 
+TODO: mention that formatting of types that have overloaded ostream insertion
+operator is also supported
+
 <h3><a name="Safety">Safety</a></h3>
 
 <p>
@@ -468,6 +471,11 @@ template &lt;class ...Args&gt;
 string format(const char* fmt, const Args&amp;... args);
 
 string vformat(const char* fmt, fmt::args args);
+
+template &lt;class ...Args&gt;
+string format_to(fmt::buffer&amp; buf, const char* fmt, const Args&amp;... args);
+
+string vformat_to(fmt::buffer&amp; buf, const char* fmt, fmt::args args);
 
 }  // namespace std </code>
 </pre>
@@ -1204,6 +1212,8 @@ public:
   template &lt;class InputIterator&gt;
   void append(InputIterator first, InputIterator last);
 
+  virtual locale locale() const;
+
 protected:
   basic_buffer() noexcept;
 
@@ -1302,6 +1312,12 @@ all <code>0 &lt;= n &lt; d.size()</code>.
   <code>*this</code> and whose remaining elements are a copy of the elements
   in the range.
   </p>
+</dd>
+<dt><code>locale locale() const;</code></dt>
+<dd>
+  <p><i>Returns</i>: The locale to be used for locale-specific formatting.
+  The default implementation returns a copy of the global C++ locale but derived
+  classes may return different locales.</p>
 </dd>
 </dl>
 
