@@ -416,7 +416,23 @@ improve performance.
 
 <h3><a name="Footprint">Binary footprint</a></h3>
 
-<p>TODO</p>
+<p>In order to minimize binary code size, each formatting function that uses
+variadic templates is a small inline wrapper around its non-variadic
+counterpart. This wrapper creates an object representing an array of argument
+references with <code>fmt::make_args</code> and calls the non-variadic function
+to do the actual work. For example, the <code>format</code> variadic function
+calls <code>vformat</code>.</p>
+
+<p>Also multiple argument type codes can be combined and passed into a
+formatting function as a single integer if the number of arguments is small.
+Since argument types are known at compile time this integer can be an integer
+constant and there will be no code generated to compute it, only store according
+to calling conventions.</p>
+
+<p>Given a reasonable optimizing compiler, this will result in a compact
+per-call binary code, effectively consisting of placing argument pointers
+(or copies for primitive types) and packed argument type codes on stack
+and calling a formatting function.</p>
 
 <h3><a name="Impact">Impact on existing code</a></h3>
 
