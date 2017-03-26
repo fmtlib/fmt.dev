@@ -341,7 +341,7 @@ easily control whether to use locales or not during formatting.
 We follow Python's approach <a href="#3">[3]</a> and designate a separate format
 specifier <code>'n'</code> for locale-aware numeric formatting. It applies to
 all integral and floating-point types. All other specifiers produce output
-unaffected by locale settings. This can also have positive peformance effect
+unaffected by locale settings. This can also have positive effect on performance
 because locale-independent formatting can be implemented more efficiently.
 </p>
 
@@ -468,14 +468,14 @@ class format_error;
 }  // namespace fmt
 
 template &lt;class ...Args&gt;
-string format(const char* fmt, const Args&amp;... args);
+string format(const char* format_str, const Args&amp;... args);
 
-string vformat(const char* fmt, fmt::args args);
+string vformat(const char* format_str, fmt::args args);
 
 template &lt;class ...Args&gt;
-string format_to(fmt::buffer&amp; buf, const char* fmt, const Args&amp;... args);
+string format_to(fmt::buffer&amp; buf, const char* format_str, const Args&amp;... args);
 
-string vformat_to(fmt::buffer&amp; buf, const char* fmt, fmt::args args);
+string vformat_to(fmt::buffer&amp; buf, const char* format_str, fmt::args args);
 
 }  // namespace std </code>
 </pre>
@@ -777,8 +777,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 <tr>
 <td><code>'n'</code></td>
 <td>Number. This is the same as <code>'d'</code>, except that it uses the
-    current locale setting to insert the appropriate number separator
-    characters.</td>
+    buffer's locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -843,8 +842,7 @@ if the presentation type is not specified.
 <tr>
 <td><code>'n'</code></td>
 <td>Number. This is the same as <code>'g'</code>, except that it uses the
-    current locale setting to insert the appropriate number separator
-    characters.</td>
+    buffer's locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -877,39 +875,58 @@ if the presentation type is not specified.
 <dl>
 <dt>
 <code>template &lt;class ...Args&gt;<br>
-&nbsp;&nbsp;string format(const char* fmt, const Args&amp;... args);</code>
+&nbsp;&nbsp;string format(const char* format_str, const Args&amp;... args);</code>
 </dt>
 <dd>
 
-<p><i>Requires</i>: <code>fmt</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
 <p>
 <i>Effects</i>: The function returns a <code>string</code> object
-constructed from the format string argument <code>fmt</code> with each
+constructed from the format string argument <code>format_str</code> with each
 replacement field substituted with the character representation of the
 argument it refers to, formatted according to the specification given in the
 field.
 </p>
 <p><i>Returns</i>: The formatted string.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a valid
-format string.</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+valid format string.</p>
 </dd>
 </dl>
 
 <dl>
 <dt>
-<code>string vformat(const char* fmt, fmt::args args);</code>
+<code>string vformat(const char* format_str, fmt::args args);</code>
 </dt>
 <dd>
-<p><i>Requires</i>: <code>fmt</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
 <p>
 <i>Effects</i>: The function returns a <code>string</code> object
-constructed from the format string argument <code>fmt</code> with each
+constructed from the format string argument <code>format_str</code> with each
 replacement field substituted with the character representation of the
 argument it refers to, formatted according to the specification given in the
 field.
 </p>
 <p><i>Returns</i>: The formatted string.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a valid
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+valid format string.</p>
+</dd>
+</dl>
+
+<dl>
+<dt>
+<code>template &lt;class ...Args&gt;<br>
+&nbsp;&nbsp;void format_to(buffer&amp; buf, const char* format_str, const Args&amp;... args);</code>
+</dt>
+<dd>
+
+<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
+<p>
+<i>Effects</i>: The function appends to <code>buf</code> the format string
+<code>format_str</code> with each replacement field substituted with the character
+representation of the argument it refers to, formatted according to the
+specification given in the field.
+</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a valid
 format string.</p>
 </dd>
 </dl>
@@ -917,38 +934,19 @@ format string.</p>
 <dl>
 <dt>
 <code>template &lt;class ...Args&gt;<br>
-&nbsp;&nbsp;void format_to(buffer&amp; buf, const char* fmt, const Args&amp;... args);</code>
+&nbsp;&nbsp;void vformat_to(buffer&amp; buf, const char* format_str, fmt::args args);</code>
 </dt>
 <dd>
 
-<p><i>Requires</i>: <code>fmt</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
 <p>
 <i>Effects</i>: The function appends to <code>buf</code> the format string
-<code>fmt</code> with each replacement field substituted with the character
-representation of the argument it refers to, formatted according to the
-specification given in the field.
+<code>format_str</code> with each replacement field substituted with the
+character representation of the argument it refers to, formatted according to
+the specification given in the field.
 </p>
-<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a valid
-format string.</p>
-</dd>
-</dl>
-
-<dl>
-<dt>
-<code>template &lt;class ...Args&gt;<br>
-&nbsp;&nbsp;void vformat_to(buffer&amp; buf, const char* fmt, fmt::args args);</code>
-</dt>
-<dd>
-
-<p><i>Requires</i>: <code>fmt</code> shall not be a null pointer.</p>
-<p>
-<i>Effects</i>: The function appends to <code>buf</code> the format string
-<code>fmt</code> with each replacement field substituted with the character
-representation of the argument it refers to, formatted according to the
-specification given in the field.
-</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a valid
-format string.</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+valid format string.</p>
 </dd>
 </dl>
 
