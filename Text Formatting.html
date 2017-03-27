@@ -140,7 +140,7 @@ user-defined types.
 Example:
 
 <pre class="example">
-<code>std::string message = std::format("The answer is {}.", 42);</code>
+<code>std::string message = std::fmt::format("The answer is {}.", 42);</code>
 </pre>
 
 <h2><a name="Design">Design</a></h2>
@@ -303,9 +303,10 @@ std::string date = std::format("The date is {0:%Y-%m-%d}.", *std::localtime(&amp
 <code>void format_value(std::fmt::buffer&amp; buf, const std::tm&amp; tm, std::fmt::context&amp; ctx);</code>
 </pre>
 
+<p>
 The <code>format_value</code> function parses the portion of the format
 string corresponding to the current argument and formats the value into
-<code>buf</code> using <code>format_to</code> or the buffer API.
+<code>buf</code> using <code>format_to</code> or the buffer API.</p>
 
 TODO: mention that formatting of types that have overloaded ostream insertion
 operator is also supported
@@ -423,15 +424,15 @@ references with <code>fmt::make_args</code> and calls the non-variadic function
 to do the actual work. For example, the <code>format</code> variadic function
 calls <code>vformat</code>.</p>
 
-<p>Also multiple argument type codes can be combined and passed into a
+<p>Multiple argument type codes can be combined and passed into a
 formatting function as a single integer if the number of arguments is small.
-Since argument types are known at compile time this integer can be an integer
-constant and there will be no code generated to compute it, only store according
-to calling conventions.</p>
+Since argument types are known at compile time this can be an integer
+constant and there will be no code generated to compute it, only to store
+according to calling conventions.</p>
 
 <p>Given a reasonable optimizing compiler, this will result in a compact
 per-call binary code, effectively consisting of placing argument pointers
-(or copies for primitive types) and packed argument type codes on stack
+(or, possibly, copies for primitive types) and packed argument type codes on stack
 and calling a formatting function.</p>
 
 <h3><a name="Impact">Impact on existing code</a></h3>
@@ -479,20 +480,24 @@ class basic_buffer;
 
 typedef basic_buffer&lt;char&gt; buffer;
 
+template &lt;class Char&gt;
+class basic_cstring_view;
+
+typedef basic_cstring_view&lt;char&gt; cstring_view;
+
 class format_error;
 
+template &lt;class ...Args&gt;
+string format(cstring_view format_str, const Args&amp;... args);
+
+string vformat(cstring_view format_str, args args);
+
+template &lt;class ...Args&gt;
+string format_to(buffer&amp; buf, cstring_view format_str, const Args&amp;... args);
+
+string vformat_to(buffer&amp; buf, cstring_view format_str, args args);
+
 }  // namespace fmt
-
-template &lt;class ...Args&gt;
-string format(const char* format_str, const Args&amp;... args);
-
-string vformat(const char* format_str, fmt::args args);
-
-template &lt;class ...Args&gt;
-string format_to(fmt::buffer&amp; buf, const char* format_str, const Args&amp;... args);
-
-string vformat_to(fmt::buffer&amp; buf, const char* format_str, fmt::args args);
-
 }  // namespace std </code>
 </pre>
 
@@ -891,11 +896,12 @@ if the presentation type is not specified.
 <dl>
 <dt>
 <code>template &lt;class ...Args&gt;<br>
-&nbsp;&nbsp;string format(const char* format_str, const Args&amp;... args);</code>
+&nbsp;&nbsp;string format(cstring_view format_str, const Args&amp;... args);</code>
 </dt>
 <dd>
 
-<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str.c_str()</code> shall not be a null
+pointer.</p>
 <p>
 <i>Effects</i>: The function returns a <code>string</code> object
 constructed from the format string argument <code>format_str</code> with each
@@ -911,10 +917,10 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>string vformat(const char* format_str, fmt::args args);</code>
+<code>string vformat(cstring_view format_str, fmt::args args);</code>
 </dt>
 <dd>
-<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str.c_str()</code> shall not be a null pointer.</p>
 <p>
 <i>Effects</i>: The function returns a <code>string</code> object
 constructed from the format string argument <code>format_str</code> with each
@@ -931,11 +937,11 @@ valid format string.</p>
 <dl>
 <dt>
 <code>template &lt;class ...Args&gt;<br>
-&nbsp;&nbsp;void format_to(buffer&amp; buf, const char* format_str, const Args&amp;... args);</code>
+&nbsp;&nbsp;void format_to(buffer&amp; buf, cstring_view format_str, const Args&amp;... args);</code>
 </dt>
 <dd>
 
-<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str.c_str()</code> shall not be a null pointer.</p>
 <p>
 <i>Effects</i>: The function appends to <code>buf</code> the format string
 <code>format_str</code> with each replacement field substituted with the character
@@ -954,7 +960,7 @@ format string.</p>
 </dt>
 <dd>
 
-<p><i>Requires</i>: <code>format_str</code> shall not be a null pointer.</p>
+<p><i>Requires</i>: <code>format_str.c_str()</code> shall not be a null pointer.</p>
 <p>
 <i>Effects</i>: The function appends to <code>buf</code> the format string
 <code>format_str</code> with each replacement field substituted with the
@@ -1047,7 +1053,7 @@ the number of possible value types of a formatting argument.
 
 <dl>
 <dt><code>template &lt;class Visitor, class Context&gt;<br>
-  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);</code></dt>
+&nbsp;&nbsp;<i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);</code></dt>
 <dd>
 <p><i>Requires:</i>
 The expression in the Effects section shall be a valid expression of the same
@@ -1335,6 +1341,45 @@ all <code>0 &lt;= n &lt; d.size()</code>.
 </dd>
 </dl>
 
+<h3>Format string</h3>
+
+<pre>
+<code>template &lt;class Char&gt;
+class basic_cstring_view {
+public:
+  basic_cstring_view(const basic_string&lt;Char&gt;&amp; str);
+  basic_cstring_view(const Char* str);
+
+  const Char* c_str() const noexcept;
+};</code>
+</pre>
+
+<p>
+The class <code>basic_cstring_view</code> represents a null-terminated string
+view.
+</p>
+
+<dl>
+<dt><code>basic_cstring_view(const basic_string&lt;Char&gt;&amp; str);</code></dt>
+<dd>
+  <p><i>Effects</i>: Constructs an object of class <code>basic_cstring_view</code>.
+  </p>
+  <p><i>Postcondition</i>: <code>c_str() == str.c_str()</code>.
+  </p>
+</dd>
+<dt><code>basic_cstring_view(const Char* str);</code></dt>
+<dd>
+  <p><i>Effects</i>: Constructs an object of class <code>basic_cstring_view</code>.
+  </p>
+  <p><i>Postcondition</i>: <code>c_str() == str</code>.
+  </p>
+</dd>
+<dt><code>const Char* c_str() const noexcept;</code></dt>
+<dd>
+  <p><i>Returns</i>: A pointer to the string.</p>
+</dd>
+</dl>
+
 <h3>Error reporting</h3>
 
 <pre>
@@ -1372,6 +1417,10 @@ exceptions to report errors from the formatting library.
 The ideas proposed in this paper have been implemented in the open-source fmt
 library. TODO: link and mention other implementations (Boost Format, FastFormat)
 </p>
+
+<h2><a name="Acknowledgements">Acknowledgements</a></h2>
+
+The Format String Syntax section is based on the Python documentation [3].
 
 <h2><a name="References">References</a></h2>
 
