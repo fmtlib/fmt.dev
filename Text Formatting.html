@@ -137,11 +137,12 @@ a &quot;Hello, World!&quot; program that performs simple formatted output.
 </p>
 
 <p>
-C++ has not one but two APIs for doing formatted output, the <code>printf</code>
-family of functions inherited from C and the C++ I/O streams library
-(iostreams). While iostreams are usually the recommended way of doing formatted
+C++ has not one but two standard APIs for doing formatted output, the
+<code>printf</code> family of functions inherited from C and the C++ I/O streams
+library (iostreams).
+While iostreams are usually the recommended way of doing formatted
 output in C++ for safety and extensibility reasons, <code>printf</code> has some
-advantages too, such as arguably more natural function call API, separation of
+advantages, such as arguably more natural function call API, separation of
 formatted message and arguments, possibly with argument reordering as a POSIX
 extension, and often more compact code, both source and binary.
 </p>
@@ -160,6 +161,7 @@ Example:
 <pre class="example">
 <code>string message = fmt::format("The answer is {}.", 42);</code>
 </pre>
+</p>
 
 <h2><a name="Design">Design</a></h2>
 
@@ -326,8 +328,10 @@ The <code>format_value</code> function parses the portion of the format
 string corresponding to the current argument and formats the value into
 <code>buf</code> using <code>format_to</code> or the buffer API.</p>
 
-TODO: mention that formatting of types that have overloaded ostream insertion
-operator is also supported
+<p>
+The default implementation of <code>format_value</code> calls ostream insertion
+<code>operator&lt;&lt;</code> if available.
+</p>
 
 <h3><a name="Safety">Safety</a></h3>
 
@@ -463,6 +467,8 @@ The proposed formatting API is defined in the new header
 <h2><a name="Wording">Proposed wording</a></h2>
 
 <h3>Header <code>&lt;format&gt;</code> synopsis</h3>
+
+TODO: where to put this in the standard?
 
 <pre>
 <code>namespace std {
@@ -1396,6 +1402,37 @@ view.
   <p><i>Returns</i>: A pointer to the string.</p>
 </dd>
 </dl>
+
+<h3>User-defined types</h3>
+
+<p>
+If a format string refers to an object of a user-defined type as in
+
+<pre class="example">
+<code>X x;
+string s = format("{}", x);
+</code>
+</pre>
+
+the formatting function will call <code>format_value(buf, x, ctx)</code>,
+where <code>buf</code> is a reference to the formatting buffer, <code>x</code>
+is a const reference to the argument and <code>ctx</code> is a reference to
+the formatting context. <code>ctx.ptr()</code> will point to one of the
+following positions in the format string being parsed:
+</p>
+
+<ul>
+<li><code>':'</code> preceding <code>format-spec</code> for the current
+argument,
+<li><code>'}'</code> if there is no <code>format-spec</code>.
+</ul>
+
+<p>
+The <code>format_value</code> function should parse <code>format-spec</code>,
+format the argument and advance <code>ctx.ptr()</code> to point to
+<code>'}'</code> that ends <code>replacement-field</code> for the current
+argument.
+</p>
 
 <h3>Error reporting</h3>
 
