@@ -281,7 +281,7 @@ character:
 </p>
 
 <pre class="example">
-<code>std::fmt::format("{:*^30}", "centered");</code>
+<code>fmt::format("{:*^30}", "centered");</code>
 </pre>
 
 <p>
@@ -310,15 +310,15 @@ for <code>put_time</code>-like date and time formatting
 </p>
 
 <pre class="example">
-<code>std::time_t t = std::time(nullptr);
-std::string date = std::fmt::format("The date is {0:%Y-%m-%d}.", *std::localtime(&amp;t));</code>
+<code>time_t t = time(nullptr);
+string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));</code>
 </pre>
 
 <p>by providing an overload of <code>format_value</code> for
-<code>std::tm</code>:</p>
+<code>tm</code>:</p>
 
 <pre class="example">
-<code>void format_value(std::fmt::buffer&amp; buf, const std::tm&amp; tm, std::fmt::context&amp; ctx);</code>
+<code>void format_value(fmt::buffer&amp; buf, const tm&amp; tm, fmt::context&amp; ctx);</code>
 </pre>
 
 <p>
@@ -390,7 +390,7 @@ are interleaved with the portions of the literal string:
 </p>
 
 <pre class="example">
-<code>std::cout << "String `" << string << "' has " << length(string) << " characters\n";</code>
+<code>cout << "String `" << string << "' has " << length(string) << " characters\n";</code>
 </pre>
 
 <p>
@@ -399,7 +399,7 @@ arguments, for example:
 </p>
 
 <pre class="example">
-<code>std::fmt::format("String `{}' has {} characters\n", string, length(string)));</code>
+<code>fmt::format("String `{}' has {} characters\n", string, length(string)));</code>
 </pre>
 
 <p>with the German translation of the format string:</p>
@@ -456,9 +456,8 @@ and calling a formatting function.</p>
 <h3><a name="Impact">Impact on existing code</a></h3>
 
 <p>
-Most of the formatting API is defined in a sub-namespace to reduce the
-probability of name clashes when user code employs <code>using namespace
-std</code>. Otherwise it should not break any existing C++ code.
+The proposed formatting API is defined in the new header
+<code>&lt;format&gt;</code> and should have no impact on existing code.
 </p>
 
 <h2><a name="Wording">Proposed wording</a></h2>
@@ -1024,7 +1023,7 @@ types:
     <code>string_view</code>
 <li><code>const void*</code>
 <li>reference to an object of a user-defined type (implementation-defined)
-<li><code>std::monostate</code> representing an empty state, i.e. when the
+<li><code>monostate</code> representing an empty state, i.e. when the
     object doesn't refer to an argument
 </ul>
 where <code>Char</code> is <code>typename Context::char_type</code>.
@@ -1092,7 +1091,7 @@ the number of possible values types of a formatting argument.
 </p>
 <p><i>Example:</i><pre>
 <code>auto uint_value = visit([](auto value) {
-  if constexpr (std::is_unsigned_v&lt;delctype(value)&gt;)
+  if constexpr (is_unsigned_v&lt;delctype(value)&gt;)
     return value;
   return 0;
 }, arg);</code>
@@ -1401,7 +1400,7 @@ view.
 <h3>Error reporting</h3>
 
 <pre>
-<code>class format_error : public std::runtime_error {
+<code>class format_error : public runtime_error {
 public:
   explicit format_error(const string&amp; what_arg);
   explicit format_error(const char* what_arg);
