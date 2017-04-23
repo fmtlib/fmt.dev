@@ -138,11 +138,11 @@ a &quot;Hello, World!&quot; program that performs simple formatted output.
 
 <p>
 C++ has not one but two standard APIs for doing formatted output, the
-<code>printf</code> family of functions inherited from C and the C++ I/O streams
+<code>printf</code> family of functions inherited from C and the I/O streams
 library (iostreams).
 While iostreams are usually the recommended way of doing formatted
-output in C++ for safety and extensibility reasons, <code>printf</code> has some
-advantages, such as arguably more natural function call API, separation of
+output in C++ for safety and extensibility reasons, <code>printf</code> offers
+some advantages, such as arguably more natural function call API, separation of
 formatted message and arguments, possibly with argument reordering as a POSIX
 extension, and often more compact code, both source and binary.
 </p>
@@ -520,6 +520,8 @@ string format_to(buffer&amp; buf, cstring_view format_str, const Args&amp;... ar
 
 string vformat_to(buffer&amp; buf, cstring_view format_str, args args);
 
+template &lt;class Char, class T&gt;
+void format_value(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
 }  // namespace fmt
 }  // namespace std </code>
 </pre>
@@ -1433,6 +1435,28 @@ format the argument and advance <code>ctx.ptr()</code> to point to
 <code>'}'</code> that ends <code>replacement-field</code> for the current
 argument.
 </p>
+
+<p>
+The default implementation of <code>format_value</code> calls ostream insertion
+<code>operator&lt;&lt;</code> to format the value.
+</p>
+
+<dl>
+<dt>
+<code>template &lt;class Char, class T&gt;<br>
+void format_value(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
+</code>
+</dt>
+<dd>
+
+<p>
+<i>Effects</i>: The function calls <code>os &lt;&lt; value</code>, where
+<code>os</code> is an instance of <code>std::basic_ostream&lt;Char&gt;</code>
+with a stream buffer writing to <code>buf</code>.
+</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>*ctx.ptr() != '}'</code>.</p>
+</dd>
+</dl>
 
 <h3>Error reporting</h3>
 
