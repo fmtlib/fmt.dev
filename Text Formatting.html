@@ -1489,13 +1489,69 @@ exceptions to report errors from the formatting library.
 </dd>
 </dl>
 
+<h2><a name="RelatedWork">Related work</a></h2>
+
+<p>
+The Boost Format library [8] is an established formatting library that uses
+printf-like format string syntax with extensions. The main differences between
+this library and the current proposal are:
+</p>
+
+<ul>
+<li>Syntax: for the reasons descibed in section
+<a href="Syntax">Format String Syntax</a> this proposal
+uses a new syntax instead of extending the  printf one. This allows much
+simpler and easier to parse grammar, not burdened by legacy specifiers used to
+convey type information. For example, Boost Format has two ways
+to refer to an argument by index and allows but ignores some format specifiers.
+<li>API: Boost Format uses <code>operator%</code> to pass formatting arguments
+while this proposal uses variadic function templates.
+<li>Performance: The implementation of this proposal is several times faster
+that the implementation of Boost Format on tinyformat benchmarks [9],
+generates smaller binary code and is faster to compile.
+</ul>
+
+<p>
+A printf-like Interface for the Streams Library [10] is similar to the Boost
+Format library but uses variadic templates instead of <code>operator%</code>.
+Unfortunately it hasn't been updated since 2013 and the same arguments about
+format string syntax apply to it.
+</p>
+
+<p>
+The FastFormat library [11] is another well-known formatting library.
+Similarly to this proposal, FastFormat uses brace-delimited format specifiers,
+but otherwise the format string syntax is different and the library has
+significant limitations [12]:
+
+<blockquote>
+Three features that have no hope of being accommodated within the current
+design are:
+
+<ul>
+<li>Leading zeros (or any other non-space padding)
+<li>Octal/hexadecimal encoding
+<li>Runtime width/alignment specification
+</ul>
+</blockquote>
+</p>
+
+<p>
+Formatting facilities of the Folly library [13] are the closest to the current
+proposal. Folly also uses Python-like format string syntax nearly identical
+to the one described here. However, the API details are quite different. The current
+proposal tries to address performance and code bloat issues that are largely
+ignored by Folly Format. For instance formatting functions in Folly Format
+are parameterized on all argument types while in this proposal, only the inlined
+wrapper functions are, which results in much smaller binary code and better compile
+times.
+</p>
+
 <h2><a name="Implementation">Implementation</a></h2>
 
 <p>
-The ideas proposed in this paper have been implemented in the open-source fmt
-library. TODO: link and mention other implementations (Boost Format,
-FastFormat), maybe add a Related Work section and discuss differences to the
-current proposal
+An implementation of this proposal is available in the <code>std</code> branch
+of the open-source fmt library [14].
 </p>
 
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
@@ -1527,6 +1583,28 @@ Standard Libraries.</cite><br>
 <a name="7">[7]</a>
 <cite><a href="ftp://ftp.gnu.org/old-gnu/Manuals/gawk-3.1.0/html_chapter/gawk_11.html">
 10.4.2 Rearranging printf Arguments</a>. The GNU Awk User's Guide.</cite><br>
+<a name="8">[8]</a>
+<cite><a href="http://www.boost.org/doc/libs/1_63_0/libs/format/">
+Boost Format library</a>. Boost 1.63 documentation.</cite><br>
+<a name="9">[9]</a>
+<cite><a href="https://github.com/fmtlib/fmt#speed-tests">
+Speed Test</a>. The fmt library repository.</cite><br>
+<a name="10">[10]</a>
+<cite><a href="https://isocpp.org/files/papers/n3716.html">
+A printf-like Interface for the Streams Library (revision 1)</a>.</cite><br>
+<a name="11">[11]</a>
+<cite><a href="http://www.fastformat.org/">
+The FastFormat library website</a>.</cite><br>
+<a name="12">[12]</a>
+<cite><a href="https://accu.org/index.php/journals/1539">
+An Introduction to Fast Format (Part 1): The State of the Art</a>.
+Overload Journal #89 - February 2009</cite><br>
+<a name="13">[13]</a>
+<cite><a href="https://github.com/facebook/folly">
+The folly library repository</a>.</cite><br>
+<a name="14">[14]</a>
+<cite><a href="https://github.com/fmtlib/fmt">
+The fmt library repository</a>.</cite><br>
 </p>
 
 </div>
