@@ -139,6 +139,8 @@ Reply to:<br>
 
 <p>
 <ul>
+<li>Add section <a href="#CompileTimeFormat">"Compile-time processing of format
+    strings"</a>.
 <li>Change return type of <code>format_to</code> and <code>vformat_to</code>
     to <code>void</code> in synopsis.
 <li>Remove sections "Null-terminated string view" and "Format string", and
@@ -478,8 +480,38 @@ according to calling conventions.</p>
 
 <p>Given a reasonable optimizing compiler, this will result in a compact
 per-call binary code, effectively consisting of placing argument pointers
-(or, possibly, copies for primitive types) and packed argument type codes on stack
-and calling a formatting function.</p>
+(or, possibly, copies for primitive types) and packed argument type codes on
+stack and calling a formatting function.</p>
+
+<h3><a name="CompileTimeFormat">Compile-time processing of format strings</a>
+</h3>
+
+<p>It is possible to parse format strings at compile time with
+<code>constexpr</code> functions which has been demonstrated in the reference
+implementation [14]. Unfortunately a satisfactory API cannot be provided
+using existing C++17 features. Ideally we would like to use a function call API
+similar to the one proposed in this paper:</p>
+
+<pre>
+<code>template &lt;class String, class ...Args&gt;
+string format(String format_str, const Args&amp;... args);</code></pre>
+
+<p>where <code>String</code> is some type representing a compile-time format
+string, for example</p>
+
+<pre>
+<code>struct MyString {
+  static constexpr string_view value() { return string_view("{}", 2); }
+};</code></pre>
+
+<p>However, requiring a user to create a new type either manually or via a macro
+for every format string is not acceptable. P0424R1 "Reconsidering literal
+operator templates for strings" [15] gives a solution to this problem based on
+user-defined literal operators. If this or other similar proposal for
+compile-time strings is accepted into the standard, it should be easy to provide
+additional formatting APIs that make use of this feature. Obviously runtime
+checks will still be needed in cases where format string is not known at compile
+time.</p>
 
 <h3><a name="Impact">Impact on existing code</a></h3>
 
@@ -984,12 +1016,12 @@ valid format string.</p>
 
 <p>
 <i>Effects</i>: The function appends to <code>buf</code> the format string
-<code>format_str</code> with each replacement field substituted with the character
-representation of the argument it refers to, formatted according to the
-specification given in the field.
+<code>format_str</code> with each replacement field substituted with the
+character representation of the argument it refers to, formatted according to
+the specification given in the field.
 </p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a valid
-format string.</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+valid format string.</p>
 </dd>
 </dl>
 
@@ -1581,6 +1613,10 @@ The folly library repository</a>.</cite><br>
 <a name="14">[14]</a>
 <cite><a href="https://github.com/fmtlib/fmt">
 The fmt library repository</a>.</cite><br>
+<a name="15">[15]</a>
+<cite><a
+href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0424r1.pdf">
+Reconsidering literal operator templates for strings</a>.</cite><br>
 </p>
 
 </div>
