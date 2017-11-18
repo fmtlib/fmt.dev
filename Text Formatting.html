@@ -141,6 +141,9 @@ Reply to:<br>
 <ul>
 <li>Add section <a href="#CompileTimeFormat">"Compile-time processing of format
     strings"</a>.
+<li>Separate parsing and formatting in the extension API replacing
+    <code>format_value</code> function template with <code>formatter</code>
+    class template to allow compile-time processing of format strings.
 <li>Change return type of <code>format_to</code> and <code>vformat_to</code>
     to <code>void</code> in synopsis.
 <li>Remove sections "Null-terminated string view" and "Format string", and
@@ -342,21 +345,27 @@ for <code>put_time</code>-like date and time formatting
 string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));</code>
 </pre>
 
-<p>by providing an overload of <code>format_value</code> for
-<code>tm</code>:</p>
+<p>by providing a specialization of <code>formatter</code> for <code>tm</code>:
+</p>
 
 <pre class="example">
-<code>void format_value(fmt::buffer&amp; buf, const tm&amp; tm, fmt::context&amp; ctx);</code>
+<code>template <>
+struct formatter&lt;tm&gt; {
+  const char* parse(fmt::parse_context&amp; ctx);
+  void format(fmt::buffer&amp; buf, const tm&amp; tm, fmt::context&amp; ctx);
+};</code>
 </pre>
 
 <p>
-The <code>format_value</code> function parses the portion of the format
-string corresponding to the current argument and formats the value into
-<code>buf</code> using <code>format_to</code> or the buffer API.</p>
+The <code>formatter&lt;tm&gt;::parse</code> function parses the
+<code>format-spec</code> portion of the format string corresponding to the
+current argument and <code>formatter&lt;tm&gt;::format</code> formats the value
+into <code>buf</code> using <code>format_to</code> or the buffer API.
+</p>
 
 <p>
-The default implementation of <code>format_value</code> calls ostream insertion
-<code>operator&lt;&lt;</code> if available.
+The default implementation of <code>formatter::format</code> calls ostream
+insertion <code>operator&lt;&lt;</code> if available.
 </p>
 
 <h3><a name="Safety">Safety</a></h3>
@@ -571,8 +580,11 @@ void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args)
 
 void vformat_to(buffer&amp; buf, string_view format_str, args args);
 
-template &lt;class Char, class T&gt;
-void format_value(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
+template &lt;class T, class Char = char&gt;
+struct formatter {
+  const Char* parse(parse_context&amp; ctx);
+  void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
+};
 }  // namespace fmt
 }  // namespace std </code>
 </pre>
@@ -1424,11 +1436,11 @@ string s = format("{}", x);
 </code>
 </pre>
 
-the formatting function will call <code>format_value(buf, x, ctx)</code>,
-where <code>buf</code> is a reference to the formatting buffer, <code>x</code>
-is a const reference to the argument and <code>ctx</code> is a reference to
-the formatting context. <code>ctx.ptr()</code> will point to one of the
-following positions in the format string being parsed:
+the formatting function will first call
+<code>formatter&lt;X&gt;::parse(parse_ctx)</code> to parse the format
+specifiers, where <code>parse_ctx</code> is a reference to the parsing context.
+<code>parse_ctx.begin()</code> will point to one of the following positions in
+the format string being parsed:
 </p>
 
 <ul>
@@ -1438,25 +1450,32 @@ argument,
 </ul>
 
 <p>
-The <code>format_value</code> function should parse <code>format-spec</code>,
-format the argument and advance <code>ctx.ptr()</code> to point to
-<code>'}'</code> that ends <code>replacement-field</code> for the current
-argument.
+The <code>parse</code> function should parse <code>format-spec</code> and
+return a pointer to the <code>'}'</code> character that ends
+<code>replacement-field</code> for the current argument.
 </p>
 
 <p>
-The default implementation of <code>format_value</code> calls ostream insertion
-<code>operator&lt;&lt;</code> to format the value.
+Then the formatting function  will call <code>formatter&lt;X&gt;::format(buf, x,
+format_ctx)</code>, where <code>buf</code> is a reference to the formatting
+buffer, <code>x</code> is a const reference to the argument and
+<code>format_ctx</code> is a reference to the formatting context.
 </p>
+
+<pre>
+<code>template &lt;class T, class Char = char&gt;
+struct formatter {
+  constexpr const Char* parse(parse_context&lt;Char&gt;&amp; ctx);
+  void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
+};</code>
+</pre>
 
 <dl>
 <dt>
-<code>template &lt;class Char, class T&gt;<br>
-void format_value(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
-</code>
+<code>void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value,
+basic_context&lt;Char&gt;&amp; ctx);</code>
 </dt>
 <dd>
-
 <p>
 <i>Effects</i>: The function calls <code>os &lt;&lt; value</code>, where
 <code>os</code> is an instance of <code>std::basic_ostream&lt;Char&gt;</code>
