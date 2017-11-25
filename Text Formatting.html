@@ -149,6 +149,9 @@ Reply to:<br>
 <li>Remove sections "Null-terminated string view" and "Format string", and
     replace <code>basic_cstring_view</code> with <code>basic_string_view</code>.
 <li>Add a link to the implementation in Introduction.
+<li>Add a note regarding time formatting and compatiblity with D0355 "Extending
+    &lt;chrono&gt; to Calendars and Time Zones" <a href="#16">[16]</a> to
+    <a href="#Extensibility">Extensibility</a>.
 </ul>
 </p>
 
@@ -330,7 +333,7 @@ provide functions that do parsing and formatting for such types.
 
 <p>The general syntax of a replacement field in a format string is
 
-<pre>
+<pre class="example">
 <code>replacement-field ::= '{' [arg-id] [':' format-spec] '}'</code>
 </pre>
 
@@ -364,6 +367,13 @@ into <code>buf</code> using <code>format_to</code> or the buffer API.
 </p>
 
 <p>
+Note that time formatting is not covered by this proposal but formatting
+facilities provided by D0355 "Extending &lt;chrono&gt; to Calendars and Time
+Zones" <a href="#16">[16]</a> can be easily implemented using this extension
+API.
+</p>
+
+<p>
 The default implementation of <code>formatter::format</code> calls ostream
 insertion <code>operator&lt;&lt;</code> if available.
 </p>
@@ -382,9 +392,8 @@ buffer overflow errors common to <code>printf</code>.
 <h3><a name="Locale">Locale support</a></h3>
 
 <p>
-As pointed out in
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r1.html">
-P0067R1: Elementary string conversions</a> there is a number of use
+As pointed out in P0067 "Elementary string conversions"<a href="#17">[17]</a>
+there is a number of use
 cases that do not require internationalization support, but do require high
 throughput when produced by a server. These include various text-based
 interchange formats such as JSON or XML. The need for locale-independent
@@ -1635,7 +1644,14 @@ The fmt library repository</a>.</cite><br>
 <a name="15">[15]</a>
 <cite><a
 href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0424r1.pdf">
-Reconsidering literal operator templates for strings</a>.</cite><br>
+P0424: Reconsidering literal operator templates for strings</a>.</cite><br>
+<a name="16">[16]</a>
+<cite><a href="https://howardhinnant.github.io/date/d0355r4.html">
+D0355: Extending &lt;chrono&gt; to Calendars and Time Zones</a>.</cite><br>
+<a name="17">[17]</a>
+<cite><a
+href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r1.html">
+P0067: Elementary string conversions</a>.</cite><br>
 </p>
 
 </div>
