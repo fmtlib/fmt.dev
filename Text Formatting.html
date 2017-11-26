@@ -354,10 +354,10 @@ string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));</cod
 <pre class="example">
 <code>template <>
 struct formatter&lt;tm&gt; {
-  const char* parse(fmt::parse_context&amp; ctx);
+  constexpr fmt::parse_context::iterator parse(fmt::parse_context&amp; ctx);
   void format(fmt::buffer&amp; buf, const tm&amp; tm, fmt::context&amp; ctx);
-};</code>
-</pre>
+};
+</code></pre>
 
 <p>
 The <code>formatter&lt;tm&gt;::parse</code> function parses the
@@ -367,10 +367,10 @@ into <code>buf</code> using <code>format_to</code> or the buffer API.
 </p>
 
 <p>
-Note that time formatting is not covered by this proposal but formatting
-facilities provided by D0355 "Extending &lt;chrono&gt; to Calendars and Time
-Zones" <a href="#16">[16]</a> can be easily implemented using this extension
-API.
+Note that date and time formatting is not covered by this proposal but
+formatting facilities provided by D0355 "Extending &lt;chrono&gt; to Calendars
+and Time Zones" <a href="#16">[16]</a> can be easily implemented using this
+extension API.
 </p>
 
 <p>
@@ -393,12 +393,11 @@ buffer overflow errors common to <code>printf</code>.
 
 <p>
 As pointed out in P0067 "Elementary string conversions"<a href="#17">[17]</a>
-there is a number of use
-cases that do not require internationalization support, but do require high
-throughput when produced by a server. These include various text-based
-interchange formats such as JSON or XML. The need for locale-independent
-functions for conversions between integers and strings and between
-floating-point numbers and strings has also been highlighted in
+there is a number of use cases that do not require internationalization support,
+but do require high throughput when produced by a server. These include various
+text-based interchange formats such as JSON or XML. The need for
+locale-independent functions for conversions between integers and strings and
+between floating-point numbers and strings has also been highlighted in
 <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">
 N4412: Shortcomings of iostreams</a>. Therefore a user should be able to
 easily control whether to use locales or not during formatting.
@@ -561,10 +560,14 @@ template &lt;class Context&gt;
 class basic_args;
 
 template &lt;class Char&gt;
+class basic_parse_context;
+
+template &lt;class Char&gt;
 class basic_context;
 
-typedef basic_context&lt;char&gt; context;
-typedef basic_args&lt;context&gt; args;
+using parse_context = basic_parse_context&lt;char&gt;;
+using context = basic_context&lt;char&gt;;
+using args = basic_args&lt;context&gt;;
 
 template &lt;class ...Args&gt;
 arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
@@ -575,7 +578,7 @@ arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 template &lt;class Char&gt;
 class basic_buffer;
 
-typedef basic_buffer&lt;char&gt; buffer;
+using buffer = basic_buffer&lt;char&gt;;
 
 class format_error;
 
@@ -591,7 +594,7 @@ void vformat_to(buffer&amp; buf, string_view format_str, args args);
 
 template &lt;class T, class Char = char&gt;
 struct formatter {
-  const Char* parse(parse_context&amp; ctx);
+  const Char* parse(basic_parse_context&lt;Char&gt;&amp; ctx);
   void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
 };
 }  // namespace fmt
@@ -1193,7 +1196,7 @@ references to them.
 <code>template &lt;class Context&gt;
 class basic_args {
 public:
-  typedef <i>implementation-defined</i> size_type;
+  using size_type = <i>implementation-defined</i>;
 
   basic_args() noexcept;
 
@@ -1258,18 +1261,69 @@ formatting arguments.</p>
 </dd>
 </dl>
 
+<h3>Parsing context</h3>
+
+<pre>
+<code>template &lt;class Char&gt;
+class basic_parse_context {
+public:
+  using char_type = Char;
+  class iterator;
+
+  constexpr iterator begin() const noexcept;
+  constexpr iterator end() const noexcept;
+
+  constexpr unsigned next_arg_id();
+  constexpr void check_arg_id(unsigned id);
+};</code>
+</pre>
+
+<p>
+The class template <code>basic_parse_context</code> is used in the extension
+API to get the format string range being parsed and the argument counter for
+automatic indexing.
+</p>
+
+<dl>
+<dt><code>constexpr iterator begin() const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: An iterator referring to the first character in the format
+string range being parsed.</p>
+</dd>
+<dt><code>constexpr iterator end() const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: An iterator referring to the position one past the last
+character in the format string range being parsed.</p>
+</dd>
+<dt><code>constexpr unsigned next_arg_id();</code></dt>
+<dd>
+<p><i>Returns</i>: The next argument ID starting from 0. Each subsequent call to
+<code>next_arg_id</code> gives an ID which is 1 greater than the ID returned
+from the previous call for the same context object.</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>check_arg_id</code>
+has been called earlier which indicates mixing of automatic and manual
+argument indexing.</p>
+</dd>
+<dt><code>constexpr void check_arg_id(unsigned id);</code></dt>
+<dd>
+<p><i>Throws</i>: <code>format_error</code> if <code>next_arg_id</code>
+has been called earlier which indicates mixing of automatic and manual
+argument indexing.</p>
+</dd>
+</dl>
+
+TODO: document iterator
+
 <h3>Formatting context</h3>
 
 <pre>
 <code>template &lt;class Char&gt;
 class basic_context {
 public:
-  typedef Char char_type;
-  typedef basic_args&lt;basic_context&gt; args_type;
+  using char_type = Char;
+  using args_type = basic_args&lt;basic_context&gt;;
 
   basic_context(const Char* format_str, args_type args);
-
-  const Char*&amp; ptr();
 
   args_type args() const;
 };</code>
@@ -1289,11 +1343,6 @@ storing references to the formatting arguments and the format string in it.
 </p>
 <p><i>Postcondition</i>: <code>ptr() == format_str</code>.</p>
 </dd>
-<dt><code>const Char*&amp; ptr();</code></dt>
-<dd>
-<p><i>Effects</i>: Returns a pointer to the current position in the format
-string being parsed.</p>
-</dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
 <p><i>Effects</i>: Returns a copy of the <code>args</code> object that was
@@ -1307,7 +1356,7 @@ passed to the constructor of <code>basic_context</code>.</p>
 <code>template &lt;class Char&gt;
 class basic_buffer {
 public:
-  typedef <i>implementation-defined</i> size_type;
+  using size_type = <i>implementation-defined</i>;
 
   virtual ~basic_buffer();
 
@@ -1573,14 +1622,14 @@ design are:
 </p>
 
 <p>
-Formatting facilities of the Folly library [13] are the closest to the current
-proposal. Folly also uses Python-like format string syntax nearly identical
-to the one described here. However, the API details are quite different. The current
-proposal tries to address performance and code bloat issues that are largely
-ignored by Folly Format. For instance formatting functions in Folly Format
-are parameterized on all argument types while in this proposal, only the inlined
-wrapper functions are, which results in much smaller binary code and better compile
-times.
+Formatting facilities of the Folly library <a href="#13">[13]</a> are the
+closest to the current proposal. Folly also uses Python-like format string
+syntax nearly identical to the one described here. However, the API details are
+quite different. The current proposal tries to address performance and code
+bloat issues that are largely ignored by Folly Format. For instance formatting
+functions in Folly Format are parameterized on all argument types while in this
+proposal, only the inlined wrapper functions are, which results in much smaller
+binary code and better compile times.
 </p>
 
 <h2><a name="Implementation">Implementation</a></h2>
