@@ -594,7 +594,7 @@ void vformat_to(buffer&amp; buf, string_view format_str, args args);
 
 template &lt;class T, class Char = char&gt;
 struct formatter {
-  const Char* parse(basic_parse_context&lt;Char&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;Char&gt;::iterator parse(basic_parse_context&lt;Char&gt;&amp; ctx);
   void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
 };
 }  // namespace fmt
@@ -1523,7 +1523,7 @@ buffer, <code>x</code> is a const reference to the argument and
 <pre>
 <code>template &lt;class T, class Char = char&gt;
 struct formatter {
-  constexpr const Char* parse(parse_context&lt;Char&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;Char&gt;::iterator parse(parse_context&lt;Char&gt;&amp; ctx);
   void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
 };</code>
 </pre>
