@@ -256,6 +256,11 @@ formatted into a narrow string. You can use a wide format string instead:</p>
 its numeric value being written to the stream (i.e. 1070 instead of letter &#8216;ю&#8217;
 which is represented by <code class="docutils literal"><span class="pre">L'\x42e'</span></code> if we use Unicode) which is rarely what is
 needed.</p>
+<p>Note that fmt does not use the value of the <code class="docutils literal"><span class="pre">errno</span></code> global to communicate
+errors to the user, but it may call system functions which set <code class="docutils literal"><span class="pre">errno</span></code>. Since
+fmt does not attempt to preserve the value of <code class="docutils literal"><span class="pre">errno</span></code>, users should not make
+any assumptions about it and always set it to <code class="docutils literal"><span class="pre">0</span></code> before making any system
+calls that convey error information via <code class="docutils literal"><span class="pre">errno</span></code>.</p>
 </div>
 <div class="section" id="portability">
 <span id="id4"></span><h2>Portability<a class="headerlink" href="#portability" title="Permalink to this headline">¶</a></h2>
