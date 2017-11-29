@@ -1268,10 +1268,11 @@ formatting arguments.</p>
 class basic_parse_context {
 public:
   using char_type = charT;
-  class iterator;
+  using const_iterator = <i>implementation-defined</i>;
+  using iterator = const_iterator;
 
-  constexpr iterator begin() const noexcept;
-  constexpr iterator end() const noexcept;
+  constexpr const_iterator begin() const noexcept;
+  constexpr const_iterator end() const noexcept;
 
   constexpr unsigned next_arg_id();
   constexpr void check_arg_id(unsigned id);
@@ -1285,12 +1286,21 @@ automatic indexing.
 </p>
 
 <dl>
-<dt><code>constexpr iterator begin() const noexcept;</code></dt>
+<dt><code>using const_iterator = <i>implementation-defined</i>;</code></dt>
+<dd>
+<p>A type that meets the requirements of a constant random access iterator
+(<a href="http://eel.is/c++draft/random.access.iterators"
+>[random.access.iterators])</a> and of a contiguous iterator
+(<a href="http://eel.is/c++draft/iterator.requirements.general"
+>[iterator.requirements.general]</a>) whose <code>value_type</code> is the
+template parameter <code>charT</code>.</p>
+</dd>
+<dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
 <dd>
 <p><i>Returns</i>: An iterator referring to the first character in the format
 string range being parsed.</p>
 </dd>
-<dt><code>constexpr iterator end() const noexcept;</code></dt>
+<dt><code>constexpr const_iterator end() const noexcept;</code></dt>
 <dd>
 <p><i>Returns</i>: An iterator referring to the position one past the last
 character in the format string range being parsed.</p>
@@ -1311,8 +1321,6 @@ has been called earlier which indicates mixing of automatic and manual
 argument indexing.</p>
 </dd>
 </dl>
-
-TODO: document iterator
 
 <h3>Formatting context</h3>
 
