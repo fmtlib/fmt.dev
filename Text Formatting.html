@@ -510,7 +510,7 @@ using existing C++17 features. Ideally we would like to use a function call API
 similar to the one proposed in this paper:</p>
 
 <pre>
-<code>template &lt;class String, class ...Args&gt;
+<code>template &lt;class String, class... Args&gt;
 string format(String format_str, const Args&amp;... args);</code></pre>
 
 <p>where <code>String</code> is some type representing a compile-time format
@@ -553,7 +553,7 @@ class basic_arg;
 template &lt;class Visitor, class Context&gt;
 <i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);
 
-template &lt;class Context, class ...Args&gt;
+template &lt;class Context, class... Args&gt;
 class arg_store;
 
 template &lt;class Context&gt;
@@ -569,10 +569,10 @@ using parse_context = basic_parse_context&lt;char&gt;;
 using context = basic_context&lt;char&gt;;
 using args = basic_args&lt;context&gt;;
 
-template &lt;class ...Args&gt;
+template &lt;class... Args&gt;
 arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
 
-template &lt;class Context, class ...Args&gt;
+template &lt;class Context, class... Args&gt;
 arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 
 template &lt;class charT&gt;
@@ -582,12 +582,12 @@ using buffer = basic_buffer&lt;char&gt;;
 
 class format_error;
 
-template &lt;class ...Args&gt;
+template &lt;class... Args&gt;
 string format(string_view format_str, const Args&amp;... args);
 
 string vformat(string_view format_str, args args);
 
-template &lt;class ...Args&gt;
+template &lt;class... Args&gt;
 void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args);
 
 void vformat_to(buffer&amp; buf, string_view format_str, args args);
@@ -995,7 +995,7 @@ if the presentation type is not specified.
 
 <dl>
 <dt>
-<code>template &lt;class ...Args&gt;<br>
+<code>template &lt;class... Args&gt;<br>
 &nbsp;&nbsp;string format(string_view format_str, const Args&amp;... args);</code>
 </dt>
 <dd>
@@ -1033,7 +1033,7 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>template &lt;class ...Args&gt;<br>
+<code>template &lt;class... Args&gt;<br>
 &nbsp;&nbsp;void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args);</code>
 </dt>
 <dd>
@@ -1051,7 +1051,7 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>template &lt;class ...Args&gt;<br>
+<code>template &lt;class... Args&gt;<br>
 &nbsp;&nbsp;void vformat_to(buffer&amp; buf, string_view format_str, fmt::args args);</code>
 </dt>
 <dd>
@@ -1181,7 +1181,7 @@ the number of possible values types of a formatting argument.
 <h3>Class template <code>arg_store</code></h3>
 
 <pre>
-<code>template &lt;class Context, class ...Args&gt;
+<code>template &lt;class Context, class... Args&gt;
 class arg_store;</code>
 </pre>
 
@@ -1200,7 +1200,7 @@ public:
 
   basic_args() noexcept;
 
-  template &lt;class ...Args&gt;
+  template &lt;class... Args&gt;
   basic_args(const arg_store&lt;Context, Args...&gt;&amp; store);
 
   basic_arg&lt;Context&gt; operator[](size_type i) const;
@@ -1223,7 +1223,7 @@ arguments.
 </dl>
 
 <dl>
-<dt><code>template &lt;class ...Args&gt;<br>
+<dt><code>template &lt;class... Args&gt;<br>
 basic_args(const arg_store&lt;Context, Args...&gt;&amp; store);</code></dt>
 <dd>
 <p><i>Effects</i>: Constructs a <code>basic_args</code> object that
@@ -1247,7 +1247,7 @@ Otherwise, returns an empty <code>basic_arg</code> object.</p>
 
 <dl>
 <dt>
-<code>template &lt;class ...Args&gt;<br>
+<code>template &lt;class... Args&gt;<br>
 arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code>
 </dt>
 <dd>
