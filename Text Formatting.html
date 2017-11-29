@@ -559,10 +559,10 @@ class arg_store;
 template &lt;class Context&gt;
 class basic_args;
 
-template &lt;class Char&gt;
+template &lt;class charT&gt;
 class basic_parse_context;
 
-template &lt;class Char&gt;
+template &lt;class charT&gt;
 class basic_context;
 
 using parse_context = basic_parse_context&lt;char&gt;;
@@ -575,7 +575,7 @@ arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
 template &lt;class Context, class ...Args&gt;
 arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 
-template &lt;class Char&gt;
+template &lt;class charT&gt;
 class basic_buffer;
 
 using buffer = basic_buffer&lt;char&gt;;
@@ -592,10 +592,10 @@ void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args)
 
 void vformat_to(buffer&amp; buf, string_view format_str, args args);
 
-template &lt;class T, class Char = char&gt;
+template &lt;class T, class charT = char&gt;
 struct formatter {
-  constexpr typename basic_parse_context&lt;Char&gt;::iterator parse(basic_parse_context&lt;Char&gt;&amp; ctx);
-  void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;charT&gt;::iterator parse(basic_parse_context&lt;charT&gt;&amp; ctx);
+  void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value, basic_context&lt;charT&gt;&amp; ctx);
 };
 }  // namespace fmt
 }  // namespace std </code>
@@ -1093,19 +1093,19 @@ types:
 <li><code>unsigned int</code>
 <li>integral types larger than <code>int</code>
 <li><code>bool</code>
-<li><code>Char</code>
+<li><code>charT</code>
 <li><code>double</code>
 <li>floating-point types larger than <code>double</code>
 <li><code>const char*</code>
 <li><code>string_view</code>
-<li><code>basic_string_view&lt;Char&gt;</code> if different from
+<li><code>basic_string_view&lt;charT&gt;</code> if different from
     <code>string_view</code>
 <li><code>const void*</code>
 <li>reference to an object of a user-defined type (implementation-defined)
 <li><code>monostate</code> representing an empty state, i.e. when the
     object doesn't refer to an argument
 </ul>
-where <code>Char</code> is <code>typename Context::char_type</code>.
+where <code>charT</code> is <code>typename Context::char_type</code>.
 The value can be accessed via the visitation interface defined in the next
 section.
 </p>
@@ -1264,10 +1264,10 @@ formatting arguments.</p>
 <h3>Parsing context</h3>
 
 <pre>
-<code>template &lt;class Char&gt;
+<code>template &lt;class charT&gt;
 class basic_parse_context {
 public:
-  using char_type = Char;
+  using char_type = charT;
   class iterator;
 
   constexpr iterator begin() const noexcept;
@@ -1317,13 +1317,13 @@ TODO: document iterator
 <h3>Formatting context</h3>
 
 <pre>
-<code>template &lt;class Char&gt;
+<code>template &lt;class charT&gt;
 class basic_context {
 public:
-  using char_type = Char;
+  using char_type = charT;
   using args_type = basic_args&lt;basic_context&gt;;
 
-  basic_context(const Char* format_str, args_type args);
+  basic_context(const charT* format_str, args_type args);
 
   args_type args() const;
 };</code>
@@ -1336,7 +1336,7 @@ position in the format string being parsed.
 </p>
 
 <dl>
-<dt><code>basic_context(const Char* format_str, args_type args);</code></dt>
+<dt><code>basic_context(const charT* format_str, args_type args);</code></dt>
 <dd>
 <p><i>Effects</i>: Constructs an object of class <code>basic_context</code>
 storing references to the formatting arguments and the format string in it.
@@ -1353,7 +1353,7 @@ passed to the constructor of <code>basic_context</code>.</p>
 <h3>Formatting buffer</h3>
 
 <pre>
-<code>template &lt;class Char&gt;
+<code>template &lt;class charT&gt;
 class basic_buffer {
 public:
   using size_type = <i>implementation-defined</i>;
@@ -1366,10 +1366,10 @@ public:
   void resize(size_type sz);
   void reserve(size_type n);
 
-  Char* data() noexcept;
-  const Char* data() const noexcept;
+  charT* data() noexcept;
+  const charT* data() const noexcept;
 
-  void push_back(const Char&amp; x);
+  void push_back(const charT&amp; x);
 
   template &lt;class InputIterator&gt;
   void append(InputIterator first, InputIterator last);
@@ -1379,7 +1379,7 @@ public:
 protected:
   basic_buffer() noexcept;
 
-  void set(Char* s, size_type n) noexcept;
+  void set(charT* s, size_type n) noexcept;
 
   virtual void grow(size_type n) = 0;
 };</code>
@@ -1401,7 +1401,7 @@ all <code>0 &lt;= n &lt; d.size()</code>.
   <p><i>Effects</i>: Constructs an empty buffer.</p>
   <p><i>Postcondition</i>: <code>size() == 0</code>.</p>
 </dd>
-<dt><code>set(Char* s, size_type n) noexcept;</code></dt>
+<dt><code>set(charT* s, size_type n) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Sets data and capacity.</p>
   <p><i>Postcondition</i>: <code>data() == s</code> and
@@ -1448,13 +1448,13 @@ all <code>0 &lt;= n &lt; d.size()</code>.
   defined by a derived class, in particular, if the latter has a fixed capacity.
   </p>
 </dd>
-<dt><code>Char* data() noexcept;<br>
-  const Char* data() const noexcept;</code></dt>
+<dt><code>charT* data() noexcept;<br>
+  const charT* data() const noexcept;</code></dt>
 <dd>
   <p><i>Returns</i>: A pointer such that <code>[data(), data() + size())</code>
   is a valid range.</p>
 </dd>
-<dt><code>void push_back(const Char&amp; x);</code></dt>
+<dt><code>void push_back(const charT&amp; x);</code></dt>
 <dd>
   <p><i>Effects</i>: Equivalent to <code>append(&amp;x, &amp;x + 1)</code>.</p>
 </dd>
@@ -1521,22 +1521,22 @@ buffer, <code>x</code> is a const reference to the argument and
 </p>
 
 <pre>
-<code>template &lt;class T, class Char = char&gt;
+<code>template &lt;class T, class charT = char&gt;
 struct formatter {
-  constexpr typename basic_parse_context&lt;Char&gt;::iterator parse(parse_context&lt;Char&gt;&amp; ctx);
-  void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value, basic_context&lt;Char&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;charT&gt;::iterator parse(parse_context&lt;charT&gt;&amp; ctx);
+  void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value, basic_context&lt;charT&gt;&amp; ctx);
 };</code>
 </pre>
 
 <dl>
 <dt>
-<code>void format(basic_buffer&lt;Char&gt;&amp; buf, const T&amp; value,
-basic_context&lt;Char&gt;&amp; ctx);</code>
+<code>void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value,
+basic_context&lt;charT&gt;&amp; ctx);</code>
 </dt>
 <dd>
 <p>
 <i>Effects</i>: The function calls <code>os &lt;&lt; value</code>, where
-<code>os</code> is an instance of <code>std::basic_ostream&lt;Char&gt;</code>
+<code>os</code> is an instance of <code>std::basic_ostream&lt;charT&gt;</code>
 with a stream buffer writing to <code>buf</code>.
 </p>
 <p><i>Throws</i>: <code>format_error</code> if <code>*ctx.ptr() != '}'</code>.</p>
