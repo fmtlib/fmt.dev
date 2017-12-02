@@ -1078,6 +1078,8 @@ valid format string.</p>
 <code>template &lt;class Context&gt;
 class basic_arg {
 public:
+  class handle;
+
   basic_arg();
 
   explicit operator bool() const noexcept;
@@ -1089,10 +1091,10 @@ public:
 </pre>
 
 <p>
-An object of type <code>basic_arg&lt;Context&gt;</code> represents a reference
-to a formatting argument parameterized on a formatting context (see
-<a href="#gensection-7">3.9</a>). It can hold a value of one of the following
-types:
+The class template <code>basic_arg</code> describes objects that store a copy of
+or a reference to a formatting argument. It is parameterized on a formatting
+context (see <a href="#gensection-9">4.9</a>) and can hold a value of one of the
+following types:
 <ul>
 <li><code>int</code>
 <li><code>unsigned int</code>
@@ -1101,12 +1103,11 @@ types:
 <li><code>charT</code>
 <li><code>double</code>
 <li>floating-point types larger than <code>double</code>
-<li><code>const char*</code>
-<li><code>string_view</code>
-<li><code>basic_string_view&lt;charT&gt;</code> if different from
-    <code>string_view</code>
+<li><code>const charT*</code>
+<li><code>basic_string_view&lt;charT&gt;</code>
 <li><code>const void*</code>
-<li>reference to an object of a user-defined type (implementation-defined)
+<li><code>handle</code> which stores a reference to an object of a user-defined
+type and a pointer to a formatting function
 <li><code>monostate</code> representing an empty state, i.e. when the
     object doesn't refer to an argument
 </ul>
@@ -1131,12 +1132,13 @@ argument, otherwise <code>false</code>.</p>
 <dt><code>bool is_integral() const;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an integral type.</p>
+argument of an integral type (<a
+href="http://eel.is/c++draft/basic.fundamental">[basic.fundamental]</a>).</p>
 </dd>
 <dt><code>bool is_numeric() const;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of a numeric type.</p>
+argument of an integral or a floating-point type.</p>
 </dd>
 <dt><code>bool is_pointer() const;</code></dt>
 <dd>
@@ -1149,6 +1151,24 @@ argument of type <code>const void*</code>.</p>
 <code>is_numeric</code>, and <code>is_pointer</code> does not depend on
 the number of possible value types of a formatting argument.
 </p>
+
+<pre>
+<code>template &lt;class Context&gt;
+class basic_arg&lt;Context&gt;::handle {
+public:
+  using char_type = typename Context::char_type;
+
+  void format(basic_buffer&lt;char_type&gt;&amp; buf, Context&amp; ctx);
+};</code>
+</pre>
+
+<dl>
+<dt><code>void format(basic_buffer&lt;char_type&gt;&amp; buf, Context&amp; ctx);</code></dt>
+<dd>
+<p><i>Effects</i>: Formats the object referred to by this handle into the buffer
+<code>buf</code>.
+</p>
+</dd>
 
 <h3>Formatting argument visitation</h3>
 
@@ -1336,7 +1356,7 @@ public:
   using char_type = charT;
   using args_type = basic_args&lt;basic_context&gt;;
 
-  basic_context(const charT* format_str, args_type args);
+  basic_context(args_type args);
 
   args_type args() const;
 };</code>
@@ -1344,17 +1364,17 @@ public:
 
 <p>
 The class <code>basic_context</code> represents a formatting context for
-user-defined types. It provides access to formatting arguments and the current
-position in the format string being parsed.
+user-defined types. It can be used to implement different types of formatters,
+e.g. a printf formatter.
 </p>
 
 <dl>
-<dt><code>basic_context(const charT* format_str, args_type args);</code></dt>
+<dt><code>basic_context(args_type args);</code></dt>
 <dd>
 <p><i>Effects</i>: Constructs an object of class <code>basic_context</code>
-storing references to the formatting arguments and the format string in it.
+storing references to the formatting arguments.
 </p>
-<p><i>Postcondition</i>: <code>ptr() == format_str</code>.</p>
+<p><i>Postcondition</i>: <code>args() == args</code>.</p>
 </dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
@@ -1536,7 +1556,7 @@ buffer, <code>x</code> is a const reference to the argument and
 <pre>
 <code>template &lt;class T, class charT = char&gt;
 struct formatter {
-  constexpr typename basic_parse_context&lt;charT&gt;::iterator parse(parse_context&lt;charT&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;charT&gt;::iterator parse(basic_parse_context&lt;charT&gt;&amp; ctx);
   void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value, basic_context&lt;charT&gt;&amp; ctx);
 };</code>
 </pre>
