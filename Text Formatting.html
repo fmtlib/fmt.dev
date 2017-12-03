@@ -152,6 +152,7 @@ Reply to:<br>
 <li>Add a note regarding time formatting and compatiblity with D0355 "Extending
     &lt;chrono&gt; to Calendars and Time Zones" <a href="#16">[16]</a> to
     <a href="#Extensibility">Extensibility</a>.
+<li>Rename <code>basic_args</code> to <code>basic_format_args</code>.
 </ul>
 </p>
 
@@ -562,7 +563,7 @@ template &lt;class Context, class... Args&gt;
 class arg_store;
 
 template &lt;class Context&gt;
-class basic_args;
+class basic_format_args;
 
 template &lt;class charT&gt;
 class basic_parse_context;
@@ -572,7 +573,7 @@ class basic_context;
 
 using parse_context = basic_parse_context&lt;char&gt;;
 using context = basic_context&lt;char&gt;;
-using args = basic_args&lt;context&gt;;
+using format_args = basic_format_args&lt;context&gt;;
 
 template &lt;class... Args&gt;
 arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
@@ -590,12 +591,12 @@ class format_error;
 template &lt;class... Args&gt;
 string format(string_view format_str, const Args&amp;... args);
 
-string vformat(string_view format_str, args args);
+string vformat(string_view format_str, format_args args);
 
 template &lt;class... Args&gt;
 void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args);
 
-void vformat_to(buffer&amp; buf, string_view format_str, args args);
+void vformat_to(buffer&amp; buf, string_view format_str, format_args args);
 
 template &lt;class T, class charT = char&gt;
 struct formatter {
@@ -1020,7 +1021,7 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>string vformat(string_view format_str, fmt::args args);</code>
+<code>string vformat(string_view format_str, format_args args);</code>
 </dt>
 <dd>
 <p>
@@ -1057,7 +1058,7 @@ valid format string.</p>
 <dl>
 <dt>
 <code>template &lt;class... Args&gt;<br>
-&nbsp;&nbsp;void vformat_to(buffer&amp; buf, string_view format_str, fmt::args args);</code>
+&nbsp;&nbsp;void vformat_to(buffer&amp; buf, string_view format_str, format_args args);</code>
 </dt>
 <dd>
 
@@ -1215,33 +1216,33 @@ An object of type <code>arg_store</code> stores formatting arguments or
 references to them.
 </p>
 
-<h3>Class template <code>basic_args</code></h3>
+<h3>Class template <code>basic_format_args</code></h3>
 
 <pre>
 <code>template &lt;class Context&gt;
-class basic_args {
+class basic_format_args {
 public:
   using size_type = <i>implementation-defined</i>;
 
-  basic_args() noexcept;
+  basic_format_args() noexcept;
 
   template &lt;class... Args&gt;
-  basic_args(const arg_store&lt;Context, Args...&gt;&amp; store);
+  basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);
 
   basic_arg&lt;Context&gt; operator[](size_type i) const;
 };</code>
 </pre>
 
 <p>
-An object of type <code>basic_args</code> provides access to formatting
-arguments. Copying a <code>basic_args</code> object does not copy the
+An object of type <code>basic_format_args</code> provides access to formatting
+arguments. Copying a <code>basic_format_args</code> object does not copy the
 arguments.
 </p>
 
 <dl>
-<dt><code>basic_args() noexcept;</code></dt>
+<dt><code>basic_format_args() noexcept;</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs an empty <code>basic_args</code> object.
+<p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
 </p>
 <p><i>Postcondition</i>: <code>!(*this)[0]</code>.</p>
 </dd>
@@ -1249,9 +1250,9 @@ arguments.
 
 <dl>
 <dt><code>template &lt;class... Args&gt;<br>
-basic_args(const arg_store&lt;Context, Args...&gt;&amp; store);</code></dt>
+basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs a <code>basic_args</code> object that
+<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
 provides access to the agruments in <code>store</code>.
 </p>
 </dd>
@@ -1261,7 +1262,7 @@ provides access to the agruments in <code>store</code>.
 <dt><code>basic_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
 <dd>
 <p><i>Requires</i>: <code>i &lt;=</code> the number of formatting arguments
-represented by the <code>basic_args</code> object.</p>
+represented by the <code>basic_format_args</code> object.</p>
 <p><i>Returns</i>: A <code>basic_arg</code> object that represents an argument
 at index <code>i</code> if <code>i &lt;</code> the number of arguments.
 Otherwise, returns an empty <code>basic_arg</code> object.</p>
@@ -1354,7 +1355,7 @@ argument indexing.</p>
 class basic_context {
 public:
   using char_type = charT;
-  using args_type = basic_args&lt;basic_context&gt;;
+  using args_type = basic_format_args&lt;basic_context&gt;;
 
   basic_context(args_type args);
 
