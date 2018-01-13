@@ -153,6 +153,7 @@ Reply to:<br>
     &lt;chrono&gt; to Calendars and Time Zones" <a href="#16">[16]</a> to
     <a href="#Extensibility">Extensibility</a>.
 <li>Rename <code>basic_args</code> to <code>basic_format_args</code>.
+<li>Rename <code>is_numeric</code> to <code>is_arithmetic</code>.
 </ul>
 </p>
 
@@ -643,7 +644,7 @@ section.
 </p>
 
 <p>
-If the numerical <code>arg-id</code>s in a format string are 0, 1, 2, ... in
+If the numeric <code>arg-id</code>s in a format string are 0, 1, 2, ... in
 sequence, they can all be omitted (not just some) and the numbers 0, 1, 2, ...
 will be automatically inserted in that order.
 </p>
@@ -688,7 +689,7 @@ how the format specification is to be interpreted.
 
 <p>
 Most built-in types implement the following options for format specifications,
-although some of the formatting options are only supported by the numeric types.
+although some of the formatting options are only supported by arithmetic types.
 </p>
 
 <p>
@@ -737,7 +738,7 @@ The meaning of the various alignment options is as follows:
 <td><code>'='</code></td>
 <td>Forces the padding to be placed after the sign (if any) but before the
     digits. This is used for printing fields in the form
-    <code>+000000120</code>. This alignment option is only valid for numeric
+    <code>+000000120</code>. This alignment option is only valid for arithmetic
     types.</td>
 </tr>
 <tr>
@@ -805,7 +806,7 @@ not specified, then the field width will be determined by the content.
 
 <p>
 Preceding the <code>width</code> field by a zero (<code>'0'</code>) character
-enables sign-aware zero-padding for numeric types. This is equivalent to a
+enables sign-aware zero-padding for arithmetic types. This is equivalent to a
 <code>fill</code> character of <code>'0'</code> with an <code>alignment</code>
 type of <code>'='</code>.
 </p>
@@ -1086,7 +1087,7 @@ public:
   explicit operator bool() const noexcept;
 
   bool is_integral() const;
-  bool is_numeric() const;
+  bool is_arithmetic() const;
   bool is_pointer() const;
 };</code>
 </pre>
@@ -1136,10 +1137,10 @@ argument, otherwise <code>false</code>.</p>
 argument of an integral type (<a
 href="http://eel.is/c++draft/basic.fundamental">[basic.fundamental]</a>).</p>
 </dd>
-<dt><code>bool is_numeric() const;</code></dt>
+<dt><code>bool is_arithmetic() const;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an integral or a floating-point type.</p>
+argument of an arithmetic type.</p>
 </dd>
 <dt><code>bool is_pointer() const;</code></dt>
 <dd>
@@ -1149,7 +1150,7 @@ argument of type <code>const void*</code>.</p>
 </dl>
 
 <p><i>Complexity:</i> The invocation of <code>is_integral</code>,
-<code>is_numeric</code>, and <code>is_pointer</code> does not depend on
+<code>is_arithmetic</code>, and <code>is_pointer</code> does not depend on
 the number of possible value types of a formatting argument.
 </p>
 
