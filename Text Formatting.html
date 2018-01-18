@@ -154,6 +154,10 @@ Reply to:<br>
     <a href="#Extensibility">Extensibility</a>.
 <li>Rename <code>basic_args</code> to <code>basic_format_args</code>.
 <li>Rename <code>is_numeric</code> to <code>is_arithmetic</code>.
+<li>Add the <code>count</code> function that counts the number of characters in
+    the output to "Header &lt;format&gt; synopsis" and "Formatting functions"
+    and use it to define output ranges.
+<li>Remove <code>basic_buffer</code> and section "Formatting buffer".
 </ul>
 </p>
 
@@ -352,8 +356,8 @@ for <code>put_time</code>-like date and time formatting
 
 <pre class="example">
 <code>time_t t = time(nullptr);
-string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));</code>
-</pre>
+string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
+</code></pre>
 
 <p>by providing a specialization of <code>formatter</code> for <code>tm</code>:
 </p>
@@ -362,7 +366,10 @@ string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));</cod
 <code>template <>
 struct formatter&lt;tm&gt; {
   constexpr fmt::parse_context::iterator parse(fmt::parse_context&amp; ctx);
-  void format(fmt::buffer&amp; buf, const tm&amp; tm, fmt::context&amp; ctx);
+
+  template &lt;class FormatContext&gt;
+    typename FormatContext::iterator format(const tm&amp; tm,
+                                            FormatContext&amp; ctx);
 };
 </code></pre>
 
@@ -370,7 +377,7 @@ struct formatter&lt;tm&gt; {
 The <code>formatter&lt;tm&gt;::parse</code> function parses the
 <code>format-spec</code> portion of the format string corresponding to the
 current argument and <code>formatter&lt;tm&gt;::format</code> formats the value
-into <code>buf</code> using <code>format_to</code> or the buffer API.
+and writes the result via the output iterator <code>ctx.begin()</code>.
 </p>
 
 <p>
@@ -392,7 +399,7 @@ Formatting functions rely on variadic templates instead of the mechanism
 provided by <code>&lt;cstdarg&gt;</code>. The type information is captured
 automatically and passed to formatters guaranteeing type safety and making
 many of the <code>printf</code> specifiers redundant (see <a href="#Syntax">
-Format String Syntax</a>). Buffer management is automatic to prevent
+Format String Syntax</a>). Memory management is automatic to prevent
 buffer overflow errors common to <code>printf</code>.
 </p>
 
@@ -468,16 +475,14 @@ arguments, for example:
 The formatting library has been designed with performance in mind. It tries to
 minimize the number of virtual function calls and dynamic memory allocations
 done per a formatting operation. In particular, if formatting output can fit
-into a fixed-size buffer allocated on stack, it should be possible to avoid
+into a fixed-size array allocated on stack, it should be possible to avoid
 them altogether by using a suitable API.
 </p>
 
 <p>
-To this end, a buffer abstraction represented by the
-<code>fmt::basic_buffer</code> template is introduced. A buffer is a contiguous
-block of memory that can be accessed directly and can optionally grow. Only one
-virtual function, <code>grow</code>, needs to be called during formatting and
-only when the buffer is not large enough.
+The <code>format_to</code> function takes an arbitrary output iterator and can
+be specialized for random access and contiguous iterators for performance
+reasons as it is done in the reference implementation [14].
 </p>
 
 <p>
@@ -569,23 +574,23 @@ class basic_format_args;
 template &lt;class charT&gt;
 class basic_parse_context;
 
-template &lt;class charT&gt;
+template &lt;class Range&gt;
 class basic_context;
 
 using parse_context = basic_parse_context&lt;char&gt;;
-using context = basic_context&lt;char&gt;;
+
+using context = basic_context&lt;<i>implementation-defined</i>&gt;;
+
 using format_args = basic_format_args&lt;context&gt;;
+
+template &lt;class OutputIterator&gt;
+using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
 
 template &lt;class... Args&gt;
 arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
 
 template &lt;class Context, class... Args&gt;
 arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
-
-template &lt;class charT&gt;
-class basic_buffer;
-
-using buffer = basic_buffer&lt;char&gt;;
 
 class format_error;
 
@@ -594,15 +599,25 @@ string format(string_view format_str, const Args&amp;... args);
 
 string vformat(string_view format_str, format_args args);
 
-template &lt;class... Args&gt;
-void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args);
+template &lt;class OutputIterator, class... Args&gt;
+  OutputIterator format_to(OutputIterator out, string_view format_str,
+                           const Args&amp;... args);
 
-void vformat_to(buffer&amp; buf, string_view format_str, format_args args);
+template &lt;class OutputIterator&gt;
+  OutputIterator vformat_to(OutputIterator out, string_view format_str,
+                            format_args_t&lt;OutputIterator&gt; args);
+
+template &lt;class... Args&gt;
+  size_t count(string_view format_str, const Args&amp;... args);
 
 template &lt;class T, class charT = char&gt;
 struct formatter {
-  constexpr typename basic_parse_context&lt;charT&gt;::iterator parse(basic_parse_context&lt;charT&gt;&amp; ctx);
-  void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value, basic_context&lt;charT&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;charT&gt;::iterator
+    parse(basic_parse_context&lt;charT&gt;&amp; ctx);
+
+  template &lt;class FormatContext&gt;
+    typename FormatContext::iterator format(const T&amp; value,
+                                            FormatContext&amp; ctx);
 };
 }  // namespace fmt
 }  // namespace std </code>
@@ -905,7 +920,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 <tr>
 <td><code>'n'</code></td>
 <td>Number. This is the same as <code>'d'</code>, except that it uses the
-    buffer's locale to insert the appropriate number separator characters.</td>
+    locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -970,7 +985,7 @@ if the presentation type is not specified.
 <tr>
 <td><code>'n'</code></td>
 <td>Number. This is the same as <code>'g'</code>, except that it uses the
-    buffer's locale to insert the appropriate number separator characters.</td>
+    locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1040,17 +1055,20 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>template &lt;class... Args&gt;<br>
-&nbsp;&nbsp;void format_to(buffer&amp; buf, string_view format_str, const Args&amp;... args);</code>
+<pre><code>template &lt;class OutputIterator, class... Args&gt;
+  OutputIterator format_to(OutputIterator out, string_view format_str,
+                           const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
 <p>
-<i>Effects</i>: The function appends to <code>buf</code> the format string
-<code>format_str</code> with each replacement field substituted with the
-character representation of the argument it refers to, formatted according to
-the specification given in the field.
+<i>Effects</i>: The function writes to the range <code>[out, out +
+fmt::count(format_str, args...))</code> the format string <code>format_str
+</code> with each replacement field substituted with the character
+representation of the argument it refers to, formatted according to the
+specification given in the field.
 </p>
+<p><i>Returns</i>: The end of the output range.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
 valid format string.</p>
 </dd>
@@ -1058,16 +1076,38 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>template &lt;class... Args&gt;<br>
-&nbsp;&nbsp;void vformat_to(buffer&amp; buf, string_view format_str, format_args args);</code>
+<pre><code>template &lt;class OutputIterator, class... Args&gt;
+  OutputIterator vformat_to(OutputIterator out, string_view format_str,
+                            format_args_t&lt;OutputIterator&gt; args);</code></pre>
 </dt>
 <dd>
 
 <p>
-<i>Effects</i>: The function appends to <code>buf</code> the format string
-<code>format_str</code> with each replacement field substituted with the
-character representation of the argument it refers to, formatted according to
-the specification given in the field.
+<i>Effects</i>: The function writes to the range <code>[out, out +
+fmt::count(format_str, args...))</code> the format string <code>format_str
+</code> with each replacement field substituted with the character
+representation of the argument it refers to, formatted according to the
+specification given in the field.
+</p>
+<p><i>Returns</i>: The end of the output range.</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+valid format string.</p>
+</dd>
+</dl>
+
+<dl>
+<dt>
+<pre><code>template &lt;class... Args&gt;
+  size_t count(string_view format_str, const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+<p>
+<i>Effects</i>: The function returns the number of characters in the output of
+<code>fmt::format(format_str, args...)</code> without constructing the formatted
+string.
+</p>
+<p><i>Returns</i>: The number of characters in the output of
+<code>format(format_str, args...)</code>.
 </p>
 <p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
 valid format string.</p>
@@ -1160,15 +1200,16 @@ class basic_arg&lt;Context&gt;::handle {
 public:
   using char_type = typename Context::char_type;
 
-  void format(basic_buffer&lt;char_type&gt;&amp; buf, Context&amp; ctx);
+  void format(Context&amp; ctx);
 };</code>
 </pre>
 
 <dl>
-<dt><code>void format(basic_buffer&lt;char_type&gt;&amp; buf, Context&amp; ctx);</code></dt>
+<dt><code>void format(Context&amp; ctx);</code></dt>
 <dd>
-<p><i>Effects</i>: Formats the object referred to by this handle into the buffer
-<code>buf</code>.
+<p><i>Effects</i>: Formats the object referred to by this handle into the range
+<code>[ctx.begin(), ctx.begin() + size)</code>, where <code>size</code> is the
+output size.
 </p>
 </dd>
 
@@ -1385,139 +1426,6 @@ passed to the constructor of <code>basic_context</code>.</p>
 </dd>
 </dl>
 
-<h3>Formatting buffer</h3>
-
-<pre>
-<code>template &lt;class charT&gt;
-class basic_buffer {
-public:
-  using size_type = <i>implementation-defined</i>;
-
-  virtual ~basic_buffer();
-
-  size_type size() const noexcept;
-  size_type capacity() const noexcept;
-
-  void resize(size_type sz);
-  void reserve(size_type n);
-
-  charT* data() noexcept;
-  const charT* data() const noexcept;
-
-  void push_back(const charT&amp; x);
-
-  template &lt;class InputIterator&gt;
-  void append(InputIterator first, InputIterator last);
-
-  virtual locale locale() const;
-
-protected:
-  basic_buffer() noexcept;
-
-  void set(charT* s, size_type n) noexcept;
-
-  virtual void grow(size_type n) = 0;
-};</code>
-</pre>
-
-<p>
-The class <code>basic_buffer&lt;T&gt;</code> represents a contiguous
-memory buffer with an optional growing ability. An instance of
-<code>basic_buffer&lt;T&gt;</code> stores elements of type <code>T</code>.
-The elements of a <code>basic_buffer</code> are stored contiguously, meaning
-that if <code>b</code> is a <code>basic_buffer&lt;T&gt;</code> then it obeys
-the identity <code>&amp;b.data()[n] == &amp;b.data()[0] + n</code> for
-all <code>0 &lt;= n &lt; d.size()</code>.
-</p>
-
-<dl>
-<dt><code>basic_buffer() noexcept;</code></dt>
-<dd>
-  <p><i>Effects</i>: Constructs an empty buffer.</p>
-  <p><i>Postcondition</i>: <code>size() == 0</code>.</p>
-</dd>
-<dt><code>set(charT* s, size_type n) noexcept;</code></dt>
-<dd>
-  <p><i>Effects</i>: Sets data and capacity.</p>
-  <p><i>Postcondition</i>: <code>data() == s</code> and
-  <code>capacity() == n</code>.</p>
-</dd>
-<dt><code>size_type size() const noexcept;</code></dt>
-<dd>
-  <p><i>Returns</i>: The buffer size.</p>
-</dd>
-<dt><code>size_type capacity() const noexcept;</code></dt>
-<dd>
-  <p><i>Returns</i>: The total number of elements that the buffer can hold
-  without requiring reallocation.</p>
-</dd>
-<dt><code>void resize(size_type sz);</code></dt>
-<dd>
-  <p><i>Effects</i>: If <code>sz &lt;= size()</code>, removes last
-  <code>size() - sz</code> elements from the buffer.
-  If <code>size() &lt; sz</code>, appends <code>sz - size()</code>
-  default-initialized elements to the buffer.</p>
-  <p><i>Postcondition</i>: <code>size() == sz</code>.</p>
-</dd>
-<dt><code>void reserve(size_type n);</code></dt>
-<dd>
-  <p><i>Requires</i>: <code>T</code> shall be <code>MoveInsertable</code> into
-  <code>*this.</code></p>
-  <p><i>Effects</i>: A directive that informs a buffer of a planned change in
-  size, so that it can manage the storage allocation accordingly. After
-  <code>reserve()</code>, <code>capacity()</code> is greater or equal to the
-  argument of <code>reserve</code> if reallocation happens; and equal to the
-  previous value of <code>capacity()</code> otherwise. Reallocation happens
-  at this point if and only if the current capacity is less than the argument of
-  <code>reserve()</code>, and it is performed by calling <code>grow(n)</code>.
-  If an exception is thrown other than by the move constructor of a
-  non-<code>CopyInsertable</code> type, there are no effects.</p>
-</dd>
-<dt><code>void grow(size_type n);</code></dt>
-<dd>
-  <p><i>Requires</i>: <code>n &gt; capacity()</code>.</p>
-  <p><i>Effects</i>: Reallocates the buffer to increase its capacity to at least
-  <code>n</code> in a way that is defined separately for each class derived
-  from <code>basic_buffer</code>.</p>
-  <p><i>Throws</i>: <code>length_error</code> if <code>n</code> exceeds a limit
-  defined by a derived class, in particular, if the latter has a fixed capacity.
-  </p>
-</dd>
-<dt><code>charT* data() noexcept;<br>
-  const charT* data() const noexcept;</code></dt>
-<dd>
-  <p><i>Returns</i>: A pointer such that <code>[data(), data() + size())</code>
-  is a valid range.</p>
-</dd>
-<dt><code>void push_back(const charT&amp; x);</code></dt>
-<dd>
-  <p><i>Effects</i>: Equivalent to <code>append(&amp;x, &amp;x + 1)</code>.</p>
-</dd>
-<dt><code>template &lt;class InputIterator&gt;<br>
-  void append(InputIterator first, InputIterator last);</code>
-  <p>Let <code>n</code> be the number of elements in the range
-    <code>[first, last)</code>.</p>
-</dt>
-<dd>
-  <p><i>Requires</i>: <code>[first, last)</code> is a valid range.</p>
-  <p><i>Throws</i>: <code>length_error</code> if <code>size() + n &gt;
-  capacity()</code> and exceeds the capacity limit defined by a derived
-  class.</p>
-  <p><i>Effects</i>: The function replaces the buffer controlled by
-  <code>*this</code> with a buffer of length <code>size() + n</code> whose first
-  <code>size()</code> elements are a copy of the original buffer controlled by
-  <code>*this</code> and whose remaining elements are a copy of the elements
-  in the range.
-  </p>
-</dd>
-<dt><code>locale locale() const;</code></dt>
-<dd>
-  <p><i>Returns</i>: The locale to be used for locale-specific formatting.
-  The default implementation returns a copy of the global C++ locale but derived
-  classes may return different locales.</p>
-</dd>
-</dl>
-
 <h3>User-defined types</h3>
 
 <p>
@@ -1549,30 +1457,34 @@ return a pointer to the <code>'}'</code> character that ends
 </p>
 
 <p>
-Then the formatting function  will call <code>formatter&lt;X&gt;::format(buf, x,
-format_ctx)</code>, where <code>buf</code> is a reference to the formatting
-buffer, <code>x</code> is a const reference to the argument and
-<code>format_ctx</code> is a reference to the formatting context.
+Then the formatting function  will call <code>formatter&lt;X&gt;::format(x,
+format_ctx)</code>, where <code>x</code> is a const reference to the argument
+and <code>format_ctx</code> is a reference to the formatting context.
 </p>
 
 <pre>
 <code>template &lt;class T, class charT = char&gt;
 struct formatter {
-  constexpr typename basic_parse_context&lt;charT&gt;::iterator parse(basic_parse_context&lt;charT&gt;&amp; ctx);
-  void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value, basic_context&lt;charT&gt;&amp; ctx);
+  constexpr typename basic_parse_context&lt;charT&gt;::iterator
+    parse(basic_parse_context&lt;charT&gt;&amp; ctx);
+
+  template &lt;typename FormatContext&gt;
+    typename FormatContext::iterator format(const T&amp; value,
+                                            FormatContext&amp; ctx);
 };</code>
 </pre>
 
 <dl>
 <dt>
-<code>void format(basic_buffer&lt;charT&gt;&amp; buf, const T&amp; value,
-basic_context&lt;charT&gt;&amp; ctx);</code>
+<pre><code>template &lt;typename FormatContext&gt;
+  typename FormatContext::iterator format(const T&amp; value,
+                                          FormatContext&amp; ctx);</code></pre>
 </dt>
 <dd>
 <p>
 <i>Effects</i>: The function calls <code>os &lt;&lt; value</code>, where
 <code>os</code> is an instance of <code>std::basic_ostream&lt;charT&gt;</code>
-with a stream buffer writing to <code>buf</code>.
+with a stream buffer backed by output range given by <code>ctx</code>.
 </p>
 <p><i>Throws</i>: <code>format_error</code> if <code>*ctx.ptr() != '}'</code>.</p>
 </dd>
