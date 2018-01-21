@@ -523,7 +523,7 @@ similar to the one proposed in this paper:</p>
 
 <pre>
 <code>template &lt;class String, class... Args&gt;
-string format(String format_str, const Args&amp;... args);</code></pre>
+  string format(String format_str, const Args&amp;... args);</code></pre>
 
 <p>where <code>String</code> is some type representing a compile-time format
 string, for example</p>
@@ -560,22 +560,22 @@ Insert a new section in 27.7 [iostream.format].
 namespace fmt {
 
 template &lt;class Context&gt;
-class basic_arg;
+  class basic_arg;
 
 template &lt;class Visitor, class Context&gt;
-<i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);
 
 template &lt;class Context, class... Args&gt;
-class arg_store;
+  class arg_store;
 
 template &lt;class Context&gt;
-class basic_format_args;
+  class basic_format_args;
 
 template &lt;class charT&gt;
-class basic_parse_context;
+  class basic_parse_context;
 
 template &lt;class Range&gt;
-class basic_context;
+  class basic_context;
 
 using parse_context = basic_parse_context&lt;char&gt;;
 
@@ -584,18 +584,18 @@ using context = basic_context&lt;<i>implementation-defined</i>&gt;;
 using format_args = basic_format_args&lt;context&gt;;
 
 template &lt;class OutputIterator&gt;
-using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
-
-template &lt;class... Args&gt;
-arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
+  using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
 
 template &lt;class Context, class... Args&gt;
-arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+  arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+
+template &lt;class... Args&gt;
+  arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
 
 class format_error;
 
 template &lt;class... Args&gt;
-string format(string_view format_str, const Args&amp;... args);
+  string format(string_view format_str, const Args&amp;... args);
 
 string vformat(string_view format_str, format_args args);
 
@@ -1126,8 +1126,8 @@ public:
 
   explicit operator bool() const noexcept;
 
-  bool is_integral() const;
   bool is_arithmetic() const;
+  bool is_integral() const;
   bool is_pointer() const;
 };</code>
 </pre>
@@ -1171,16 +1171,16 @@ doesn't refer to an argument.
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> refers to an
 argument, otherwise <code>false</code>.</p>
 </dd>
+<dt><code>bool is_arithmetic() const;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
+argument of an arithmetic type.</p>
+</dd>
 <dt><code>bool is_integral() const;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
 argument of an integral type (<a
 href="http://eel.is/c++draft/basic.fundamental">[basic.fundamental]</a>).</p>
-</dd>
-<dt><code>bool is_arithmetic() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an arithmetic type.</p>
 </dd>
 <dt><code>bool is_pointer() const;</code></dt>
 <dd>
@@ -1189,17 +1189,15 @@ argument of type <code>const void*</code>.</p>
 </dd>
 </dl>
 
-<p><i>Complexity:</i> The invocation of <code>is_integral</code>,
-<code>is_arithmetic</code>, and <code>is_pointer</code> does not depend on
-the number of possible value types of a formatting argument.
+<p><i>Complexity:</i> The invocation of <code>is_arithmetic</code>,
+<code>is_integral</code>, and <code>is_pointer</code> does not depend on the
+number of possible value types of a formatting argument.
 </p>
 
 <pre>
 <code>template &lt;class Context&gt;
 class basic_arg&lt;Context&gt;::handle {
 public:
-  using char_type = typename Context::char_type;
-
   void format(Context&amp; ctx);
 };</code>
 </pre>
@@ -1207,9 +1205,16 @@ public:
 <dl>
 <dt><code>void format(Context&amp; ctx);</code></dt>
 <dd>
-<p><i>Effects</i>: Formats the object referred to by this handle into the range
-<code>[ctx.begin(), ctx.begin() + size)</code>, where <code>size</code> is the
-output size.
+<p><i>Effects</i>:
+<ol>
+  <li> Constructs a formatter object
+  <code>f = typename Context::template formatter_type&lt;T&gt;</code>,
+  where <code>T</code> is the type of the object referred to by this handle.
+  <li>Parses the format string with
+  <code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
+  <li>Formats the object <code>obj</code> referred to by this handle with
+  <code>ctx.advance_to(f.format(obj, ctx))</code>.
+</ol>
 </p>
 </dd>
 
@@ -1250,7 +1255,7 @@ the number of possible values types of a formatting argument.
 
 <pre>
 <code>template &lt;class Context, class... Args&gt;
-class arg_store;</code>
+  class arg_store;</code>
 </pre>
 
 <p>
@@ -1269,7 +1274,7 @@ public:
   basic_format_args() noexcept;
 
   template &lt;class... Args&gt;
-  basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);
+    basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);
 
   basic_arg&lt;Context&gt; operator[](size_type i) const;
 };</code>
@@ -1291,8 +1296,8 @@ arguments.
 </dl>
 
 <dl>
-<dt><code>template &lt;class... Args&gt;<br>
-basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);</code></dt>
+<dt><pre><code>template &lt;class... Args&gt;
+  basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
 <dd>
 <p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
 provides access to the agruments in <code>store</code>.
@@ -1303,8 +1308,6 @@ provides access to the agruments in <code>store</code>.
 <dl>
 <dt><code>basic_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
 <dd>
-<p><i>Requires</i>: <code>i &lt;=</code> the number of formatting arguments
-represented by the <code>basic_format_args</code> object.</p>
 <p><i>Returns</i>: A <code>basic_arg</code> object that represents an argument
 at index <code>i</code> if <code>i &lt;</code> the number of arguments.
 Otherwise, returns an empty <code>basic_arg</code> object.</p>
@@ -1315,8 +1318,8 @@ Otherwise, returns an empty <code>basic_arg</code> object.</p>
 
 <dl>
 <dt>
-<code>template &lt;class... Args&gt;<br>
-arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code>
+<pre><code>template &lt;class... Args&gt;
+  arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -1397,11 +1400,15 @@ argument indexing.</p>
 class basic_context {
 public:
   using char_type = charT;
-  using args_type = basic_format_args&lt;basic_context&gt;;
+  using args_type = basic_format_args&lt;basic_context&gt;
 
-  basic_context(args_type args);
+  template &lt;class T&gt;
+    using formatter_type = formatter&lt;T&gt;;
 
   args_type args() const;
+
+  iterator begin();
+  void advance_to(iterator it);
 };</code>
 </pre>
 
@@ -1412,13 +1419,6 @@ e.g. a printf formatter.
 </p>
 
 <dl>
-<dt><code>basic_context(args_type args);</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs an object of class <code>basic_context</code>
-storing references to the formatting arguments.
-</p>
-<p><i>Postcondition</i>: <code>args() == args</code>.</p>
-</dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
 <p><i>Effects</i>: Returns a copy of the <code>args</code> object that was
