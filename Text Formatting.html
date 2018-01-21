@@ -517,9 +517,9 @@ stack and calling a formatting function.</p>
 
 <p>It is possible to parse format strings at compile time with
 <code>constexpr</code> functions which has been demonstrated in the reference
-implementation [14]. Unfortunately a satisfactory API cannot be provided
-using existing C++17 features. Ideally we would like to use a function call API
-similar to the one proposed in this paper:</p>
+implementation [14] and in [18]. Unfortunately a satisfactory API cannot be
+provided using existing C++17 features. Ideally we would like to use a function
+call API similar to the one proposed in this paper:</p>
 
 <pre>
 <code>template &lt;class String, class... Args&gt;
@@ -574,7 +574,7 @@ template &lt;class Context&gt;
 template &lt;class charT&gt;
   class basic_parse_context;
 
-template &lt;class Range&gt;
+template &lt;class OutputIterator, class charT&gt;
   class basic_context;
 
 using parse_context = basic_parse_context&lt;char&gt;;
@@ -583,7 +583,7 @@ using context = basic_context&lt;<i>implementation-defined</i>&gt;;
 
 using format_args = basic_format_args&lt;context&gt;;
 
-template &lt;class OutputIterator&gt;
+template &lt;class OutputIterator, class charT&gt;
   using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
 
 template &lt;class Context, class... Args&gt;
@@ -605,7 +605,7 @@ template &lt;class OutputIterator, class... Args&gt;
 
 template &lt;class OutputIterator&gt;
   OutputIterator vformat_to(OutputIterator out, string_view format_str,
-                            format_args_t&lt;OutputIterator&gt; args);
+                            format_args_t&lt;OutputIterator, char&gt; args);
 
 template &lt;class... Args&gt;
   size_t count(string_view format_str, const Args&amp;... args);
@@ -1078,16 +1078,16 @@ valid format string.</p>
 <dt>
 <pre><code>template &lt;class OutputIterator, class... Args&gt;
   OutputIterator vformat_to(OutputIterator out, string_view format_str,
-                            format_args_t&lt;OutputIterator&gt; args);</code></pre>
+                            format_args_t&lt;OutputIterator, char&gt; args);</code></pre>
 </dt>
 <dd>
 
 <p>
 <i>Effects</i>: The function writes to the range <code>[out, out +
-fmt::count(format_str, args...))</code> the format string <code>format_str
-</code> with each replacement field substituted with the character
-representation of the argument it refers to, formatted according to the
-specification given in the field.
+fmt::count(format_str, args))</code> the format string <code>format_str</code>
+with each replacement field substituted with the character representation of the
+argument it refers to, formatted according to the specification given in the
+field.
 </p>
 <p><i>Returns</i>: The end of the output range.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
@@ -1255,13 +1255,25 @@ the number of possible values types of a formatting argument.
 
 <pre>
 <code>template &lt;class Context, class... Args&gt;
-  class arg_store;</code>
+class arg_store {
+public:
+  basic_format_args&lt;Context&gt; operator*() const;
+};</code>
 </pre>
 
 <p>
 An object of type <code>arg_store</code> stores formatting arguments or
 references to them.
 </p>
+
+<dl>
+<dt><code>basic_format_args&lt;Context&gt; operator*() const;</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object providing
+access to arguments in <code>*this</code>.
+</p>
+</dd>
+</dl>
 
 <h3>Class template <code>basic_format_args</code></h3>
 
@@ -1396,33 +1408,50 @@ argument indexing.</p>
 <h3>Formatting context</h3>
 
 <pre>
-<code>template &lt;class charT&gt;
+<code>template &lt;class OutputIterator, class charT&gt;
 class basic_context {
 public:
+  using iterator = OutputIterator;
   using char_type = charT;
   using args_type = basic_format_args&lt;basic_context&gt;
 
   template &lt;class T&gt;
     using formatter_type = formatter&lt;T&gt;;
 
-  args_type args() const;
+  basic_parse_context&lt;charT&gt;&amp; parse_context();
 
   iterator begin();
   void advance_to(iterator it);
+
+  args_type args() const;
 };</code>
 </pre>
 
 <p>
 The class <code>basic_context</code> represents a formatting context for
-user-defined types. It can be used to implement different types of formatters,
-e.g. a printf formatter.
+user-defined types.
 </p>
 
 <dl>
+<dt><code>basic_parse_context&lt;charT&gt;&amp; parse_context();</code></dt>
+<dd>
+<p><i>Returns</i>: A reference to the format string parsing context.</p>
+</dd>
+<dt><code>iterator begin();</code></dt>
+<dd>
+<p><i>Returns</i>: An iterator referring to the current position in the output
+range.</p>
+</dd>
+<dt><code>void advance_to(iterator it);</code></dt>
+<dd>
+<p><i>Effects</i>: Advances the current position in the output range to
+<code>it</code>.</p>
+<p><i>Postcondition</i>: <code>begin() == it</code>.</p>
+</dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
-<p><i>Effects</i>: Returns a copy of the <code>args</code> object that was
-passed to the constructor of <code>basic_context</code>.</p>
+<p><i>Returns</i>: A copy of the <code>args</code> object that represents
+formatting arguments.</p>
 </dd>
 </dl>
 
@@ -1648,6 +1677,10 @@ D0355: Extending &lt;chrono&gt; to Calendars and Time Zones</a>.</cite><br>
 <cite><a
 href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0067r1.html">
 P0067: Elementary string conversions</a>.</cite><br>
+<a name="18">[18]</a>
+<cite><a href="https://github.com/mpark/format">
+MPark.Format: Compile-time Checked, Type-Safe Formatting in C++14</a>.</cite>
+<br>
 </p>
 
 </div>
