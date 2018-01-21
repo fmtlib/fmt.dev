@@ -1083,11 +1083,11 @@ valid format string.</p>
 <dd>
 
 <p>
-<i>Effects</i>: The function writes to the range <code>[out, out +
-fmt::count(format_str, args))</code> the format string <code>format_str</code>
-with each replacement field substituted with the character representation of the
-argument it refers to, formatted according to the specification given in the
-field.
+<i>Effects</i>: The function writes to the range <code>[out, out + size)</code>,
+where <code>size</code> is the output size, the format string <code>format_str
+</code> with each replacement field substituted with the character
+representation of the argument it refers to, formatted according to the
+specification given in the field.
 </p>
 <p><i>Returns</i>: The end of the output range.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
@@ -1351,11 +1351,14 @@ formatting arguments.</p>
 class basic_parse_context {
 public:
   using char_type = charT;
-  using const_iterator = <i>implementation-defined</i>;
+  using const_iterator = basic_string_view&lt;charT&gt;::const_iterator;
   using iterator = const_iterator;
+
+  explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt; format_str);
 
   constexpr const_iterator begin() const noexcept;
   constexpr const_iterator end() const noexcept;
+  constexpr void advance_to(const_iterator it);
 
   constexpr unsigned next_arg_id();
   constexpr void check_arg_id(unsigned id);
@@ -1364,12 +1367,12 @@ public:
 
 <p>
 The class template <code>basic_parse_context</code> is used in the extension
-API to get the format string range being parsed and the argument counter for
+API to access the format string range being parsed and the argument counter for
 automatic indexing.
 </p>
 
 <dl>
-<dt><code>using const_iterator = <i>implementation-defined</i>;</code></dt>
+<!--dt><code>using const_iterator = <i>implementation-defined</i>;</code></dt>
 <dd>
 <p>A type that meets the requirements of a constant random access iterator
 (<a href="http://eel.is/c++draft/random.access.iterators"
@@ -1377,6 +1380,12 @@ automatic indexing.
 (<a href="http://eel.is/c++draft/iterator.requirements.general"
 >[iterator.requirements.general]</a>) whose <code>value_type</code> is the
 template parameter <code>charT</code>.</p>
+</dd-->
+<dt><code>explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt;	format_str);</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs a parsing context from the format string.</p>
+<p><i>Postconditions</i>: <code>begin() == format_str.begin()</code>,
+<code>end() == format_str.end()</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
 <dd>
@@ -1387,6 +1396,13 @@ string range being parsed.</p>
 <dd>
 <p><i>Returns</i>: An iterator referring to the position one past the last
 character in the format string range being parsed.</p>
+</dd>
+<dt><code>void advance_to(iterator it);</code></dt>
+<dd>
+<p><i>Effects</i>: Advances the beginning of the parsed format string range to
+<code>it</code>.</p>
+<p><i>Requires</i>: <code>end()</code> shall be reachable from <code>it</code>.
+<p><i>Postcondition</i>: <code>begin() == it</code>.</p>
 </dd>
 <dt><code>constexpr unsigned next_arg_id();</code></dt>
 <dd>
