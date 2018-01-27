@@ -492,6 +492,12 @@ specific use cases (see <a href="Locale">Locale support</a>) rather than to
 improve performance.
 </p>
 
+<p>
+See <a href="#Benchmarks">Appendix A: Benchmarks</a> for a small performance
+comparison of the reference implementation of this proposal to standard
+formatting facilities.
+</p>
+
 <h3><a name="Footprint">Binary footprint</a></h3>
 
 <p>In order to minimize binary code size, each formatting function that uses
@@ -1697,7 +1703,147 @@ P0067: Elementary string conversions</a>.</cite><br>
 <cite><a href="https://github.com/mpark/format">
 MPark.Format: Compile-time Checked, Type-Safe Formatting in C++14</a>.</cite>
 <br>
+<a name="19">[19]</a>
+<cite><a href="https://github.com/google/benchmark">
+Google Benchmark: A microbenchmark support library</a>.</cite><br>
 </p>
+
+<h2><a name="Benchmarks">Appendix A: Benchmarks</a></h2>
+
+To demonstrate that the formatting functions described in this paper can be
+implemented efficiently, we compare the reference implementation [14] of
+<code>format</code> and <code>format_to</code> to <code>sprintf</code>,
+<code>ostringstream</code> and <code>to_string</code> on the following
+benchmark. This benchmark generates a set of integers with random numbers of
+digits, applies each method to convert each integer into a string (either
+<code>std::string</code> or a char buffer depending on the API) and uses the
+Google Benchmark library [19] to measure timings:
+
+<pre><code>  #include &lt;algorithm&gt;
+  #include &lt;cmath&gt;
+  #include &lt;cstdio&gt;
+  #include &lt;limits&gt;
+  #include &lt;sstream&gt;
+  #include &lt;string&gt;
+  #include &lt;utility&gt;
+  #include &lt;vector&gt;
+
+  #include &lt;benchmark/benchmark.h&gt;
+  #include &lt;fmt/format.h&gt;
+
+  // Returns a pair with the smallest and the largest value of integral type T
+  // with the given number of digits.
+  template &lt;typename T&gt;
+  std::pair&lt;T, T&gt; range(int num_digits) {
+    T first = std::pow(T(10), num_digits - 1);
+    int max_digits = std::numeric_limits&lt;T&gt;::digits10 + 1;
+    T last = num_digits &lt; max_digits ? first * 10 - 1 :
+                                 std::numeric_limits&lt;T&gt;::max();
+    return {num_digits &gt; 1 ? first : 0, last};
+  }
+
+  // Generates values of integral type T with random number of digits.
+  template &lt;typename T&gt;
+  std::vector&lt;T&gt; generate_random_data(int numbers_per_digit) {
+    int max_digits = std::numeric_limits&lt;T&gt;::digits10 + 1;
+    std::vector&lt;T&gt; data;
+    data.reserve(max_digits * numbers_per_digit);
+    for (int i = 1; i &lt;= max_digits; ++i) {
+      auto r = range&lt;T&gt;(i);
+      auto value = r.first;
+      std::generate_n(std::back_inserter(data), numbers_per_digit, [=]() mutable {
+        T result = value;
+        value = value &lt; r.second ? value + 1 : r.first;
+        return result;
+      });
+    }
+    std::random_shuffle(data.begin(), data.end());
+    return data;
+  }
+
+  auto data = generate_random_data&lt;int&gt;(1000);
+
+  void sprintf(benchmark::State &s) {
+    size_t result = 0;
+    while (s.KeepRunning()) {
+      for (auto i: data) {
+        char buffer[12];
+        result += std::sprintf(buffer, &quot;%d&quot;, i);
+      }
+    }
+    benchmark::DoNotOptimize(result);
+  }
+  BENCHMARK(sprintf);
+
+  void ostringstream(benchmark::State &s) {
+    size_t result = 0;
+    while (s.KeepRunning()) {
+      for (auto i: data) {
+        std::ostringstream ss;
+        ss &lt;&lt; i;
+        result += ss.str().size();
+      }
+    }
+    benchmark::DoNotOptimize(result);
+  }
+  BENCHMARK(ostringstream);
+
+  void to_string(benchmark::State &s) {
+    size_t result = 0;
+    while (s.KeepRunning()) {
+      for (auto i: data)
+        result += std::to_string(i).size();
+    }
+    benchmark::DoNotOptimize(result);
+  }
+  BENCHMARK(to_string);
+
+  void format(benchmark::State &s) {
+    size_t result = 0;
+    while (s.KeepRunning()) {
+      for (auto i: data)
+        result += fmt::format(&quot;{}&quot;, i).size();
+    } 
+    benchmark::DoNotOptimize(result);
+  }
+  BENCHMARK(format);
+
+  void format_to(benchmark::State &s) {
+    size_t result = 0;
+    while (s.KeepRunning()) {
+      for (auto i: data) {
+        char buffer[12];
+        result += fmt::format_to(buffer, &quot;{}&quot;, i) - buffer;
+      }
+    }
+    benchmark::DoNotOptimize(result);
+  }
+  BENCHMARK(format_to);
+
+  BENCHMARK_MAIN();</code></pre>
+
+The benchmark was compiled with clang (Apple LLVM version 9.0.0
+clang-900.0.39.2) with <code>-O3 -DNDEBUG</code> and run on a macOS system.
+Below are the results:
+
+<pre>
+  Run on (4 X 3100 MHz CPU s)
+  2018-01-27 07:12:00
+  Benchmark              Time           CPU Iterations
+  ----------------------------------------------------
+  sprintf           882311 ns     881076 ns        781
+  ostringstream    2892035 ns    2888975 ns        242
+  to_string        1167422 ns    1166831 ns        610
+  format            675636 ns     674382 ns       1045
+  format_to         499376 ns     498996 ns       1263
+</pre>
+
+The <code>format</code> and <code>format_to</code> functions show much better
+performance than the other methods. The <code>format</code> function that
+constructs <code>std::string</code> is even 30% faster than the system's version
+of <code>sprintf</code> that uses stack-allocated <code>char</code> buffer.
+<code>format_to</code> with a stack-allocated buffer is ~60% faster than
+<code>sprintf</code>.
 
 </div>
 </body>
