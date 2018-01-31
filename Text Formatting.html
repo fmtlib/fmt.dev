@@ -159,6 +159,9 @@ Reply to:<br>
     and use it to define output ranges.
 <li>Remove <code>basic_buffer</code> and section "Formatting buffer".
 <li>Add <a href="#Benchmarks">Appendix A: Benchmarks</a>.
+<li>Explain the purpose of the type-erased API in more details in the
+    <a href="#Footprint">Binary footprint</a> section.
+<li>Add <a href="#BinaryCode">Appendix B: Binary code comparison</a>.
 </ul>
 </p>
 
@@ -501,23 +504,71 @@ formatting facilities.
 
 <h3><a name="Footprint">Binary footprint</a></h3>
 
-<p>In order to minimize binary code size, each formatting function that uses
-variadic templates is a small inline wrapper around its non-variadic
-counterpart. This wrapper creates an object representing an array of argument
-references with <code>fmt::make_args</code> and calls the non-variadic function
-to do the actual work. For example, the <code>format</code> variadic function
-calls <code>vformat</code>.</p>
+<p>
+In order to minimize binary code size, each formatting function that uses
+variadic templates can be implemented as a small inline wrapper around its
+non-variadic counterpart. This wrapper creates a <code>basic_format_args</code>
+object representing an array of type-erased argument references with
+<code>make_args</code> and calls the non-variadic function to do the actual
+work. For example, the <code>format</code> variadic function calls
+<code>vformat</code>:
+</p>
 
-<p>Multiple argument type codes can be combined and passed into a
+<pre><code>string vformat(string_view format_str, format_args args);
+
+template &lt;class... Args&gt;
+  inline string format(string_view format_str, const Args&amp;... args) {
+    return vformat(format_str, make_args(args...));
+  }</code></pre>
+
+<p>
+<code>basic_format_args</code> can be implemented as an array of tagged unions.
+Tags that indicate types of aguments can be combined and passed into a
 formatting function as a single integer if the number of arguments is small.
 Since argument types are known at compile time this can be an integer
-constant and there will be no code generated to compute it, only to store
-according to calling conventions.</p>
+constant and there will be no code generated to compute it at runtime, only to
+store according to calling conventions.
+</p>
 
-<p>Given a reasonable optimizing compiler, this will result in a compact
-per-call binary code, effectively consisting of placing argument pointers
-(or, possibly, copies for primitive types) and packed argument type codes on
-stack and calling a formatting function.</p>
+<p>
+Given a reasonable optimizing compiler, this will result in a compact per-call
+binary code, effectively consisting of placing argument pointers (or, possibly,
+copies for primitive types) and packed tags on stack and calling a formatting
+function. See <a href="#BinaryCode">Appendix B: Binary code comparison</a> for a
+specific example.
+</p>
+
+<p>
+Exposing the type-erased API rather than making it an implementation detail and
+only providing variadic functions allows applying the same technique to the
+user code. For example, consider a simple logging function that prints a
+formatted error message to standard output:
+<p>
+
+<pre><code>template &lt;class... Args&gt;
+  void log_error(int code, string_view format_str, const Args&amp;... args) {
+    cout &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; format(format_str, args...);
+  }</code></pre>
+
+<p>
+The code for this function will be generated for every combination of argument
+types which can be undesirable. However, if we use the type-erased API, there
+will be only one instance of the logging function while the wrapper function
+will be trivially inlined:
+</p>
+
+<pre><code>void vlog_error(int code, string_view format_str, format_args args) {
+  cout &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; vformat(format_str, args);
+}
+
+template &lt;class... Args&gt;
+  inline void log_error(int code, string_view format_str, const Args&amp;... args) {
+    vlog_error(code, format_str, make_args(args...));
+  }</code></pre>
+
+<p>
+The current design allows users to easily switch between the two approaches.
+</p>
 
 <h3><a name="CompileTimeFormat">Compile-time processing of format strings</a>
 </h3>
@@ -1846,5 +1897,277 @@ of <code>sprintf</code> that uses stack-allocated <code>char</code> buffer.
 <code>format_to</code> with a stack-allocated buffer is ~60% faster than
 <code>sprintf</code>.
 
+<h2><a name="BinaryCode">Appendix B: Binary code comparison</a></h2>
+
+In this section we compare per-call binary code size between the reference
+implementation that uses techniques described in section <a href="#Footprint">
+Binary footprint</a> and standard formatting facilities. All the code snippets
+are compiled with clang (Apple LLVM version 9.0.0 clang-900.0.39.2) with
+<code>-O3 -DNDEBUG -c -std=c++14</code> and the resulted binaries are
+disassembled with <code>objdump -S</code>:
+
+<pre><code>  void consume(const char*);
+
+  void sprintf_test() {
+    char buffer[100];
+    sprintf(buffer, "The answer is %d.", 42);
+    consume(buffer);
+  }
+
+  __Z12sprintf_testv:
+         0:       55      pushq   %rbp
+         1:       48 89 e5        movq    %rsp, %rbp
+         4:       53      pushq   %rbx
+         5:       48 83 ec 78     subq    $120, %rsp
+         9:       48 8b 05 00 00 00 00    movq    (%rip), %rax
+        10:       48 8b 00        movq    (%rax), %rax
+        13:       48 89 45 f0     movq    %rax, -16(%rbp)
+        17:       48 8d 35 37 00 00 00    leaq    55(%rip), %rsi
+        1e:       48 8d 5d 80     leaq    -128(%rbp), %rbx
+        22:       ba 2a 00 00 00  movl    $42, %edx
+        27:       31 c0   xorl    %eax, %eax
+        29:       48 89 df        movq    %rbx, %rdi
+        2c:       e8 00 00 00 00  callq   0 <__Z12sprintf_testv+0x31>
+        31:       48 89 df        movq    %rbx, %rdi
+        34:       e8 00 00 00 00  callq   0 <__Z12sprintf_testv+0x39>
+        39:       48 8b 05 00 00 00 00    movq    (%rip), %rax
+        40:       48 8b 00        movq    (%rax), %rax
+        43:       48 3b 45 f0     cmpq    -16(%rbp), %rax
+        47:       75 07   jne     7 <__Z12sprintf_testv+0x50>
+        49:       48 83 c4 78     addq    $120, %rsp
+        4d:       5b      popq    %rbx
+        4e:       5d      popq    %rbp
+        4f:       c3      retq
+        50:       e8 00 00 00 00  callq   0 <__Z12sprintf_testv+0x55>
+
+  void format_test() {
+    consume(format("The answer is {}.", 42).c_str());
+  }
+
+  __Z11format_testv:
+         0:       55      pushq   %rbp
+         1:       48 89 e5        movq    %rsp, %rbp
+         4:       53      pushq   %rbx
+         5:       48 83 ec 28     subq    $40, %rsp
+         9:       48 c7 45 d0 2a 00 00 00         movq    $42, -48(%rbp)
+        11:       48 8d 35 f4 83 01 00    leaq    99316(%rip), %rsi
+        18:       48 8d 7d e0     leaq    -32(%rbp), %rdi
+        1c:       4c 8d 45 d0     leaq    -48(%rbp), %r8
+        20:       ba 11 00 00 00  movl    $17, %edx
+        25:       b9 02 00 00 00  movl    $2, %ecx
+        2a:       e8 00 00 00 00  callq   0 <__Z11format_testv+0x2F>
+        2f:       f6 45 e0 01     testb   $1, -32(%rbp)
+        33:       48 8d 7d e1     leaq    -31(%rbp), %rdi
+        37:       48 0f 45 7d f0  cmovneq -16(%rbp), %rdi
+        3c:       e8 00 00 00 00  callq   0 <__Z11format_testv+0x41>
+        41:       f6 45 e0 01     testb   $1, -32(%rbp)
+        45:       74 09   je      9 <__Z11format_testv+0x50>
+        47:       48 8b 7d f0     movq    -16(%rbp), %rdi
+        4b:       e8 00 00 00 00  callq   0 <__Z11format_testv+0x50>
+        50:       48 83 c4 28     addq    $40, %rsp
+        54:       5b      popq    %rbx
+        55:       5d      popq    %rbp
+        56:       c3      retq
+        57:       48 89 c3        movq    %rax, %rbx
+        5a:       f6 45 e0 01     testb   $1, -32(%rbp)
+        5e:       74 09   je      9 <__Z11format_testv+0x69>
+        60:       48 8b 7d f0     movq    -16(%rbp), %rdi
+        64:       e8 00 00 00 00  callq   0 <__Z11format_testv+0x69>
+        69:       48 89 df        movq    %rbx, %rdi
+        6c:       e8 00 00 00 00  callq   0 <__Z11format_testv+0x71>
+        71:       66 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nopw    %cs:(%rax,%rax)
+
+  void ostringstream_test() {
+    std::ostringstream ss;
+    ss &lt;&lt; "The answer is " &lt;&lt; 42 &lt;&lt; ".";
+    consume(ss.str().c_str());
+  }
+
+  __Z18ostringstream_testv:
+         0:	55 	pushq	%rbp
+         1:	48 89 e5 	movq	%rsp, %rbp
+         4:	41 57 	pushq	%r15
+         6:	41 56 	pushq	%r14
+         8:	41 55 	pushq	%r13
+         a:	41 54 	pushq	%r12
+         c:	53 	pushq	%rbx
+         d:	48 81 ec 38 01 00 00 	subq	$312, %rsp
+        14:	4c 8d b5 18 ff ff ff 	leaq	-232(%rbp), %r14
+        1b:	4c 8d a5 b0 fe ff ff 	leaq	-336(%rbp), %r12
+        22:	48 8b 05 00 00 00 00 	movq	(%rip), %rax
+        29:	48 8d 48 18 	leaq	24(%rax), %rcx
+        2d:	48 89 8d a8 fe ff ff 	movq	%rcx, -344(%rbp)
+        34:	48 83 c0 40 	addq	$64, %rax
+        38:	48 89 85 18 ff ff ff 	movq	%rax, -232(%rbp)
+        3f:	4c 89 f7 	movq	%r14, %rdi
+        42:	4c 89 e6 	movq	%r12, %rsi
+        45:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x4A>
+        4a:	48 c7 45 a0 00 00 00 00 	movq	$0, -96(%rbp)
+        52:	c7 45 a8 ff ff ff ff 	movl	$4294967295, -88(%rbp)
+        59:	48 8b 1d 00 00 00 00 	movq	(%rip), %rbx
+        60:	4c 8d 6b 18 	leaq	24(%rbx), %r13
+        64:	4c 89 ad a8 fe ff ff 	movq	%r13, -344(%rbp)
+        6b:	48 83 c3 40 	addq	$64, %rbx
+        6f:	48 89 9d 18 ff ff ff 	movq	%rbx, -232(%rbp)
+        76:	4c 89 e7 	movq	%r12, %rdi
+        79:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x7E>
+        7e:	4c 8b 3d 00 00 00 00 	movq	(%rip), %r15
+        85:	49 83 c7 10 	addq	$16, %r15
+        89:	4c 89 bd b0 fe ff ff 	movq	%r15, -336(%rbp)
+        90:	48 c7 85 08 ff ff ff 00 00 00 00 	movq	$0, -248(%rbp)
+        9b:	48 c7 85 00 ff ff ff 00 00 00 00 	movq	$0, -256(%rbp)
+        a6:	48 c7 85 f8 fe ff ff 00 00 00 00 	movq	$0, -264(%rbp)
+        b1:	48 c7 85 f0 fe ff ff 00 00 00 00 	movq	$0, -272(%rbp)
+        bc:	c7 85 10 ff ff ff 10 00 00 00 	movl	$16, -240(%rbp)
+        c6:	0f 57 c0 	xorps	%xmm0, %xmm0
+        c9:	0f 29 45 b0 	movaps	%xmm0, -80(%rbp)
+        cd:	48 c7 45 c0 00 00 00 00 	movq	$0, -64(%rbp)
+        d5:	48 8d 75 b0 	leaq	-80(%rbp), %rsi
+        d9:	4c 89 e7 	movq	%r12, %rdi
+        dc:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0xE1>
+        e1:	f6 45 b0 01 	testb	$1, -80(%rbp)
+        e5:	74 09 	je	9 <__Z18ostringstream_testv+0xF0>
+        e7:	48 8b 7d c0 	movq	-64(%rbp), %rdi
+        eb:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0xF0>
+        f0:	48 8d 35 dd 10 00 00 	leaq	4317(%rip), %rsi
+        f7:	48 8d bd a8 fe ff ff 	leaq	-344(%rbp), %rdi
+        fe:	ba 0e 00 00 00 	movl	$14, %edx
+       103:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x108>
+       108:	be 2a 00 00 00 	movl	$42, %esi
+       10d:	48 89 c7 	movq	%rax, %rdi
+       110:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x115>
+       115:	48 8d 35 c7 10 00 00 	leaq	4295(%rip), %rsi
+       11c:	ba 01 00 00 00 	movl	$1, %edx
+       121:	48 89 c7 	movq	%rax, %rdi
+       124:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x129>
+       129:	48 8d 7d b0 	leaq	-80(%rbp), %rdi
+       12d:	4c 89 e6 	movq	%r12, %rsi
+       130:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x135>
+       135:	f6 45 b0 01 	testb	$1, -80(%rbp)
+       139:	48 8d 7d b1 	leaq	-79(%rbp), %rdi
+       13d:	48 0f 45 7d c0 	cmovneq	-64(%rbp), %rdi
+       142:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x147>
+       147:	f6 45 b0 01 	testb	$1, -80(%rbp)
+       14b:	74 09 	je	9 <__Z18ostringstream_testv+0x156>
+       14d:	48 8b 7d c0 	movq	-64(%rbp), %rdi
+       151:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x156>
+       156:	4c 89 ad a8 fe ff ff 	movq	%r13, -344(%rbp)
+       15d:	48 89 9d 18 ff ff ff 	movq	%rbx, -232(%rbp)
+       164:	4c 89 bd b0 fe ff ff 	movq	%r15, -336(%rbp)
+       16b:	f6 85 f0 fe ff ff 01 	testb	$1, -272(%rbp)
+       172:	74 0c 	je	12 <__Z18ostringstream_testv+0x180>
+       174:	48 8b bd 00 ff ff ff 	movq	-256(%rbp), %rdi
+       17b:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x180>
+       180:	4c 89 e7 	movq	%r12, %rdi
+       183:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x188>
+       188:	48 8b 35 00 00 00 00 	movq	(%rip), %rsi
+       18f:	48 83 c6 08 	addq	$8, %rsi
+       193:	48 8d bd a8 fe ff ff 	leaq	-344(%rbp), %rdi
+       19a:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x19F>
+       19f:	4c 89 f7 	movq	%r14, %rdi
+       1a2:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x1A7>
+       1a7:	48 81 c4 38 01 00 00 	addq	$312, %rsp
+       1ae:	5b 	popq	%rbx
+       1af:	41 5c 	popq	%r12
+       1b1:	41 5d 	popq	%r13
+       1b3:	41 5e 	popq	%r14
+       1b5:	41 5f 	popq	%r15
+       1b7:	5d 	popq	%rbp
+       1b8:	c3 	retq
+       1b9:	48 89 45 d0 	movq	%rax, -48(%rbp)
+       1bd:	f6 45 b0 01 	testb	$1, -80(%rbp)
+       1c1:	74 3b 	je	59 <__Z18ostringstream_testv+0x1FE>
+       1c3:	48 8b 7d c0 	movq	-64(%rbp), %rdi
+       1c7:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x1CC>
+       1cc:	eb 30 	jmp	48 <__Z18ostringstream_testv+0x1FE>
+       1ce:	eb 2a 	jmp	42 <__Z18ostringstream_testv+0x1FA>
+       1d0:	48 89 45 d0 	movq	%rax, -48(%rbp)
+       1d4:	f6 45 b0 01 	testb	$1, -80(%rbp)
+       1d8:	74 39 	je	57 <__Z18ostringstream_testv+0x213>
+       1da:	48 8b 7d c0 	movq	-64(%rbp), %rdi
+       1de:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x1E3>
+       1e3:	f6 85 f0 fe ff ff 01 	testb	$1, -272(%rbp)
+       1ea:	75 30 	jne	48 <__Z18ostringstream_testv+0x21C>
+       1ec:	eb 3a 	jmp	58 <__Z18ostringstream_testv+0x228>
+       1ee:	48 89 45 d0 	movq	%rax, -48(%rbp)
+       1f2:	eb 3c 	jmp	60 <__Z18ostringstream_testv+0x230>
+       1f4:	48 89 45 d0 	movq	%rax, -48(%rbp)
+       1f8:	eb 4d 	jmp	77 <__Z18ostringstream_testv+0x247>
+       1fa:	48 89 45 d0 	movq	%rax, -48(%rbp)
+       1fe:	4c 89 ad a8 fe ff ff 	movq	%r13, -344(%rbp)
+       205:	48 89 9d 18 ff ff ff 	movq	%rbx, -232(%rbp)
+       20c:	4c 89 bd b0 fe ff ff 	movq	%r15, -336(%rbp)
+       213:	f6 85 f0 fe ff ff 01 	testb	$1, -272(%rbp)
+       21a:	74 0c 	je	12 <__Z18ostringstream_testv+0x228>
+       21c:	48 8b bd 00 ff ff ff 	movq	-256(%rbp), %rdi
+       223:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x228>
+       228:	4c 89 e7 	movq	%r12, %rdi
+       22b:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x230>
+       230:	48 8b 35 00 00 00 00 	movq	(%rip), %rsi
+       237:	48 83 c6 08 	addq	$8, %rsi
+       23b:	48 8d bd a8 fe ff ff 	leaq	-344(%rbp), %rdi
+       242:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x247>
+       247:	4c 89 f7 	movq	%r14, %rdi
+       24a:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x24F>
+       24f:	48 8b 7d d0 	movq	-48(%rbp), %rdi
+       253:	e8 00 00 00 00 	callq	0 <__Z18ostringstream_testv+0x258>
+       258:	0f 1f 84 00 00 00 00 00 	nopl	(%rax,%rax)</code></pre>
+
+<p>
+The code generated for the <code>format_test</code> function that uses the
+reference implementation of the <code>format</code> function described in
+this proposal is several times smaller than the <code>ostringstream</code> code
+and only 40% larger than the one generated for <code>sprintf</code> which is a
+moderate price to pay for full type and memory safety.
+</p>
+<p>
+The following factors contribute to the difference in binary code size between
+<code>format</code> and <code>sprintf</code>:
+<ul>
+  <li>Passing format string as <code>string_view</code> instead of <code>const
+      char*</code>.
+  <li>Using <code>string</code> instead of a <code>char</code> buffer.
+  <li>Preparing the array of formatting arguments.
+</ul>
+We can exclude the first two factors from the experiment by mimicking parts of
+the <code>sprintf</code> API:
+
+<pre><code>int vraw_format(char* buffer, const char* format, format_args args);
+
+template &lt;typename... Args&gt;
+inline int raw_format(char* buffer, const char* format, const Args&amp;... args) {
+  return vraw_format(buffer, format, make_args(args...));
+}
+
+void raw_format_test() {
+  char buffer[100];
+  raw_format(buffer, "The answer is {}.", 42);
+}
+
+__Z15raw_format_testv:
+       0:       55      pushq   %rbp
+       1:       48 89 e5        movq    %rsp, %rbp
+       4:       48 81 ec 80 00 00 00    subq    $128, %rsp
+       b:       48 8b 05 00 00 00 00    movq    (%rip), %rax
+      12:       48 8b 00        movq    (%rax), %rax
+      15:       48 89 45 f8     movq    %rax, -8(%rbp)
+      19:       48 c7 45 80 2a 00 00 00         movq    $42, -128(%rbp)
+      21:       48 8d 35 24 12 00 00    leaq    4644(%rip), %rsi
+      28:       48 8d 7d 90     leaq    -112(%rbp), %rdi
+      2c:       48 8d 4d 80     leaq    -128(%rbp), %rcx
+      30:       ba 02 00 00 00  movl    $2, %edx
+      35:       e8 00 00 00 00  callq   0 <__Z15raw_format_testv+0x3A>
+      3a:       48 8b 05 00 00 00 00    movq    (%rip), %rax
+      41:       48 8b 00        movq    (%rax), %rax
+      44:       48 3b 45 f8     cmpq    -8(%rbp), %rax
+      48:       75 09   jne     9 <__Z15raw_format_testv+0x53>
+      4a:       48 81 c4 80 00 00 00    addq    $128, %rsp
+      51:       5d      popq    %rbp
+      52:       c3      retq
+      53:       e8 00 00 00 00  callq   0 <__Z15raw_format_testv+0x58>
+      58:       0f 1f 84 00 00 00 00 00         nopl    (%rax,%rax)</code></pre>
+
+This shows that passing formatting arguments adds very little overhead and
+is comparable with <code>sprintf</code>.
 </div>
 </body>
