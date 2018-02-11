@@ -132,7 +132,7 @@ in namespace <code class="docutils literal"><span class="pre">fmt</span></code> 
 namespace is usually omitted in examples.</p>
 <div class="section" id="format-api">
 <h2>Format API<a class="headerlink" href="#format-api" title="Permalink to this headline">¶</a></h2>
-<p>The following functions defined in <code class="docutils literal"><span class="pre">fmt/format.h</span></code> use <a class="reference internal" href="syntax.html#syntax"><span class="std std-ref">format string
+<p>The following functions defined in <code class="docutils literal"><span class="pre">fmt/core.h</span></code> use <a class="reference internal" href="syntax.html#syntax"><span class="std std-ref">format string
 syntax</span></a> similar to the one used by Python&#8217;s <a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str.format">str.format</a> function.
 They take <em>format_str</em> and <em>args</em> as arguments.</p>
 <p><em>format_str</em> is a format string that contains literal text and replacement
@@ -221,7 +221,7 @@ template and implement <code class="docutils literal"><span class="pre">parse</s
 
   <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">FormatContext</span><span class="o">&gt;</span>
   <span class="k">auto</span> <span class="n">format</span><span class="p">(</span><span class="k">const</span> <span class="n">MyStruct</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">,</span> <span class="n">FormatContext</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">fmt</span><span class="o">::</span><span class="n">format_to</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="s">&quot;[MyStruct: x={:.1f}, y={:.2f}]&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">format_to</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="s">&quot;[MyStruct: x={:.1f}, y={:.2f}]&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
   <span class="p">}</span>
 <span class="p">};</span>
 <span class="p">}</span>
@@ -235,7 +235,7 @@ template and implement <code class="docutils literal"><span class="pre">parse</s
 </div>
 <p>In the example above the <code class="docutils literal"><span class="pre">formatter&lt;MyStruct&gt;::parse</span></code> function ignores the
 contents of the format string referred to by <code class="docutils literal"><span class="pre">ctx.begin()</span></code> so the object will
-always be formatted as specified. See <code class="docutils literal"><span class="pre">formatter&lt;tm&gt;::parse</span></code> in
+always be formatted in the same way. See <code class="docutils literal"><span class="pre">formatter&lt;tm&gt;::parse</span></code> in
 <code class="file docutils literal"><span class="pre">fmt/time.h</span></code> for an advanced example of how to parse the format string and
 customize the formatted output.</p>
 <p>This section shows how to define a custom format function for a user-defined
@@ -262,20 +262,19 @@ formatting of user-defined types that have overloaded <code class="docutils lite
 <span class="c1">// s == &quot;The date is 2012-12-9&quot;</span>
 </pre></div>
 </div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;print&#8221; with arguments (std::ostream&amp;, string_view, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt5printERNSt7ostreamE11string_viewDpRK4Args">
+<span id="fmt::print__osR.string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a47466dab3c640ed8f3434d32b01aa5ba"></span>void <code class="descclassname">fmt::</code><code class="descname">print</code><span class="sig-paren">(</span>std::ostream &amp;<em>os</em>, string_view <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt5printERNSt7ostreamE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the stream <em>os</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">print</span><span class="p">(</span><span class="n">cerr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t {}!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
+ </p>
+</dd></dl>
+
 </div>
 <div class="section" id="argument-formatters">
 <h3>Argument formatters<a class="headerlink" href="#argument-formatters" title="Permalink to this headline">¶</a></h3>
@@ -330,54 +329,58 @@ The following functions use <a class="reference external" href="http://pubs.open
 the POSIX extension for positional arguments. Unlike their standard
 counterparts, the <code class="docutils literal"><span class="pre">fmt</span></code> functions are type-safe and throw an exception if an
 argument type doesn&#8217;t match its format specification.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;printf&#8221; with arguments (string_view, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Char</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Context</span><span class="o">&gt;</span>
-  <span class="kt">void</span> <span class="n">fmt</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="n">internal</span><span class="o">::</span><span class="n">basic_buffer</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;&amp;</span><span class="p">,</span> <span class="n">basic_string_view</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">basic_format_args</span><span class="o">&lt;</span><span class="n">Context</span><span class="o">&gt;</span><span class="p">)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt6printfE11string_viewDpRK4Args">
+<span id="fmt::printf__string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a3ac87117f0348d7a742c817f96f55584"></span>int <code class="descclassname">fmt::</code><code class="descname">printf</code><span class="sig-paren">(</span>string_view <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt6printfE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to <code class="docutils literal"><span class="pre">stdout</span></code>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot;Elapsed time: %.2f seconds&quot;</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;fprintf&#8221; with arguments (std::FILE *, string_view, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt7fprintfEPNSt4FILEE11string_viewDpRK4Args">
+<span id="fmt::fprintf__std::FILEP.string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a7067c15a9c4dcd5515822ee5b32eccca"></span>int <code class="descclassname">fmt::</code><code class="descname">fprintf</code><span class="sig-paren">(</span>std::FILE *<em>f</em>, string_view <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt7fprintfEPNSt4FILEE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the file <em>f</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t %s!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;fprintf&#8221; with arguments (std::ostream&amp;, string_view, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="kt">int</span> <span class="n">fmt</span><span class="o">::</span><span class="n">fprintf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt7fprintfERNSt7ostreamE11string_viewDpRK4Args">
+<span id="fmt::fprintf__osR.string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a457d5eddda64e5af2223e656d4958b25"></span>int <code class="descclassname">fmt::</code><code class="descname">fprintf</code><span class="sig-paren">(</span>std::ostream &amp;<em>os</em>, string_view <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt7fprintfERNSt7ostreamE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Prints formatted data to the stream <em>os</em>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fprintf</span><span class="p">(</span><span class="n">cerr</span><span class="p">,</span> <span class="s">&quot;Don&#39;t %s!&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;sprintf&#8221; with arguments (string_view, ArgList) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">fmt</span><span class="o">::</span><span class="n">sprintf</span><span class="p">(</span><span class="n">string_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">wstring</span> <span class="n">fmt</span><span class="o">::</span><span class="n">sprintf</span><span class="p">(</span><span class="n">wstring_view</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt7sprintfE11string_viewDpRK4Args">
+<span id="fmt::sprintf__string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a94fb2be82b2851561bebc87543c672ea"></span>std::string <code class="descclassname">fmt::</code><code class="descname">sprintf</code><span class="sig-paren">(</span>string_view <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt7sprintfE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Formats arguments and returns the result as a string.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">sprintf</span><span class="p">(</span><span class="s">&quot;The answer is %d&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
+ </p>
+</dd></dl>
+
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">doxygenclass: Cannot find class &#8220;fmt::PrintfFormatter&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml</p>
@@ -484,7 +487,7 @@ Potential matches:
 <span id="fmt::to_string__TCR"></span><span class="target" id="formatnamespacefmt_1abfd84051cd3673d750be5851ee93b05f"></span>std::string <code class="descclassname">fmt::</code><code class="descname">to_string</code><span class="sig-paren">(</span><em class="property">const</em> T &amp;<em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt9to_stringERK1T" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Converts <em>value</em> to <code class="docutils literal"><span class="pre">std::string</span></code> using the default format for type <em>T</em>.</p>
 <p><strong>Example</strong>:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;fmt/string.h&quot;</span><span class="cp"></span>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;fmt/format.h&quot;</span><span class="cp"></span>
 
 <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
 </pre></div>
@@ -507,10 +510,39 @@ Potential matches:
 </div>
 <div class="section" id="system-errors">
 <h2>System errors<a class="headerlink" href="#system-errors" title="Permalink to this headline">¶</a></h2>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenclass: Cannot find class &#8220;fmt::SystemError&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml</p>
+<dl class="class">
+<dt id="_CPPv2N3fmt12system_errorE">
+<span id="fmt::system_error"></span><span class="target" id="formatclassfmt_1_1system__error"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">system_error</code><a class="headerlink" href="#_CPPv2N3fmt12system_errorE" title="Permalink to this definition">¶</a></dt>
+<dd><p>An error returned by an operating system or a language runtime, for example a file opening error. </p>
+<p>Inherits from runtime_error</p>
+<p>Subclassed by <a class="reference internal" href="#formatclassfmt_1_1windows__error"><span class="std std-ref">fmt::windows_error</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt12system_error12system_errorEi11string_viewDpRK4Args">
+<span id="fmt::system_error::system_error__i.string_view.ArgsCRDp"></span><span class="target" id="formatclassfmt_1_1system__error_1acbe6f6a6802523e65ba2199bb0783a70"></span><code class="descname">system_error</code><span class="sig-paren">(</span>int <em>error_code</em>, string_view <em>message</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt12system_error12system_errorEi11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#_CPPv2N3fmt12system_errorE" title="fmt::system_error"><code class="xref cpp cpp-class docutils literal"><span class="pre">fmt::system_error</span></code></a> object with a description
+formatted with <a class="reference internal" href="#_CPPv2N3fmt19format_system_errorERN3fmt8internal6bufferEiN3fmt11string_viewE" title="fmt::format_system_error"><code class="xref cpp cpp-any docutils literal"><span class="pre">fmt::format_system_error()</span></code></a>. <em>message</em> and additional
+arguments passed into the constructor are formatted similarly to
+<a class="reference internal" href="#_CPPv2N3fmt6formatE11string_viewDpRK4Args" title="fmt::format"><code class="xref cpp cpp-any docutils literal"><span class="pre">fmt::format()</span></code></a>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="c1">// This throws a system_error with the description</span>
+<span class="c1">//   cannot open file &#39;madeup&#39;: No such file or directory</span>
+<span class="c1">// or similar (system message may vary).</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;madeup&quot;</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="n">file</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">fopen</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">file</span><span class="p">)</span>
+  <span class="k">throw</span> <span class="n">fmt</span><span class="o">::</span><span class="n">system_error</span><span class="p">(</span><span class="n">errno</span><span class="p">,</span> <span class="s">&quot;cannot open file &#39;{}&#39;&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">);</span>
+</pre></div>
 </div>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
 <dl class="function">
 <dt id="_CPPv2N3fmt19format_system_errorERN3fmt8internal6bufferEiN3fmt11string_viewE">
 <span id="fmt::format_system_error__fmt::internal::bufferR.i.fmt::string_view"></span><span class="target" id="formatnamespacefmt_1ad56e3e75c854d97f32356e0c36ca7d4a"></span>void <code class="descclassname">fmt::</code><code class="descname">format_system_error</code><span class="sig-paren">(</span>fmt::internal::buffer &amp;<em>out</em>, int <em>error_code</em>, fmt::string_view <em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt19format_system_errorERN3fmt8internal6bufferEiN3fmt11string_viewE" title="Permalink to this definition">¶</a></dt>
@@ -528,10 +560,47 @@ may look like &#8220;Unknown error -1&#8221; and is platform-dependent.</p>
  </p>
 </dd></dl>
 
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenclass: Cannot find class &#8220;fmt::WindowsError&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml</p>
+<dl class="class">
+<dt id="_CPPv2N3fmt13windows_errorE">
+<span id="fmt::windows_error"></span><span class="target" id="formatclassfmt_1_1windows__error"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">windows_error</code><a class="headerlink" href="#_CPPv2N3fmt13windows_errorE" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Windows error. </p>
+<p>Inherits from <a class="reference internal" href="#formatclassfmt_1_1system__error"><span class="std std-ref">fmt::system_error</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt13windows_error13windows_errorEi11string_viewDpRK4Args">
+<span id="fmt::windows_error::windows_error__i.string_view.ArgsCRDp"></span><span class="target" id="formatclassfmt_1_1windows__error_1a0c7ab0e60546647cf224ec889c633c71"></span><code class="descname">windows_error</code><span class="sig-paren">(</span>int <em>error_code</em>, string_view <em>message</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt13windows_error13windows_errorEi11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a <a class="reference internal" href="#_CPPv2N3fmt13windows_errorE" title="fmt::windows_error"><code class="xref cpp cpp-class docutils literal"><span class="pre">fmt::windows_error</span></code></a> object with the description
+of the form</p>
+<pre class="literal-block">
+<em>&lt;message&gt;</em>: <em>&lt;system-message&gt;</em>
+</pre>
+<p>where <em>&lt;message&gt;</em> is the formatted message and <em>&lt;system-message&gt;</em> is the
+system message corresponding to the error code.
+<em>error_code</em> is a Windows error code as given by <code class="docutils literal"><span class="pre">GetLastError</span></code>.
+If <em>error_code</em> is not a valid error code such as -1, the system message
+will look like &#8220;error -1&#8221;.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="c1">// This throws a windows_error with the description</span>
+<span class="c1">//   cannot open file &#39;madeup&#39;: The system cannot find the file specified.</span>
+<span class="c1">// or similar (system message may vary).</span>
+<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;madeup&quot;</span><span class="p">;</span>
+<span class="n">LPOFSTRUCT</span> <span class="n">of</span> <span class="o">=</span> <span class="n">LPOFSTRUCT</span><span class="p">();</span>
+<span class="n">HFILE</span> <span class="n">file</span> <span class="o">=</span> <span class="n">OpenFile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">of</span><span class="p">,</span> <span class="n">OF_READ</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">file</span> <span class="o">==</span> <span class="n">HFILE_ERROR</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">throw</span> <span class="n">fmt</span><span class="o">::</span><span class="n">windows_error</span><span class="p">(</span><span class="n">GetLastError</span><span class="p">(),</span>
+                           <span class="s">&quot;cannot open file &#39;{}&#39;&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
 </div>
+ </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 <div class="section" id="custom-allocators">
 <span id="formatstrings"></span><h2>Custom allocators<a class="headerlink" href="#custom-allocators" title="Permalink to this headline">¶</a></h2>
