@@ -147,19 +147,8 @@ to that of glibc&#8217;s <code class="docutils literal"><span class="pre">printf
 <span id="fmt::format__string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1aeb4a0ef46b3acd7d51958fa6b80f4d98"></span>std::string <code class="descclassname">fmt::</code><code class="descname">format</code><span class="sig-paren">(</span>string_view <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt6formatE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Formats arguments and returns the result as a string.</p>
 <p><strong>Example</strong>:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
-</pre></div>
-</div>
- </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N3fmt8literalsli7_formatEPKcNSt6size_tE">
-<span class="target" id="formatnamespacefmt_1_1literals_1a7b6e88e2e718a55df3a5a3706369d69e"></span>internal::udl_formatter&lt;char&gt; <code class="descclassname">fmt::literals::</code><code class="descname">operator&quot;&quot;_format</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>s</em>, std::size_t<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt8literalsli7_formatEPKcNSt6size_tE" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>User-defined literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt6formatE11string_viewDpRK4Args" title="fmt::format"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::format()</span></code></a>.</p>
-<p><strong>Example</strong>:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">fmt</span><span class="o">::</span><span class="n">literals</span><span class="p">;</span>
-<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;The answer is {}&quot;</span><span class="n">_format</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;fmt/core.h&quot;</span><span class="cp"></span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
 </pre></div>
 </div>
  </p>
@@ -274,8 +263,36 @@ formatting of user-defined types that have overloaded <code class="docutils lite
 </dd></dl>
 
 </div>
-<div class="section" id="argument-formatters">
-<h3>Argument formatters<a class="headerlink" href="#argument-formatters" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="literal-based-api">
+<h3>Literal-based API<a class="headerlink" href="#literal-based-api" title="Permalink to this headline">¶</a></h3>
+<p>The following user-defined literals are defined in <code class="docutils literal"><span class="pre">fmt/format.h</span></code>.</p>
+<dl class="function">
+<dt id="_CPPv2N3fmt8literalsli7_formatEPKcNSt6size_tE">
+<span class="target" id="formatnamespacefmt_1_1literals_1a7b6e88e2e718a55df3a5a3706369d69e"></span>internal::udl_formatter&lt;char&gt; <code class="descclassname">fmt::literals::</code><code class="descname">operator&quot;&quot;_format</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>s</em>, std::size_t<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt8literalsli7_formatEPKcNSt6size_tE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>User-defined literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt6formatE11string_viewDpRK4Args" title="fmt::format"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::format()</span></code></a>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">fmt</span><span class="o">::</span><span class="n">literals</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;The answer is {}&quot;</span><span class="n">_format</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N3fmt8literalsli2_aEPKcNSt6size_tE">
+<span class="target" id="formatnamespacefmt_1_1literals_1a136ff198c14d58ebbd5e22865eab6f0b"></span>internal::udl_arg&lt;char&gt; <code class="descclassname">fmt::literals::</code><code class="descname">operator&quot;&quot;_a</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>s</em>, std::size_t<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt8literalsli2_aEPKcNSt6size_tE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>User-defined literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt3argE11string_viewRK1T" title="fmt::arg"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::arg()</span></code></a>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">fmt</span><span class="o">::</span><span class="n">literals</span><span class="p">;</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {s:.2f} seconds&quot;</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="n">_a</span><span class="o">=</span><span class="mf">1.23</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
+
+</div>
+<div class="section" id="custom-formatting-of-built-in-types">
+<h3>Custom formatting of built-in types<a class="headerlink" href="#custom-formatting-of-built-in-types" title="Permalink to this headline">¶</a></h3>
 <p>It is possible to change the way arguments are formatted by providing a
 custom argument formatter class:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">arg_formatter</span> <span class="o">=</span>
@@ -466,18 +483,6 @@ store output elsewhere by subclassing <code class="xref cpp cpp-any docutils lit
 <dd><p><p>Returns a named argument to be used in a formatting function.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {s:.2f} seconds&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;s&quot;</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">));</span>
-</pre></div>
-</div>
- </p>
-</dd></dl>
-
-<dl class="function">
-<dt id="_CPPv2N3fmt8literalsli2_aEPKcNSt6size_tE">
-<span class="target" id="formatnamespacefmt_1_1literals_1a136ff198c14d58ebbd5e22865eab6f0b"></span>internal::udl_arg&lt;char&gt; <code class="descclassname">fmt::literals::</code><code class="descname">operator&quot;&quot;_a</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>s</em>, std::size_t<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt8literalsli2_aEPKcNSt6size_tE" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>User-defined literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt3argE11string_viewRK1T" title="fmt::arg"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::arg()</span></code></a>.</p>
-<p><strong>Example</strong>:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">fmt</span><span class="o">::</span><span class="n">literals</span><span class="p">;</span>
-<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {s:.2f} seconds&quot;</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="n">_a</span><span class="o">=</span><span class="mf">1.23</span><span class="p">);</span>
 </pre></div>
 </div>
  </p>
