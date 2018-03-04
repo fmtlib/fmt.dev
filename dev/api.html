@@ -139,7 +139,7 @@ They take <em>format_str</em> and <em>args</em> as arguments.</p>
 fields surrounded by braces <code class="docutils literal"><span class="pre">{}</span></code>. The fields are replaced with formatted
 arguments in the resulting string.</p>
 <p><em>args</em> is an argument list representing objects to be formatted.</p>
-<p>The <a class="reference external" href="https://github.com/fmtlib/fmt/blob/master/README.rst#speed-tests">performance of the format API</a> is close
+<p>The <a class="reference external" href="https://github.com/fmtlib/fmt/blob/master/README.rst#speed-tests">performance of the formating functions</a> is close
 to that of glibc&#8217;s <code class="docutils literal"><span class="pre">printf</span></code> and better than the performance of IOStreams.</p>
 <span class="target" id="format"></span><dl class="function">
 <dt>
@@ -157,7 +157,7 @@ to that of glibc&#8217;s <code class="docutils literal"><span class="pre">printf
 <dl class="function">
 <dt id="_CPPv2N3fmt8literalsli7_formatEPKcNSt6size_tE">
 <span class="target" id="formatnamespacefmt_1_1literals_1a7b6e88e2e718a55df3a5a3706369d69e"></span>internal::udl_formatter&lt;char&gt; <code class="descclassname">fmt::literals::</code><code class="descname">operator&quot;&quot;_format</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>s</em>, std::size_t<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt8literalsli7_formatEPKcNSt6size_tE" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>C++11 literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt6formatE11string_viewDpRK4Args" title="fmt::format"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::format()</span></code></a>.</p>
+<dd><p><p>User-defined literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt6formatE11string_viewDpRK4Args" title="fmt::format"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::format()</span></code></a>.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">fmt</span><span class="o">::</span><span class="n">literals</span><span class="p">;</span>
 <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="s">&quot;The answer is {}&quot;</span><span class="n">_format</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
@@ -286,7 +286,7 @@ custom argument formatter class:</p>
 <span class="c1">// with the ``x`` format specifier.</span>
 <span class="k">class</span> <span class="nc">custom_arg_formatter</span> <span class="o">:</span> <span class="k">public</span> <span class="n">arg_formatter</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
-  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">context_type</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">)</span>
+  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">context</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">)</span>
     <span class="o">:</span> <span class="n">arg_formatter</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="p">{}</span>
 
   <span class="k">using</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">();</span>
@@ -301,8 +301,8 @@ custom argument formatter class:</p>
 
 <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">custom_vformat</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span> <span class="n">buffer</span><span class="p">;</span>
-  <span class="c1">// Pass custom argument formatter as a template arg to do_vformat.</span>
-  <span class="n">fmt</span><span class="o">::</span><span class="n">do_vformat_to</span><span class="o">&lt;</span><span class="n">custom_arg_formatter</span><span class="o">&gt;</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+  <span class="c1">// Pass custom argument formatter as a template arg to vformat_to.</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">vformat_to</span><span class="o">&lt;</span><span class="n">custom_arg_formatter</span><span class="o">&gt;</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
   <span class="k">return</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
 <span class="p">}</span>
 
@@ -475,7 +475,7 @@ store output elsewhere by subclassing <code class="xref cpp cpp-any docutils lit
 <dl class="function">
 <dt id="_CPPv2N3fmt8literalsli2_aEPKcNSt6size_tE">
 <span class="target" id="formatnamespacefmt_1_1literals_1a136ff198c14d58ebbd5e22865eab6f0b"></span>internal::udl_arg&lt;char&gt; <code class="descclassname">fmt::literals::</code><code class="descname">operator&quot;&quot;_a</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>s</em>, std::size_t<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt8literalsli2_aEPKcNSt6size_tE" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>C++11 literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt3argE11string_viewRK1T" title="fmt::arg"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::arg()</span></code></a>.</p>
+<dd><p><p>User-defined literal equivalent of <a class="reference internal" href="#_CPPv2N3fmt3argE11string_viewRK1T" title="fmt::arg"><code class="xref cpp cpp-func docutils literal"><span class="pre">fmt::arg()</span></code></a>.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">fmt</span><span class="o">::</span><span class="n">literals</span><span class="p">;</span>
 <span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {s:.2f} seconds&quot;</span><span class="p">,</span> <span class="s">&quot;s&quot;</span><span class="n">_a</span><span class="o">=</span><span class="mf">1.23</span><span class="p">);</span>
@@ -526,9 +526,10 @@ store output elsewhere by subclassing <code class="xref cpp cpp-any docutils lit
 <dt id="_CPPv2N3fmt17basic_string_viewE">
 <span id="fmt::basic_string_view"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">basic_string_view</code><a class="headerlink" href="#_CPPv2N3fmt17basic_string_viewE" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>An implementation of <code class="docutils literal"><span class="pre">std::basic_string_view</span></code> for pre-C++17. It provides a
-subset of the API. fmt::basic_string_view is used for format strings even if
-std::string_view is available to prevent issues when a library is compiled
-with different -std option than the client code (which is not recommended).</p>
+subset of the API. <code class="docutils literal"><span class="pre">fmt::basic_string_view</span></code> is used for format strings even
+if <code class="docutils literal"><span class="pre">std::string_view</span></code> is available to prevent issues when a library is
+compiled with a different <code class="docutils literal"><span class="pre">-std</span></code> option than the client code (which is not
+recommended).</p>
  </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
