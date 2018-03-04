@@ -568,7 +568,7 @@ the size with <code class="docutils literal"><span class="pre">std::char_traits&
 
 <dl class="class">
 <dt>
-<span class="target" id="formatclassfmt_1_1basic__memory__buffer"></span><em class="property">template </em>&lt;typename <em>T</em>, std::size_t <em>SIZE</em> = internal::INLINE_BUFFER_SIZE, typename <em>Allocator</em> = std::allocator&lt;T&gt;&gt;</dt>
+<span class="target" id="formatclassfmt_1_1basic__memory__buffer"></span><em class="property">template </em>&lt;typename <em>T</em>, std::size_t <em>SIZE</em> = inline_buffer_size, typename <em>Allocator</em> = std::allocator&lt;T&gt;&gt;</dt>
 <dt id="_CPPv2N3fmt19basic_memory_bufferE">
 <span id="fmt::basic_memory_buffer"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">basic_memory_buffer</code><a class="headerlink" href="#_CPPv2N3fmt19basic_memory_bufferE" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>A dynamically growing memory buffer for trivially copyable/constructible types
@@ -726,7 +726,7 @@ will look like &#8220;error -1&#8221;.</p>
 A custom allocator class can be specified as a template argument to
 <a class="reference internal" href="#_CPPv2N3fmt19basic_memory_bufferE" title="fmt::basic_memory_buffer"><code class="xref cpp cpp-class docutils literal"><span class="pre">fmt::basic_memory_buffer</span></code></a>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">custom_memory_buffer</span> <span class="o">=</span>
-  <span class="n">fmt</span><span class="o">::</span><span class="n">basic_memory_buffer</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">custom_allocator</span><span class="o">&gt;</span><span class="p">;</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">basic_memory_buffer</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">inline_buffer_size</span><span class="p">,</span> <span class="n">custom_allocator</span><span class="o">&gt;</span><span class="p">;</span>
 </pre></div>
 </div>
 <p>It is also possible to write a formatting function that uses a custom
@@ -734,8 +734,8 @@ allocator:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">custom_string</span> <span class="o">=</span>
   <span class="n">std</span><span class="o">::</span><span class="n">basic_string</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">char_traits</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">custom_allocator</span><span class="o">&gt;</span><span class="p">;</span>
 
-<span class="n">custom_string</span> <span class="nf">format</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
-                     <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">custom_string</span> <span class="nf">vformat</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
+                      <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">custom_memory_buffer</span> <span class="n">buf</span><span class="p">(</span><span class="n">alloc</span><span class="p">);</span>
   <span class="n">fmt</span><span class="o">::</span><span class="n">vformat_to</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
   <span class="k">return</span> <span class="n">custom_string</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">buf</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">alloc</span><span class="p">);</span>
@@ -760,7 +760,7 @@ allocator:</p>
 
 
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2012-2015, Victor Zverovich.
+        &copy; Copyright 2012-present, Victor Zverovich.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1+.
     </div>
 
