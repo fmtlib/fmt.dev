@@ -115,7 +115,7 @@ td { text-align: left; vertical-align: top;
 <body>
 
 <address align=right>
-Document number: P0645R1<br>
+Document number: P0645R2<br>
 Audience: Library Evolution<br>
 Author: Victor Zverovich<br>
 <br>
@@ -123,7 +123,7 @@ Reply to:<br>
 <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <a href="mailto:lwh@fb.com">Lee Howes</a><br>
 <br>
-2017-11-11
+2017-02-01
 </address>
 <hr>
 
@@ -135,33 +135,45 @@ Reply to:<br>
 <h2><a name="History">Revision History</a></h2>
 
 <h3>Changes since
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r1.html">R1</a></h2>
+
+<p>
+<ul>
+<li>Add the <code>format_to_n</code> function taking an output iterator and a
+size.
+</ul>
+</p>
+
+<h3>Changes since
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0645r0.html">R0</a></h2>
 
 <p>
 <ul>
-<li>Add section <a href="#CompileTimeFormat">"Compile-time processing of format
-    strings"</a>.
+<li>Add section <a href="#CompileTimeFormat">Compile-time processing of format
+    strings</a>.
 <li>Separate parsing and formatting in the extension API replacing
-    <code>format_value</code> function template with <code>formatter</code>
-    class template to allow compile-time processing of format strings.
+    <code>format_value</code> function template with class template
+    <code>formatter</code> to allow compile-time processing of format strings.
 <li>Change return type of <code>format_to</code> and <code>vformat_to</code>
     to <code>OutputIterator</code> in synopsis.
-<li>Remove sections "Null-terminated string view" and "Format string", and
+<li>Remove sections Null-terminated string view and Format string, and
     replace <code>basic_cstring_view</code> with <code>basic_string_view</code>.
-<li>Add a link to the implementation in Introduction.
-<li>Add a note regarding time formatting and compatiblity with D0355 "Extending
+<li>Add a link to the implementation in
+    <a href="#Introduction">Introduction</a>.
+<li>Add a note regarding time formatting and compatibility with D0355 "Extending
     &lt;chrono&gt; to Calendars and Time Zones" <a href="#16">[16]</a> to
-    <a href="#Extensibility">Extensibility</a>.
+    section <a href="#Extensibility">Extensibility</a>.
 <li>Rename <code>basic_args</code> to <code>basic_format_args</code>.
 <li>Rename <code>is_numeric</code> to <code>is_arithmetic</code>.
-<li>Add the <code>count</code> function that counts the number of characters in
-    the output to "Header &lt;format&gt; synopsis" and "Formatting functions"
+<li>Add the <code>count</code> function that counts the number of characters
     and use it to define output ranges.
-<li>Remove <code>basic_buffer</code> and section "Formatting buffer".
+<li>Remove <code>basic_buffer</code> and section Formatting buffer and replace
+    buffers with output iterators.
 <li>Add <a href="#Benchmarks">Appendix A: Benchmarks</a>.
 <li>Explain the purpose of the type-erased API in more details in the
     <a href="#Footprint">Binary footprint</a> section.
 <li>Add <a href="#BinaryCode">Appendix B: Binary code comparison</a>.
+<li>Add formatting function overloads for <code>wchar_t</code> strings.
 </ul>
 </p>
 
@@ -343,7 +355,8 @@ support named arguments.
 <p>
 Both the format string syntax and the API are designed with extensibility in
 mind. The mini-language can be extended for user-defined types and users can
-provide functions that do parsing and formatting for such types.
+provide functions that do parsing, possibly at compile time, and formatting for
+such types.
 </p>
 
 <p>The general syntax of a replacement field in a format string is
@@ -381,7 +394,7 @@ struct formatter&lt;tm&gt; {
 The <code>formatter&lt;tm&gt;::parse</code> function parses the
 <code>format-spec</code> portion of the format string corresponding to the
 current argument and <code>formatter&lt;tm&gt;::format</code> formats the value
-and writes the result via the output iterator <code>ctx.begin()</code>.
+and writes the output via the iterator <code>ctx.begin()</code>.
 </p>
 
 <p>
@@ -392,8 +405,8 @@ extension API.
 </p>
 
 <p>
-The default implementation of <code>formatter::format</code> calls ostream
-insertion <code>operator&lt;&lt;</code> if available.
+The default implementation of <code>formatter&lt;T&gt;</code> uses ostream
+insertion <code>operator&lt;&lt;</code> for type <code>T</code> if available.
 </p>
 
 <h3><a name="Safety">Safety</a></h3>
@@ -486,7 +499,7 @@ them altogether by using a suitable API.
 <p>
 The <code>format_to</code> function takes an arbitrary output iterator and can
 be specialized for random access and contiguous iterators for performance
-reasons as it is done in the reference implementation [14].
+reasons as it is done in the reference implementation <a href="#14">[14]</a>.
 </p>
 
 <p>
@@ -508,7 +521,7 @@ formatting facilities.
 In order to minimize binary code size, each formatting function that uses
 variadic templates can be implemented as a small inline wrapper around its
 non-variadic counterpart. This wrapper creates a <code>basic_format_args</code>
-object representing an array of type-erased argument references with
+object, representing an array of type-erased argument references, with
 <code>make_args</code> and calls the non-variadic function to do the actual
 work. For example, the <code>format</code> variadic function calls
 <code>vformat</code>:
@@ -541,24 +554,24 @@ specific example.
 <p>
 Exposing the type-erased API rather than making it an implementation detail and
 only providing variadic functions allows applying the same technique to the
-user code. For example, consider a simple logging function that prints a
-formatted error message to standard output:
+user code. For example, consider a simple logging function that writes a
+formatted error message to <code>clog</code>:
 <p>
 
 <pre><code>template &lt;class... Args&gt;
   void log_error(int code, string_view format_str, const Args&amp;... args) {
-    cout &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; format(format_str, args...);
+    clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; format(format_str, args...);
   }</code></pre>
 
 <p>
 The code for this function will be generated for every combination of argument
 types which can be undesirable. However, if we use the type-erased API, there
 will be only one instance of the logging function while the wrapper function
-will be trivially inlined:
+can be trivially inlined:
 </p>
 
 <pre><code>void vlog_error(int code, string_view format_str, format_args args) {
-  cout &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; vformat(format_str, args);
+  clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; vformat(format_str, args);
 }
 
 template &lt;class... Args&gt;
@@ -575,9 +588,10 @@ The current design allows users to easily switch between the two approaches.
 
 <p>It is possible to parse format strings at compile time with
 <code>constexpr</code> functions which has been demonstrated in the reference
-implementation [14] and in [18]. Unfortunately a satisfactory API cannot be
-provided using existing C++17 features. Ideally we would like to use a function
-call API similar to the one proposed in this paper:</p>
+implementation <a href="#14">[14]</a> and in <a href="#18">[18]</a>.
+Unfortunately a satisfactory API cannot be provided using existing C++17
+features. Ideally we would like to use a function call API similar to the one
+proposed in this paper:</p>
 
 <pre>
 <code>template &lt;class String, class... Args&gt;
@@ -593,12 +607,14 @@ string, for example</p>
 
 <p>However, requiring a user to create a new type either manually or via a macro
 for every format string is not acceptable. P0424R1 "Reconsidering literal
-operator templates for strings" [15] gives a solution to this problem based on
-user-defined literal operators. If this or other similar proposal for
-compile-time strings is accepted into the standard, it should be easy to provide
-additional formatting APIs that make use of this feature. Obviously runtime
-checks will still be needed in cases where format string is not known at compile
-time.</p>
+operator templates for strings" <a href="#15">[15]</a> gives a solution to this
+problem based on user-defined literal operators. If this or other similar
+proposal for compile-time strings is accepted into the standard, it should be
+easy to provide additional formatting APIs that make use of this feature.
+Obviously runtime checks will still be needed in cases where format string is
+not known at compile time, but as shown in <a href="#Benchmarks">Appendix A:
+Benchmarks</a> even with runtime parsing performance can be on par with or
+better than that of existing methods.</p>
 
 <h3><a name="Impact">Impact on existing code</a></h3>
 
@@ -638,8 +654,10 @@ template &lt;class OutputIterator, class charT&gt;
 using parse_context = basic_parse_context&lt;char&gt;;
 
 using context = basic_context&lt;<i>implementation-defined</i>&gt;;
+using wcontext = basic_context&lt;<i>implementation-defined</i>&gt;;
 
 using format_args = basic_format_args&lt;context&gt;;
+using wformat_args = basic_format_args&lt;wcontext&gt;;
 
 template &lt;class OutputIterator, class charT&gt;
   using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
@@ -654,19 +672,45 @@ class format_error;
 
 template &lt;class... Args&gt;
   string format(string_view format_str, const Args&amp;... args);
+template &lt;class... Args&gt;
+  wstring format(wstring_view format_str, const Args&amp;... args);
 
 string vformat(string_view format_str, format_args args);
+wstring vformat(wstring_view format_str, wformat_args args);
 
 template &lt;class OutputIterator, class... Args&gt;
   OutputIterator format_to(OutputIterator out, string_view format_str,
+                           const Args&amp;... args);
+template &lt;class OutputIterator, class... Args&gt;
+  OutputIterator format_to(OutputIterator out, wstring_view format_str,
                            const Args&amp;... args);
 
 template &lt;class OutputIterator&gt;
   OutputIterator vformat_to(OutputIterator out, string_view format_str,
                             format_args_t&lt;OutputIterator, char&gt; args);
+template &lt;class OutputIterator&gt;
+  OutputIterator vformat_to(OutputIterator out, wstring_view format_str,
+                            format_args_t&lt;OutputIterator, wchar_t&gt; args);
+
+template &lt;class OutputIterator, class Size&gt;
+struct format_to_n_result {
+  OutputIterator out;
+  Size size;
+};
+<!-- Formatted similar to mismatch: http://eel.is/c++draft/mismatch -->
+template &lt;class OutputIterator, class Size, class... Args&gt;
+  format_to_n_result&lt;OutputIterator, Size&gt;
+    format_to_n(OutputIterator out, Size n, string_view format_str,
+                const Args&amp;... args);
+template &lt;class OutputIterator, class Size, class... Args&gt;
+  format_to_n_result&lt;OutputIterator, Size&gt;
+    format_to_n(OutputIterator out, Size n, wstring_view format_str,
+                const Args&amp;... args);
 
 template &lt;class... Args&gt;
   size_t count(string_view format_str, const Args&amp;... args);
+template &lt;class... Args&gt;
+  size_t count(wstring_view format_str, const Args&amp;... args);
 
 template &lt;class T, class charT = char&gt;
 struct formatter {
@@ -805,7 +849,7 @@ The meaning of the various alignment options is as follows:
 <tr>
 <td><code>'&gt;'</code></td>
 <td>Forces the field to be right-aligned within the available space (this is
-    the default for numbers).</td>
+    the default for arithmetic types).</td>
 </tr>
 <tr>
 <td><code>'='</code></td>
@@ -828,8 +872,8 @@ meaning in this case.
 </p>
 
 <p>
-The <code>sign</code> option is only valid for number types, and can be one of
-the following:
+The <code>sign</code> option is only valid for arithmetic types, and can be one
+of the following:
 </p>
 
 <table>
@@ -889,7 +933,7 @@ The <code>precision</code> is a decimal number indicating how many digits should
 be displayed after the decimal point for a floating-point value formatted with
 <code>'f'</code> and <code>'F'</code>, or before and after the decimal point
 for a floating-point value formatted with <code>'g'</code> or <code>'G'</code>.
-For non-number types the field indicates the maximum field size - in other
+For non-arithmetic types the field indicates the maximum field size - in other
 words, how many characters will be used from the field content. The
 <code>precision</code> is not allowed for integer, character, Boolean, and
 pointer values.
@@ -989,8 +1033,9 @@ Finally, the <code>type</code> determines how the data should be presented.
 
 <p>
 Integer presentation types can also be used with character and Boolean values.
-Boolean values are formatted using textual representation, either true or false,
-if the presentation type is not specified.
+Boolean values are formatted using textual representation, either
+<code>true</code> or <code>false</code>, if the presentation type is not
+specified.
 </p>
 
 <p>The available presentation types for floating-point values are:</p>
@@ -1075,8 +1120,10 @@ if the presentation type is not specified.
 
 <dl>
 <dt>
-<code>template &lt;class... Args&gt;<br>
-&nbsp;&nbsp;string format(string_view format_str, const Args&amp;... args);</code>
+<pre><code>template &lt;class... Args&gt;
+  string format(string_view format_str, const Args&amp;... args);
+template &lt;class... Args&gt;
+  wstring format(wstring_view format_str, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -1095,7 +1142,8 @@ valid format string.</p>
 
 <dl>
 <dt>
-<code>string vformat(string_view format_str, format_args args);</code>
+<pre><code>string vformat(string_view format_str, format_args args);
+wstring vformat(wstring_view format_str, wformat_args args);</code></pre>
 </dt>
 <dd>
 <p>
@@ -1115,6 +1163,9 @@ valid format string.</p>
 <dt>
 <pre><code>template &lt;class OutputIterator, class... Args&gt;
   OutputIterator format_to(OutputIterator out, string_view format_str,
+                           const Args&amp;... args);
+template &lt;class OutputIterator, class... Args&gt;
+  OutputIterator format_to(OutputIterator out, wstring_view format_str,
                            const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1136,7 +1187,10 @@ valid format string.</p>
 <dt>
 <pre><code>template &lt;class OutputIterator, class... Args&gt;
   OutputIterator vformat_to(OutputIterator out, string_view format_str,
-                            format_args_t&lt;OutputIterator, char&gt; args);</code></pre>
+                            format_args_t&lt;OutputIterator, char&gt; args);
+template &lt;class OutputIterator, class... Args&gt;
+  OutputIterator vformat_to(OutputIterator out, wstring_view format_str,
+                            format_args_t&lt;OutputIterator, wchar_t&gt; args);</code></pre>
 </dt>
 <dd>
 
@@ -1155,13 +1209,41 @@ valid format string.</p>
 
 <dl>
 <dt>
+<pre><code>template &lt;class OutputIterator, class Size, class... Args&gt;
+  format_to_n_result&lt;OutputIterator, Size&gt;
+    format_to_n(OutputIterator out, Size n, string_view format_str,
+                const Args&amp;... args);
+template &lt;class OutputIterator, class Size, class... Args&gt;
+  format_to_n_result&lt;OutputIterator, Size&gt;
+    format_to_n(OutputIterator out, Size n, wstring_view format_str,
+                const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+
+<p>
+<i>Effects</i>: The function writes to the range <code>[out, out + n)</code>
+the format string <code>format_str</code> with each replacement field substituted
+with the character representation of the argument it refers to, formatted
+according to the specification given in the field.
+</p>
+<p><i>Returns</i>: <code>format_to_n_result</code> containing the end of the
+output range and the total (not truncated) output size.</p>
+<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+valid format string.</p>
+</dd>
+</dl>
+
+<dl>
+<dt>
 <pre><code>template &lt;class... Args&gt;
-  size_t count(string_view format_str, const Args&amp;... args);</code></pre>
+  size_t count(string_view format_str, const Args&amp;... args);
+template &lt;class... Args&gt;
+  size_t count(wstring_view format_str, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 <p>
 <i>Effects</i>: The function returns the number of characters in the output of
-<code>fmt::format(format_str, args...)</code> without constructing the formatted
+<code>format(format_str, args...)</code> without constructing the formatted
 string.
 </p>
 <p><i>Returns</i>: The number of characters in the output of
@@ -1388,7 +1470,9 @@ Otherwise, returns an empty <code>basic_arg</code> object.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class... Args&gt;
+<pre><code>template &lt;class Context, class... Args&gt;
+  arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+template &lt;class... Args&gt;
   arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1397,7 +1481,7 @@ Otherwise, returns an empty <code>basic_arg</code> object.</p>
 <i>Effects</i>: The function returns an <code>arg_store</code> object
 that stores references to or copies of formatting arguments <code>args</code>.
 </p>
-<p><i>Returns</i>: The <code>arg_store</code> object constructed from
+<p><i>Returns</i>: The <code>arg_store</code> object constructed from the
 formatting arguments.</p>
 </dd>
 </dl>
@@ -1524,7 +1608,7 @@ range.</p>
 </dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
-<p><i>Returns</i>: A copy of the <code>args</code> object that represents
+<p><i>Returns</i>: A copy of the <code>args_type</code> object that represents
 formatting arguments.</p>
 </dd>
 </dl>
@@ -1540,27 +1624,21 @@ string s = format("{}", x);
 </code>
 </pre>
 
-the formatting function will first call
-<code>formatter&lt;X&gt;::parse(parse_ctx)</code> to parse the format
-specifiers, where <code>parse_ctx</code> is a reference to the parsing context.
-<code>parse_ctx.begin()</code> will point to one of the following positions in
-the format string being parsed:
-</p>
-
-<ul>
-<li><code>':'</code> preceding <code>format-spec</code> for the current
-argument,
-<li><code>'}'</code> if there is no <code>format-spec</code>.
+the formatting function first calls <code>formatter&lt;X&gt;::parse(parse_ctx)
+</code> to parse the format specifiers, where <code>parse_ctx</code> is a
+reference to the parsing context.
+<code>parse_ctx.begin()</code> points to the beginning of
+<code>format-spec</code> for the current argument, or to <code>'}'</code> if
+<code>format-spec</code> is empty.
 </ul>
 
 <p>
 The <code>parse</code> function should parse <code>format-spec</code> and
-return a pointer to the <code>'}'</code> character that ends
-<code>replacement-field</code> for the current argument.
+return an iterator past the end of the parsed range.
 </p>
 
 <p>
-Then the formatting function  will call <code>formatter&lt;X&gt;::format(x,
+Then the formatting function calls <code>formatter&lt;X&gt;::format(x,
 format_ctx)</code>, where <code>x</code> is a const reference to the argument
 and <code>format_ctx</code> is a reference to the formatting context.
 </p>
@@ -1579,6 +1657,13 @@ struct formatter {
 
 <dl>
 <dt>
+<pre><code>constexpr typename basic_parse_context&lt;charT&gt;::iterator
+    parse(basic_parse_context&lt;charT&gt;&amp; ctx);</code></pre>
+</dt>
+<dd>
+<p><i>Effects</i>: Returns <code>ctx.begin()</code>.</p>
+</dd>
+<dt>
 <pre><code>template &lt;typename FormatContext&gt;
   typename FormatContext::iterator format(const T&amp; value,
                                           FormatContext&amp; ctx);</code></pre>
@@ -1587,9 +1672,8 @@ struct formatter {
 <p>
 <i>Effects</i>: The function calls <code>os &lt;&lt; value</code>, where
 <code>os</code> is an instance of <code>std::basic_ostream&lt;charT&gt;</code>
-with a stream buffer backed by output range given by <code>ctx</code>.
+with a stream buffer backed by the iterator <code>ctx.begin()</code>.
 </p>
-<p><i>Throws</i>: <code>format_error</code> if <code>*ctx.ptr() != '}'</code>.</p>
 </dd>
 </dl>
 
@@ -1627,9 +1711,9 @@ exceptions to report errors from the formatting library.
 <h2><a name="RelatedWork">Related work</a></h2>
 
 <p>
-The Boost Format library [8] is an established formatting library that uses
-printf-like format string syntax with extensions. The main differences between
-this library and the current proposal are:
+The Boost Format library <a href="#8">[8]</a> is an established formatting
+library that uses printf-like format string syntax with extensions. The main
+differences between this library and the current proposal are:
 </p>
 
 <ul>
@@ -1641,23 +1725,23 @@ convey type information. For example, Boost Format has two ways
 to refer to an argument by index and allows but ignores some format specifiers.
 <li>API: Boost Format uses <code>operator%</code> to pass formatting arguments
 while this proposal uses variadic function templates.
-<li>Performance: The implementation of this proposal is several times faster
-that the implementation of Boost Format on tinyformat benchmarks [9],
-generates smaller binary code and is faster to compile.
+<li>Performance: the implementation of this proposal is several times faster
+that the implementation of Boost Format on tinyformat benchmarks
+<a href="#9">[9]</a>, generates smaller binary code and is faster to compile.
 </ul>
 
 <p>
-A printf-like Interface for the Streams Library [10] is similar to the Boost
-Format library but uses variadic templates instead of <code>operator%</code>.
-Unfortunately it hasn't been updated since 2013 and the same arguments about
-format string syntax apply to it.
+A printf-like Interface for the Streams Library <a href="#10">[10]</a> is
+similar to the Boost Format library but uses variadic templates instead of
+<code>operator%</code>. Unfortunately it hasn't been updated since 2013 and the
+same arguments about format string syntax apply to it.
 </p>
 
 <p>
-The FastFormat library [11] is another well-known formatting library.
-Similarly to this proposal, FastFormat uses brace-delimited format specifiers,
-but otherwise the format string syntax is different and the library has
-significant limitations [12]:
+The FastFormat library <a href="#11">[11]</a> is another well-known formatting
+library. Similarly to this proposal, FastFormat uses brace-delimited format
+specifiers, but otherwise the format string syntax is different and the library
+has significant limitations <a href="#12">[12]</a>:
 
 <blockquote>
 Three features that have no hope of being accommodated within the current
@@ -1686,12 +1770,15 @@ binary code and better compile times.
 
 <p>
 An implementation of this proposal is available in the <code>std</code> branch
-of the open-source fmt library [14].
+of the open-source fmt library <a href="#14">[14]</a>.
 </p>
 
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 
-The Format String Syntax section is based on the Python documentation [3].
+<p>
+The <a name="SyntaxRef">Format string syntax</a> section is based on the Python
+documentation <a href="#3">[3]</a>.
+</p>
 
 <h2><a name="References">References</a></h2>
 
