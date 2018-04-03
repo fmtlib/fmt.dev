@@ -187,19 +187,19 @@ user-defined types with custom parsers to section
 Even with proliferation of graphical and voice user interfaces, text remains one
 of the main ways for humans to interact with computer programs and programming
 languages provide a variety of methods to perform text formatting.
-The first thing we do when learning a new programming language is often writing
+The first thing we do when learning a new programming language is often to write
 a &quot;Hello, World!&quot; program that performs simple formatted output.
 </p>
 
 <p>
-C++ has not one but two standard APIs for doing formatted output, the
+C++ has not one but two standard APIs for producing formatted output, the
 <code>printf</code> family of functions inherited from C and the I/O streams
 library (iostreams).
-While iostreams are usually the recommended way of doing formatted
+While iostreams are usually the recommended way of producing formatted
 output in C++ for safety and extensibility reasons, <code>printf</code> offers
-some advantages, such as arguably more natural function call API, separation of
-formatted message and arguments, possibly with argument reordering as a POSIX
-extension, and often more compact code, both source and binary.
+some advantages, such as an arguably more natural function call API, the
+separation of formatted message and arguments, possibly with argument reordering
+as a POSIX extension, and often more compact source and binary code.
 </p>
 
 <p>
@@ -226,11 +226,11 @@ A full implementation of this proposal is available at
 <h3><a name="Syntax">Format string syntax</a></h3>
 
 <p>
-Variations of the printf format string syntax are arguably the most popular
-among the programming languages and C++ itself inherits <code>printf</code>
-from C <a href="#1">[1]</a>. The advantage of the printf syntax is that many
-programmers are familiar with it. However, in its current form it has a number
-of issues:
+Variations of the <code>printf</code> format string syntax are arguably the most
+popular among the programming languages and C++ itself inherits <code>printf</code>
+from C <a href="#1">[1]</a>. The advantage of the <code>printf</code> syntax is
+that many programmers are familiar with it. However, in its current form it has
+a number of issues:
 </p>
 
 <ul>
@@ -242,14 +242,15 @@ of issues:
 <li>There are subtle differences between different implementations. For example,
     POSIX positional arguments <a href="#2">[2]</a> are not supported on
     some systems <a href="#6">[6]</a>.</li>
-<li>Using <code>'%'</code> in a custom format specifier, e.g. for
-    <code>put_time</code>-like time formatting, poses difficulties.</li>
+<li>Using <code>'%'</code> in a custom format specifier poses difficulties, e.g.
+for <code>put_time</code>-like time formatting.</li>
 </ul>
 
 <p>
 Although it is possible to address these issues while maintaining resemblance
-to the original printf format, this will still break compatibility and can
-potentially be more confusing to users than introducing a different syntax.
+to the original <code>printf</code> format, this will still break compatibility
+and can potentially be more confusing to users than introducing a different
+syntax.
 </p>
 
 <p>
@@ -257,26 +258,26 @@ Therefore we propose a new syntax based on the ones used in Python
 <a href="#3">[3]</a>, the .NET family of languages <a href="#4">[4]</a>,
 and Rust <a href="#5">[5]</a>. This syntax employs <code>'{'</code> and
 <code>'}'</code> as replacement field delimiters instead of <code>'%'</code>
-and it is described in details in the <a href="#SyntaxRef">syntax reference</a>.
-Here are some of the advantages:
+and it is described in detail in the <a href="#SyntaxRef">syntax reference</a>.
+Some advantages of the proposal are:
 </p>
 
 <ul>
-<li>Consistent and easy to parse mini-language focused on formatting rather
+<li>A consistent and easy to parse mini-language focused on formatting rather
     than conveying type information</li>
 <li>Extensibility and support for custom format strings for user-defined
     types</li>
 <li>Positional arguments</li>
 <li>Support for both locale-specific and locale-independent formatting (see
     <a href="#Locale">Locale support</a>)</li>
-<li>Formatting improvements such as better alignment control, fill character,
-    and binary format
+<li>Formatting improvements such as better alignment control, character filling,
+    and binary representation</li>
 </ul>
 
 <p>
 The syntax is expressive enough to enable translation, possibly automated,
-of most printf format strings. The correspondence between <code>printf</code>
-and the new syntax is given in the following table.
+of most <code>printf</code> format strings. The correspondence between
+<code>printf</code> and the new syntax is given in the following table:
 </p>
 
 <table>
@@ -321,18 +322,20 @@ and the new syntax is given in the following table.
 <p>
 Width and precision are represented similarly in <code>printf</code> and the
 proposed syntax with the only difference that runtime value is specified by
-<code>*</code> in the former and <code>{}</code> in the latter, possibly with
+<code>'*'</code> in the former and <code>'{}''</code> in the latter, possibly with
 the index of the argument inside the braces.
 </p>
 
+TODO: example?
+
 <p>
 As can be seen from the table above, most of the specifiers remain the same
-which simplifies migration from <code>printf</code>. Notable difference is
+which simplifies migration from <code>printf</code>. A notable difference is
 in the alignment specification. The proposed syntax allows left, center,
 and right alignment represented by <code>'&lt;'</code>, <code>'^'</code>,
 and <code>'&gt;'</code> respectively which is more expressive than the
 corresponding <code>printf</code> syntax. The latter only supports left and
-right (the default) alignment.
+right alignment.
 </p>
 
 <p>
@@ -359,8 +362,8 @@ support named arguments.
 <p>
 Both the format string syntax and the API are designed with extensibility in
 mind. The mini-language can be extended for user-defined types and users can
-provide functions that do parsing, possibly at compile time, and formatting for
-such types.
+provide functions that provide parsing, possibly at compile time, and formatting
+for such types.
 </p>
 
 <p>The general syntax of a replacement field in a format string is
@@ -450,7 +453,7 @@ because locale-independent formatting can be implemented more efficiently.
 
 <p>
 An important feature for localization is the ability to rearrange formatting
-arguments because the word order may vary in different languages
+arguments as the word order may vary in different languages
 <a href="#7">[7]</a>. For example:
 </p>
 
@@ -484,7 +487,7 @@ arguments, for example:
 <code>fmt::format("String `{}' has {} characters\n", string, length(string)));</code>
 </pre>
 
-<p>with the German translation of the format string:</p>
+<p>with the German translation of the format string being:</p>
 
 <pre class="example">
 <code>"{1} Zeichen lang ist die Zeichenkette `{0}'\n"</code>
@@ -495,15 +498,15 @@ arguments, for example:
 <p>
 The formatting library has been designed with performance in mind. It tries to
 minimize the number of virtual function calls and dynamic memory allocations
-done per a formatting operation. In particular, if formatting output can fit
+done per formatting operation. In particular, if formatting output can fit
 into a fixed-size array allocated on stack, it should be possible to avoid
-them altogether by using a suitable API.
+both of them altogether by using a suitable API.
 </p>
 
 <p>
-The <code>format_to</code> function takes an arbitrary output iterator and can
-be specialized for random access and contiguous iterators for performance
-reasons as it is done in the reference implementation <a href="#14">[14]</a>.
+The <code>format_to</code> function takes an arbitrary output iterator and, for
+performance reasons, can be specialized for random access and contiguous
+iterators as shown in the reference implementation <a href="#14">[14]</a>.
 </p>
 
 <p>
@@ -515,14 +518,14 @@ improve performance.
 
 <p>
 See <a href="#Benchmarks">Appendix A: Benchmarks</a> for a small performance
-comparison of the reference implementation of this proposal to standard
+comparison of the reference implementation of this proposal versus the standard
 formatting facilities.
 </p>
 
 <h3><a name="Footprint">Binary footprint</a></h3>
 
 <p>
-In order to minimize binary code size, each formatting function that uses
+In order to minimize binary code size each formatting function that uses
 variadic templates can be implemented as a small inline wrapper around its
 non-variadic counterpart. This wrapper creates a <code>basic_format_args</code>
 object, representing an array of type-erased argument references, with
@@ -540,19 +543,20 @@ template &lt;class... Args&gt;
 
 <p>
 <code>basic_format_args</code> can be implemented as an array of tagged unions.
-Tags that indicate types of aguments can be combined and passed into a
+Tags that indicate types of arguments can be combined and passed into a
 formatting function as a single integer if the number of arguments is small.
 Since argument types are known at compile time this can be an integer
-constant and there will be no code generated to compute it at runtime, only to
+constant and there will be no runtime code generated to compute it, only to
 store according to calling conventions.
 </p>
+TODO: Not clear to me what the last sentence above means
 
 <p>
 Given a reasonable optimizing compiler, this will result in a compact per-call
 binary code, effectively consisting of placing argument pointers (or, possibly,
-copies for primitive types) and packed tags on stack and calling a formatting
-function. See <a href="#BinaryCode">Appendix B: Binary code comparison</a> for a
-specific example.
+copies for primitive types) and packed tags on the stack and calling a
+formatting function. See <a href="#BinaryCode">Appendix B: Binary code comparison</a>
+for a specific example.
 </p>
 
 <p>
@@ -611,11 +615,11 @@ string, for example</p>
 
 <p>However, requiring a user to create a new type either manually or via a macro
 for every format string is not acceptable. P0424R1 "Reconsidering literal
-operator templates for strings" <a href="#15">[15]</a> gives a solution to this
+operator templates for strings" <a href="#15">[15]</a> provides a solution to this
 problem based on user-defined literal operators. If this or other similar
 proposal for compile-time strings is accepted into the standard, it should be
 easy to provide additional formatting APIs that make use of this feature.
-Obviously runtime checks will still be needed in cases where format string is
+Obviously runtime checks will still be needed in cases where the format string is
 not known at compile time, but as shown in <a href="#Benchmarks">Appendix A:
 Benchmarks</a> even with runtime parsing performance can be on par with or
 better than that of existing methods.</p>
@@ -799,8 +803,8 @@ described in the next section.
 
 <p>
 A <code>format-spec</code> field can also include nested replacement fields
-in certain position within it. These nested replacement fields can contain only
-an argument index; format specifications are not allowed. This allows the
+in certain positions within it. These nested replacement fields can contain only
+an argument index - format specifications are not allowed. This allows the
 formatting of a value to be dynamically specified.
 </p>
 
@@ -875,9 +879,9 @@ The meaning of the various alignment options is as follows:
 </table>
 
 <p>
-Note that unless a minimum field width is defined, the field width will always
-be the same size as the data to fill it, so that the alignment option has no
-meaning in this case.
+Note that unless a minimum field width is defined, the field width will be
+determined by the width of the content, meaning that the alignment option has no
+effect.
 </p>
 
 <p>
@@ -902,8 +906,8 @@ of the following:
 </tr>
 <tr>
 <td>space</td>
-<td>Indicates that a leading space should be used on positive numbers, and a
-    minus sign on negative numbers.</td>
+<td>Indicates that a leading space should be used for positive numbers, and a
+    minus sign for negative numbers.</td>
 </tr>
 </tbody>
 </table>
@@ -924,6 +928,8 @@ character appears in the result of these conversions only if a digit follows it.
 In addition, for <code>'g'</code> and <code>'G'</code> conversions, trailing
 zeros are not removed from the result.
 </p>
+
+TODO: could the previous section be better in a table?
 
 <p>
 <code>width</code> is a decimal integer defining the minimum field width. If
@@ -1030,7 +1036,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tr>
 <tr>
 <td><code>'n'</code></td>
-<td>Number. This is the same as <code>'d'</code>, except that it uses the
+<td>Number. This is the same as <code>'d'</code> except that it uses the
     locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
@@ -1126,6 +1132,9 @@ specified.
 </table>
 
 <h3>Formatting functions</h3>
+
+TODO: I was wondering if it would be work having examples for the next section,
+but perhaps that would make it too long?
 
 <dl>
 <dt>
@@ -1721,14 +1730,14 @@ exceptions to report errors from the formatting library.
 
 <p>
 The Boost Format library <a href="#8">[8]</a> is an established formatting
-library that uses printf-like format string syntax with extensions. The main
-differences between this library and the current proposal are:
+library that uses <code>printf</code>-like format string syntax with extensions.
+The main differences between this library and the current proposal are:
 </p>
 
 <ul>
 <li>Syntax: for the reasons descibed in section
 <a href="Syntax">Format String Syntax</a> this proposal
-uses a new syntax instead of extending the  printf one. This allows much
+uses a new syntax instead of extending the <code>printf</code> one. This allows much
 simpler and easier to parse grammar, not burdened by legacy specifiers used to
 convey type information. For example, Boost Format has two ways
 to refer to an argument by index and allows but ignores some format specifiers.
@@ -1740,8 +1749,8 @@ that the implementation of Boost Format on tinyformat benchmarks
 </ul>
 
 <p>
-A printf-like Interface for the Streams Library <a href="#10">[10]</a> is
-similar to the Boost Format library but uses variadic templates instead of
+A <code>printf</code>-like Interface for the Streams Library <a href="#10">[10]</a>
+is similar to the Boost Format library but uses variadic templates instead of
 <code>operator%</code>. Unfortunately it hasn't been updated since 2013 and the
 same arguments about format string syntax apply to it.
 </p>
@@ -1951,7 +1960,7 @@ Google Benchmark library [19] to measure timings:
     while (s.KeepRunning()) {
       for (auto i: data)
         result += fmt::format(&quot;{}&quot;, i).size();
-    } 
+    }
     benchmark::DoNotOptimize(result);
   }
   BENCHMARK(format);
