@@ -146,6 +146,7 @@ user-defined types with custom parsers to section
 <a href="#CompileTimeFormat">Compile-time processing of format strings</a>.
 <li>Rename <code>count</code> to <code>formatted_size</code>.
 <li>Rename <code>basic_arg</code> to <code>basic_format_arg</code>.
+<li>Rename <code>arg_store</code> to <code>format_arg_store</code>.
 </ul>
 </p>
 
@@ -656,7 +657,7 @@ template &lt;class Visitor, class Context&gt;
   <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
 template &lt;class Context, class... Args&gt;
-  class arg_store;
+  class format_arg_store;
 
 template &lt;class Context&gt;
   class basic_format_args;
@@ -679,10 +680,10 @@ template &lt;class OutputIterator, class charT&gt;
   using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
 
 template &lt;class Context, class... Args&gt;
-  arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 
 template &lt;class... Args&gt;
-  arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
 
 class format_error;
 
@@ -1407,18 +1408,18 @@ the number of possible values types of a formatting argument.
 </dd>
 </dl>
 
-<h3>Class template <code>arg_store</code></h3>
+<h3>Class template <code>format_arg_store</code></h3>
 
 <pre>
 <code>template &lt;class Context, class... Args&gt;
-class arg_store {
+class format_arg_store {
 public:
   basic_format_args&lt;Context&gt; operator*() const;
 };</code>
 </pre>
 
 <p>
-An object of type <code>arg_store</code> stores formatting arguments or
+An object of type <code>format_arg_store</code> stores formatting arguments or
 references to them.
 </p>
 
@@ -1442,7 +1443,7 @@ public:
   basic_format_args() noexcept;
 
   template &lt;class... Args&gt;
-    basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);
+    basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
 
   basic_format_arg&lt;Context&gt; operator[](size_type i) const;
 };</code>
@@ -1465,7 +1466,7 @@ arguments.
 
 <dl>
 <dt><pre><code>template &lt;class... Args&gt;
-  basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
+  basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
 <dd>
 <p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
 provides access to the agruments in <code>store</code>.
@@ -1487,17 +1488,17 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class Context, class... Args&gt;
-  arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 template &lt;class... Args&gt;
-  arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
+  format_arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
 <p>
-<i>Effects</i>: The function returns an <code>arg_store</code> object
+<i>Effects</i>: The function returns a <code>format_arg_store</code> object
 that stores references to or copies of formatting arguments <code>args</code>.
 </p>
-<p><i>Returns</i>: The <code>arg_store</code> object constructed from the
+<p><i>Returns</i>: The <code>format_arg_store</code> object constructed from the
 formatting arguments.</p>
 </dd>
 </dl>
