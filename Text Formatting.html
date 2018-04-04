@@ -145,6 +145,7 @@ size.
 user-defined types with custom parsers to section
 <a href="#CompileTimeFormat">Compile-time processing of format strings</a>.
 <li>Rename <code>count</code> to <code>formatted_size</code>.
+<li>Rename <code>basic_arg</code> to <code>basic_format_arg</code>.
 </ul>
 </p>
 
@@ -643,10 +644,10 @@ Insert a new section in 27.7 [iostream.format].
 namespace fmt {
 
 template &lt;class Context&gt;
-  class basic_arg;
+  class basic_format_arg;
 
 template &lt;class Visitor, class Context&gt;
-  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
 template &lt;class Context, class... Args&gt;
   class arg_store;
@@ -1267,11 +1268,11 @@ valid format string.</p>
 
 <pre>
 <code>template &lt;class Context&gt;
-class basic_arg {
+class basic_format_arg {
 public:
   class handle;
 
-  basic_arg();
+  basic_format_arg();
 
   explicit operator bool() const noexcept;
 
@@ -1282,10 +1283,10 @@ public:
 </pre>
 
 <p>
-The class template <code>basic_arg</code> describes objects that store a copy of
-or a reference to a formatting argument. It is parameterized on a formatting
-context (see <a href="#gensection-9">4.9</a>) and can hold a value of one of the
-following types:
+The class template <code>basic_format_arg</code> describes objects that store
+a copy of or a reference to a formatting argument. It is parameterized on a
+formatting context (see <a href="#gensection-9">4.9</a>) and can hold a value of
+one of the following types:
 <ul>
 <li><code>int</code>
 <li><code>unsigned int</code>
@@ -1308,9 +1309,9 @@ section.
 </p>
 
 <dl>
-<dt><code>basic_arg();</code></dt>
+<dt><code>basic_format_arg();</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs a <code>basic_arg</code> object that
+<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
 doesn't refer to an argument.
 </p>
 <p><i>Postcondition</i>: <code>!(*this)</code>.</p>
@@ -1345,7 +1346,7 @@ number of possible value types of a formatting argument.
 
 <pre>
 <code>template &lt;class Context&gt;
-class basic_arg&lt;Context&gt;::handle {
+class basic_format_arg&lt;Context&gt;::handle {
 public:
   void format(Context&amp; ctx);
 };</code>
@@ -1370,8 +1371,8 @@ public:
 <h3>Formatting argument visitation</h3>
 
 <dl>
-<dt><code>template &lt;class Visitor, class Context&gt;<br>
-&nbsp;&nbsp;<i>see below</i> visit(Visitor&amp;&amp; vis, basic_arg&lt;Context&gt; arg);</code></dt>
+<dt><pre><code>template &lt;class Visitor, class Context&gt;
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
 <dd>
 <p><i>Requires:</i>
 The expression in the Effects section shall be a valid expression of the same
@@ -1437,7 +1438,7 @@ public:
   template &lt;class... Args&gt;
     basic_format_args(const arg_store&lt;Context, Args...&gt;&amp; store);
 
-  basic_arg&lt;Context&gt; operator[](size_type i) const;
+  basic_format_arg&lt;Context&gt; operator[](size_type i) const;
 };</code>
 </pre>
 
@@ -1467,11 +1468,11 @@ provides access to the agruments in <code>store</code>.
 </dl>
 
 <dl>
-<dt><code>basic_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
+<dt><code>basic_format_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
 <dd>
-<p><i>Returns</i>: A <code>basic_arg</code> object that represents an argument
-at index <code>i</code> if <code>i &lt;</code> the number of arguments.
-Otherwise, returns an empty <code>basic_arg</code> object.</p>
+<p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
+argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
+Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 </dd>
 </dl>
 
