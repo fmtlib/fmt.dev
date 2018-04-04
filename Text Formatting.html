@@ -147,6 +147,7 @@ user-defined types with custom parsers to section
 <li>Rename <code>count</code> to <code>formatted_size</code>.
 <li>Rename <code>basic_arg</code> to <code>basic_format_arg</code>.
 <li>Rename <code>arg_store</code> to <code>format_arg_store</code>.
+<li>Drop nested namespace <code>fmt</code>.
 </ul>
 </p>
 
@@ -216,7 +217,7 @@ user-defined types.
 Example:
 
 <pre class="example">
-<code>string message = fmt::format("The answer is {}.", 42);</code>
+<code>string message = format("The answer is {}.", 42);</code>
 </pre>
 </p>
 
@@ -330,7 +331,7 @@ with the index of the argument inside the braces:
 
 <pre class="example">
 <code>printf("%*s", 10, "foo");
-fmt::format("{:{}}", "foo", 10);</code>
+format("{:{}}", "foo", 10);</code>
 </pre>
 
 <p>
@@ -349,7 +350,7 @@ character:
 </p>
 
 <pre class="example">
-<code>fmt::format("{:*^30}", "centered");</code>
+<code>format("{:*^30}", "centered");</code>
 </pre>
 
 <p>
@@ -385,7 +386,7 @@ for <code>put_time</code>-like date and time formatting
 
 <pre class="example">
 <code>time_t t = time(nullptr);
-string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
+string date = format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
 </code></pre>
 
 <p>by providing a specialization of <code>formatter</code> for <code>tm</code>:
@@ -394,7 +395,7 @@ string date = fmt::format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
 <pre class="example">
 <code>template <>
 struct formatter&lt;tm&gt; {
-  constexpr fmt::parse_context::iterator parse(fmt::parse_context&amp; ctx);
+  constexpr parse_context::iterator parse(parse_context&amp; ctx);
 
   template &lt;class FormatContext&gt;
     typename FormatContext::iterator format(const tm&amp; tm,
@@ -489,7 +490,7 @@ arguments, for example:
 </p>
 
 <pre class="example">
-<code>fmt::format("String `{}' has {} characters\n", string, length(string)));</code>
+<code>format("String `{}' has {} characters\n", string, length(string)));</code>
 </pre>
 
 <p>with the German translation of the format string being:</p>
@@ -648,7 +649,6 @@ Insert a new section in 27.7 [iostream.format].
 
 <pre>
 <code>namespace std {
-namespace fmt {
 
 template &lt;class Context&gt;
   class basic_format_arg;
@@ -714,7 +714,7 @@ struct format_to_n_result {
   OutputIterator out;
   Size size;
 };
-<!-- Formatted similar to mismatch: http://eel.is/c++draft/mismatch -->
+<!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch -->
 template &lt;class OutputIterator, class Size, class... Args&gt;
   format_to_n_result&lt;OutputIterator, Size&gt;
     format_to_n(OutputIterator out, Size n, string_view format_str,
@@ -738,7 +738,6 @@ struct formatter {
     typename FormatContext::iterator format(const T&amp; value,
                                             FormatContext&amp; ctx);
 };
-}  // namespace fmt
 }  // namespace std </code>
 </pre>
 
@@ -1189,7 +1188,7 @@ template &lt;class OutputIterator, class... Args&gt;
 
 <p>
 <i>Effects</i>: The function writes to the range <code>[out, out +
-fmt::formatted_size(format_str, args...))</code> the format string
+formatted_size(format_str, args...))</code> the format string
 <code>format_str</code> with each replacement field substituted with the
 character representation of the argument it refers to, formatted according to the
 specification given in the field.
