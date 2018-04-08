@@ -223,10 +223,17 @@ arguments in the resulting string.</p>
 </div>
 <div class="section" id="argument-lists">
 <h3>Argument lists<a class="headerlink" href="#argument-lists" title="Permalink to this headline">¶</a></h3>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfunction: Cannot find function &#8220;fmt::make_args&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml</p>
-</div>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> Context, typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt16make_format_argsEDpRK4Args">
+<span id="fmt::make_format_args__ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a186dc064e5f80939a9834488a7819b58"></span><a class="reference internal" href="#_CPPv2N3fmt16format_arg_storeE" title="fmt::format_arg_store">format_arg_store</a>&lt;Context, Args...&gt; <code class="descclassname">fmt::</code><code class="descname">make_format_args</code><span class="sig-paren">(</span><em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt16make_format_argsEDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs an <a class="reference internal" href="#_CPPv2N3fmt16format_arg_storeE" title="fmt::format_arg_store"><code class="xref cpp cpp-any docutils literal"><span class="pre">format_arg_store</span></code></a> object that contains references to
+arguments and can be implicitly converted to <a class="reference internal" href="#_CPPv2N3fmt11format_argsE" title="fmt::format_args"><code class="xref cpp cpp-any docutils literal"><span class="pre">format_args</span></code></a>. <code class="xref cpp cpp-any docutils literal"><span class="pre">Context</span></code> can
+be omitted in which case it defaults to <code class="xref cpp cpp-any docutils literal"><span class="pre">context</span></code>.</p>
+ </p>
+</dd></dl>
+
 <dl class="class">
 <dt>
 <span class="target" id="formatclassfmt_1_1format__arg__store"></span><em class="property">template </em>&lt;typename <em>Context</em>, typename... <em>Args</em>&gt;</dt>
@@ -668,7 +675,7 @@ allocator:</p>
 <span class="kr">inline</span> <span class="n">custom_string</span> <span class="n">format</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span>
                             <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
                             <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span> <span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="n">vformat</span><span class="p">(</span><span class="n">alloc</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
+  <span class="k">return</span> <span class="n">vformat</span><span class="p">(</span><span class="n">alloc</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -684,7 +691,7 @@ custom argument formatter class:</p>
 <span class="c1">// with the ``x`` format specifier.</span>
 <span class="k">class</span> <span class="nc">custom_arg_formatter</span> <span class="o">:</span> <span class="k">public</span> <span class="n">arg_formatter</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
-  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">context</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">)</span>
+  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">format_context</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">)</span>
     <span class="o">:</span> <span class="n">arg_formatter</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="p">{}</span>
 
   <span class="k">using</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">();</span>
@@ -707,7 +714,7 @@ custom argument formatter class:</p>
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
 <span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">custom_format</span><span class="p">(</span>
     <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="n">custom_vformat</span><span class="p">(</span><span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
+  <span class="k">return</span> <span class="n">custom_vformat</span><span class="p">(</span><span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
 <span class="p">}</span>
 
 <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">custom_format</span><span class="p">(</span><span class="s">&quot;{:x}&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">42</span><span class="p">);</span> <span class="c1">// s == &quot;ffffffd6&quot;</span>
