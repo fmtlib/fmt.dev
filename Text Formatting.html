@@ -666,15 +666,15 @@ template &lt;class charT&gt;
   class basic_parse_context;
 
 template &lt;class OutputIterator, class charT&gt;
-  class basic_context;
+  class basic_format_context;
 
 using parse_context = basic_parse_context&lt;char&gt;;
 
-using context = basic_context&lt;<i>implementation-defined</i>&gt;;
-using wcontext = basic_context&lt;<i>implementation-defined</i>&gt;;
+using format_context = basic_format_context&lt;<i>implementation-defined</i>&gt;;
+using wformat_context = basic_format_context&lt;<i>implementation-defined</i>&gt;;
 
-using format_args = basic_format_args&lt;context&gt;;
-using wformat_args = basic_format_args&lt;wcontext&gt;;
+using format_args = basic_format_args&lt;format_context&gt;;
+using wformat_args = basic_format_args&lt;wformat_context&gt;;
 
 template &lt;class OutputIterator, class charT&gt;
   using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
@@ -683,7 +683,7 @@ template &lt;class Context, class... Args&gt;
   format_arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 
 template &lt;class... Args&gt;
-  format_arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;format_context, Args...&gt; make_args(const Args&amp;... args);
 
 class format_error;
 
@@ -1489,7 +1489,7 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 <pre><code>template &lt;class Context, class... Args&gt;
   format_arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
 template &lt;class... Args&gt;
-  format_arg_store&lt;context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
+  format_arg_store&lt;format_context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -1583,11 +1583,11 @@ argument indexing.</p>
 
 <pre>
 <code>template &lt;class OutputIterator, class charT&gt;
-class basic_context {
+class basic_format_context {
 public:
   using iterator = OutputIterator;
   using char_type = charT;
-  using args_type = basic_format_args&lt;basic_context&gt;
+  using args_type = basic_format_args&lt;basic_format_context&gt;
 
   template &lt;class T&gt;
     using formatter_type = formatter&lt;T&gt;;
@@ -1602,7 +1602,7 @@ public:
 </pre>
 
 <p>
-The class <code>basic_context</code> represents a formatting context for
+The class <code>basic_format_context</code> represents a formatting context for
 user-defined types.
 </p>
 
