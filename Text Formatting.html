@@ -148,6 +148,9 @@ user-defined types with custom parsers to section
 <li>Rename <code>basic_arg</code> to <code>basic_format_arg</code>.
 <li>Rename <code>arg_store</code> to <code>format_arg_store</code>.
 <li>Drop nested namespace <code>fmt</code>.
+<li>Rename <code>context</code> and <code>make_args</code> to
+<code>format_context</code> and <code>make_format_args</code> respectively to
+avoid potential ambiguity.
 </ul>
 </p>
 
@@ -535,7 +538,7 @@ In order to minimize binary code size each formatting function that uses
 variadic templates can be implemented as a small inline wrapper around its
 non-variadic counterpart. This wrapper creates a <code>basic_format_args</code>
 object, representing an array of type-erased argument references, with
-<code>make_args</code> and calls the non-variadic function to do the actual
+<code>make_format_args</code> and calls the non-variadic function to do the actual
 work. For example, the <code>format</code> variadic function calls
 <code>vformat</code>:
 </p>
@@ -544,7 +547,7 @@ work. For example, the <code>format</code> variadic function calls
 
 template &lt;class... Args&gt;
   inline string format(string_view format_str, const Args&amp;... args) {
-    return vformat(format_str, make_args(args...));
+    return vformat(format_str, make_format_args(args...));
   }</code></pre>
 
 <p>
@@ -589,7 +592,7 @@ can be trivially inlined:
 
 template &lt;class... Args&gt;
   inline void log_error(int code, string_view format_str, const Args&amp;... args) {
-    vlog_error(code, format_str, make_args(args...));
+    vlog_error(code, format_str, make_format_args(args...));
   }</code></pre>
 
 <p>
@@ -680,10 +683,10 @@ template &lt;class OutputIterator, class charT&gt;
   using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
 
 template &lt;class Context, class... Args&gt;
-  format_arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
 
 template &lt;class... Args&gt;
-  format_arg_store&lt;format_context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);
 
 class format_error;
 
@@ -1482,14 +1485,14 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 </dd>
 </dl>
 
-<h3>Function template <code>make_args</code></h3>
+<h3>Function template <code>make_format_args</code></h3>
 
 <dl>
 <dt>
 <pre><code>template &lt;class Context, class... Args&gt;
-  format_arg_store&lt;Context, Args...&gt; make_args(const Args&amp;... args);
+  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
 template &lt;class... Args&gt;
-  format_arg_store&lt;format_context, Args...&gt; make_args(const Args&amp;... args);</code></pre>
+  format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -2239,7 +2242,7 @@ the <code>sprintf</code> API:
 
 template &lt;typename... Args&gt;
 inline int raw_format(char* buffer, const char* format, const Args&amp;... args) {
-  return vraw_format(buffer, format, make_args(args...));
+  return vraw_format(buffer, format, make_format_args(args...));
 }
 
 void raw_format_test() {
