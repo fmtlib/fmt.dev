@@ -549,11 +549,10 @@ template &lt;class... Args&gt;
 
 <p>
 <code>basic_format_args</code> can be implemented as an array of tagged unions.
-Tags that indicate types of arguments can be combined and passed into a
-formatting function as a single integer if the number of arguments is small.
-Since argument types are known at compile time this can be an integer constant
-and there will be no code generated to compute it, only to store according to
-calling conventions.
+If the number of arguments is small then the tags that indicate the arguments
+types can be combined and passed into a formatting function as a single integer.
+This single integer representing all argument types is computed at compile time
+and only needs to be stored, resulting in smaller binary code.
 </p>
 
 <p>
@@ -836,7 +835,7 @@ align       ::=  '<' | '>' | '=' | '^'
 sign        ::=  '+' | '-' | ' '
 width       ::=  integer | '{' arg-id '}'
 precision   ::=  integer | '{' arg-id '}'
-type        ::=  int-type | 'a' | 'A' | 'c' | 'e' | 'E' | 'f' | 'F' | 'g' | 'G' | 'p' | 's'
+type        ::=  int-type | 'a' | 'A' | 'c' | 'e' | 'E' | 'f' | 'F' | 'g' | 'G' | 'n' | 'p' | 's'
 int-type    ::=  'b' | 'B' | 'd' | 'o' | 'x' | 'X'</code>
 </pre>
 
@@ -917,17 +916,16 @@ of the following:
 
 <p>
 The <code>'#'</code> option causes the <em>alternate form</em> to be used for
-the conversion. The alternate form is defined differently for different types.
+the conversion.
 This option is only valid for integer and floating-point types. For integers,
-when binary, octal, or hexadecimal output is used, this option adds the prefix
-respective <code>"0b"</code> (<code>"0B"</code>), <code>"0"</code>, or
+when binary, octal, or hexadecimal output is used, this option adds the respective
+prefix <code>"0b"</code> (<code>"0B"</code>), <code>"0"</code>, or
 <code>"0x"</code> (<code>"0X"</code>) to the output value. Whether the prefix
-is lower-case or upper-case is determined by the case of the type specifier,
-for example, the prefix <code>"0x"</code> is used for the type <code>'x'</code>
-and <code>"0X"</code> is used for <code>'X'</code>. For floating-point numbers
-the alternate form causes the result of the conversion to always contain a
-decimal-point character, even if no digits follow it. Normally, a decimal-point
-character appears in the result of these conversions only if a digit follows it.
+is lower-case or upper-case is determined by the case of the type specifier. For
+floating-point numbers the alternate form causes the result of the conversion to
+always contain a decimal-point character, even if no digits follow it. Normally,
+a decimal-point character appears in the result of these conversions only if a
+digit follows it.
 In addition, for <code>'g'</code> and <code>'G'</code> conversions, trailing
 zeros are not removed from the result.
 </p>
@@ -1100,6 +1098,12 @@ specified.
 
     A precision of <code>0</code> is treated as equivalent to a precision of
     <code>1</code>.</td>
+</tr>
+<tr>
+<td><code>'G'</code></td>
+<td>General format. Same as <code>'g'</code> except switches to <code>'E'</code>
+    if the number gets too large. The representations of infinity and NaN are
+    uppercased, too.</td>
 </tr>
 <tr>
 <td><code>'n'</code></td>
