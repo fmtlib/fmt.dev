@@ -642,13 +642,19 @@ The proposed formatting API is defined in the new header
 
 <h2><a name="Wording">Proposed wording</a></h2>
 
-Insert a new section in 27.7 [iostream.format].
+Add a new section in 23 [utilities].
+
+<h3>Formatting utilities [format]</h3>
 
 <!-- Example: http://eel.is/c%2B%2Bdraft/time#syn -->
-<h3>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h3>
+<h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
 <code>namespace std {
+  // <a href="#format.error">[format.error]</a>, class format_error
+  class format_error;
+
+  // <a href="#format.formatter">[format.formatter]</a>, formatter
   template &lt;class charT&gt; class basic_parse_context;
   using parse_context = basic_parse_context&lt;char&gt;;
   using wparse_context = basic_parse_context&lt;wchar_t&gt;;
@@ -657,6 +663,17 @@ Insert a new section in 27.7 [iostream.format].
   using format_context = basic_format_context&lt;<i>implementation-defined</i>&gt;;
   using wformat_context = basic_format_context&lt;<i>implementation-defined</i>&gt;;
 
+  template &lt;class T, class charT = char&gt;
+    struct formatter {
+      constexpr typename basic_parse_context&lt;charT&gt;::iterator
+        parse(basic_parse_context&lt;charT&gt;&amp; ctx);
+
+      template &lt;class FormatContext&gt;
+        typename FormatContext::iterator format(const T&amp; value,
+                                                FormatContext&amp; ctx);
+    };
+
+  // <a href="#format.arguments">[format.arguments]</a>, formatting arguments
   template &lt;class Context&gt; class basic_format_arg;
 
   template &lt;class Visitor, class Context&gt;
@@ -677,8 +694,6 @@ Insert a new section in 27.7 [iostream.format].
     format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);
   template &lt;class... Args&gt;
     format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);
-
-  class format_error;
 
   // <a href="#format.functions">[format.functions]</a>, formatting functions
   template &lt;class... Args&gt;
@@ -722,20 +737,10 @@ Insert a new section in 27.7 [iostream.format].
     size_t formatted_size(string_view format_str, const Args&amp;... args);
   template &lt;class... Args&gt;
     size_t formatted_size(wstring_view format_str, const Args&amp;... args);
-
-  template &lt;class T, class charT = char&gt;
-    struct formatter {
-      constexpr typename basic_parse_context&lt;charT&gt;::iterator
-        parse(basic_parse_context&lt;charT&gt;&amp; ctx);
-
-      template &lt;class FormatContext&gt;
-        typename FormatContext::iterator format(const T&amp; value,
-                                                FormatContext&amp; ctx);
-    };
 }</code>
 </pre>
 
-<h3><a name="SyntaxRef">Format string syntax</a></h3>
+<h4><a name="SyntaxRef">Format string syntax</a></h4>
 
 <p>
 Format strings contain <em>replacement fields</em> surrounded by curly braces
@@ -805,7 +810,7 @@ an argument index - format specifications are not allowed. This allows the
 formatting of a value to be dynamically specified.
 </p>
 
-<h4><a name="FormatSpec">Format specification mini-language</a></h4>
+<h5><a name="FormatSpec">Format specification mini-language</a></h5>
 
 <p>
 <em>Format specifications</em> are used within replacement fields contained
@@ -1131,7 +1136,289 @@ specified.
 </tbody>
 </table>
 
-<h3><a name="format.functions">Formatting functions [format.functions]</a></h3>
+<h4><a name="format.error">Class <code>format_error</code> [format.error]</a></h4>
+
+<pre>
+<code>class format_error : public runtime_error {
+public:
+  explicit format_error(const string&amp; what_arg);
+  explicit format_error(const char* what_arg);
+};</code>
+</pre>
+
+<p>
+The class <code>format_error</code> defines the type of objects thrown as
+exceptions to report errors from the formatting library.
+</p>
+
+<dl>
+<dt><code>format_error(const string&amp; what_arg);</code></dt>
+<dd>
+  <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
+  </p>
+  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
+  </p>
+</dd>
+<dt><code>format_error(const char* what_arg);</code></dt>
+<dd>
+  <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
+  </p>
+  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
+</dd>
+</dl>
+
+<h4><a name="format.arguments">Formatting arguments [format.arguments]</a></h4>
+<h5>Class template <code>basic_format_arg</code></h5>
+
+<pre>
+<code>template &lt;class Context&gt;
+  class basic_format_arg {
+  public:
+    class handle;
+
+    basic_format_arg();
+
+    explicit operator bool() const noexcept;
+
+    bool is_arithmetic() const;
+    bool is_integral() const;
+    bool is_pointer() const;
+  };</code>
+</pre>
+
+<p>
+The class template <code>basic_format_arg</code> describes objects that store
+a copy of or a reference to a formatting argument. It is parameterized on a
+formatting context (see <a href="#gensection-9">4.9</a>) and can hold a value of
+one of the following types:
+<ul>
+<li><code>int</code>
+<li><code>unsigned int</code>
+<li>integral types larger than <code>int</code>
+<li><code>bool</code>
+<li><code>charT</code>
+<li><code>double</code>
+<li>floating-point types larger than <code>double</code>
+<li><code>const charT*</code>
+<li><code>basic_string_view&lt;charT&gt;</code>
+<li><code>const void*</code>
+<li><code>handle</code> which stores a reference to an object of a user-defined
+type and a pointer to a formatting function
+<li><code>monostate</code> representing an empty state, i.e. when the
+    object doesn't refer to an argument
+</ul>
+where <code>charT</code> is <code>typename Context::char_type</code>.
+The value can be accessed via the visitation interface defined in the next
+section.
+</p>
+
+<dl>
+<dt><code>basic_format_arg();</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
+doesn't refer to an argument.
+</p>
+<p><i>Postcondition</i>: <code>!(*this)</code>.</p>
+</dd>
+<dt><code>explicit operator bool() const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if <code>*this</code> refers to an
+argument, otherwise <code>false</code>.</p>
+</dd>
+<dt><code>bool is_arithmetic() const;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
+argument of an arithmetic type.</p>
+</dd>
+<dt><code>bool is_integral() const;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
+argument of an integral type (<a
+href="http://eel.is/c++draft/basic.fundamental">[basic.fundamental]</a>).</p>
+</dd>
+<dt><code>bool is_pointer() const;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
+argument of type <code>const void*</code>.</p>
+</dd>
+</dl>
+
+<p><i>Complexity:</i> The invocation of <code>is_arithmetic</code>,
+<code>is_integral</code>, and <code>is_pointer</code> does not depend on the
+number of possible value types of a formatting argument.
+</p>
+
+<pre>
+<code>template &lt;class Context&gt;
+  class basic_format_arg&lt;Context&gt;::handle {
+  public:
+    void format(Context&amp; ctx);
+  };</code>
+</pre>
+
+<dl>
+<dt><code>void format(Context&amp; ctx);</code></dt>
+<dd>
+<p><i>Effects</i>:
+<ol>
+  <li> Constructs a formatter object
+  <code>f = typename Context::template formatter_type&lt;T&gt;</code>,
+  where <code>T</code> is the type of the object referred to by this handle.
+  <li>Parses the format string with
+  <code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
+  <li>Formats the object <code>obj</code> referred to by this handle with
+  <code>ctx.advance_to(f.format(obj, ctx))</code>.
+</ol>
+</p>
+</dd>
+
+<h5>Argument visitation</h5>
+
+<dl>
+<dt><pre><code>template &lt;class Visitor, class Context&gt;
+  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
+<dd>
+<p><i>Requires:</i>
+The expression in the Effects section shall be a valid expression of the same
+type, for all alternative value types of a formatting argument.
+Otherwise, the program is ill-formed.</p>
+<p><i>Effects:</i>
+Let <code>value</code> be the value stored in the formatting argument
+<code>arg</code>.
+Returns <code>INVOKE(forward<Visitor>(vis), value);</code>.</p>
+<p><i>Remarks:</i>
+The return type is the common type of all possible <code>INVOKE</code>
+expressions in the Effects section. Since exact value types are
+implementation-defined, visitors should use type traits to handle multiple
+types.
+</p>
+<p><i>Complexity:</i> The invocation of the callable object does not depend on
+the number of possible values types of a formatting argument.
+</p>
+<p><i>Example:</i><pre>
+<code>auto uint_value = visit([](auto value) {
+  if constexpr (is_unsigned_v&lt;delctype(value)&gt;)
+    return value;
+  return 0;
+}, arg);</code>
+</pre>
+</dd>
+</dl>
+
+<h5>Class template <code>format_arg_store</code></h5>
+
+<pre>
+<code>template &lt;class Context, class... Args&gt;
+  class format_arg_store {
+  public:
+    basic_format_args&lt;Context&gt; operator*() const;
+  };</code>
+</pre>
+
+<p>
+An object of type <code>format_arg_store</code> stores formatting arguments or
+references to them.
+</p>
+
+<dl>
+<dt><code>basic_format_args&lt;Context&gt; operator*() const;</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object providing
+access to arguments in <code>*this</code>.
+</p>
+</dd>
+</dl>
+
+<h5>Class template <code>basic_format_args</code></h5>
+
+<pre>
+<code>template &lt;class Context&gt;
+class basic_format_args {
+  public:
+    using size_type = <i>implementation-defined</i>;
+
+    basic_format_args() noexcept;
+
+    template &lt;class... Args&gt;
+      basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
+
+    basic_format_arg&lt;Context&gt; operator[](size_type i) const;
+  };</code>
+</pre>
+
+<p>
+An object of type <code>basic_format_args</code> provides access to formatting
+arguments. Copying a <code>basic_format_args</code> object does not copy the
+arguments.
+</p>
+
+<dl>
+<dt><code>basic_format_args() noexcept;</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
+</p>
+<p><i>Postcondition</i>: <code>!(*this)[0]</code>.</p>
+</dd>
+</dl>
+
+<dl>
+<dt><pre><code>template &lt;class... Args&gt;
+  basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
+provides access to the agruments in <code>store</code>.
+</p>
+</dd>
+</dl>
+
+<dl>
+<dt><code>basic_format_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
+<dd>
+<p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
+argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
+Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
+</dd>
+</dl>
+
+<h5>Function template <code>make_format_args</code></h5>
+
+<dl>
+<dt>
+<pre><code>template &lt;class Context, class... Args&gt;
+  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
+template &lt;class... Args&gt;
+  format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+
+<p>
+<i>Effects</i>: The function returns a <code>format_arg_store</code> object
+that stores references to or copies of formatting arguments <code>args</code>.
+</p>
+<p><i>Returns</i>: The <code>format_arg_store</code> object constructed from the
+formatting arguments.</p>
+</dd>
+</dl>
+
+<h5>Function template <code>make_wformat_args</code></h5>
+
+<dl>
+<dt>
+<pre><code>template &lt;class... Args&gt;
+  format_arg_store&lt;format_wcontext, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+
+<p>
+<i>Effects</i>: The function returns a <code>format_arg_store</code> object
+that stores references to or copies of formatting arguments <code>args</code>.
+</p>
+<p><i>Returns</i>: The <code>format_arg_store</code> object constructed from the
+formatting arguments.</p>
+</dd>
+</dl>
+
+<h4><a name="format.functions">Formatting functions [format.functions]</a></h4>
 
 <dl>
 <dt>
@@ -1269,239 +1556,8 @@ valid format string.</p>
 </dd>
 </dl>
 
-<h3>Formatting argument</h3>
-
-<pre>
-<code>template &lt;class Context&gt;
-  class basic_format_arg {
-  public:
-    class handle;
-
-    basic_format_arg();
-
-    explicit operator bool() const noexcept;
-
-    bool is_arithmetic() const;
-    bool is_integral() const;
-    bool is_pointer() const;
-  };</code>
-</pre>
-
-<p>
-The class template <code>basic_format_arg</code> describes objects that store
-a copy of or a reference to a formatting argument. It is parameterized on a
-formatting context (see <a href="#gensection-9">4.9</a>) and can hold a value of
-one of the following types:
-<ul>
-<li><code>int</code>
-<li><code>unsigned int</code>
-<li>integral types larger than <code>int</code>
-<li><code>bool</code>
-<li><code>charT</code>
-<li><code>double</code>
-<li>floating-point types larger than <code>double</code>
-<li><code>const charT*</code>
-<li><code>basic_string_view&lt;charT&gt;</code>
-<li><code>const void*</code>
-<li><code>handle</code> which stores a reference to an object of a user-defined
-type and a pointer to a formatting function
-<li><code>monostate</code> representing an empty state, i.e. when the
-    object doesn't refer to an argument
-</ul>
-where <code>charT</code> is <code>typename Context::char_type</code>.
-The value can be accessed via the visitation interface defined in the next
-section.
-</p>
-
-<dl>
-<dt><code>basic_format_arg();</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
-doesn't refer to an argument.
-</p>
-<p><i>Postcondition</i>: <code>!(*this)</code>.</p>
-</dd>
-<dt><code>explicit operator bool() const noexcept;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> refers to an
-argument, otherwise <code>false</code>.</p>
-</dd>
-<dt><code>bool is_arithmetic() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an arithmetic type.</p>
-</dd>
-<dt><code>bool is_integral() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an integral type (<a
-href="http://eel.is/c++draft/basic.fundamental">[basic.fundamental]</a>).</p>
-</dd>
-<dt><code>bool is_pointer() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of type <code>const void*</code>.</p>
-</dd>
-</dl>
-
-<p><i>Complexity:</i> The invocation of <code>is_arithmetic</code>,
-<code>is_integral</code>, and <code>is_pointer</code> does not depend on the
-number of possible value types of a formatting argument.
-</p>
-
-<pre>
-<code>template &lt;class Context&gt;
-  class basic_format_arg&lt;Context&gt;::handle {
-  public:
-    void format(Context&amp; ctx);
-  };</code>
-</pre>
-
-<dl>
-<dt><code>void format(Context&amp; ctx);</code></dt>
-<dd>
-<p><i>Effects</i>:
-<ol>
-  <li> Constructs a formatter object
-  <code>f = typename Context::template formatter_type&lt;T&gt;</code>,
-  where <code>T</code> is the type of the object referred to by this handle.
-  <li>Parses the format string with
-  <code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
-  <li>Formats the object <code>obj</code> referred to by this handle with
-  <code>ctx.advance_to(f.format(obj, ctx))</code>.
-</ol>
-</p>
-</dd>
-
-<h3>Formatting argument visitation</h3>
-
-<dl>
-<dt><pre><code>template &lt;class Visitor, class Context&gt;
-  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
-<dd>
-<p><i>Requires:</i>
-The expression in the Effects section shall be a valid expression of the same
-type, for all alternative value types of a formatting argument.
-Otherwise, the program is ill-formed.</p>
-<p><i>Effects:</i>
-Let <code>value</code> be the value stored in the formatting argument
-<code>arg</code>.
-Returns <code>INVOKE(forward<Visitor>(vis), value);</code>.</p>
-<p><i>Remarks:</i>
-The return type is the common type of all possible <code>INVOKE</code>
-expressions in the Effects section. Since exact value types are
-implementation-defined, visitors should use type traits to handle multiple
-types.
-</p>
-<p><i>Complexity:</i> The invocation of the callable object does not depend on
-the number of possible values types of a formatting argument.
-</p>
-<p><i>Example:</i><pre>
-<code>auto uint_value = visit([](auto value) {
-  if constexpr (is_unsigned_v&lt;delctype(value)&gt;)
-    return value;
-  return 0;
-}, arg);</code>
-</pre>
-</dd>
-</dl>
-
-<h3>Class template <code>format_arg_store</code></h3>
-
-<pre>
-<code>template &lt;class Context, class... Args&gt;
-  class format_arg_store {
-  public:
-    basic_format_args&lt;Context&gt; operator*() const;
-  };</code>
-</pre>
-
-<p>
-An object of type <code>format_arg_store</code> stores formatting arguments or
-references to them.
-</p>
-
-<dl>
-<dt><code>basic_format_args&lt;Context&gt; operator*() const;</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object providing
-access to arguments in <code>*this</code>.
-</p>
-</dd>
-</dl>
-
-<h3>Class template <code>basic_format_args</code></h3>
-
-<pre>
-<code>template &lt;class Context&gt;
-class basic_format_args {
-  public:
-    using size_type = <i>implementation-defined</i>;
-
-    basic_format_args() noexcept;
-
-    template &lt;class... Args&gt;
-      basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
-
-    basic_format_arg&lt;Context&gt; operator[](size_type i) const;
-  };</code>
-</pre>
-
-<p>
-An object of type <code>basic_format_args</code> provides access to formatting
-arguments. Copying a <code>basic_format_args</code> object does not copy the
-arguments.
-</p>
-
-<dl>
-<dt><code>basic_format_args() noexcept;</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
-</p>
-<p><i>Postcondition</i>: <code>!(*this)[0]</code>.</p>
-</dd>
-</dl>
-
-<dl>
-<dt><pre><code>template &lt;class... Args&gt;
-  basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
-<dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
-provides access to the agruments in <code>store</code>.
-</p>
-</dd>
-</dl>
-
-<dl>
-<dt><code>basic_format_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
-<dd>
-<p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
-argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
-Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
-</dd>
-</dl>
-
-<h3>Function template <code>make_format_args</code></h3>
-
-<dl>
-<dt>
-<pre><code>template &lt;class Context, class... Args&gt;
-  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
-template &lt;class... Args&gt;
-  format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
-</dt>
-<dd>
-
-<p>
-<i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that stores references to or copies of formatting arguments <code>args</code>.
-</p>
-<p><i>Returns</i>: The <code>format_arg_store</code> object constructed from the
-formatting arguments.</p>
-</dd>
-</dl>
-
-<h3>Parsing context</h3>
+<h4><a name="format.formatter">Formatter [format.formatter]</a></h4>
+<h5>Parsing context</h5>
 
 <pre>
 <code>template &lt;class charT&gt;
@@ -1578,7 +1634,7 @@ argument indexing.</p>
 </dd>
 </dl>
 
-<h3>Formatting context</h3>
+<h5>Formatting context</h5>
 
 <pre>
 <code>template &lt;class OutputIterator, class charT&gt;
@@ -1628,7 +1684,7 @@ formatting arguments.</p>
 </dd>
 </dl>
 
-<h3>User-defined types</h3>
+<h5>User-defined types</h5>
 
 <p>
 If a format string refers to an object of a user-defined type as in
@@ -1660,14 +1716,14 @@ and <code>format_ctx</code> is a reference to the formatting context.
 
 <pre>
 <code>template &lt;class T, class charT = char&gt;
-struct formatter {
-  constexpr typename basic_parse_context&lt;charT&gt;::iterator
-    parse(basic_parse_context&lt;charT&gt;&amp; ctx);
+  struct formatter {
+    constexpr typename basic_parse_context&lt;charT&gt;::iterator
+      parse(basic_parse_context&lt;charT&gt;&amp; ctx);
 
-  template &lt;typename FormatContext&gt;
-    typename FormatContext::iterator format(const T&amp; value,
-                                            FormatContext&amp; ctx);
-};</code>
+    template &lt;typename FormatContext&gt;
+      typename FormatContext::iterator format(const T&amp; value,
+                                              FormatContext&amp; ctx);
+  };</code>
 </pre>
 
 <dl>
@@ -1689,37 +1745,6 @@ struct formatter {
 <code>os</code> is an instance of <code>std::basic_ostream&lt;charT&gt;</code>
 with a stream buffer backed by the iterator <code>ctx.begin()</code>.
 </p>
-</dd>
-</dl>
-
-<h3>Error reporting</h3>
-
-<pre>
-<code>class format_error : public runtime_error {
-public:
-  explicit format_error(const string&amp; what_arg);
-  explicit format_error(const char* what_arg);
-};</code>
-</pre>
-
-<p>
-The class <code>format_error</code> defines the type of objects thrown as
-exceptions to report errors from the formatting library.
-</p>
-
-<dl>
-<dt><code>format_error(const string&amp; what_arg);</code></dt>
-<dd>
-  <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
-  </p>
-  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
-  </p>
-</dd>
-<dt><code>format_error(const char* what_arg);</code></dt>
-<dd>
-  <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
-  </p>
-  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
 </dd>
 </dl>
 
