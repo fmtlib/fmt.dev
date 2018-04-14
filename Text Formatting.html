@@ -658,10 +658,12 @@ Add a new section in 23 [utilities].
   template &lt;class charT&gt; class basic_parse_context;
   using parse_context = basic_parse_context&lt;char&gt;;
   using wparse_context = basic_parse_context&lt;wchar_t&gt;;
-
+  <!-- Exact string formatting iterator type is unspecified - it can be
+       back_insert_iterator<string> or a similar type, possibly reused between
+       containers with contiguous storage by type-erasing reallocation. -->
   template &lt;class OutputIterator, class charT&gt; class basic_format_context;
-  using format_context = basic_format_context&lt;<i>implementation-defined</i>&gt;;
-  using wformat_context = basic_format_context&lt;<i>implementation-defined</i>&gt;;
+  using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
+  using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
 
   template &lt;class T, class charT = char&gt;
     struct formatter {
@@ -686,7 +688,7 @@ Add a new section in 23 [utilities].
   using wformat_args = basic_format_args&lt;wformat_context&gt;;
 
   template &lt;class OutputIterator, class charT&gt;
-    using format_args_t = basic_format_args&lt;<i>implementation-defined</i>&gt;
+    using format_args_t = basic_format_args&lt;basic_format_context&lt;OutputIterator, charT&gt;&gt;
 
   template &lt;class Context, class... Args&gt;
     format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
