@@ -646,7 +646,7 @@ Add a new section in 23 [utilities].
 
 <h3>Formatting utilities [format]</h3>
 
-<!-- Example: http://eel.is/c%2B%2Bdraft/time#syn -->
+<!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn -->
 <h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
@@ -660,7 +660,9 @@ Add a new section in 23 [utilities].
   using wparse_context = basic_parse_context&lt;wchar_t&gt;;
   <!-- Exact string formatting iterator type is unspecified - it can be
        back_insert_iterator<string> or a similar type, possibly reused between
-       containers with contiguous storage by type-erasing reallocation. -->
+       containers with contiguous storage by type-erasing reallocation.
+       Example of unspecified types as template params:
+       http://eel.is/c++draft/time.duration.literals -->
   template &lt;class OutputIterator, class charT&gt; class basic_format_context;
   using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
   using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
@@ -669,12 +671,13 @@ Add a new section in 23 [utilities].
     struct formatter {
       constexpr typename basic_parse_context&lt;charT&gt;::iterator
         parse(basic_parse_context&lt;charT&gt;&amp; ctx);
-
+      <!-- FormatContext is a template param because we don't know the output
+           iterator type. -->
       template &lt;class FormatContext&gt;
-        typename FormatContext::iterator format(const T&amp; value,
-                                                FormatContext&amp; ctx);
+        typename FormatContext::iterator format(const T&amp; value, FormatContext&amp; ctx);
     };
-
+  <!-- Argument access API is provided for use cases such as dynamic width:
+       https://godbolt.org/g/X3UDhg -->
   // <a href="#format.arguments">[format.arguments]</a>, formatting arguments
   template &lt;class Context&gt; class basic_format_arg;
 
@@ -688,7 +691,7 @@ Add a new section in 23 [utilities].
   using wformat_args = basic_format_args&lt;wformat_context&gt;;
 
   template &lt;class OutputIterator, class charT&gt;
-    using format_args_t = basic_format_args&lt;basic_format_context&lt;OutputIterator, charT&gt;&gt;
+    using format_args_t = basic_format_args&lt;basic_format_context&lt;OutputIterator, charT&gt;&gt;;
 
   template &lt;class Context, class... Args&gt;
     format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
@@ -1299,7 +1302,7 @@ the number of possible values types of a formatting argument.
 </p>
 <p><i>Example:</i><pre>
 <code>auto uint_value = visit([](auto value) {
-  if constexpr (is_unsigned_v&lt;delctype(value)&gt;)
+  if constexpr (is_unsigned_v&lt;decltype(value)&gt;)
     return value;
   return 0;
 }, arg);</code>
