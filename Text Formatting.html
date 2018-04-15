@@ -554,11 +554,11 @@ work. For example, the <code>format</code> variadic function calls
 <code>vformat</code>:
 </p>
 
-<pre><code>string vformat(string_view format_str, format_args args);
+<pre><code>string vformat(string_view fmt, format_args args);
 
 template &lt;class... Args&gt;
-  inline string format(string_view format_str, const Args&amp;... args) {
-    return vformat(format_str, make_format_args(args...));
+  inline string format(string_view fmt, const Args&amp;... args) {
+    return vformat(fmt, make_format_args(args...));
   }</code></pre>
 
 <p>
@@ -585,8 +585,8 @@ formatted error message to <code>clog</code>:
 <p>
 
 <pre><code>template &lt;class... Args&gt;
-  void log_error(int code, string_view format_str, const Args&amp;... args) {
-    clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; format(format_str, args...);
+  void log_error(int code, string_view fmt, const Args&amp;... args) {
+    clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; format(fmt, args...);
   }</code></pre>
 
 <p>
@@ -596,13 +596,13 @@ will be only one instance of the logging function while the wrapper function
 can be trivially inlined:
 </p>
 
-<pre><code>void vlog_error(int code, string_view format_str, format_args args) {
-  clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; vformat(format_str, args);
+<pre><code>void vlog_error(int code, string_view fmt, format_args args) {
+  clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; vformat(fmt, args);
 }
 
 template &lt;class... Args&gt;
-  inline void log_error(int code, string_view format_str, const Args&amp;... args) {
-    vlog_error(code, format_str, make_format_args(args...));
+  inline void log_error(int code, string_view fmt, const Args&amp;... args) {
+    vlog_error(code, fmt, make_format_args(args...));
   }</code></pre>
 
 <p>
@@ -621,7 +621,7 @@ proposed in this paper:</p>
 
 <pre>
 <code>template &lt;class String, class... Args&gt;
-  string format(String format_str, const Args&amp;... args);</code></pre>
+  string format(String fmt, const Args&amp;... args);</code></pre>
 
 <p>where <code>String</code> is some type representing a compile-time format
 string, for example</p>
@@ -717,25 +717,25 @@ Add a new section in 23 [utilities].
 
   // <a href="#format.functions">[format.functions]</a>, formatting functions
   template &lt;class... Args&gt;
-    string format(string_view format_str, const Args&amp;... args);
+    string format(string_view fmt, const Args&amp;... args);
   template &lt;class... Args&gt;
-    wstring format(wstring_view format_str, const Args&amp;... args);
+    wstring format(wstring_view fmt, const Args&amp;... args);
 
-  string vformat(string_view format_str, format_args args);
-  wstring vformat(wstring_view format_str, wformat_args args);
+  string vformat(string_view fmt, format_args args);
+  wstring vformat(wstring_view fmt, wformat_args args);
 
   template &lt;class OutputIterator, class... Args&gt;
-    OutputIterator format_to(OutputIterator out, string_view format_str,
+    OutputIterator format_to(OutputIterator out, string_view fmt,
                              const Args&amp;... args);
   template &lt;class OutputIterator, class... Args&gt;
-    OutputIterator format_to(OutputIterator out, wstring_view format_str,
+    OutputIterator format_to(OutputIterator out, wstring_view fmt,
                              const Args&amp;... args);
 
   template &lt;class OutputIterator&gt;
-    OutputIterator vformat_to(OutputIterator out, string_view format_str,
+    OutputIterator vformat_to(OutputIterator out, string_view fmt,
                               format_args_t&lt;OutputIterator, char&gt; args);
   template &lt;class OutputIterator&gt;
-    OutputIterator vformat_to(OutputIterator out, wstring_view format_str,
+    OutputIterator vformat_to(OutputIterator out, wstring_view fmt,
                               format_args_t&lt;OutputIterator, wchar_t&gt; args);
 
   template &lt;class OutputIterator, class Size&gt;
@@ -747,17 +747,17 @@ Add a new section in 23 [utilities].
        vformat_to_n is not provided but it can be with an iterator adapter. -->
   template &lt;class OutputIterator, class Size, class... Args&gt;
     format_to_n_result&lt;OutputIterator, Size&gt;
-      format_to_n(OutputIterator out, Size n, string_view format_str,
+      format_to_n(OutputIterator out, Size n, string_view fmt,
                   const Args&amp;... args);
   template &lt;class OutputIterator, class Size, class... Args&gt;
     format_to_n_result&lt;OutputIterator, Size&gt;
-      format_to_n(OutputIterator out, Size n, wstring_view format_str,
+      format_to_n(OutputIterator out, Size n, wstring_view fmt,
                   const Args&amp;... args);
 
   template &lt;class... Args&gt;
-    size_t formatted_size(string_view format_str, const Args&amp;... args);
+    size_t formatted_size(string_view fmt, const Args&amp;... args);
   template &lt;class... Args&gt;
-    size_t formatted_size(wstring_view format_str, const Args&amp;... args);
+    size_t formatted_size(wstring_view fmt, const Args&amp;... args);
 }</code>
 </pre>
 
@@ -1449,38 +1449,38 @@ formatting arguments.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class... Args&gt;
-  string format(string_view format_str, const Args&amp;... args);
+  string format(string_view fmt, const Args&amp;... args);
 template &lt;class... Args&gt;
-  wstring format(wstring_view format_str, const Args&amp;... args);</code></pre>
+  wstring format(wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
 <p>
 <i>Effects</i>: Constructs a string object (for exposition
 purposes, named <code>str</code>). Then performs formatting as if by a call to
-<code>format_to(std::back_inserter(str), format_str, args...);</code>.
+<code>format_to(std::back_inserter(str), fmt, args...);</code>.
 </p>
 <p><i>Returns</i>: <code>str</code>.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
 </dl>
 
 <dl>
 <dt>
-<pre><code>string vformat(string_view format_str, format_args args);
-wstring vformat(wstring_view format_str, wformat_args args);</code></pre>
+<pre><code>string vformat(string_view fmt, format_args args);
+wstring vformat(wstring_view fmt, wformat_args args);</code></pre>
 </dt>
 <dd>
 <p>
 <i>Effects</i>: The function returns a <code>string</code> object
-constructed from the format string argument <code>format_str</code> with each
+constructed from the format string argument <code>fmt</code> with each
 replacement field substituted with the character representation of the
 argument it refers to, formatted according to the specification given in the
 field.
 </p>
 <p><i>Returns</i>: The formatted string.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
 </dl>
@@ -1488,23 +1488,23 @@ valid format string.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class OutputIterator, class... Args&gt;
-  OutputIterator format_to(OutputIterator out, string_view format_str,
+  OutputIterator format_to(OutputIterator out, string_view fmt,
                            const Args&amp;... args);
 template &lt;class OutputIterator, class... Args&gt;
-  OutputIterator format_to(OutputIterator out, wstring_view format_str,
+  OutputIterator format_to(OutputIterator out, wstring_view fmt,
                            const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
 <p>
 <i>Effects</i>: The function writes to the range <code>[out, out +
-formatted_size(format_str, args...))</code> the format string
-<code>format_str</code> with each replacement field substituted with the
+formatted_size(fmt, args...))</code> the format string
+<code>fmt</code> with each replacement field substituted with the
 character representation of the argument it refers to, formatted according to the
 specification given in the field.
 </p>
 <p><i>Returns</i>: The end of the output range.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
 </dl>
@@ -1512,23 +1512,23 @@ valid format string.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class OutputIterator, class... Args&gt;
-  OutputIterator vformat_to(OutputIterator out, string_view format_str,
+  OutputIterator vformat_to(OutputIterator out, string_view fmt,
                             format_args_t&lt;OutputIterator, char&gt; args);
 template &lt;class OutputIterator, class... Args&gt;
-  OutputIterator vformat_to(OutputIterator out, wstring_view format_str,
+  OutputIterator vformat_to(OutputIterator out, wstring_view fmt,
                             format_args_t&lt;OutputIterator, wchar_t&gt; args);</code></pre>
 </dt>
 <dd>
 
 <p>
 <i>Effects</i>: The function writes to the range <code>[out, out + size)</code>,
-where <code>size</code> is the output size, the format string <code>format_str
+where <code>size</code> is the output size, the format string <code>fmt
 </code> with each replacement field substituted with the character
 representation of the argument it refers to, formatted according to the
 specification given in the field.
 </p>
 <p><i>Returns</i>: The end of the output range.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
 </dl>
@@ -1537,24 +1537,24 @@ valid format string.</p>
 <dt>
 <pre><code>template &lt;class OutputIterator, class Size, class... Args&gt;
   format_to_n_result&lt;OutputIterator, Size&gt;
-    format_to_n(OutputIterator out, Size n, string_view format_str,
+    format_to_n(OutputIterator out, Size n, string_view fmt,
                 const Args&amp;... args);
 template &lt;class OutputIterator, class Size, class... Args&gt;
   format_to_n_result&lt;OutputIterator, Size&gt;
-    format_to_n(OutputIterator out, Size n, wstring_view format_str,
+    format_to_n(OutputIterator out, Size n, wstring_view fmt,
                 const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
 <p>
 <i>Effects</i>: The function writes to the range <code>[out, out + n)</code>
-the format string <code>format_str</code> with each replacement field substituted
+the format string <code>fmt</code> with each replacement field substituted
 with the character representation of the argument it refers to, formatted
 according to the specification given in the field.
 </p>
 <p><i>Returns</i>: <code>format_to_n_result</code> containing the end of the
 output range and the total (not truncated) output size.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
 </dl>
@@ -1562,20 +1562,20 @@ valid format string.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class... Args&gt;
-  size_t formatted_size(string_view format_str, const Args&amp;... args);
+  size_t formatted_size(string_view fmt, const Args&amp;... args);
 template &lt;class... Args&gt;
-  size_t formatted_size(wstring_view format_str, const Args&amp;... args);</code></pre>
+  size_t formatted_size(wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 <p>
 <i>Effects</i>: The function returns the number of characters in the output of
-<code>format(format_str, args...)</code> without constructing the formatted
+<code>format(fmt, args...)</code> without constructing the formatted
 string.
 </p>
 <p><i>Returns</i>: The number of characters in the output of
-<code>format(format_str, args...)</code>.
+<code>format(fmt, args...)</code>.
 </p>
-<p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
+<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
 </dl>
@@ -1592,7 +1592,7 @@ valid format string.</p>
     using const_iterator = basic_string_view&lt;charT&gt;::const_iterator;
     using iterator = const_iterator;
 
-    explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt; format_str);
+    explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt; fmt);
 
     constexpr const_iterator begin() const noexcept;
     constexpr const_iterator end() const noexcept;
@@ -1620,11 +1620,11 @@ automatic indexing.
 >[iterator.requirements.general]</a>) whose <code>value_type</code> is the
 template parameter <code>charT</code>.</p>
 </dd-->
-<dt><code>explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt;	format_str);</code></dt>
+<dt><code>explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt;	fmt);</code></dt>
 <dd>
 <p><i>Effects</i>: Constructs a parsing context from the format string.</p>
-<p><i>Postconditions</i>: <code>begin() == format_str.begin()</code>,
-<code>end() == format_str.end()</code>.</p>
+<p><i>Postconditions</i>: <code>begin() == fmt.begin()</code>,
+<code>end() == fmt.end()</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
 <dd>
