@@ -428,8 +428,9 @@ insertion <code>operator&lt;&lt;</code> for type <code>T</code> if available.
 <p>
 The extension API is based on specialization instead of the argument-dependent
 lookup, because the <code>parse</code> function doesn't take the object to be
-formatted as an argument and therefore cannot be discovered by ADL without
-introducing a dummy argument, e.g.
+formatted as an argument and therefore some other way of parameterizing it on
+the argument type <code>T</code> such as introducing a dummy argument has to be
+used, e.g.
 <pre class="example">
 <code>constexpr auto parse(type&lt;T&gt;, parse_context&amp; ctx);
 </code></pre>
@@ -1265,16 +1266,24 @@ an argument of an integral type.</p>
 </dd>
 </dl>
 
+<!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
 <pre>
-<code>template &lt;class Context&gt;
+<code>namespace std {
+  template &lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
   public:
-    void format(Context&amp; ctx);
-  };</code>
+    void format(Context&amp; ctx) const;
+  };
+}</code>
 </pre>
 
+<p>
+The class <code>handle</code> describes an object that can refer to a formatting
+function argument of a user-defined type.
+</p>
+
 <dl>
-<dt><code>void format(Context&amp; ctx);</code></dt>
+<dt><code>void format(Context&amp; ctx) const;</code></dt>
 <dd>
 <p><i>Effects</i>:
 <ol>
@@ -1447,13 +1456,11 @@ template &lt;class... Args&gt;
 <dd>
 
 <p>
-<i>Effects</i>: The function returns a <code>string</code> object
-constructed from the format string argument <code>format_str</code> with each
-replacement field substituted with the character representation of the
-argument it refers to, formatted according to the specification given in the
-field.
+<i>Effects</i>: Constructs a string object (for exposition
+purposes, named <code>str</code>). Then performs formatting as if by a call to
+<code>format_to(std::back_inserter(str), format_str, args...);</code>.
 </p>
-<p><i>Returns</i>: The formatted string.</p>
+<p><i>Returns</i>: <code>str</code>.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>format_str</code> is not a
 valid format string.</p>
 </dd>
