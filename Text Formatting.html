@@ -680,7 +680,7 @@ Add a new section in 23 [utilities].
     };
   <!-- Argument access API is provided for use cases such as dynamic width:
        https://godbolt.org/g/X3UDhg -->
-  // <a href="#format.arguments">[format.arguments]</a>, formatting arguments
+  // <a href="#format.arguments">[format.arguments]</a>, arguments
   template &lt;class Context&gt; class basic_format_arg;
 
   template &lt;class Visitor, class Context&gt;
@@ -1145,12 +1145,15 @@ specified.
 
 <h4><a name="format.error">Class <code>format_error</code> [format.error]</a></h4>
 
+<!-- Wording similar to http://eel.is/c++draft/range.error -->
 <pre>
-<code>class format_error : public runtime_error {
-public:
-  explicit format_error(const string&amp; what_arg);
-  explicit format_error(const char* what_arg);
-};</code>
+<code>namespace std {
+  class format_error : public runtime_error {
+  public:
+    explicit format_error(const string&amp; what_arg);
+    explicit format_error(const char* what_arg);
+  };
+}</code>
 </pre>
 
 <p>
@@ -1176,9 +1179,12 @@ exceptions to report errors from the formatting library.
 
 <h4><a name="format.arguments">Arguments [format.arguments]</a></h4>
 <h5>Class template <code>basic_format_arg</code></h5>
+<!-- Argument access API is provided for use cases such as dynamic width:
+     https://godbolt.org/g/X3UDhg -->
 
 <pre>
-<code>template &lt;class Context&gt;
+<code>namespace std {
+  template &lt;class Context&gt;
   class basic_format_arg {
   public:
     class handle;
@@ -1189,34 +1195,38 @@ exceptions to report errors from the formatting library.
 
     bool is_arithmetic() const;
     bool is_integral() const;
-    bool is_pointer() const;
-  };</code>
+  };
+}</code>
 </pre>
 
+<!-- Wording is similar to http://www.eel.is/c++draft/string.view -->
 <p>
-The class template <code>basic_format_arg</code> describes objects that store
-a copy of or a pointer to an argument to be formatted. It is parameterized on a
-formatting context (see <a href="#format.formatter">[format.formatter]</a>) and
+The class template <code>basic_format_arg</code> describes an object that can
+refer to a formatting function argument. It is parameterized on a formatting
+context type (see <a href="#format.formatter">[format.formatter]</a>) and
 can hold a value of one of the following types:
 <ul>
-<li><code>int</code>
-<li><code>unsigned int</code>
-<li>integral types larger than <code>int</code>
 <li><code>bool</code>
 <li><code>charT</code>
-<li><code>double</code>
-<li>floating-point types larger than <code>double</code>
+<li>any integral type other than <code>bool</code> and <code>charT</code>
+<li>any floating-point type
 <li><code>const charT*</code>
 <li><code>basic_string_view&lt;charT&gt;</code>
 <li><code>const void*</code>
-<li><code>handle</code> which stores a reference to an object of a user-defined
-type and a pointer to a formatting function
+<li><code>basic_format_arg::handle</code> referring to an argument of a
+    formattable user-defined type
 <li><code>monostate</code> representing an empty state, i.e. when the
     object doesn't refer to an argument
 </ul>
 where <code>charT</code> is <code>typename Context::char_type</code>.
 The value can be accessed via the visitation interface defined in the next
-section.
+section. <code>basic_format_arg</code> must preserve argument values, but
+doesn't have to distinguish between integral types other than <code>charT</code>
+and <code>bool</code>, e.g. an argument of type <code>short</code> can be stored
+as <code>int</code> internally in which case it will be observed as
+<code>int</code> via the visitation interface. Similarly,
+<code>basic_format_arg</code> doesn't have to distinguish between floating-point
+types. 
 </p>
 
 <dl>
@@ -1240,19 +1250,15 @@ argument of an arithmetic type.</p>
 <dt><code>bool is_integral() const;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an integral type (<a
-href="http://eel.is/c++draft/basic.fundamental">[basic.fundamental]</a>).</p>
-</dd>
-<dt><code>bool is_pointer() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of type <code>const void*</code>.</p>
+argument of an integral type</p>
 </dd>
 </dl>
 
-<p><i>Complexity:</i> The invocation of <code>is_arithmetic</code>,
-<code>is_integral</code>, and <code>is_pointer</code> does not depend on the
-number of possible value types of a formatting argument.
+<!-- Wording is similar to http://eel.is/c++draft/variant.visit -->
+<p><i>Complexity:</i> The invocation of <code>is_arithmetic</code> and
+<code>is_integral</code> is implemented in constant time, i.e. it does not depend
+on the number of alternative types that can be represented by
+<code>basic_format_arg</code>.
 </p>
 
 <pre>
@@ -1290,8 +1296,7 @@ The expression in the Effects section shall be a valid expression of the same
 type, for all alternative value types of a formatting argument.
 Otherwise, the program is ill-formed.</p>
 <p><i>Effects:</i>
-Let <code>value</code> be the value stored in the formatting argument
-<code>arg</code>.
+Let <code>value</code> be the value stored in <code>arg</code>.
 Returns <code>INVOKE(forward<Visitor>(vis), value);</code>.</p>
 <p><i>Remarks:</i>
 The return type is the common type of all possible <code>INVOKE</code>
@@ -1299,8 +1304,10 @@ expressions in the Effects section. Since exact value types are
 implementation-defined, visitors should use type traits to handle multiple
 types.
 </p>
-<p><i>Complexity:</i> The invocation of the callable object does not depend on
-the number of possible values types of a formatting argument.
+<!-- Wording is similar to http://eel.is/c++draft/variant.visit -->
+<p><i>Complexity:</i> The invocation of the callable object is implemented in
+constant time, i.e. it does not depend on the number of alternative types that
+can be represented by <code>basic_format_arg</code>.
 </p>
 <p><i>Example:</i><pre>
 <code>auto uint_value = visit([](auto value) {
@@ -1315,11 +1322,13 @@ the number of possible values types of a formatting argument.
 <h5>Class template <code>format_arg_store</code></h5>
 
 <pre>
-<code>template &lt;class Context, class... Args&gt;
+<code>namespace std {
+  template &lt;class Context, class... Args&gt;
   class format_arg_store {
   public:
     basic_format_args&lt;Context&gt; operator*() const;
-  };</code>
+  };
+}</code>
 </pre>
 
 <p>
@@ -1339,8 +1348,9 @@ access to arguments in <code>*this</code>.
 <h5>Class template <code>basic_format_args</code></h5>
 
 <pre>
-<code>template &lt;class Context&gt;
-class basic_format_args {
+<code>namespace std {
+  template &lt;class Context&gt;
+  class basic_format_args {
   public:
     using size_type = <i>implementation-defined</i>;
 
@@ -1350,7 +1360,8 @@ class basic_format_args {
       basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
 
     basic_format_arg&lt;Context&gt; operator[](size_type i) const;
-  };</code>
+  };
+}</code>
 </pre>
 
 <p>
@@ -1567,7 +1578,8 @@ valid format string.</p>
 <h5>Parsing context</h5>
 
 <pre>
-<code>template &lt;class charT&gt;
+<code>namespace std {
+  template &lt;class charT&gt;
   class basic_parse_context {
   public:
     using char_type = charT;
@@ -1582,7 +1594,8 @@ valid format string.</p>
 
     constexpr unsigned next_arg_id();
     constexpr void check_arg_id(unsigned id);
-  };</code>
+  };
+}</code>
 </pre>
 
 <p>
@@ -1644,7 +1657,8 @@ argument indexing.</p>
 <h5>Formatting context</h5>
 
 <pre>
-<code>template &lt;class OutputIterator, class charT&gt;
+<code>namespace std {
+  template &lt;class OutputIterator, class charT&gt;
   class basic_format_context {
   public:
     using iterator = OutputIterator;
@@ -1660,7 +1674,8 @@ argument indexing.</p>
     void advance_to(iterator it);
 
     args_type args() const;
-  };</code>
+  };
+}</code>
 </pre>
 
 <p>
@@ -1722,7 +1737,8 @@ and <code>format_ctx</code> is a reference to the formatting context.
 </p>
 
 <pre>
-<code>template &lt;class T, class charT = char&gt;
+<code>namespace std {
+  template &lt;class T, class charT = char&gt;
   struct formatter {
     constexpr typename basic_parse_context&lt;charT&gt;::iterator
       parse(basic_parse_context&lt;charT&gt;&amp; ctx);
@@ -1730,7 +1746,8 @@ and <code>format_ctx</code> is a reference to the formatting context.
     template &lt;typename FormatContext&gt;
       typename FormatContext::iterator format(const T&amp; value,
                                               FormatContext&amp; ctx);
-  };</code>
+  };
+}</code>
 </pre>
 
 <dl>
