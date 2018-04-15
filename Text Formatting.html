@@ -11,9 +11,11 @@ body { color: #000000; background-color: #FFFFFF; }
 del { text-decoration: line-through; color: #8B0040; }
 ins { text-decoration: underline; color: #005100; }
 
-p.example { margin-left: 2em; }
-pre.example { margin-left: 2em; }
-div.example { margin-left: 2em; }
+.codeblock { margin-left: 1.2em; }
+
+p.example { margin-left: 1.2em; }
+pre.example { margin-left: 1.2em; }
+div.example { margin-left: 1.2em; }
 
 code.extract { background-color: #F5F6A2; }
 pre.extract { margin-left: 2em; background-color: #F5F6A2;
@@ -728,7 +730,8 @@ Add a new section in 23 [utilities].
       OutputIterator out;
       Size size;
     };
-  <!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch -->
+  <!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch
+       vformat_to_n is not provided but it can be with an iterator adapter. -->
   template &lt;class OutputIterator, class Size, class... Args&gt;
     format_to_n_result&lt;OutputIterator, Size&gt;
       format_to_n(OutputIterator out, Size n, string_view format_str,
@@ -745,7 +748,7 @@ Add a new section in 23 [utilities].
 }</code>
 </pre>
 
-<h4><a name="SyntaxRef">Format string syntax</a></h4>
+<h4><a name="SyntaxRef">Format string syntax [format.syntax]</a></h4>
 
 <p>
 Format strings contain <em>replacement fields</em> surrounded by curly braces
@@ -758,8 +761,8 @@ included in the literal text by doubling: <code>{{</code> and <code>}}</code>.
 The grammar for a replacement field is as follows:
 </p>
 
-<!-- The notation is the same as in n4296 22.4.3.1. -->
-<pre>
+<!-- The notation is the same as in http://eel.is/c++draft/facet.numpunct -->
+<pre class="codeblock">
 <code>replacement-field ::=  '{' [arg-id] [':' format-spec] '}'
 arg-id            ::=  integer
 integer           ::=  digit+
@@ -776,36 +779,34 @@ format for the replacement value.
 </p>
 
 <p>
-See also the <a href="#FormatSpec">Format specification mini-language</a>
-section.
-</p>
-
-<p>
 If the numeric <code>arg-id</code>s in a format string are 0, 1, 2, ... in
 sequence, they can all be omitted (not just some) and the numbers 0, 1, 2, ...
-will be automatically inserted in that order.
+will be automatically used in that order. Mixing automatic and manual indexing
+is not allowed.
 </p>
 
 <p>
-Some simple format string examples:
+Format string examples:
 </p>
 
-<pre>
+<pre class="example">
 <code>"First, thou shalt count to {0}" // References the first argument
 "Bring me a {}"                  // Implicitly references the first argument
-"From {} to {}"                  // Same as "From {0} to {1}"</code>
+"From {} to {}"                  // Same as "From {0} to {1}"
+"From {0} to {}"                 // Error: mixing automatic and manual indexing
+"From {} to {1}"                 // Error: mixing automatic and manual indexing</code>
 </pre>
 
 <p>
 The <code>format-spec</code> field contains a specification of how the value
 should be presented, including such details as field width, alignment, padding,
-decimal precision and so on. Each value type can define its own <em>formatting
+decimal precision and so on. Each type can define its own <em>formatting
 mini-language</em> or interpretation of the <code>format-spec</code>.
 </p>
 
 <p>
 Most built-in types support a common formatting mini-language, which is
-described in the next section.
+described in the <a href="#FormatSpec">next section</a>.
 </p>
 
 <p>
@@ -833,7 +834,7 @@ although some of the formatting options are only supported by arithmetic types.
 The general form of a <em>standard format specifier</em> is:
 </p>
 
-<pre>
+<pre class="codeblock">
 <code>format-spec ::=  [[fill] align] [sign] ['#'] ['0'] [width] ['.' precision] [type]
 fill        ::=  &lt;a character other than '{' or '}'&gt;
 align       ::=  '<' | '>' | '=' | '^'
@@ -864,7 +865,7 @@ The meaning of the various alignment options is as follows:
 <tr>
 <td><code>'&lt;'</code></td>
 <td>Forces the field to be left-aligned within the available space (this is
-    the default for most objects).</td>
+    the default for non-arithmetic types).</td>
 </tr>
 <tr>
 <td><code>'&gt;'</code></td>
@@ -926,11 +927,11 @@ This option is only valid for integer and floating-point types. For integers,
 when binary, octal, or hexadecimal output is used, this option adds the respective
 prefix <code>"0b"</code> (<code>"0B"</code>), <code>"0"</code>, or
 <code>"0x"</code> (<code>"0X"</code>) to the output value. Whether the prefix
-is lower-case or upper-case is determined by the case of the type specifier. For
-floating-point numbers the alternate form causes the result of the conversion to
-always contain a decimal-point character, even if no digits follow it. Normally,
-a decimal-point character appears in the result of these conversions only if a
-digit follows it.
+is lower-case or upper-case is determined by the case of the type format
+specifier. For floating-point numbers the alternate form causes the result of the
+conversion to always contain a decimal-point character, even if no digits follow
+it. Normally, a decimal-point character appears in the result of these
+conversions only if a digit follows it.
 In addition, for <code>'g'</code> and <code>'G'</code> conversions, trailing
 zeros are not removed from the result.
 </p>
@@ -954,7 +955,7 @@ be displayed after the decimal point for a floating-point value formatted with
 for a floating-point value formatted with <code>'g'</code> or <code>'G'</code>.
 For non-arithmetic types the field indicates the maximum field size - in other
 words, how many characters will be used from the field content. The
-<code>precision</code> is not allowed for integer, character, Boolean, and
+<code>precision</code> is not allowed for integer, character, boolean, and
 pointer values.
 </p>
 
@@ -1024,7 +1025,8 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tr>
 <tr>
 <td><code>'o'</code></td>
-<td>Octal format. Outputs the number in base 8.</td>
+<td>Octal format. Outputs the number in base 8. Using the '#' option with this
+    type adds the prefix "0" to the output value.</td>
 </tr>
 <tr>
 <td><code>'x'</code></td>
@@ -1051,7 +1053,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 </table>
 
 <p>
-Integer presentation types can also be used with character and Boolean values.
+Integer presentation types can also be used with character and boolean values.
 Boolean values are formatted using textual representation, either
 <code>true</code> or <code>false</code>, if the presentation type is not
 specified.
@@ -1172,7 +1174,7 @@ exceptions to report errors from the formatting library.
 </dd>
 </dl>
 
-<h4><a name="format.arguments">Formatting arguments [format.arguments]</a></h4>
+<h4><a name="format.arguments">Arguments [format.arguments]</a></h4>
 <h5>Class template <code>basic_format_arg</code></h5>
 
 <pre>
@@ -1193,9 +1195,9 @@ exceptions to report errors from the formatting library.
 
 <p>
 The class template <code>basic_format_arg</code> describes objects that store
-a copy of or a reference to a formatting argument. It is parameterized on a
-formatting context (see <a href="#gensection-9">4.9</a>) and can hold a value of
-one of the following types:
+a copy of or a pointer to an argument to be formatted. It is parameterized on a
+formatting context (see <a href="#format.formatter">[format.formatter]</a>) and
+can hold a value of one of the following types:
 <ul>
 <li><code>int</code>
 <li><code>unsigned int</code>
