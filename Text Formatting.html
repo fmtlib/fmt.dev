@@ -118,7 +118,7 @@ td { text-align: left; vertical-align: top;
 
 <address align=right>
 Document number: P0645R2<br>
-Audience: Library Evolution<br>
+Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
 2018-04-08
@@ -1216,17 +1216,16 @@ can hold a value of one of the following types:
 <li><code>basic_format_arg::handle</code> referring to an argument of a
     formattable user-defined type
 <li><code>monostate</code> representing an empty state, i.e. when the
-    object doesn't refer to an argument
+    object does not refer to an argument
 </ul>
 where <code>charT</code> is <code>typename Context::char_type</code>.
 The value can be accessed via the visitation interface defined in the next
 section. <code>basic_format_arg</code> must preserve argument values, but
-doesn't have to distinguish between integral types other than <code>charT</code>
+does not have to distinguish between integral types other than <code>charT</code>
 and <code>bool</code>, e.g. an argument of type <code>short</code> can be stored
-as <code>int</code> internally in which case it will be observed as
-<code>int</code> via the visitation interface. Similarly,
-<code>basic_format_arg</code> doesn't have to distinguish between floating-point
-types. 
+as <code>int</code> and observed as <code>int</code> via the visitation
+interface. Similarly, <code>basic_format_arg</code> does not have to distinguish
+between floating-point types. 
 </p>
 
 <dl>
@@ -1239,27 +1238,20 @@ doesn't refer to an argument.
 </dd>
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> refers to an
-argument, otherwise <code>false</code>.</p>
+<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
+an argument.</p>
 </dd>
 <dt><code>bool is_arithmetic() const;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an arithmetic type.</p>
+<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
+an argument of an arithmetic type.</p>
 </dd>
 <dt><code>bool is_integral() const;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>true</code> if <code>*this</code> represents an
-argument of an integral type</p>
+<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
+an argument of an integral type.</p>
 </dd>
 </dl>
-
-<!-- Wording is similar to http://eel.is/c++draft/variant.visit -->
-<p><i>Complexity:</i> The invocation of <code>is_arithmetic</code> and
-<code>is_integral</code> is implemented in constant time, i.e. it does not depend
-on the number of alternative types that can be represented by
-<code>basic_format_arg</code>.
-</p>
 
 <pre>
 <code>template &lt;class Context&gt;
@@ -1303,11 +1295,6 @@ The return type is the common type of all possible <code>INVOKE</code>
 expressions in the Effects section. Since exact value types are
 implementation-defined, visitors should use type traits to handle multiple
 types.
-</p>
-<!-- Wording is similar to http://eel.is/c++draft/variant.visit -->
-<p><i>Complexity:</i> The invocation of the callable object is implemented in
-constant time, i.e. it does not depend on the number of alternative types that
-can be represented by <code>basic_format_arg</code>.
 </p>
 <p><i>Example:</i><pre>
 <code>auto uint_value = visit([](auto value) {
