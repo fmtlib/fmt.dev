@@ -424,6 +424,17 @@ The default implementation of <code>formatter&lt;T&gt;</code> uses ostream
 insertion <code>operator&lt;&lt;</code> for type <code>T</code> if available.
 </p>
 
+<!-- ADL-based API: https://godbolt.org/g/p1wQPr -->
+<p>
+The extension API is based on specialization instead of the argument-dependent
+lookup, because the <code>parse</code> function doesn't take the object to be
+formatted as an argument and therefore cannot be discovered by ADL without
+introducing a dummy argument, e.g.
+<pre class="example">
+<code>constexpr auto parse(type&lt;T&gt;, parse_context&amp; ctx);
+</code></pre>
+</p>
+
 <h3><a name="Safety">Safety</a></h3>
 
 <p>
@@ -648,7 +659,8 @@ Add a new section in 23 [utilities].
 
 <h3>Formatting utilities [format]</h3>
 
-<!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn -->
+<!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
+     Wording check: https://godbolt.org/g/Ko6NRC -->
 <h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
@@ -1562,7 +1574,7 @@ valid format string.</p>
 </dl>
 
 <h4><a name="format.formatter">Formatter [format.formatter]</a></h4>
-<h5>Parsing context</h5>
+<h5>Class template <code>basic_parse_context</code></h5>
 
 <pre>
 <code>namespace std {
@@ -1641,7 +1653,7 @@ argument indexing.</p>
 </dd>
 </dl>
 
-<h5>Formatting context</h5>
+<h5>Class template <code>basic_format_context</code></h5>
 
 <pre>
 <code>namespace std {
@@ -1693,7 +1705,7 @@ formatting arguments.</p>
 </dd>
 </dl>
 
-<h5>User-defined types</h5>
+<h5>Class template <code>formatter</code></h5>
 
 <p>
 If a format string refers to an object of a user-defined type as in
