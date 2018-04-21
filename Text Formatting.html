@@ -661,7 +661,7 @@ Add a new section in 23 [utilities].
 <h3>Formatting utilities [format]</h3>
 
 <!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
-     Wording check: https://godbolt.org/g/Ko6NRC -->
+     Wording check: https://godbolt.org/g/dxTuLY -->
 <h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
@@ -692,7 +692,7 @@ Add a new section in 23 [utilities].
         typename FormatContext::iterator format(const T&amp; value, FormatContext&amp; ctx);
     };
   <!-- Argument access API is provided for use cases such as dynamic width:
-       https://godbolt.org/g/X3UDhg -->
+       https://godbolt.org/g/Mp93pN -->
   // <a href="#format.arguments">[format.arguments]</a>, arguments
   template &lt;class Context&gt; class basic_format_arg;
 
@@ -1193,7 +1193,7 @@ exceptions to report errors from the formatting library.
 <h4><a name="format.arguments">Arguments [format.arguments]</a></h4>
 <h5>Class template <code>basic_format_arg</code></h5>
 <!-- Argument access API is provided for use cases such as dynamic width:
-     https://godbolt.org/g/X3UDhg -->
+     https://godbolt.org/g/wNhkk7 -->
 
 <pre>
 <code>namespace std {
@@ -1285,21 +1285,21 @@ function argument of a user-defined type.
 <dl>
 <dt><code>void format(Context&amp; ctx) const;</code></dt>
 <dd>
+<!-- Similar effects example: http://eel.is/c%2B%2Bdraft/time.format -->
 <p><i>Effects</i>:
-<ol>
-  <li> Constructs a formatter object
-  <code>f = typename Context::template formatter_type&lt;T&gt;</code>,
-  where <code>T</code> is the type of the object referred to by this handle.
-  <li>Parses the format string with
-  <code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
-  <li>Formats the object <code>obj</code> referred to by this handle with
-  <code>ctx.advance_to(f.format(obj, ctx))</code>.
+Constructs a local variable of type 
+<code>typename Context::template formatter_type&lt;T&gt;</code> (named
+<code>f</code> for exposition purposes), where <code>T</code> is the type of the
+object <code>obj</code> referred to by this handle. Executes
+<code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
+Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 </ol>
 </p>
 </dd>
 
 <h5>Argument visitation</h5>
 
+<!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl>
 <dt><pre><code>template &lt;class Visitor, class Context&gt;
   <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
@@ -1310,20 +1310,22 @@ type, for all alternative value types of a formatting argument.
 Otherwise, the program is ill-formed.</p>
 <p><i>Effects:</i>
 Let <code>value</code> be the value stored in <code>arg</code>.
-Returns <code>INVOKE(forward<Visitor>(vis), value);</code>.</p>
+Returns <code>INVOKE(std::forward<Visitor>(vis), value);</code>.</p>
 <p><i>Remarks:</i>
 The return type is the common type of all possible <code>INVOKE</code>
 expressions in the Effects section. Since exact value types are
 implementation-defined, visitors should use type traits to handle multiple
 types.
 </p>
-<p><i>Example:</i><pre>
-<code>auto uint_value = visit([](auto value) {
-  if constexpr (is_unsigned_v&lt;decltype(value)&gt;)
-    return value;
-  return 0;
-}, arg);</code>
-</pre>
+<!-- Formatting example: http://eel.is/c%2B%2Bdraft/time.duration.cons
+     Compilation test: https://godbolt.org/g/ueEgXX -->
+<p>[ <i>Example:</i><pre>
+<code>  auto uint_value = visit([](auto value) -&gt; unsigned {
+    if constexpr (std::is_unsigned_v&lt;decltype(value)&gt;)
+      return value;
+    return 0;
+  }, arg);</code>
+</pre> — <i>end example</i> ]
 </dd>
 </dl>
 
