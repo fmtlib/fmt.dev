@@ -52,6 +52,20 @@ td { text-align: left; vertical-align: top;
   margin-right: auto;
 }
 
+ul.itemize {
+      list-style-type: none;
+}
+
+ul.itemize > li{
+    margin-top: 0.6em;
+    margin-bottom: 0.6em;
+}
+
+ul.itemize > li:before {
+    content: "\2014";
+    position: absolute;
+    margin-left: -1.5em;
+}
 </style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
@@ -148,7 +162,7 @@ user-defined types with custom parsers to section
 <li>Drop nested namespace <code>fmt</code>.
 <li>Rename <code>context</code> and <code>make_args</code> to
 <code>format_context</code> and <code>make_format_args</code> respectively to
-avoid potential ambiguity.
+avoid potential ambiguity after removing the nested namespace.
 <li>Expand the Acknowledgements section and remove "Reply to".
 </ul>
 </p>
@@ -400,8 +414,7 @@ string date = format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
     constexpr parse_context::iterator parse(parse_context&amp; ctx);
 
     template &lt;class FormatContext&gt;
-      typename FormatContext::iterator format(const tm&amp; tm,
-                                              FormatContext&amp; ctx);
+      typename FormatContext::iterator format(const tm&amp; tm, FormatContext&amp; ctx);
   };
 </code></pre>
 
@@ -661,7 +674,7 @@ Add a new section in 23 [utilities].
 <h3>Formatting utilities [format]</h3>
 
 <!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
-     Code check: https://godbolt.org/g/EKFwby -->
+     Code check: https://godbolt.org/g/BvhYXx -->
 <h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
@@ -682,15 +695,7 @@ Add a new section in 23 [utilities].
   using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
   using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
 
-  template &lt;class T, class charT = char&gt;
-    struct formatter {
-      constexpr typename basic_parse_context&lt;charT&gt;::iterator
-        parse(basic_parse_context&lt;charT&gt;&amp; ctx);
-      <!-- FormatContext is a template param because we don't know the output
-           iterator type. -->
-      template &lt;class FormatContext&gt;
-        typename FormatContext::iterator format(const T&amp; value, FormatContext&amp; ctx);
-    };
+  template &lt;class T, class charT = char&gt; struct formatter;
   <!-- Argument access API is provided for use cases such as dynamic width:
        https://godbolt.org/g/Mp93pN -->
   // <a href="#format.arguments">[format.arguments]</a>, arguments
@@ -1396,10 +1401,8 @@ template &lt;class... Args&gt;
 
 <p>
 <i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that stores references to or copies of formatting arguments <code>args</code>.
+that refers to formatting arguments <code>args</code>.
 </p>
-<p><i>Returns</i>: The <code>format_arg_store</code> object constructed from the
-formatting arguments.</p>
 </dd>
 </dl>
 
@@ -1414,10 +1417,8 @@ formatting arguments.</p>
 
 <p>
 <i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that stores references to or copies of formatting arguments <code>args</code>.
+that refers to formatting arguments <code>args</code>.
 </p>
-<p><i>Returns</i>: The <code>format_arg_store</code> object constructed from the
-formatting arguments.</p>
 </dd>
 </dl>
 
@@ -1558,13 +1559,14 @@ valid format string.</p>
 <h4><a name="format.formatter">Formatter [format.formatter]</a></h4>
 <h5>Class template <code>basic_parse_context</code></h5>
 
+<!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
 <code>namespace std {
   template &lt;class charT&gt;
   class basic_parse_context {
   public:
     using char_type = charT;
-    using const_iterator = basic_string_view&lt;charT&gt;::const_iterator;
+    using const_iterator = typename basic_string_view&lt;charT&gt;::const_iterator;
     using iterator = const_iterator;
 
     explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt; fmt);
@@ -1580,9 +1582,8 @@ valid format string.</p>
 </pre>
 
 <p>
-The class template <code>basic_parse_context</code> is used in the extension
-API to access the format string range being parsed and the argument counter for
-automatic indexing.
+The class template <code>basic_parse_context</code> provides access the format
+string range being parsed and the argument counter for automatic indexing.
 </p>
 
 <dl>
@@ -1597,12 +1598,14 @@ template parameter <code>charT</code>.</p>
 </dd-->
 <dt><code>explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt;	fmt);</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs a parsing context from the format string.</p>
+<p><i>Effects</i>: Constructs a parsing context from the format string
+<code>fmt</code>.</p>
 <p><i>Postconditions</i>: <code>begin() == fmt.begin()</code>,
 <code>end() == fmt.end()</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
 <dd>
+<!-- Similar to http://eel.is/c++draft/string.iterators -->
 <p><i>Returns</i>: An iterator referring to the first character in the format
 string range being parsed.</p>
 </dd>
@@ -1620,9 +1623,9 @@ character in the format string range being parsed.</p>
 </dd>
 <dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
-<p><i>Returns</i>: The next argument ID starting from 0. Each subsequent call to
-<code>next_arg_id</code> gives an ID which is 1 greater than the ID returned
-from the previous call for the same context object.</p>
+<p><i>Returns</i>: The next argument identifier starting from 0. Each subsequent
+call to <code>next_arg_id</code> gives an identifier which is 1 greater than the
+one returned from the previous call for the same context object.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>check_arg_id</code>
 has been called earlier which indicates mixing of automatic and manual
 argument indexing.</p>
@@ -1637,6 +1640,7 @@ argument indexing.</p>
 
 <h5>Class template <code>basic_format_context</code></h5>
 
+<!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
 <code>namespace std {
   template &lt;class OutputIterator, class charT&gt;
@@ -1644,14 +1648,14 @@ argument indexing.</p>
   public:
     using iterator = OutputIterator;
     using char_type = charT;
-    using args_type = basic_format_args&lt;basic_format_context&gt;
+    using args_type = basic_format_args&lt;basic_format_context&gt;;
 
     template &lt;class T&gt;
       using formatter_type = formatter&lt;T&gt;;
 
     basic_parse_context&lt;charT&gt;&amp; parse_context();
 
-    iterator begin();
+    iterator out();
     void advance_to(iterator it);
 
     args_type args() const;
@@ -1660,8 +1664,8 @@ argument indexing.</p>
 </pre>
 
 <p>
-The class <code>basic_format_context</code> represents a formatting context for
-user-defined types.
+The class template <code>basic_format_context</code> provides access to format
+string parsing context, output iterator and formatting arguments.
 </p>
 
 <dl>
@@ -1669,7 +1673,7 @@ user-defined types.
 <dd>
 <p><i>Returns</i>: A reference to the format string parsing context.</p>
 </dd>
-<dt><code>iterator begin();</code></dt>
+<dt><code>iterator out();</code></dt>
 <dd>
 <p><i>Returns</i>: An iterator referring to the current position in the output
 range.</p>
@@ -1678,80 +1682,121 @@ range.</p>
 <dd>
 <p><i>Effects</i>: Advances the current position in the output range to
 <code>it</code>.</p>
-<p><i>Postconditions</i>: <code>begin() == it</code>.</p>
+<p><i>Postconditions</i>: <code>out() == it</code>.</p>
 </dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
-<p><i>Returns</i>: A copy of the <code>args_type</code> object that represents
-formatting arguments.</p>
+<p><i>Returns</i>: A copy of the <code>args_type</code> object that provides
+access to formatting arguments.</p>
 </dd>
 </dl>
 
 <h5>Class template <code>formatter</code></h5>
 
+<!-- Based on http://eel.is/c++draft/unord.hash -->
 <p>
-If a format string refers to an object of a user-defined type as in
+The functions defined in <a href="#format.functions">[format.functions]</a> use
+specializations of the class template <code>formatter</code> to format individual
+arguments.
+</p>
 
-<pre class="example">
-<code>X x;
-string s = format("{}", x);
-</code>
-</pre>
+<p>
+Each specialization of <code>formatter</code> is either enabled or disabled, as
+described below. [ <i>Note:</i> Enabled specializations meet the
+<code>Formatter</code> requirements, and disabled specializations do not.
+<i>— end note</i> ] Each header that declares the template <code>formatter</code>
+provides enabled specializations of <code>formatter</code> for
+<code>nullptr_t</code>, <code>const void*</code>, <code>const char*</code> and
+all cv-unqualified arithmetic types. For any type <code>T</code> for which
+neither the library nor the user provides an explicit or partial specialization
+of the class template <code>formatter</code>, <code>formatter&lt;T&gt;</code> is
+disabled.
+</p>
 
-the formatting function first calls <code>formatter&lt;X&gt;::parse(parse_ctx)
-</code> to parse the format specifiers, where <code>parse_ctx</code> is a
-reference to the parsing context.
-<code>parse_ctx.begin()</code> points to the beginning of
-<code>format-spec</code> for the current argument, or to <code>'}'</code> if
-<code>format-spec</code> is empty.
+<p>
+If the library provides an explicit or partial specialization of
+<code>formatter&lt;T&gt;</code>, that specialization is enabled except as noted
+otherwise.
+</p>
+
+<p>
+If <code>F</code> is a disabled specialization of <code>formatter</code>, these
+values are <code>false</code>: <code>is_default_constructible_v&lt;F&gt;</code>,
+<code>is_copy_constructible_v&lt;F&gt;</code>,
+<code>is_move_constructible_v&lt;F&gt;</code>,
+<code>is_copy_assignable_v&lt;F&gt;</code>,
+<code>is_move_assignable_v&lt;F&gt;</code>.
+</p>
+
+<p>
+An enabled specialization <code>formatter&lt;T&gt;</code> will satisfy the
+<code>Formatter</code> requirements (Table 1), with <code>T</code> as the
+formatted argument type, the <code>DefaultConstructible</code> requirements, and
+the <code>CopyAssignable</code> requirements.
+</p>
+
+<h5>Formatter requirements</h5>
+
+<!-- Based on http://eel.is/c++draft/hash.requirements -->
+<p>
+A type <code>F</code> meets the <code>Formatter</code> requirements if:
+<ul class="itemize">
+<li>it satisfies the <code>CopyConstructible</code> and
+    <code>Destructible</code>  requirements, and
+<li>the expressions shown in Table 1 are valid and have the indicated
+    semantics.
 </ul>
-
-<p>
-The <code>parse</code> function should parse <code>format-spec</code> and
-return an iterator past the end of the parsed range.
 </p>
 
 <p>
-Then the formatting function calls <code>formatter&lt;X&gt;::format(x,
-format_ctx)</code>, where <code>x</code> is a const reference to the argument
-and <code>format_ctx</code> is a reference to the formatting context.
+Given character type <code>charT</code>, output iterator type
+<code>OutputIterator</code>, and formatted argument type <code>T</code>, in
+Table 1 <code>f</code> is a value of type <code>F</code>, <code>u</code> is an
+lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
+to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
+<code>basic_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
+<code>fc</code> is an lvalue of type
+<code>basic_format_context&lt;OutputIterator, charT&gt;</code> (denoted by
+<code>FC</code>). <code>pc.begin()</code> points to the beginning of the
+<code>format-spec</code> (<a href="#format.syntax">[format.syntax]</a>) portion
+of the format string. If <code>format-spec</code> is empty then either
+<code>pc.begin() == pc.end()</code> or <code>*pc.begin() == '}'</code>.
 </p>
 
-<pre>
-<code>namespace std {
-  template &lt;class T, class charT = char&gt;
-  struct formatter {
-    constexpr typename basic_parse_context&lt;charT&gt;::iterator
-      parse(basic_parse_context&lt;charT&gt;&amp; ctx);
+<table>
+<caption>Table 1 — <code>Formatter</code> requirements</caption>
+<thead>
+<tr><th>Expression</th><th>Return type</th><th>Requirement</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><code>f.parse(pc)</code></td>
+<td><code>PC::iterator</code></td>
+<td>
+Shall parse <code>format-spec</code> for type <code>T</code>, store the parsed
+specifiers in <code>*this</code>, and return an iterator past the end of the
+parsed range.
+</td>
+</tr>
+<tr>
+<td><code>f.format(t,&nbsp;fc)</code></td>
+<!-- FormatContext is a template param because we don't know the output
+     iterator type. -->
+<td><code>FC::iterator</code></td>
+<td>
+Shall format <code>t</code> according to the specifiers stored in
+<code>*this</code>, write the output to <code>fc.out()</code> and return an
+iterator past the end of the output range.
+</td>
+</tr>
+<tr>
+<td><code>f.format(u,&nbsp;fc)</code></td>
+<td><code>FC::iterator</code></td>
+<td>Shall not modify u.</td>
+</tr>
+</tbody>
+</table>
 
-    template &lt;typename FormatContext&gt;
-      typename FormatContext::iterator format(const T&amp; value,
-                                              FormatContext&amp; ctx);
-  };
-}</code>
-</pre>
-
-<dl>
-<dt>
-<pre><code>constexpr typename basic_parse_context&lt;charT&gt;::iterator
-    parse(basic_parse_context&lt;charT&gt;&amp; ctx);</code></pre>
-</dt>
-<dd>
-<p><i>Effects</i>: Returns <code>ctx.begin()</code>.</p>
-</dd>
-<dt>
-<pre><code>template &lt;typename FormatContext&gt;
-  typename FormatContext::iterator format(const T&amp; value,
-                                          FormatContext&amp; ctx);</code></pre>
-</dt>
-<dd>
-<p>
-<i>Effects</i>: The function calls <code>os &lt;&lt; value</code>, where
-<code>os</code> is an instance of <code>std::basic_ostream&lt;charT&gt;</code>
-with a stream buffer backed by the iterator <code>ctx.begin()</code>.
-</p>
-</dd>
-</dl>
 
 <h2><a name="RelatedWork">Related work</a></h2>
 
