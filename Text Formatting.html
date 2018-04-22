@@ -661,7 +661,7 @@ Add a new section in 23 [utilities].
 <h3>Formatting utilities [format]</h3>
 
 <!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
-     Wording check: https://godbolt.org/g/dxTuLY -->
+     Code check: https://godbolt.org/g/EKFwby -->
 <h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
@@ -699,7 +699,7 @@ Add a new section in 23 [utilities].
   template &lt;class Visitor, class Context&gt;
     <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
-  template &lt;class Context, class... Args&gt; class format_arg_store;
+  template &lt;class Context, class... Args&gt; using format_arg_store = <i>unspecified</i>;
 
   template &lt;class Context&gt; class basic_format_args;
   using format_args = basic_format_args&lt;format_context&gt;;
@@ -1179,14 +1179,14 @@ exceptions to report errors from the formatting library.
 <dd>
   <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
   </p>
-  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
+  <p><i>Postconditions</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
   </p>
 </dd>
 <dt><code>format_error(const char* what_arg);</code></dt>
 <dd>
   <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
   </p>
-  <p><i>Postcondition</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
+  <p><i>Postconditions</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
 </dd>
 </dl>
 
@@ -1247,7 +1247,7 @@ between floating-point types.
 <p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
 doesn't refer to an argument.
 </p>
-<p><i>Postcondition</i>: <code>!(*this)</code>.</p>
+<p><i>Postconditions</i>: <code>!(*this)</code>.</p>
 </dd>
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
@@ -1329,32 +1329,6 @@ types.
 </dd>
 </dl>
 
-<h5>Class template <code>format_arg_store</code></h5>
-
-<pre>
-<code>namespace std {
-  template &lt;class Context, class... Args&gt;
-  class format_arg_store {
-  public:
-    basic_format_args&lt;Context&gt; operator*() const;
-  };
-}</code>
-</pre>
-
-<p>
-An object of type <code>format_arg_store</code> stores formatting arguments or
-references to them.
-</p>
-
-<dl>
-<dt><code>basic_format_args&lt;Context&gt; operator*() const;</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object providing
-access to arguments in <code>*this</code>.
-</p>
-</dd>
-</dl>
-
 <h5>Class template <code>basic_format_args</code></h5>
 
 <pre>
@@ -1362,18 +1336,19 @@ access to arguments in <code>*this</code>.
   template &lt;class Context&gt;
   class basic_format_args {
   public:
-    using size_type = <i>implementation-defined</i>;
+    using size_type = size_t;
 
     basic_format_args() noexcept;
 
     template &lt;class... Args&gt;
       basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
 
-    basic_format_arg&lt;Context&gt; operator[](size_type i) const;
+    basic_format_arg&lt;Context&gt; get(size_type i) const;
   };
 }</code>
 </pre>
 
+<!-- Wording is similar to http://eel.is/c++draft/initializer_list.syn -->
 <p>
 An object of type <code>basic_format_args</code> provides access to formatting
 arguments. Copying a <code>basic_format_args</code> object does not copy the
@@ -1385,7 +1360,7 @@ arguments.
 <dd>
 <p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
 </p>
-<p><i>Postcondition</i>: <code>!(*this)[0]</code>.</p>
+<p><i>Postconditions</i>: <code>!get(0)</code>.</p>
 </dd>
 </dl>
 
@@ -1394,13 +1369,13 @@ arguments.
   basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
 <dd>
 <p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
-provides access to the agruments in <code>store</code>.
+provides access to the arguments captured in <code>store</code>.
 </p>
 </dd>
 </dl>
 
 <dl>
-<dt><code>basic_format_arg&lt;Context&gt; operator[](size_type i) const;</code></dt>
+<dt><code>basic_format_arg&lt;Context&gt; get(size_type i) const;</code></dt>
 <dd>
 <p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
 argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
@@ -1433,7 +1408,7 @@ formatting arguments.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class... Args&gt;
-  format_arg_store&lt;format_wcontext, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
+  format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -1451,20 +1426,20 @@ formatting arguments.</p>
 <dl>
 <dt>
 <pre><code>template &lt;class... Args&gt;
-  string format(string_view fmt, const Args&amp;... args);
-template &lt;class... Args&gt;
+  string format(string_view fmt, const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+<p><i>Returns</i>: <code>vformat(fmt, make_format_args(args...))</code>.</p>
+</dd>
+</dl>
+
+<dl>
+<dt>
+<pre><code>template &lt;class... Args&gt;
   wstring format(wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-
-<p>
-<i>Effects</i>: Constructs a string object (for exposition
-purposes, named <code>str</code>). Then performs formatting as if by a call to
-<code>format_to(std::back_inserter(str), fmt, args...);</code>.
-</p>
-<p><i>Returns</i>: <code>str</code>.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
-valid format string.</p>
+<p><i>Returns</i>: <code>vformat(fmt, make_wformat_args(args...))</code>.</p>
 </dd>
 </dl>
 
@@ -1491,23 +1466,21 @@ valid format string.</p>
 <dt>
 <pre><code>template &lt;class OutputIterator, class... Args&gt;
   OutputIterator format_to(OutputIterator out, string_view fmt,
-                           const Args&amp;... args);
-template &lt;class OutputIterator, class... Args&gt;
+                           const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+<p><i>Returns</i>: <code>vformat_to(out, fmt, make_format_args(args...))</code>.</p>
+</dd>
+</dl>
+
+<dl>
+<dt>
+<pre><code>template &lt;class OutputIterator, class... Args&gt;
   OutputIterator format_to(OutputIterator out, wstring_view fmt,
                            const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-
-<p>
-<i>Effects</i>: The function writes to the range <code>[out, out +
-formatted_size(fmt, args...))</code> the format string
-<code>fmt</code> with each replacement field substituted with the
-character representation of the argument it refers to, formatted according to the
-specification given in the field.
-</p>
-<p><i>Returns</i>: The end of the output range.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
-valid format string.</p>
+<p><i>Returns</i>: <code>vformat_to(out, fmt, make_wformat_args(args...))</code>.</p>
 </dd>
 </dl>
 
@@ -1600,8 +1573,8 @@ valid format string.</p>
     constexpr const_iterator end() const noexcept;
     constexpr void advance_to(const_iterator it);
 
-    constexpr unsigned next_arg_id();
-    constexpr void check_arg_id(unsigned id);
+    constexpr size_t next_arg_id();
+    constexpr void check_arg_id(size_t id);
   };
 }</code>
 </pre>
@@ -1643,9 +1616,9 @@ character in the format string range being parsed.</p>
 <p><i>Effects</i>: Advances the beginning of the parsed format string range to
 <code>it</code>.</p>
 <p><i>Requires</i>: <code>end()</code> shall be reachable from <code>it</code>.
-<p><i>Postcondition</i>: <code>begin() == it</code>.</p>
+<p><i>Postconditions</i>: <code>begin() == it</code>.</p>
 </dd>
-<dt><code>constexpr unsigned next_arg_id();</code></dt>
+<dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
 <p><i>Returns</i>: The next argument ID starting from 0. Each subsequent call to
 <code>next_arg_id</code> gives an ID which is 1 greater than the ID returned
@@ -1654,7 +1627,7 @@ from the previous call for the same context object.</p>
 has been called earlier which indicates mixing of automatic and manual
 argument indexing.</p>
 </dd>
-<dt><code>constexpr void check_arg_id(unsigned id);</code></dt>
+<dt><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
 <p><i>Throws</i>: <code>format_error</code> if <code>next_arg_id</code>
 has been called earlier which indicates mixing of automatic and manual
@@ -1705,7 +1678,7 @@ range.</p>
 <dd>
 <p><i>Effects</i>: Advances the current position in the output range to
 <code>it</code>.</p>
-<p><i>Postcondition</i>: <code>begin() == it</code>.</p>
+<p><i>Postconditions</i>: <code>begin() == it</code>.</p>
 </dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
@@ -1789,7 +1762,7 @@ The main differences between this library and the current proposal are:
 </p>
 
 <ul>
-<li>Syntax: for the reasons descibed in section
+<li>Syntax: for the reasons described in section
 <a href="Syntax">Format String Syntax</a> this proposal
 uses a new syntax instead of extending the <code>printf</code> one. This allows much
 simpler and easier to parse grammar, not burdened by legacy specifiers used to
