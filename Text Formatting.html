@@ -153,16 +153,17 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <ul>
 <li>Add the <code>format_to_n</code> function taking an output iterator and a
 size.
-<li>Add a note that compile-time processing of format strings apply to
+<li>Add a note that compile-time processing of format strings applies to
 user-defined types with custom parsers to section
 <a href="#CompileTimeFormat">Compile-time processing of format strings</a>.
 <li>Rename <code>count</code> to <code>formatted_size</code>.
-<li>Rename <code>basic_arg</code> to <code>basic_format_arg</code>.
-<li>Rename <code>arg_store</code> to <code>format_arg_store</code>.
 <li>Drop nested namespace <code>fmt</code>.
-<li>Rename <code>context</code> and <code>make_args</code> to
-<code>format_context</code> and <code>make_format_args</code> respectively to
-avoid potential ambiguity after removing the nested namespace.
+<li>Add <code>format</code> prefix or infix to class and function names to
+avoid potential name collision after removing the nested namespace.
+<li>Improve wording.
+<li>Replace the requirement of implementing a formatter via ostream insertion
+operator if the latter is provided with a note that it can be implemented in
+such way.
 <li>Expand the Acknowledgements section and remove "Reply to".
 </ul>
 </p>
@@ -433,8 +434,9 @@ extension API.
 </p>
 
 <p>
-The default implementation of <code>formatter&lt;T&gt;</code> uses ostream
-insertion <code>operator&lt;&lt;</code> for type <code>T</code> if available.
+An implementation of <code>formatter&lt;T&gt;::format</code> can use ostream
+insertion <code>operator&lt;&lt;</code> for user-defined type <code>T</code> if
+available.
 </p>
 
 <!-- ADL-based API: https://godbolt.org/g/p1wQPr -->
@@ -854,7 +856,7 @@ The general form of a <em>standard format specifier</em> is:
 
 <pre class="codeblock">
 <code>format-spec ::=  [[fill] align] [sign] ['#'] ['0'] [width] ['.' precision] [type]
-fill        ::=  &lt;a character other than '{' or '}'&gt;
+fill        ::=  &lt;a character other than '{', '}', or '\0'&gt;
 align       ::=  '<' | '>' | '=' | '^'
 sign        ::=  '+' | '-' | ' '
 width       ::=  integer | '{' arg-id '}'
@@ -1061,7 +1063,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 <tr>
 <td><code>'n'</code></td>
 <td>Number. This is the same as <code>'d'</code> except that it uses the
-    locale to insert the appropriate number separator characters.</td>
+    current locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1232,7 +1234,8 @@ can hold a value of one of the following types:
 <li><code>basic_string_view&lt;charT&gt;</code>
 <li><code>const void*</code>
 <li><code>basic_format_arg::handle</code> referring to an argument of a
-    formattable user-defined type
+    user-defined type <code>T</code> with an enabled specialization of
+    <code>formatter&lt;T&gt;</code>
 <li><code>monostate</code> representing an empty state, i.e. when the
     object does not refer to an argument
 </ul>
@@ -1705,12 +1708,13 @@ Each specialization of <code>formatter</code> is either enabled or disabled, as
 described below. [ <i>Note:</i> Enabled specializations meet the
 <code>Formatter</code> requirements, and disabled specializations do not.
 <i>— end note</i> ] Each header that declares the template <code>formatter</code>
-provides enabled specializations of <code>formatter</code> for
-<code>nullptr_t</code>, <code>const void*</code>, <code>const char*</code> and
-all cv-unqualified arithmetic types. For any type <code>T</code> for which
-neither the library nor the user provides an explicit or partial specialization
-of the class template <code>formatter</code>, <code>formatter&lt;T&gt;</code> is
-disabled.
+provides enabled specializations <code>formatter&lt;const char*, char&gt;</code>,
+<code>formatter&lt;const wchar_t*, wchar_t&gt;</code> as well as
+specialiazations of <code>formatter</code> for <code>nullptr_t</code>,
+<code>const void*</code>, and all cv-unqualified arithmetic types. For any type
+<code>T</code> for which neither the library nor the user provides an explicit or
+partial specialization of the class template <code>formatter</code>,
+<code>formatter&lt;T&gt;</code> is disabled.
 </p>
 
 <p>
