@@ -177,10 +177,10 @@ in Python:</p>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">fmt::format</span></code> function returns a string &#8220;The answer is 42&#8221;. You can use
-<code class="docutils literal"><span class="pre">fmt::MemoryWriter</span></code> to avoid constructing <code class="docutils literal"><span class="pre">std::string</span></code>:</p>
-<div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">MemoryWriter</span> <span class="n">w</span><span class="p">;</span>
-<span class="n">w</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;Look, a {} string&quot;</span><span class="p">,</span> <span class="sc">&#39;C&#39;</span><span class="p">);</span>
-<span class="n">w</span><span class="p">.</span><span class="n">c_str</span><span class="p">();</span> <span class="c1">// returns a C string (const char*)</span>
+<code class="docutils literal"><span class="pre">fmt::memory_buffer</span></code> to avoid constructing <code class="docutils literal"><span class="pre">std::string</span></code>:</p>
+<div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">format_to</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">&quot;For a moment, {} happened.&quot;</span><span class="p">,</span> <span class="s">&quot;nothing&quot;</span><span class="p">);</span>
+<span class="n">out</span><span class="p">.</span><span class="n">data</span><span class="p">();</span> <span class="c1">// returns a pointer to the formatted data</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">fmt::print</span></code> function performs formatting and writes the result to a file:</p>
@@ -192,10 +192,6 @@ in Python:</p>
 <div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Don&#39;t {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>If your compiler supports C++11, then the formatting functions are implemented
-with variadic templates. Otherwise variadic functions are emulated by generating
-a set of lightweight wrappers. This ensures compatibility with older compilers
-while providing a natural API.</p>
 <p>The Format API also supports positional arguments useful for localization:</p>
 <div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;I&#39;d rather be {1} than {0}.&quot;</span><span class="p">,</span> <span class="s">&quot;right&quot;</span><span class="p">,</span> <span class="s">&quot;happy&quot;</span><span class="p">);</span>
 </pre></div>
@@ -230,7 +226,7 @@ the code</p>
 <div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">,</span> <span class="s">&quot;forty-two&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>throws a <code class="docutils literal"><span class="pre">FormatError</span></code> exception with description
+<p>throws a <code class="docutils literal"><span class="pre">format_error</span></code> exception with description
 &#8220;unknown format code &#8216;d&#8217; for string&#8221;, because the argument
 <code class="docutils literal"><span class="pre">&quot;forty-two&quot;</span></code> is a string while the format code <code class="docutils literal"><span class="pre">d</span></code>
 only applies to integers.</p>
@@ -252,6 +248,34 @@ errors to the user, but it may call system functions which set <code class="docu
 fmt does not attempt to preserve the value of <code class="docutils literal"><span class="pre">errno</span></code>, users should not make
 any assumptions about it and always set it to <code class="docutils literal"><span class="pre">0</span></code> before making any system
 calls that convey error information via <code class="docutils literal"><span class="pre">errno</span></code>.</p>
+</div>
+<div class="section" id="compact-binary-code">
+<h2>Compact binary code<a class="headerlink" href="#compact-binary-code" title="Permalink to this headline">¶</a></h2>
+<p>Each call to a formatting function results in a compact binary code. For example
+(<a class="reference external" href="https://godbolt.org/g/TZU4KF">godbolt</a>),</p>
+<div class="code c++ highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/core.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>compiles to just</p>
+<div class="code asm highlight-c++"><div class="highlight"><pre><span></span>main: # @main
+  sub rsp, 24
+  mov qword ptr [rsp], 42
+  mov rcx, rsp
+  mov edi, offset .L.str
+  mov esi, 17
+  mov edx, 2
+  call fmt::v5::vprint(fmt::v5::basic_string_view&lt;char&gt;, fmt::v5::format_args)
+  xor eax, eax
+  add rsp, 24
+  ret
+.L.str:
+  .asciz &quot;The answer is {}.&quot;
+</pre></div>
+</div>
 </div>
 <div class="section" id="portability">
 <span id="id2"></span><h2>Portability<a class="headerlink" href="#portability" title="Permalink to this headline">¶</a></h2>
