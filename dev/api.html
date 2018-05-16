@@ -293,12 +293,8 @@ such as <a class="reference internal" href="#_CPPv2N3fmt7vformatE11string_view11
 <span class="target" id="formatclassfmt_1_1basic__string__view"></span><em class="property">template </em>&lt;typename <em>Char</em>&gt;</dt>
 <dt id="_CPPv2N3fmt17basic_string_viewE">
 <span id="fmt::basic_string_view"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">basic_string_view</code><a class="headerlink" href="#_CPPv2N3fmt17basic_string_viewE" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>An implementation of <code class="docutils literal"><span class="pre">std::basic_string_view</span></code> for pre-C++17. It provides a
-subset of the API. <code class="docutils literal"><span class="pre">fmt::basic_string_view</span></code> is used for format strings even
-if <code class="docutils literal"><span class="pre">std::string_view</span></code> is available to prevent issues when a library is
-compiled with a different <code class="docutils literal"><span class="pre">-std</span></code> option than the client code (which is not
-recommended).</p>
- </p>
+<dd><p>An implementation of <code class="docutils literal"><span class="pre">std::basic_string_view</span></code> for pre-C++17. </p>
+<p>It provides a subset of the API. <code class="docutils literal"><span class="pre">fmt::basic_string_view</span></code> is used for format strings even if <code class="docutils literal"><span class="pre">std::string_view</span></code> is available to prevent issues when a library is compiled with a different <code class="docutils literal"><span class="pre">-std</span></code> option than the client code (which is not recommended). </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
@@ -320,8 +316,7 @@ the size with <code class="docutils literal"><span class="pre">std::char_traits&
 <em class="property">template </em>&lt;<em class="property">typename</em> Alloc&gt;</dt>
 <dt id="_CPPv2N3fmt17basic_string_view17basic_string_viewERKNSt12basic_stringI4Char5AllocEE">
 <span id="fmt::basic_string_view::basic_string_view__std::basic_string:Char.Alloc:CR"></span><span class="target" id="formatclassfmt_1_1basic__string__view_1ad38941573be5cdc0ba9a0f9f66efaaf4"></span><code class="descname">basic_string_view</code><span class="sig-paren">(</span><em class="property">const</em> std::basic_string&lt;Char, Alloc&gt; &amp;<em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt17basic_string_view17basic_string_viewERKNSt12basic_stringI4Char5AllocEE" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>Constructs a string reference from a <code class="docutils literal"><span class="pre">std::basic_string</span></code> object.</p>
- </p>
+<dd><p>Constructs a string reference from a <code class="docutils literal"><span class="pre">std::basic_string</span></code> object. </p>
 </dd></dl>
 
 <dl class="function">
@@ -415,7 +410,15 @@ output <code class="docutils literal"><span class="pre">operator&lt;&lt;</span><
 <em class="property">template </em>&lt;<em class="property">typename</em> OutputIt, typename... <em>Args</em>&gt;</dt>
 <dt id="_CPPv2N3fmt9format_toE8OutputIt11string_viewDpRK4Args">
 <span id="fmt::format_to__OutputIt.string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a1c9bf7a0a3aac4b0088ba658eaac74ea"></span>OutputIt <code class="descclassname">fmt::</code><code class="descname">format_to</code><span class="sig-paren">(</span>OutputIt <em>out</em>, <a class="reference internal" href="#_CPPv2N3fmt11string_viewE" title="fmt::string_view">string_view</a> <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt9format_toE8OutputIt11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p><p>Formats arguments, writes the result to the output iterator <code class="docutils literal"><span class="pre">out</span></code> and returns
+the iterator past the end of the output range.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span> <span class="n">out</span><span class="p">;</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">format_to</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">back_inserter</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+</pre></div>
+</div>
+ </p>
+</dd></dl>
 
 <dl class="function">
 <dt>
@@ -483,6 +486,14 @@ of the output range.</p>
 <h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt>
+<em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt14formatted_sizeE11string_viewDpRK4Args">
+<span id="fmt::formatted_size__string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a1d5ace4b8f9f7b3d1214d7c334f802a8"></span>std::size_t <code class="descclassname">fmt::</code><code class="descname">formatted_size</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt11string_viewE" title="fmt::string_view">string_view</a> <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt14formatted_sizeE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the number of characters in the output of <code class="docutils literal"><span class="pre">format(format_str,</span> <span class="pre">args...)</span></code>. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
 <em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2N3fmt9to_stringERK1T">
 <span id="fmt::to_string__TCR"></span><span class="target" id="formatnamespacefmt_1abfd84051cd3673d750be5851ee93b05f"></span>std::string <code class="descclassname">fmt::</code><code class="descname">to_string</code><span class="sig-paren">(</span><em class="property">const</em> T &amp;<em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt9to_stringERK1T" title="Permalink to this definition">¶</a></dt>
@@ -501,8 +512,7 @@ of the output range.</p>
 <em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
 <dt id="_CPPv2N3fmt10to_wstringERK1T">
 <span id="fmt::to_wstring__TCR"></span><span class="target" id="formatnamespacefmt_1a611f78ef8ce316c44fdf7c82397cfbdd"></span>std::wstring <code class="descclassname">fmt::</code><code class="descname">to_wstring</code><span class="sig-paren">(</span><em class="property">const</em> T &amp;<em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt10to_wstringERK1T" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>Converts <em>value</em> to <code class="docutils literal"><span class="pre">std::wstring</span></code> using the default format for type <em>T</em>.</p>
- </p>
+<dd><p>Converts <em>value</em> to <code class="docutils literal"><span class="pre">std::wstring</span></code> using the default format for type <em>T</em>. </p>
 </dd></dl>
 
 <dl class="class">
