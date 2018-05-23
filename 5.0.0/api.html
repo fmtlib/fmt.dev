@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    
+    <title>API Reference &mdash; fmt 5.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '5.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX:  ''
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="next" title="Format String Syntax" href="syntax.html" />
+    <link rel="prev" title="Usage" href="usage.html" />
+<meta name="description" content="Small, safe and fast formatting library">
+<meta name="keywords" content="C++, formatting, printf, string, library">
+<meta name="author" content="Victor Zverovich">
+<link rel="stylesheet" href="_static/fmt.css">
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();
+    a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;
+    a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-20116650-4', 'fmtlib.net');
+  ga('send', 'pageview');
+</script>
+
+  </head>
+  <body role="document">
+<nav class="navbar navbar-inverse">
+  <div class="tb-container">
+    <div class="row">
+      <div class="navbar-content">
+        
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed"
+                  data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">{fmt}</a>
+        </div>
+
+        
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                 role="button" aria-expanded="false">5.0.0
+                <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                
+                <li><a href="http://fmtlib.net/5.0.0">5.0.0</a></li>
+                
+                <li><a href="http://fmtlib.net/4.1.0">4.1.0</a></li>
+                
+                <li><a href="http://fmtlib.net/4.0.0">4.0.0</a></li>
+                
+              </ul>
+            </li>
+            
+              
+              <li><a href="contents.html">Contents</a></li>
+              
+            
+              
+              <li><a href="usage.html">Usage</a></li>
+              
+            
+              
+              <li class="active"><a href="api.html">API
+                <span class="sr-only">(current)</span></a></li>
+              
+            
+              
+              <li><a href="syntax.html">Syntax</a></li>
+              
+            
+          </ul>
+          
+            
+<form class="navbar-form navbar-right" role="search" action="search.html"
+      method="get">
+  <div class="form-group">
+    <input type="text" name="q" class="form-control"
+           placeholder="Search" >
+  </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+  
+</form>
+          
+        </div> 
+      </div> 
+    </div> 
+  </div> 
+</nav>
+
+
+
+<div class="tb-container">
+  <div class="row">
+    
+
+    <div class="content">
+      
+  <div class="section" id="api-reference">
+<span id="string-formatting-api"></span><h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<p>The {fmt} library API consists of the following parts:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#core-api"><span class="std std-ref">fmt/core.h</span></a>: the core API providing argument handling
+facilities and a lightweight subset of formatting functions</li>
+<li><a class="reference internal" href="#format-api"><span class="std std-ref">fmt/format.h</span></a>: the full format API providing compile-time
+format string checks, output iterator and user-defined type support</li>
+<li><a class="reference internal" href="#time-api"><span class="std std-ref">fmt/time.h</span></a>: date and time formatting</li>
+<li><a class="reference internal" href="#ostream-api"><span class="std std-ref">fmt/ostream.h</span></a>: <code class="docutils literal"><span class="pre">std::ostream</span></code> support</li>
+<li><a class="reference internal" href="#printf-api"><span class="std std-ref">fmt/printf.h</span></a>: <code class="docutils literal"><span class="pre">printf</span></code> formatting</li>
+</ul>
+<p>All functions and types provided by the library reside in namespace <code class="docutils literal"><span class="pre">fmt</span></code> and
+macros have prefix <code class="docutils literal"><span class="pre">FMT_</span></code> or <code class="docutils literal"><span class="pre">fmt</span></code>.</p>
+<div class="section" id="core-api">
+<span id="id1"></span><h2>Core API<a class="headerlink" href="#core-api" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">fmt/core.h</span></code> defines the core API which provides argument handling facilities
+and a lightweight subset of formatting functions.</p>
+<p>The following functions use <a class="reference internal" href="syntax.html#syntax"><span class="std std-ref">format string syntax</span></a>
+imilar to that of Python&#8217;s <a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str.format">str.format</a>.
+They take <em>format_str</em> and <em>args</em> as arguments.</p>
+<p><em>format_str</em> is a format string that contains literal text and replacement
+fields surrounded by braces <code class="docutils literal"><span class="pre">{}</span></code>. The fields are replaced with formatted
+arguments in the resulting string.</p>
+<p><em>args</em> is an argument list representing objects to be formatted.</p>
+<div class="admonition warning" id="format">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;format&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;vformat&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning" id="print">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;print&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;vprint&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;print&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;vprint&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="section" id="named-arguments">
+<h3>Named arguments<a class="headerlink" href="#named-arguments" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::arg&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="argument-lists">
+<h3>Argument lists<a class="headerlink" href="#argument-lists" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::make_format_args&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::format_arg_store&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::basic_format_args&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenstruct: Cannot find class &#8220;fmt::format_args&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::basic_format_arg&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="compatibility">
+<h3>Compatibility<a class="headerlink" href="#compatibility" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::basic_string_view&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygentypedef: Cannot find typedef &#8220;fmt::string_view&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygentypedef: Cannot find typedef &#8220;fmt::wstring_view&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+</div>
+<div class="section" id="format-api">
+<span id="id2"></span><h2>Format API<a class="headerlink" href="#format-api" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">fmt/format.h</span></code> defines the full format API providing compile-time format
+string checks, output iterator and user-defined type support.</p>
+<div class="section" id="compile-time-format-string-checks">
+<h3>Compile-time format string checks<a class="headerlink" href="#compile-time-format-string-checks" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygendefine: Cannot find define &#8220;fmt&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="formatting-user-defined-types">
+<h3>Formatting user-defined types<a class="headerlink" href="#formatting-user-defined-types" title="Permalink to this headline">¶</a></h3>
+<p>To make a user-defined type formattable, specialize the <code class="docutils literal"><span class="pre">formatter&lt;T&gt;</span></code> struct
+template and implement <code class="docutils literal"><span class="pre">parse</span></code> and <code class="docutils literal"><span class="pre">format</span></code> methods:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/format.h&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">point</span> <span class="p">{</span> <span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">;</span> <span class="p">};</span>
+
+<span class="k">namespace</span> <span class="n">fmt</span> <span class="p">{</span>
+<span class="k">template</span> <span class="o">&lt;&gt;</span>
+<span class="k">struct</span> <span class="n">formatter</span><span class="o">&lt;</span><span class="n">point</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">ParseContext</span><span class="o">&gt;</span>
+  <span class="k">constexpr</span> <span class="k">auto</span> <span class="n">parse</span><span class="p">(</span><span class="n">ParseContext</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">ctx</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="p">}</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">FormatContext</span><span class="o">&gt;</span>
+  <span class="k">auto</span> <span class="n">format</span><span class="p">(</span><span class="k">const</span> <span class="n">point</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">,</span> <span class="n">FormatContext</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">format_to</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="s">&quot;({:.1f}, {:.1f})&quot;</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Then you can pass objects of type <code class="docutils literal"><span class="pre">point</span></code> to any formatting function:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">point</span> <span class="n">p</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">};</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+<span class="c1">// s == &quot;(1.0, 2.0)&quot;</span>
+</pre></div>
+</div>
+<p>In the example above the <code class="docutils literal"><span class="pre">formatter&lt;point&gt;::parse</span></code> function ignores the
+contents of the format string referred to by <code class="docutils literal"><span class="pre">ctx.begin()</span></code> so the object will
+always be formatted in the same way. See <code class="docutils literal"><span class="pre">formatter&lt;tm&gt;::parse</span></code> in
+<code class="file docutils literal"><span class="pre">fmt/time.h</span></code> for an advanced example of how to parse the format string and
+customize the formatted output.</p>
+<p>This section shows how to define a custom format function for a user-defined
+type. The next section describes how to get <code class="docutils literal"><span class="pre">fmt</span></code> to use a conventional stream
+output <code class="docutils literal"><span class="pre">operator&lt;&lt;</span></code> when one is defined for a user-defined type.</p>
+</div>
+<div class="section" id="output-iterator-support">
+<h3>Output iterator support<a class="headerlink" href="#output-iterator-support" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::format_to&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::format_to_n&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenstruct: Cannot find class &#8220;fmt::format_to_n_result&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="literal-based-api">
+<h3>Literal-based API<a class="headerlink" href="#literal-based-api" title="Permalink to this headline">¶</a></h3>
+<p>The following user-defined literals are defined in <code class="docutils literal"><span class="pre">fmt/format.h</span></code>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;operator&#8221;&#8221; _format&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;operator&#8221;&#8221; _a&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="utilities">
+<h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::formatted_size&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::to_string&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::to_wstring&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::basic_memory_buffer&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="system-errors">
+<h3>System errors<a class="headerlink" href="#system-errors" title="Permalink to this headline">¶</a></h3>
+<p>fmt does not use <code class="docutils literal"><span class="pre">errno</span></code> to communicate errors to the user, but it may call
+system functions which set <code class="docutils literal"><span class="pre">errno</span></code>. Users should not make any assumptions about
+the value of <code class="docutils literal"><span class="pre">errno</span></code> being preserved by library functions.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::system_error&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fmt::format_system_error&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::windows_error&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="custom-allocators">
+<span id="formatstrings"></span><h3>Custom allocators<a class="headerlink" href="#custom-allocators" title="Permalink to this headline">¶</a></h3>
+<p>The {fmt} library supports custom dynamic memory allocators.
+A custom allocator class can be specified as a template argument to
+<code class="xref cpp cpp-class docutils literal"><span class="pre">fmt::basic_memory_buffer</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">custom_memory_buffer</span> <span class="o">=</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">basic_memory_buffer</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">inline_buffer_size</span><span class="p">,</span> <span class="n">custom_allocator</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>It is also possible to write a formatting function that uses a custom
+allocator:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">custom_string</span> <span class="o">=</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">basic_string</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">char_traits</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">custom_allocator</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="n">custom_string</span> <span class="nf">vformat</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
+                      <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">custom_memory_buffer</span> <span class="n">buf</span><span class="p">(</span><span class="n">alloc</span><span class="p">);</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">vformat_to</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">custom_string</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">buf</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">alloc</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="n">custom_string</span> <span class="n">format</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span>
+                            <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
+                            <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span> <span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">vformat</span><span class="p">(</span><span class="n">alloc</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The allocator will be used for the output container only. If you are using named
+arguments, the container that stores pointers to them will be allocated using
+the default allocator. Also floating-point formatting falls back on <code class="docutils literal"><span class="pre">sprintf</span></code>
+which may do allocations.</p>
+</div>
+<div class="section" id="custom-formatting-of-built-in-types">
+<h3>Custom formatting of built-in types<a class="headerlink" href="#custom-formatting-of-built-in-types" title="Permalink to this headline">¶</a></h3>
+<p>It is possible to change the way arguments are formatted by providing a
+custom argument formatter class:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">arg_formatter</span> <span class="o">=</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">arg_formatter</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">back_insert_range</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">internal</span><span class="o">::</span><span class="n">buffer</span><span class="o">&gt;&gt;</span><span class="p">;</span>
+
+<span class="c1">// A custom argument formatter that formats negative integers as unsigned</span>
+<span class="c1">// with the ``x`` format specifier.</span>
+<span class="k">class</span> <span class="nc">custom_arg_formatter</span> <span class="o">:</span> <span class="k">public</span> <span class="n">arg_formatter</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">format_context</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">arg_formatter</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="k">using</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">();</span>
+
+  <span class="kt">void</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">spec</span><span class="p">().</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="sc">&#39;x&#39;</span><span class="p">)</span>
+      <span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">));</span> <span class="c1">// convert to unsigned and format</span>
+    <span class="k">else</span>
+      <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">()(</span><span class="n">value</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">custom_vformat</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span> <span class="n">buffer</span><span class="p">;</span>
+  <span class="c1">// Pass custom argument formatter as a template arg to vformat_to.</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">vformat_to</span><span class="o">&lt;</span><span class="n">custom_arg_formatter</span><span class="o">&gt;</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">buffer</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
+<span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">custom_format</span><span class="p">(</span>
+    <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">custom_vformat</span><span class="p">(</span><span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">custom_format</span><span class="p">(</span><span class="s">&quot;{:x}&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">42</span><span class="p">);</span> <span class="c1">// s == &quot;ffffffd6&quot;</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenclass: Cannot find class &#8220;fmt::arg_formatter&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+</div>
+<div class="section" id="date-and-time-formatting">
+<span id="time-api"></span><h2>Date and time formatting<a class="headerlink" href="#date-and-time-formatting" title="Permalink to this headline">¶</a></h2>
+<p>The library supports <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a>-like date and time
+formatting:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/time.h&gt;</span><span class="cp"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="kt">time_t</span> <span class="n">t</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">time</span><span class="p">(</span><span class="k">nullptr</span><span class="p">);</span>
+<span class="c1">// Prints &quot;The date is 2016-04-29.&quot; (with the current date)</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The date is {:%Y-%m-%d}.&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">std</span><span class="o">::</span><span class="n">localtime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>The format string syntax is described in the documentation of
+<a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a>.</p>
+</div>
+<div class="section" id="std-ostream-support">
+<span id="ostream-api"></span><h2><code class="docutils literal"><span class="pre">std::ostream</span></code> support<a class="headerlink" href="#std-ostream-support" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">fmt/ostream.h</span></code> provides <code class="docutils literal"><span class="pre">std::ostream</span></code> support including formatting of
+user-defined types that have overloaded <code class="docutils literal"><span class="pre">operator&lt;&lt;</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/ostream.h&gt;</span><span class="cp"></span>
+
+<span class="k">class</span> <span class="nc">date</span> <span class="p">{</span>
+  <span class="kt">int</span> <span class="n">year_</span><span class="p">,</span> <span class="n">month_</span><span class="p">,</span> <span class="n">day_</span><span class="p">;</span>
+<span class="k">public</span><span class="o">:</span>
+  <span class="n">date</span><span class="p">(</span><span class="kt">int</span> <span class="n">year</span><span class="p">,</span> <span class="kt">int</span> <span class="n">month</span><span class="p">,</span> <span class="kt">int</span> <span class="n">day</span><span class="p">)</span><span class="o">:</span> <span class="n">year_</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">month_</span><span class="p">(</span><span class="n">month</span><span class="p">),</span> <span class="n">day_</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="k">friend</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="n">os</span><span class="p">,</span> <span class="k">const</span> <span class="n">date</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">os</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">year_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">month_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">day_</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The date is {}&quot;</span><span class="p">,</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">));</span>
+<span class="c1">// s == &quot;The date is 2012-12-9&quot;</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;print&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+<div class="section" id="printf-formatting">
+<span id="printf-api"></span><h2><code class="docutils literal"><span class="pre">printf</span></code> formatting<a class="headerlink" href="#printf-formatting" title="Permalink to this headline">¶</a></h2>
+<p>The header <code class="docutils literal"><span class="pre">fmt/printf.h</span></code> provides <code class="docutils literal"><span class="pre">printf</span></code>-like formatting functionality.
+The following functions use <a class="reference external" href="http://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html">printf format string syntax</a> with
+the POSIX extension for positional arguments. Unlike their standard
+counterparts, the <code class="docutils literal"><span class="pre">fmt</span></code> functions are type-safe and throw an exception if an
+argument type doesn&#8217;t match its format specification.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;printf&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fprintf&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;fprintf&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">doxygenfunction: Cannot find function &#8220;sprintf&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /Users/viz/work/fmt/support/build/doxyxml</p>
+</div>
+</div>
+</div>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2012-present, Victor Zverovich.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1+.
+    </div>
+
+<script src="_static/bootstrap.min.js"></script>
+
+  </body>
+</html>
