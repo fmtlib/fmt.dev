@@ -467,8 +467,8 @@ the iterator past the end of the output range.</p>
 <dt id="_CPPv2N3fmt11format_to_nE8OutputItNSt6size_tE11string_viewDpRK4Args">
 <span id="fmt::format_to_n__OutputIt.std::s.string_view.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a71a0e35bea3ae2aeb13cbab9f1907058"></span><a class="reference internal" href="#_CPPv2N3fmt18format_to_n_resultE" title="fmt::format_to_n_result">format_to_n_result</a>&lt;OutputIt&gt; <code class="descclassname">fmt::</code><code class="descname">format_to_n</code><span class="sig-paren">(</span>OutputIt <em>out</em>, std::size_t <em>n</em>, <a class="reference internal" href="#_CPPv2N3fmt11string_viewE" title="fmt::string_view">string_view</a> <em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt11format_to_nE8OutputItNSt6size_tE11string_viewDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Formats arguments, writes up to <code class="docutils literal"><span class="pre">n</span></code> characters of the result to the output
-iterator <code class="docutils literal"><span class="pre">out</span></code> and returns the total output size and the iterator past the end
-of the output range.</p>
+iterator <code class="docutils literal"><span class="pre">out</span></code> and returns the total output size and the iterator past the
+end of the output range.</p>
  </p>
 </dd></dl>
 
@@ -764,11 +764,10 @@ custom argument formatter class:</p>
 
   <span class="k">using</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">();</span>
 
-  <span class="kt">void</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">spec</span><span class="p">().</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="sc">&#39;x&#39;</span><span class="p">)</span>
-      <span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">));</span> <span class="c1">// convert to unsigned and format</span>
-    <span class="k">else</span>
-      <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">()(</span><span class="n">value</span><span class="p">);</span>
+      <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">));</span> <span class="c1">// convert to unsigned and format</span>
+    <span class="k">return</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">()(</span><span class="n">value</span><span class="p">);</span>
   <span class="p">}</span>
 <span class="p">};</span>
 
