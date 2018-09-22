@@ -39,7 +39,7 @@ arguments in the resulting string.
 .. _format:
 
 .. doxygenfunction:: format(const String&, const Args&...)
-.. doxygenfunction:: vformat(string_view, format_args)
+.. doxygenfunction:: vformat(const String&, basic_format_args<typename buffer_context<Char>::type>)
 
 .. _print:
 
@@ -132,7 +132,7 @@ customize the formatted output.
 
 You can also reuse existing formatters, for example::
 
-  enum color {red, green, blue};
+  enum class color {red, green, blue};
 
   template <>
   struct fmt::formatter<color>: formatter<string_view> {
@@ -141,9 +141,9 @@ You can also reuse existing formatters, for example::
     auto format(color c, FormatContext &ctx) {
       string_view name = "unknown";
       switch (c) {
-      case red:   name = "red"; break;
-      case green: name = "green"; break;
-      case blue:  name = "blue"; break;
+      case color::red:   name = "red"; break;
+      case color::green: name = "green"; break;
+      case color::blue:  name = "blue"; break;
       }
       return formatter<string_view>::format(name, ctx);
     }
@@ -253,11 +253,10 @@ custom argument formatter class::
 
     using arg_formatter::operator();
 
-    void operator()(int value) {
+    auto operator()(int value) {
       if (spec().type() == 'x')
-        (*this)(static_cast<unsigned>(value)); // convert to unsigned and format
-      else
-        arg_formatter::operator()(value);
+        return (*this)(static_cast<unsigned>(value)); // convert to unsigned and format
+      return arg_formatter::operator()(value);
     }
   };
 
