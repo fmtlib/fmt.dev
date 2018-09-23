@@ -662,7 +662,7 @@ href="https://godbolt.org/g/wQyU21">can work with a user-defined type
 <code>T</code></a> if the <code>formatter&lt;T&gt;::parse</code> function is
 <code>constexpr</code>.
 
-<h3><a name="Visitation">Argument visitation API</a></h3>
+<h3><a name="Visitation">Argument visitation</a></h3>
 
 <p>The argument visitation API can be used to implement dynamic format
 specifiers, for example, width and precision passed as additional formatting
@@ -680,43 +680,48 @@ auto s = format("{0:{1}.{2}f}", 12.345678, width, precision);
 <code>struct Answer {};
 
 template &lt;&gt;
-struct formatter&lt;Answer&gt; {
-  int width_arg_index = 0;
+  struct formatter&lt;Answer&gt; {
+    int width_arg_index = 0;
 
-  // Parses dynamic width in the format "{&lt;digit&gt;}".
-  auto parse(parse_context&amp; parse_ctx) {
-    auto iter = parse_ctx.begin();
-    auto get_char = [&amp;]() { return iter != parse_ctx.end() ? *iter : 0; };
+    // Parses dynamic width in the format "{&lt;digit&gt;}".
+    auto parse(parse_context&amp; parse_ctx) {
+      auto iter = parse_ctx.begin();
+      auto get_char = [&amp;]() { return iter != parse_ctx.end() ? *iter : 0; };
 
-    if (get_char() != '{')
-      return iter;
-    ++iter;
-    char c = get_char();
-    if (!std::isdigit(c) || (++iter, get_char()) != '}')
-      throw format_error("invalid format");
-    width_arg_index = c - '0';
-    return ++iter;
-  }
+      if (get_char() != '{')
+        return iter;
+      ++iter;
+      char c = get_char();
+      if (!std::isdigit(c) || (++iter, get_char()) != '}')
+        throw format_error("invalid format");
+      width_arg_index = c - '0';
+      return ++iter;
+    }
 
-  auto format(Answer, format_context&amp; format_ctx) {
-    format_arg arg = format_ctx.args().get(width_arg_index);
-    int width = visit([](auto value) -&gt; int {
-      if constexpr (std::is_integral_v<decltype(value)>)
-        return value;
-      else
-        throw format_error("width is not integral");
-      }, arg);
-    return format_to(format_ctx.out(), "{:{}}", 42, width);
-  }
-};</code></pre>
+    auto format(Answer, format_context&amp; format_ctx) {
+      auto arg = format_ctx.args().get(width_arg_index);
+      int width = visit([](auto value) -&gt; int {
+        if constexpr (!std::is_integral_v&lt;decltype(value)&gt;)
+          throw format_error("width is not integral");
+        else if (value &lt; 0 || value &gt; std::numeric_limits&lt;int&gt;::max())
+          throw format_error("invalid width");
+        else
+          return value;
+        }, arg);
+      return format_to(format_ctx.out(), "{:{}}", 42, width);
+    }
+  };
+
+std::string s = format("{0:{1}}", Answer(), 10);
+// s == "        42"</code></pre>
 
 <p>In many cases formatting can be delegated to standard formatters which makes
 manual handling of dynamic specifiers unneccessary, but the latter is still
 important for more complex cases.</p>
 
 <p>This API can also be used to implement a custom formatting engine, such as
-the one compatible with the <code>printf</code> syntax, to simplify migration
-from legacy formatting methods.</p>
+the one compatible with the <code>printf</code> syntax, to provide some of the
+benefits of the current proposal to the legacy code.</p>
 
 <h3><a name="Impact">Impact on existing code</a></h3>
 
