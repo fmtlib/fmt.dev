@@ -152,6 +152,7 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <ul>
 <li>Add section <a href="#Visitation">Argument visitation</a> with an example of
 how to use the visitation API to implement dynamic format specifiers.
+<li>Replace Postconditions with Ensures.
 </ul>
 </p>
 
@@ -741,7 +742,7 @@ The proposed formatting API is defined in the new header
 
 <h2><a name="Wording">Proposed wording</a></h2>
 
-Add a new section in 23 [utilities].
+Add a new section in 19 [utilities].
 
 <h3>Formatting utilities [format]</h3>
 
@@ -1256,14 +1257,14 @@ exceptions to report errors from the formatting library.
 <dd>
   <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
   </p>
-  <p><i>Postconditions</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
+  <p><i>Ensures</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
   </p>
 </dd>
 <dt><code>format_error(const char* what_arg);</code></dt>
 <dd>
   <p><i>Effects</i>: Constructs an object of class <code>format_error</code>.
   </p>
-  <p><i>Postconditions</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
+  <p><i>Ensures</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
 </dd>
 </dl>
 
@@ -1325,7 +1326,7 @@ between floating-point types.
 <p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
 doesn't refer to an argument.
 </p>
-<p><i>Postconditions</i>: <code>!(*this)</code>.</p>
+<p><i>Ensures</i>: <code>!(*this)</code>.</p>
 </dd>
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
@@ -1438,7 +1439,7 @@ arguments.
 <dd>
 <p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
 </p>
-<p><i>Postconditions</i>: <code>!get(0)</code>.</p>
+<p><i>Ensures</i>: <code>!get(0)</code>.</p>
 </dd>
 </dl>
 
@@ -1673,7 +1674,7 @@ template parameter <code>charT</code>.</p>
 <dd>
 <p><i>Effects</i>: Constructs a parsing context from the format string
 <code>fmt</code>.</p>
-<p><i>Postconditions</i>: <code>begin() == fmt.begin()</code>,
+<p><i>Ensures</i>: <code>begin() == fmt.begin()</code>,
 <code>end() == fmt.end()</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
@@ -1692,7 +1693,7 @@ character in the format string range being parsed.</p>
 <p><i>Effects</i>: Advances the beginning of the parsed format string range to
 <code>it</code>.</p>
 <p><i>Requires</i>: <code>end()</code> shall be reachable from <code>it</code>.
-<p><i>Postconditions</i>: <code>begin() == it</code>.</p>
+<p><i>Ensures</i>: <code>begin() == it</code>.</p>
 </dd>
 <dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
@@ -1755,7 +1756,7 @@ range.</p>
 <dd>
 <p><i>Effects</i>: Advances the current position in the output range to
 <code>it</code>.</p>
-<p><i>Postconditions</i>: <code>out() == it</code>.</p>
+<p><i>Ensures</i>: <code>out() == it</code>.</p>
 </dd>
 <dt><code>args_type args() const;</code></dt>
 <dd>
