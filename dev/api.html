@@ -437,6 +437,35 @@ customize the formatted output.</p>
 <span class="p">};</span>
 </pre></div>
 </div>
+<p>You can also write a formatter for a hierarchy of classes:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;type_traits&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;fmt/format.h&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">A</span> <span class="p">{</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">A</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="s">&quot;A&quot;</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nl">B</span> <span class="p">:</span> <span class="n">A</span> <span class="p">{</span>
+  <span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">name</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="s">&quot;B&quot;</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_if_t</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">A</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span> <span class="kt">char</span><span class="o">&gt;&gt;</span> <span class="o">:</span>
+    <span class="n">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">FormatCtx</span><span class="o">&gt;</span>
+  <span class="k">auto</span> <span class="n">format</span><span class="p">(</span><span class="k">const</span> <span class="n">A</span><span class="o">&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="n">FormatCtx</span><span class="o">&amp;</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">ctx</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">B</span> <span class="n">b</span><span class="p">;</span>
+  <span class="n">A</span><span class="o">&amp;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">b</span><span class="p">;</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">a</span><span class="p">);</span> <span class="c1">// prints &quot;B&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>This section shows how to define a custom format function for a user-defined
 type. The next section describes how to get <code class="docutils literal"><span class="pre">fmt</span></code> to use a conventional stream
 output <code class="docutils literal"><span class="pre">operator&lt;&lt;</span></code> when one is defined for a user-defined type.</p>
