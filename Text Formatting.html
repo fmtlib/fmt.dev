@@ -710,7 +710,7 @@ template &lt;&gt;
 
     auto format(Answer, format_context&amp; format_ctx) {
       auto arg = format_ctx.args().get(width_arg_index);
-      int width = visit([](auto value) -&gt; int {
+      int width = visit_format_arg([](auto value) -&gt; int {
         if constexpr (!std::is_integral_v&lt;decltype(value)&gt;)
           throw format_error("width is not integral");
         else if (value &lt; 0 || value &gt; std::numeric_limits&lt;int&gt;::max())
@@ -775,7 +775,7 @@ Add a new section in 19 [utilities].
   template &lt;class Context&gt; class basic_format_arg;
 
   template &lt;class Visitor, class Context&gt;
-    <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
+    <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
   template &lt;class Context, class... Args&gt; using format_arg_store = <i>unspecified</i>;
 
@@ -1381,7 +1381,7 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl>
 <dt><pre><code>template &lt;class Visitor, class Context&gt;
-  <i>see below</i> visit(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
+  <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
 <dd>
 <p><i>Requires:</i>
 The expression in the Effects section shall be a valid expression of the same
@@ -1399,7 +1399,7 @@ types.
 <!-- Formatting example: http://eel.is/c%2B%2Bdraft/time.duration.cons
      Compilation test: https://godbolt.org/g/ueEgXX -->
 <p>[ <i>Example:</i><pre>
-<code>  auto uint_value = visit([](auto value) -&gt; unsigned {
+<code>  auto uint_value = visit_format_arg([](auto value) -&gt; unsigned {
     if constexpr (std::is_unsigned_v&lt;decltype(value)&gt;)
       return value;
     return 0;
