@@ -135,7 +135,7 @@ Document number: P0645R3<br>
 Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2018-09-23
+2018-10-06
 </address>
 <hr>
 
@@ -422,11 +422,11 @@ string date = format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
 </p>
 
 <pre class="example">
-<code>template <>
+<code>template&lt;&gt;
   struct formatter&lt;tm&gt; {
     constexpr parse_context::iterator parse(parse_context&amp; ctx);
 
-    template &lt;class FormatContext&gt;
+    template&lt;class FormatContext&gt;
       typename FormatContext::iterator format(const tm&amp; tm, FormatContext&amp; ctx);
   };
 </code></pre>
@@ -583,7 +583,7 @@ work. For example, the <code>format</code> variadic function calls
 
 <pre><code>string vformat(string_view fmt, format_args args);
 
-template &lt;class... Args&gt;
+template&lt;class... Args&gt;
   inline string format(string_view fmt, const Args&amp;... args) {
     return vformat(fmt, make_format_args(args...));
   }</code></pre>
@@ -611,7 +611,7 @@ user code. For example, consider a simple logging function that writes a
 formatted error message to <code>clog</code>:
 <p>
 
-<pre><code>template &lt;class... Args&gt;
+<pre><code>template&lt;class... Args&gt;
   void log_error(int code, string_view fmt, const Args&amp;... args) {
     clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; format(fmt, args...);
   }</code></pre>
@@ -627,7 +627,7 @@ can be trivially inlined:
   clog &lt;&lt; "Error " &lt;&lt; code &lt;&lt; ": " &lt;&lt; vformat(fmt, args);
 }
 
-template &lt;class... Args&gt;
+template&lt;class... Args&gt;
   inline void log_error(int code, string_view fmt, const Args&amp;... args) {
     vlog_error(code, fmt, make_format_args(args...));
   }</code></pre>
@@ -647,7 +647,7 @@ features. Ideally we would like to use a function call API similar to the one
 proposed in this paper:</p>
 
 <pre>
-<code>template &lt;class String, class... Args&gt;
+<code>template&lt;class String, class... Args&gt;
   string format(String fmt, const Args&amp;... args);</code></pre>
 
 <p>where <code>String</code> is some type representing a compile-time format
@@ -691,7 +691,7 @@ auto s = format("{0:{1}.{2}f}", 12.345678, width, precision);
 <pre>
 <code>struct Answer {};
 
-template &lt;&gt;
+template&lt;&gt;
   struct formatter&lt;Answer&gt; {
     int width_arg_index = 0;
 
@@ -758,7 +758,7 @@ Add a new section in 19 [utilities].
   class format_error;
 
   // <a href="#format.formatter">[format.formatter]</a>, formatter
-  template &lt;class charT&gt; class basic_parse_context;
+  template&lt;class charT&gt; class basic_parse_context;
   using parse_context = basic_parse_context&lt;char&gt;;
   using wparse_context = basic_parse_context&lt;wchar_t&gt;;
   <!-- Exact string formatting iterator type is unspecified - it can be
@@ -766,77 +766,77 @@ Add a new section in 19 [utilities].
        containers with contiguous storage by type-erasing reallocation.
        Example of unspecified types as template params:
        http://eel.is/c++draft/time.duration.literals -->
-  template &lt;class OutputIterator, class charT&gt; class basic_format_context;
+  template&lt;class OutputIterator, class charT&gt; class basic_format_context;
   using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
   using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
 
-  template &lt;class T, class charT = char&gt; struct formatter;
+  template&lt;class T, class charT = char&gt; struct formatter;
   <!-- Argument access API is provided for use cases such as dynamic width:
        https://godbolt.org/g/Mp93pN -->
   // <a href="#format.arguments">[format.arguments]</a>, arguments
-  template &lt;class Context&gt; class basic_format_arg;
+  template&lt;class Context&gt; class basic_format_arg;
 
-  template &lt;class Visitor, class Context&gt;
+  template&lt;class Visitor, class Context&gt;
     <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
-  template &lt;class Context, class... Args&gt; using format_arg_store = <i>unspecified</i>;
+  template&lt;class Context, class... Args&gt; using format_arg_store = <i>unspecified</i>;
 
-  template &lt;class Context&gt; class basic_format_args;
+  template&lt;class Context&gt; class basic_format_args;
   using format_args = basic_format_args&lt;format_context&gt;;
   using wformat_args = basic_format_args&lt;wformat_context&gt;;
 
-  template &lt;class OutputIterator, class charT&gt;
+  template&lt;class OutputIterator, class charT&gt;
     using format_args_t = basic_format_args&lt;basic_format_context&lt;OutputIterator, charT&gt;&gt;;
 
-  template &lt;class Context, class... Args&gt;
+  template&lt;class Context, class... Args&gt;
     format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
-  template &lt;class... Args&gt;
+  template&lt;class... Args&gt;
     format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);
-  template &lt;class... Args&gt;
+  template&lt;class... Args&gt;
     format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);
 
   // <a href="#format.functions">[format.functions]</a>, formatting functions
-  template &lt;class... Args&gt;
+  template&lt;class... Args&gt;
     string format(string_view fmt, const Args&amp;... args);
-  template &lt;class... Args&gt;
+  template&lt;class... Args&gt;
     wstring format(wstring_view fmt, const Args&amp;... args);
 
   string vformat(string_view fmt, format_args args);
   wstring vformat(wstring_view fmt, wformat_args args);
 
-  template &lt;class OutputIterator, class... Args&gt;
+  template&lt;class OutputIterator, class... Args&gt;
     OutputIterator format_to(OutputIterator out, string_view fmt,
                              const Args&amp;... args);
-  template &lt;class OutputIterator, class... Args&gt;
+  template&lt;class OutputIterator, class... Args&gt;
     OutputIterator format_to(OutputIterator out, wstring_view fmt,
                              const Args&amp;... args);
 
-  template &lt;class OutputIterator&gt;
+  template&lt;class OutputIterator&gt;
     OutputIterator vformat_to(OutputIterator out, string_view fmt,
                               format_args_t&lt;OutputIterator, char&gt; args);
-  template &lt;class OutputIterator&gt;
+  template&lt;class OutputIterator&gt;
     OutputIterator vformat_to(OutputIterator out, wstring_view fmt,
                               format_args_t&lt;OutputIterator, wchar_t&gt; args);
 
-  template &lt;class OutputIterator, class Size&gt;
+  template&lt;class OutputIterator, class Size&gt;
     struct format_to_n_result {
       OutputIterator out;
       Size size;
     };
   <!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch
        vformat_to_n is not provided but it can be with an iterator adapter. -->
-  template &lt;class OutputIterator, class Size, class... Args&gt;
+  template&lt;class OutputIterator, class Size, class... Args&gt;
     format_to_n_result&lt;OutputIterator, Size&gt;
       format_to_n(OutputIterator out, Size n, string_view fmt,
                   const Args&amp;... args);
-  template &lt;class OutputIterator, class Size, class... Args&gt;
+  template&lt;class OutputIterator, class Size, class... Args&gt;
     format_to_n_result&lt;OutputIterator, Size&gt;
       format_to_n(OutputIterator out, Size n, wstring_view fmt,
                   const Args&amp;... args);
 
-  template &lt;class... Args&gt;
+  template&lt;class... Args&gt;
     size_t formatted_size(string_view fmt, const Args&amp;... args);
-  template &lt;class... Args&gt;
+  template&lt;class... Args&gt;
     size_t formatted_size(wstring_view fmt, const Args&amp;... args);
 }</code>
 </pre>
@@ -1277,7 +1277,7 @@ exceptions to report errors from the formatting library.
 
 <pre>
 <code>namespace std {
-  template &lt;class Context&gt;
+  template&lt;class Context&gt;
   class basic_format_arg {
   public:
     class handle;
@@ -1350,7 +1350,7 @@ an argument of an integral type.</p>
 <!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
 <pre>
 <code>namespace std {
-  template &lt;class Context&gt;
+  template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
   public:
     void format(Context&amp; ctx) const;
@@ -1382,7 +1382,7 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl>
-<dt><pre><code>template &lt;class Visitor, class Context&gt;
+<dt><pre><code>template&lt;class Visitor, class Context&gt;
   <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
 <dd>
 <p><i>Requires:</i>
@@ -1414,14 +1414,14 @@ types.
 
 <pre>
 <code>namespace std {
-  template &lt;class Context&gt;
+  template&lt;class Context&gt;
   class basic_format_args {
   public:
     using size_type = size_t;
 
     basic_format_args() noexcept;
 
-    template &lt;class... Args&gt;
+    template&lt;class... Args&gt;
       basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
 
     basic_format_arg&lt;Context&gt; get(size_type i) const;
@@ -1446,7 +1446,7 @@ arguments.
 </dl>
 
 <dl>
-<dt><pre><code>template &lt;class... Args&gt;
+<dt><pre><code>template&lt;class... Args&gt;
   basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
 <dd>
 <p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
@@ -1468,9 +1468,9 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class Context, class... Args&gt;
+<pre><code>template&lt;class Context, class... Args&gt;
   format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
-template &lt;class... Args&gt;
+template&lt;class... Args&gt;
   format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1486,7 +1486,7 @@ that refers to formatting arguments <code>args</code>.
 
 <dl>
 <dt>
-<pre><code>template &lt;class... Args&gt;
+<pre><code>template&lt;class... Args&gt;
   format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1502,7 +1502,7 @@ that refers to formatting arguments <code>args</code>.
 
 <dl>
 <dt>
-<pre><code>template &lt;class... Args&gt;
+<pre><code>template&lt;class... Args&gt;
   string format(string_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1512,7 +1512,7 @@ that refers to formatting arguments <code>args</code>.
 
 <dl>
 <dt>
-<pre><code>template &lt;class... Args&gt;
+<pre><code>template&lt;class... Args&gt;
   wstring format(wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1541,7 +1541,7 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class OutputIterator, class... Args&gt;
+<pre><code>template&lt;class OutputIterator, class... Args&gt;
   OutputIterator format_to(OutputIterator out, string_view fmt,
                            const Args&amp;... args);</code></pre>
 </dt>
@@ -1552,7 +1552,7 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class OutputIterator, class... Args&gt;
+<pre><code>template&lt;class OutputIterator, class... Args&gt;
   OutputIterator format_to(OutputIterator out, wstring_view fmt,
                            const Args&amp;... args);</code></pre>
 </dt>
@@ -1563,10 +1563,10 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class OutputIterator, class... Args&gt;
+<pre><code>template&lt;class OutputIterator, class... Args&gt;
   OutputIterator vformat_to(OutputIterator out, string_view fmt,
                             format_args_t&lt;OutputIterator, char&gt; args);
-template &lt;class OutputIterator, class... Args&gt;
+template&lt;class OutputIterator, class... Args&gt;
   OutputIterator vformat_to(OutputIterator out, wstring_view fmt,
                             format_args_t&lt;OutputIterator, wchar_t&gt; args);</code></pre>
 </dt>
@@ -1587,11 +1587,11 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class OutputIterator, class Size, class... Args&gt;
+<pre><code>template&lt;class OutputIterator, class Size, class... Args&gt;
   format_to_n_result&lt;OutputIterator, Size&gt;
     format_to_n(OutputIterator out, Size n, string_view fmt,
                 const Args&amp;... args);
-template &lt;class OutputIterator, class Size, class... Args&gt;
+template&lt;class OutputIterator, class Size, class... Args&gt;
   format_to_n_result&lt;OutputIterator, Size&gt;
     format_to_n(OutputIterator out, Size n, wstring_view fmt,
                 const Args&amp;... args);</code></pre>
@@ -1613,9 +1613,9 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template &lt;class... Args&gt;
+<pre><code>template&lt;class... Args&gt;
   size_t formatted_size(string_view fmt, const Args&amp;... args);
-template &lt;class... Args&gt;
+template&lt;class... Args&gt;
   size_t formatted_size(wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
@@ -1638,7 +1638,7 @@ valid format string.</p>
 <!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
 <code>namespace std {
-  template &lt;class charT&gt;
+  template&lt;class charT&gt;
   class basic_parse_context {
   public:
     using char_type = charT;
@@ -1719,14 +1719,14 @@ argument indexing.</p>
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
 <code>namespace std {
-  template &lt;class OutputIterator, class charT&gt;
+  template&lt;class OutputIterator, class charT&gt;
   class basic_format_context {
   public:
     using iterator = OutputIterator;
     using char_type = charT;
     using args_type = basic_format_args&lt;basic_format_context&gt;;
 
-    template &lt;class T&gt;
+    template&lt;class T&gt;
       using formatter_type = formatter&lt;T&gt;;
 
     basic_parse_context&lt;charT&gt;&amp; parse_context();
@@ -2049,7 +2049,7 @@ Google Benchmark library [19] to measure timings:
 
   // Returns a pair with the smallest and the largest value of integral type T
   // with the given number of digits.
-  template &lt;typename T&gt;
+  template&lt;typename T&gt;
   std::pair&lt;T, T&gt; range(int num_digits) {
     T first = std::pow(T(10), num_digits - 1);
     int max_digits = std::numeric_limits&lt;T&gt;::digits10 + 1;
@@ -2059,7 +2059,7 @@ Google Benchmark library [19] to measure timings:
   }
 
   // Generates values of integral type T with random number of digits.
-  template &lt;typename T&gt;
+  template&lt;typename T&gt;
   std::vector&lt;T&gt; generate_random_data(int numbers_per_digit) {
     int max_digits = std::numeric_limits&lt;T&gt;::digits10 + 1;
     std::vector&lt;T&gt; data;
@@ -2398,7 +2398,7 @@ the <code>sprintf</code> API:
 
 <pre><code>int vraw_format(char* buffer, const char* format, format_args args);
 
-template &lt;typename... Args&gt;
+template&lt;typename... Args&gt;
 inline int raw_format(char* buffer, const char* format, const Args&amp;... args) {
   return vraw_format(buffer, format, make_format_args(args...));
 }
