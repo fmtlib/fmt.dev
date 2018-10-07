@@ -166,7 +166,7 @@ arguments in the resulting string.</p>
 
 <dl class="function">
 <dt>
-<em class="property">template </em>&lt;<em class="property">typename</em> S, <em class="property">typename</em> Char = char_t&lt;  S  &gt;&gt;</dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> S, <em class="property">typename</em> Char = char_t&lt; S &gt;&gt;</dt>
 <dt id="_CPPv2N3fmt7vformatERK1S17basic_format_argsIN14buffer_contextI4CharE4typeEE">
 <span id="fmt::vformat__SCR.basic_format_args:buffer_context:Char:::type:"></span><span class="target" id="formatnamespacefmt_1a5f9cd82547a03c0deaae6e3b0ec7c84a"></span>std::basic_string&lt;Char&gt; <code class="descclassname">fmt::</code><code class="descname">vformat</code><span class="sig-paren">(</span><em class="property">const</em> S &amp;<em>format_str</em>, <a class="reference internal" href="#_CPPv2N3fmt17basic_format_argsE" title="fmt::basic_format_args">basic_format_args</a>&lt;<em class="property">typename</em> buffer_context&lt;Char&gt;::type&gt; <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt7vformatERK1S17basic_format_argsIN14buffer_contextI4CharE4typeEE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -175,7 +175,7 @@ arguments in the resulting string.</p>
 <dt>
 <em class="property">template </em>&lt;<em class="property">typename</em> S, typename... <em>Args</em>&gt;</dt>
 <dt id="_CPPv2N3fmt5printERK1SDpRK4Args">
-<span id="fmt::print__SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a2c9b1b89c959fb60c702bc0e0bb425c2"></span>std::enable_if&lt;internal::is_format_string&lt;S&gt;::value&gt;::type <code class="descclassname">fmt::</code><code class="descname">print</code><span class="sig-paren">(</span><em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt5printERK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<span id="fmt::print__SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a8efbb79980e9992eb124bf45840bf9cf"></span>enable_if_string_t&lt;S, void&gt; <code class="descclassname">fmt::</code><code class="descname">print</code><span class="sig-paren">(</span><em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt5printERK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Prints formatted data to <code class="docutils literal"><span class="pre">stdout</span></code>.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {0:.2f} seconds&quot;</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">);</span>
@@ -193,7 +193,7 @@ arguments in the resulting string.</p>
 <dt>
 <em class="property">template </em>&lt;<em class="property">typename</em> S, typename... <em>Args</em>&gt;</dt>
 <dt id="_CPPv2N3fmt5printEPNSt4FILEERK1SDpRK4Args">
-<span id="fmt::print__std::FILEP.SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a65b8969eb14fceb0ab51e1abfb60e00d"></span>std::enable_if&lt;internal::is_format_string&lt;S&gt;::value&gt;::type <code class="descclassname">fmt::</code><code class="descname">print</code><span class="sig-paren">(</span>std::FILE *<em>f</em>, <em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt5printEPNSt4FILEERK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<span id="fmt::print__std::FILEP.SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1ae58a0a6281290cff5fc77e9ee002fca7"></span>enable_if_string_t&lt;S, void&gt; <code class="descclassname">fmt::</code><code class="descname">print</code><span class="sig-paren">(</span>std::FILE *<em>f</em>, <em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt5printEPNSt4FILEERK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Prints formatted data to the file <em>f</em>. For wide format strings,
 <em>f</em> should be in wide-oriented mode set via <code class="docutils literal"><span class="pre">fwide(f,</span> <span class="pre">1)</span></code> or
 <code class="docutils literal"><span class="pre">_setmode(_fileno(f),</span> <span class="pre">_O_U8TEXT)</span></code> on Windows.</p>
@@ -474,9 +474,9 @@ output <code class="docutils literal"><span class="pre">operator&lt;&lt;</span><
 <h3>Output iterator support<a class="headerlink" href="#output-iterator-support" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt>
-<em class="property">template </em>&lt;<em class="property">typename</em> OutputIt, <em class="property">typename</em> String, typename... <em>Args</em>&gt;</dt>
-<dt id="_CPPv2N3fmt9format_toE8OutputItRK6StringDpRK4Args">
-<span id="fmt::format_to__OutputIt.StringCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1ae2169146b797e660927aad0f4b4d163d"></span>std::enable_if&lt;internal::is_format_string&lt;String&gt;::value, OutputIt&gt;::type <code class="descclassname">fmt::</code><code class="descname">format_to</code><span class="sig-paren">(</span>OutputIt <em>out</em>, <em class="property">const</em> String &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt9format_toE8OutputItRK6StringDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> OutputIt, <em class="property">typename</em> S, typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt9format_toE8OutputItRK1SDpRK4Args">
+<span id="fmt::format_to__OutputIt.SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a4121d493a38b13b30175982218f48128"></span>enable_if_string_t&lt;S, OutputIt&gt; <code class="descclassname">fmt::</code><code class="descname">format_to</code><span class="sig-paren">(</span>OutputIt <em>out</em>, <em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt9format_toE8OutputItRK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Formats arguments, writes the result to the output iterator <code class="docutils literal"><span class="pre">out</span></code> and returns
 the iterator past the end of the output range.</p>
 <p><strong>Example</strong>:</p>
@@ -489,9 +489,9 @@ the iterator past the end of the output range.</p>
 
 <dl class="function">
 <dt>
-<em class="property">template </em>&lt;<em class="property">typename</em> OutputIt, <em class="property">typename</em> String, typename... <em>Args</em>&gt;</dt>
-<dt id="_CPPv2N3fmt11format_to_nE8OutputItNSt6size_tERK6StringDpRK4Args">
-<span id="fmt::format_to_n__OutputIt.std::s.StringCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1abf2e13d6849e87b7432653700c79c295"></span>std::enable_if&lt;internal::is_format_string&lt;String&gt;::value, <a class="reference internal" href="#_CPPv2N3fmt18format_to_n_resultE" title="fmt::format_to_n_result">format_to_n_result</a>&lt;OutputIt&gt;&gt;::type <code class="descclassname">fmt::</code><code class="descname">format_to_n</code><span class="sig-paren">(</span>OutputIt <em>out</em>, std::size_t <em>n</em>, <em class="property">const</em> String &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt11format_to_nE8OutputItNSt6size_tERK6StringDpRK4Args" title="Permalink to this definition">¶</a></dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> OutputIt, <em class="property">typename</em> S, typename... <em>Args</em>&gt;</dt>
+<dt id="_CPPv2N3fmt11format_to_nE8OutputItNSt6size_tERK1SDpRK4Args">
+<span id="fmt::format_to_n__OutputIt.std::s.SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1ac0a10f0e7877e562da55d598b545becc"></span>enable_if_string_t&lt;S, <a class="reference internal" href="#_CPPv2N3fmt18format_to_n_resultE" title="fmt::format_to_n_result">format_to_n_result</a>&lt;OutputIt&gt;&gt; <code class="descclassname">fmt::</code><code class="descname">format_to_n</code><span class="sig-paren">(</span>OutputIt <em>out</em>, std::size_t <em>n</em>, <em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt11format_to_nE8OutputItNSt6size_tERK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Formats arguments, writes up to <code class="docutils literal"><span class="pre">n</span></code> characters of the result to the output
 iterator <code class="docutils literal"><span class="pre">out</span></code> and returns the total output size and the iterator past the
 end of the output range.</p>
@@ -551,6 +551,12 @@ end of the output range.</p>
 </div>
 <div class="section" id="utilities">
 <h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
+<dl class="member">
+<dt>
+<span class="target" id="formatnamespacefmt_1a10568a314af414415d50fd429a21ee12"></span><em class="property">using </em><code class="descname">fmt::char_t = typedef typename internal::format_string_traits&lt;S&gt;::char_type</code></dt>
+<dd><p>String&#8217;s character type. </p>
+</dd></dl>
+
 <dl class="function">
 <dt>
 <em class="property">template </em>&lt;typename... <em>Args</em>&gt;</dt>
@@ -883,9 +889,9 @@ user-defined types that have overloaded <code class="docutils literal"><span cla
 Potential matches:
 </p>
 <div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">S</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">enable_if</span><span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">is_format_string</span><span class="o">&lt;</span><span class="n">S</span><span class="o">&gt;::</span><span class="n">value</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+  <span class="n">enable_if_string_t</span><span class="o">&lt;</span><span class="n">S</span><span class="p">,</span> <span class="kt">void</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
 <span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">S</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">enable_if</span><span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">is_format_string</span><span class="o">&lt;</span><span class="n">S</span><span class="o">&gt;::</span><span class="n">value</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+  <span class="n">enable_if_string_t</span><span class="o">&lt;</span><span class="n">S</span><span class="p">,</span> <span class="kt">void</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">FILE</span> <span class="o">*</span><span class="p">,</span> <span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
 <span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">S</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
   <span class="n">std</span><span class="o">::</span><span class="n">enable_if</span><span class="o">&lt;</span><span class="n">internal</span><span class="o">::</span><span class="n">is_format_string</span><span class="o">&lt;</span><span class="n">S</span><span class="o">&gt;::</span><span class="n">value</span><span class="o">&gt;::</span><span class="n">type</span> <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">basic_ostream</span><span class="o">&lt;</span><span class="n">char_t</span><span class="o">&lt;</span><span class="n">S</span><span class="o">&gt;&gt;&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
 <span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">String</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
