@@ -135,7 +135,7 @@ Document number: P0645R3<br>
 Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2018-10-06
+2018-10-07
 </address>
 <hr>
 
@@ -154,6 +154,9 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 how to use the visitation API to implement dynamic format specifiers.
 <li>Rename <code>visit</code> to <code>visit_format_arg</code> to distinguish
     from <code>variant</code>'s <code>visit</code>.
+<li>Merge [format.syntax] into [format.functions].
+<li>Remove the restriction that <code>'\0'</code> cannot be used as a fill
+    character.
 <li>Replace Postconditions with Ensures.
 </ul>
 </p>
@@ -1244,7 +1247,7 @@ The <code>fmt</code> string consists of zero or more <em>replacement
 fields</em>, <em>escape sequences</em>, and ordinary multibyte characters. All
 ordinary multibyte characters are copied unchanged to the output. An escape
 sequence is one of <code>{{</code> or <code>}}</code>; it is replaced with
-<code>{</code> or <code>}</code> respectively in the output. The syntax for
+<code>{</code> or <code>}</code> respectively in the output. The syntax of
 replacement fields is as follows:
 
 <!-- The notation is the same as in http://eel.is/c++draft/facet.numpunct -->
@@ -1283,19 +1286,13 @@ The <code>format-spec</code> field contains <em>format specifications</em> that
 define how the value should be presented, including such details as field width,
 alignment, padding, and decimal precision. Each type can define its own
 <em>formatting mini-language</em> or interpretation of the
-<code>format-spec</code> field.
-</p>
-
-<!-- TODO: cleanup the rest of this section -->
-
-<p>
-Built-in types support a common formatting mini-language with the following
-syntax:
+<code>format-spec</code> field. The syntax of format specifications is as
+follows:
 
 <pre class="codeblock">
 <code>format-spec     ::= std-format-spec | custom-format-spec
 std-format-spec ::= [[fill] align] [sign] ['#'] ['0'] [width] ['.' precision] [type]
-fill            ::= &lt;a character other than '{', '}', or '\0'&gt;
+fill            ::= &lt;a character other than '{' or '}'&gt;
 align           ::= '&lt;' | '&gt;' | '=' | '^'
 sign            ::= '+' | '-' | ' '
 width           ::= integer | '{' arg-id '}'
@@ -1306,8 +1303,10 @@ type            ::= 'a' | 'A' | 'b' | 'B' | 'c' | 'd' | 'e' | 'E' | 'f' | 'F' |
 </p>
 
 <p>
-Built-in types implement the following options for format specifications,
-although some of the formatting options are only supported by arithmetic types.
+where <code>std-format-spec</code> defines a common formatting mini-language
+supported by built-in types and strings, while <code>custom-format-spec</code>
+is a placeholder for user-defined mini-languages. Some of the formatting options
+are only supported by arithmetic types.
 </p>
 
 <p>
@@ -1317,6 +1316,7 @@ character following it, which must be one of the alignment options. If the
 second character of <code>format-spec</code> is not a valid alignment option,
 then it is assumed that both the fill character and the alignment option are
 absent.
+</p>
 
 <p>
 The meaning of the various alignment options is as follows:
