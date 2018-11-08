@@ -147,6 +147,20 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <h2><a name="History">Revision History</a></h2>
 
 <h3>Changes since
+<a
+  href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r3.html">R3</a></h2>
+<p>
+<ul>
+<li>Disallow consecutive zeros in <code>arg-id</code>.
+<li>Specify formatting behavior for floating-point types in terms of
+  <code>to_chars</code>.
+<li>Clarify what is the current locale.
+<li>Use the shortest round-trip format as the default floating-point formatting.
+<li>Add missing specializations of <code>formatter</code>.
+</ul>
+</p>
+
+<h3>Changes since
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r2.html">R2</a></h2>
 <p>
 <ul>
@@ -1760,10 +1774,25 @@ Each specialization of <code>formatter</code> is either enabled or disabled, as
 described below. [ <i>Note:</i> Enabled specializations meet the
 <code>Formatter</code> requirements, and disabled specializations do not.
 <i>— end note</i> ] Each header that declares the template <code>formatter</code>
-provides enabled specializations <code>formatter&lt;const char*, char&gt;</code>,
-<code>formatter&lt;const wchar_t*, wchar_t&gt;</code> as well as
-specialiazations of <code>formatter</code> for <code>nullptr_t</code>,
-<code>const void*</code>, and all cv-unqualified arithmetic types. For any type
+provides enabled specializations
+
+<ul>
+<li><code>formatter&lt;char*, char&gt;</code>,
+<li><code>formatter&lt;const char*, char&gt;</code>,
+<li><code>formatter&lt;std::string, char&gt;</code>,
+<li><code>formatter&lt;std::string_view, char&gt;</code>,
+<li><code>formatter&lt;wchar_t*, wchar_t&gt;</code>,
+<li><code>formatter&lt;const wchar_t*, wchar_t&gt;</code>,
+<li><code>formatter&lt;std::wstring, wchar_t&gt;</code>,
+<li><code>formatter&lt;std::wstring_view, wchar_t&gt;</code>,
+<li>specialiazations of <code>formatter</code> for <code>nullptr_t</code>,
+<code>void*</code>, <code>const void*</code>, and all cv-unqualified arithmetic
+types for both <code>char</code> and <code>wchar_t</code>.
+</ul>
+</p>
+
+<p>
+For any type
 <code>T</code> for which neither the library nor the user provides an explicit or
 partial specialization of the class template <code>formatter</code>,
 <code>formatter&lt;T&gt;</code> is disabled.
