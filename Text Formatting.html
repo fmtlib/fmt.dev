@@ -1508,7 +1508,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tr>
 <tr>
 <td><code>'n'</code></td>
-<td>Number. This is the same as <code>'d'</code> except that it uses the
+<td>The same as <code>'d'</code> except that it uses the
     current locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
@@ -1525,7 +1525,13 @@ Boolean values are formatted using textual representation, either
 specified.
 </p>
 
-<p>The available presentation types for floating-point values are:</p>
+<p>Formatting of floating-point values is done as if by calling
+<code>to_chars</code> and copying the output through the output iterator of the
+context with additional padding and adjustments as per format specifiers.
+</p>
+
+<p>The available floating-point presentation types and their mapping to
+<code>to_chars</code> are:</p>
 
 <table>
 <thead>
@@ -1534,61 +1540,57 @@ specified.
 <tbody>
 <tr>
 <td><code>'a'</code></td>
-<td>Hexadecimal floating point format. Prints the number in base 16 with prefix
-    <code>"0x"</code> and lower-case letters for digits above 9. Uses
-    <code>'p'</code> to indicate the exponent.</td>
+<td><code>to_chars(first, last, value, chars_format::hex)</code></td>
 </tr>
 <tr>
 <td><code>'A'</code></td>
-<td>Same as <code>'a'</code> except it uses upper-case letters for the prefix,
-    digits above 9 and to indicate the exponent.</td>
+<td>The same as <code>'a'</code>, except that it uses uppercase letters for digits
+  above 9, </code>P</code> to indicate the exponent, <code>INF</code> for
+  infinity, and <code>NAN</code> for NaN.</td>
 </tr>
 <tr>
 <td><code>'e'</code></td>
-<td>Exponent notation. Prints the number in scientific notation using the
-    letter <code>'e'</code> to indicate the exponent.</td>
+<td><code>to_chars(first, last, value, chars_format::scientific)</code></td>
 </tr>
 <tr>
 <td><code>'E'</code></td>
-<td>Exponent notation. Same as <code>'e'</code> except it uses an upper-case
-    <code>'E'</code> as the separator character.</td>
+<td>The same as <code>'e'</code>, except that it uses <code>E</code> to indicate
+  exponent, <code>INF</code> for infinity, and <code>NAN</code> for NaN.</td>
 </tr>
 <tr>
 <td><code>'f'</code></td>
-<td>Fixed point. Displays the number as a fixed-point number.</td>
+<td><code>to_chars(first, last, value, chars_format::fixed)</code></td>
 </tr>
 <tr>
 <td><code>'F'</code></td>
-<td>Fixed point. Same as <code>'f'</code>, but converts <code>nan</code> to
-    <code>NAN</code> and <code>inf</code> to <code>INF</code>.</td>
+<td>The same as <code>'f'</code>, except that it uses <code>INF</code> for infinity,
+  and <code>NAN</code> for NaN.</td>
 </tr>
 <tr>
 <td><code>'g'</code></td>
-<td>General format. For a given precision <code>p >= 1</code>, this rounds the
-    number to <code>p</code> significant digits and then formats the result in
-    either fixed-point format or in scientific notation, depending on its
-    magnitude.
-
-    A precision of <code>0</code> is treated as equivalent to a precision of
-    <code>1</code>.</td>
+<td><code>to_chars(first, last, value, chars_format::general)</code></td>
 </tr>
 <tr>
 <td><code>'G'</code></td>
-<td>General format. Same as <code>'g'</code> except switches to <code>'E'</code>
-    if the number gets too large. The representations of infinity and NaN are
-    uppercased, too.</td>
+<td>The same as <code>'g'</code>, except that it uses <code>E</code> to indicate
+  exponent, <code>INF</code> for infinity, and <code>NAN</code> for NaN.</td>
 </tr>
 <tr>
 <td><code>'n'</code></td>
-<td>Number. This is the same as <code>'g'</code>, except that it uses the
+<td>The same as <code>'g'</code>, except that it uses the
     locale to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
 <td>none</td>
-<td>The same as <code>'g'</code>.</td>
+<td><code>to_chars(first, last, value)</code></td>
 </tr>
 </tbody>
 </table>
+
+<p>
+where <code>[first, last)</code> is a range large enough to hold the output an
+<code>value</code> is the argument value.
+</p>
 
 <p>The available presentation types for pointers are:</p>
 
