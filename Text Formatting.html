@@ -158,6 +158,9 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <li>Use the shortest round-trip format as the default floating-point formatting.
 <li>Add missing specializations of <code>formatter</code>.
 <li>Clarify that the <code>sign</code> option applies to floating-point infinity and NaN.
+<li>Propose adding a new entry <code>&lt;format&gt;</code> to table 18 in section 15.5.1.2 [headers].
+<li>Add section numbers in Proposed wording.
+<li>Add a feature test macro.
 </ul>
 </p>
 
@@ -763,13 +766,60 @@ The proposed formatting API is defined in the new header
 
 <h2><a name="Wording">Proposed wording</a></h2>
 
-Add a new section in 19 [utilities].
+<p>
+Add a new entry <code>&lt;format&gt;</code> to table 18 in section
+<a href="http://eel.is/c++draft/library#headers-2">15.5.1.2
+[headers] paragraph 2</a>.
+</p>
 
-<h3>Formatting utilities [format]</h3>
+<p>Change in table 35 of
+<a href="http://eel.is/c++draft/support.limits.general#3">
+16.3.1 [support.limits.general] paragraph 3</a>:
+<blockquote>
+      <table border="1">
+        <tr>
+          <th align="center">Macro name</th>
+          <th align="center">Value</th>
+          <th align="center">Header(s)</th>
+        </tr>
+        <tr>
+          <td>[&hellip;]</td>
+          <td>[&hellip;]</td>
+          <td>[&hellip;]</td>
+        </tr>
+        <tr>
+          <td>__cpp_lib_filesystem</td>
+          <td>201703L</td>
+          <td>&lt;filesystem&gt;</td>
+        </tr>
+        <tr>
+          <td><ins>__cpp_lib_format</ins></td>
+          <td><ins>201811L</ins></td>
+          <td><ins>&lt;format&gt;</ins></td>
+        </tr>
+        <tr>
+          <td>__cpp_lib_gcd_lcm</td>
+          <td>201606L</td>
+          <td>&lt;numeric&gt;</td>
+        </tr>
+        <tr>
+          <td>[&hellip;]</td>
+          <td>[&hellip;]</td>
+          <td>[&hellip;]</td>
+        </tr>
+      </table>
+</blockquote>
+</p>
+
+<p>
+Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]</a>.
+</p>
+
+<h3>19.20 Formatting utilities [format]</h3>
 
 <!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
      Code check: https://godbolt.org/g/BvhYXx -->
-<h4>Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
+<h4>19.20.1 Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
 <code>namespace std {
@@ -860,7 +910,7 @@ Add a new section in 19 [utilities].
 }</code>
 </pre>
 
-<h4><a name="format.error">Class <code>format_error</code> [format.error]</a></h4>
+<h4><a name="format.error">19.20.2 Class <code>format_error</code> [format.error]</a></h4>
 
 <!-- Wording similar to http://eel.is/c++draft/range.error -->
 <pre>
@@ -894,8 +944,8 @@ exceptions to report errors from the formatting library.
 </dd>
 </dl>
 
-<h4><a name="format.arguments">Arguments [format.arguments]</a></h4>
-<h5>Class template <code>basic_format_arg</code></h5>
+<h4><a name="format.arguments">19.20.3 Arguments [format.arguments]</a></h4>
+<h5>19.20.3.1 Class template <code>basic_format_arg</code></h5>
 <!-- Argument access API is provided for use cases such as dynamic width:
      https://godbolt.org/g/wNhkk7 -->
 
@@ -1002,7 +1052,7 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 </p>
 </dd>
 
-<h5>Argument visitation</h5>
+<h5>19.20.3.2 Argument visitation</h5>
 
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl>
@@ -1035,7 +1085,7 @@ types.
 </dd>
 </dl>
 
-<h5>Class template <code>basic_format_args</code></h5>
+<h5>19.20.3.3 Class template <code>basic_format_args</code></h5>
 
 <pre>
 <code>namespace std {
@@ -1089,7 +1139,7 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 </dd>
 </dl>
 
-<h5>Function template <code>make_format_args</code></h5>
+<h5>19.20.3.4 Function template <code>make_format_args</code></h5>
 
 <dl>
 <dt>
@@ -1107,7 +1157,7 @@ that refers to formatting arguments <code>args</code>.
 </dd>
 </dl>
 
-<h5>Function template <code>make_wformat_args</code></h5>
+<h5>19.20.3.5 Function template <code>make_wformat_args</code></h5>
 
 <dl>
 <dt>
@@ -1123,7 +1173,7 @@ that refers to formatting arguments <code>args</code>.
 </dd>
 </dl>
 
-<h4><a name="format.functions">Formatting functions [format.functions]</a></h4>
+<h4><a name="format.functions">19.20.4 Formatting functions [format.functions]</a></h4>
 
 <dl>
 <dt>
@@ -1607,7 +1657,7 @@ context with additional padding and adjustments as per format specifiers.
 </table>
 
 <p>
-where <code>[first, last)</code> is a range large enough to hold the output an
+where <code>[first, last)</code> is a range large enough to hold the output and
 <code>value</code> is the argument value.
 </p>
 
@@ -1630,8 +1680,8 @@ where <code>[first, last)</code> is a range large enough to hold the output an
 </tbody>
 </table>
 
-<h4><a name="format.formatter">Formatter [format.formatter]</a></h4>
-<h5>Class template <code>basic_parse_context</code></h5>
+<h4><a name="format.formatter">19.20.5 Formatter [format.formatter]</a></h4>
+<h5>19.20.5.1 Class template <code>basic_parse_context</code></h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
@@ -1712,7 +1762,7 @@ argument indexing.</p>
 </dd>
 </dl>
 
-<h5>Class template <code>basic_format_context</code></h5>
+<h5>19.20.5.2 Class template <code>basic_format_context</code></h5>
 
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
@@ -1765,7 +1815,7 @@ access to formatting arguments.</p>
 </dd>
 </dl>
 
-<h5>Class template <code>formatter</code></h5>
+<h5>19.20.5.3 Class template <code>formatter</code></h5>
 
 <!-- Based on http://eel.is/c++draft/unord.hash -->
 <p>
@@ -1825,7 +1875,7 @@ formatted argument type, the <code>DefaultConstructible</code> requirements, and
 the <code>CopyAssignable</code> requirements.
 </p>
 
-<h5>Formatter requirements</h5>
+<h5>19.20.5.4 Formatter requirements</h5>
 
 <!-- Based on http://eel.is/c++draft/hash.requirements -->
 <p>
