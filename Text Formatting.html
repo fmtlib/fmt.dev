@@ -659,6 +659,51 @@ template&lt;class... Args&gt;
 The current design allows users to easily switch between the two approaches.
 </p>
 
+<p>
+For similar reasons formatting functions take format strings as instances of
+<code>basic_string_view</code> instead of being parameterized on a string type.
+This allows implicit conversions from null-terminated character strings and
+<code>basic_string</code> without affecting code size.
+</p>
+
+<h3><a name="Traits">Format strings and <code>char_traits</code></a></h3>
+
+<p>
+Format strings intentionally use the default character traits in the formatting
+functions API because making traits customizable creates potential
+problems/confusion with handling format specifications.
+</p>
+
+<p>
+Consider the following example:
+
+<pre>
+<code>using ci_string_view = std::basic_string_view&lt;char, ci_char_traits&gt;;
+auto s = format(ci_string_view("{:X}"), 0xCAFE);</code></pre>
+
+where <code>ci_char_traits</code> is a character trait with case-insensitive
+comparison.
+</p>
+
+<p>
+Since the format specification grammar is case-sensitive, the behavior of such
+code is no longer intuitive. There are several options:
+
+<ol>
+<li>ill-formed (current proposal),
+<li>well-formed and <code>s == "cafe"</code>,
+<li>well-formed and <code>s == "CAFE"</code>.
+</ol>
+</p>
+
+<p>Option 2 is a potential pessimization because comparisons will have to go
+through traits while option 3 effectively ignores traits.</p>
+
+<p>Existing standard functions that take format strings (<code>printf</code>,
+<code>put_time</code>, <code>strftime</code>) do not allow passing character
+traits.
+</p>
+
 <h3><a name="CompileTimeFormat">Compile-time processing of format strings</a>
 </h3>
 
