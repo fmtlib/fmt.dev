@@ -1549,7 +1549,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 <tbody>
 <tr>
 <td><code>'s'</code></td>
-<td>String format. This is the default type for strings and may be omitted.</td>
+<td>Copies the string to the output.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1567,8 +1567,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 <tbody>
 <tr>
 <td><code>'c'</code></td>
-<td>Character format. This is the default type for characters and may be
-    omitted.</td>
+<td>Copies the character to the output.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1577,7 +1576,14 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tbody>
 </table>
 
-<p>The available integer presentation types are:</p>
+<p>
+Formatting of objects of arithmetic types is done as if by calling
+<code>to_chars</code> and copying the output through the output iterator of the
+context with additional padding and adjustments as per format specifiers.
+</p>
+
+<p>The available integer presentation types and their mapping to
+<code>to_chars</code> are:</p>
 
 <table>
 <thead>
@@ -1586,40 +1592,37 @@ Finally, the <code>type</code> determines how the data should be presented.
 <tbody>
 <tr>
 <td><code>'b'</code></td>
-<td>Binary format. Outputs the number in base 2. Using the <code>'#'</code>
-    option with this type adds the prefix <code>"0b"</code> to the output
-    value.</td>
+<td><code>to_chars(first, last, value, 2)</code>; using the <code>'#'</code>
+    option with this type adds the prefix <code>"0b"</code> to the output.</td>
 </tr>
 <tr>
 <td><code>'B'</code></td>
-<td>Binary format. Outputs the number in base 2. Using the <code>'#'</code>
-    option with this type adds the prefix <code>"0B"</code> to the output
-    value.</td>
+<td>The same as <code>'b'</code>, except that the <code>'#'</code> option adds
+    the prefix <code>"0B"</code> to the output.</td>
 </tr>
 <tr>
 <td><code>'d'</code></td>
-<td>Decimal integer. Outputs the number in base 10.</td>
+<td><code>to_chars(first, last, value)</code></td>
 </tr>
 <tr>
 <td><code>'o'</code></td>
-<td>Octal format. Outputs the number in base 8. Using the '#' option with this
-    type adds the prefix "0" to the output value.</td>
+<td><code>to_chars(first, last, value, 8)</code>; using the <code>'#'</code>
+    option with this type adds the prefix <code>"0"</code> to the output.</td>
 </tr>
 <tr>
 <td><code>'x'</code></td>
-<td>Hex format. Outputs the number in base 16, using lower-case letters for the
-    digits above 9. Using the <code>'#'</code> option with this type adds the
-    prefix <code>"0x"</code> to the output value.</td>
+<td><code>to_chars(first, last, value, 16)</code>; using the <code>'#'</code>
+    option with this type adds the prefix <code>"0x"</code> to the output.</td>
 </tr>
 <tr>
 <td><code>'X'</code></td>
-<td>Hex format. Outputs the number in base 16, using upper-case letters for the
-    digits above 9. Using the <code>'#'</code> option with this type adds the
-    prefix <code>"0X"</code> to the output value.</td>
+<td>The same as <code>'x'</code>, except that it uses uppercase letters for
+    digits above 9 and the <code>'#'</code> option adds the prefix
+    <code>"0X"</code> to the output.</td>
 </tr>
 <tr>
 <td><code>'n'</code></td>
-<td>The same as <code>'d'</code> except that it uses the current global locale
+<td>The same as <code>'d'</code>, except that it uses the current global locale
   to insert the appropriate number separator characters.</td>
 </tr>
 <tr>
@@ -1632,13 +1635,8 @@ Finally, the <code>type</code> determines how the data should be presented.
 <p>
 Integer presentation types can also be used with character and boolean values.
 Boolean values are formatted using textual representation, either
-<code>true</code> or <code>false</code>, if the presentation type is not
+<code>"true"</code> or <code>"false"</code>, if the presentation type is not
 specified.
-</p>
-
-<p>Formatting of floating-point values is done as if by calling
-<code>to_chars</code> and copying the output through the output iterator of the
-context with additional padding and adjustments as per format specifiers.
 </p>
 
 <p>The available floating-point presentation types and their mapping to
