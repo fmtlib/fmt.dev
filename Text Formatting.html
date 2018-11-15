@@ -670,8 +670,8 @@ This allows implicit conversions from null-terminated character strings and
 
 <p>
 Format strings intentionally use the default character traits in the formatting
-functions API because making traits customizable creates potential
-problems/confusion with handling format specifications.
+functions API because making traits customizable creates potential problems with
+handling format specifications.
 </p>
 
 <p>
@@ -1651,17 +1651,19 @@ context with additional padding and adjustments as per format specifiers.
 <tbody>
 <tr>
 <td><code>'a'</code></td>
-<td><code>to_chars(first, last, value, chars_format::hex)</code></td>
+<td><code>to_chars(first, last, value, chars_format::hex, precision)</code>;
+  <code>precision</code> defaults to 6 if not specified</td>
 </tr>
 <tr>
 <td><code>'A'</code></td>
-<td>The same as <code>'a'</code>, except that it uses uppercase letters for digits
-  above 9, </code>P</code> to indicate the exponent, <code>INF</code> for
+<td>The same as <code>'a'</code>, except that it uses uppercase letters for
+  digits above 9, </code>P</code> to indicate the exponent, <code>INF</code> for
   infinity, and <code>NAN</code> for NaN.</td>
 </tr>
 <tr>
 <td><code>'e'</code></td>
-<td><code>to_chars(first, last, value, chars_format::scientific)</code></td>
+<td><code>to_chars(first, last, value, chars_format::scientific, precision)</code>;
+  <code>precision</code> defaults to 6 if not specified</td>
 </tr>
 <tr>
 <td><code>'E'</code></td>
@@ -1670,7 +1672,8 @@ context with additional padding and adjustments as per format specifiers.
 </tr>
 <tr>
 <td><code>'f'</code></td>
-<td><code>to_chars(first, last, value, chars_format::fixed)</code></td>
+<td><code>to_chars(first, last, value, chars_format::fixed, precision)</code>
+  <code>precision</code> defaults to 6 if not specified</td>
 </tr>
 <tr>
 <td><code>'F'</code></td>
@@ -1679,7 +1682,8 @@ context with additional padding and adjustments as per format specifiers.
 </tr>
 <tr>
 <td><code>'g'</code></td>
-<td><code>to_chars(first, last, value, chars_format::general)</code></td>
+<td><code>to_chars(first, last, value, chars_format::general, precision)</code>
+  <code>precision</code> defaults to 6 if not specified</td>
 </tr>
 <tr>
 <td><code>'G'</code></td>
@@ -1693,7 +1697,9 @@ context with additional padding and adjustments as per format specifiers.
 </tr>
 <tr>
 <td>none</td>
-<td><code>to_chars(first, last, value)</code></td>
+<td><code>to_chars(first, last, value, chars_format::general, precision)</code>
+  if <code>precision</code> is specified, <code>to_chars(first, last, value)</code>
+  otherwise</td>
 </tr>
 </tbody>
 </table>
