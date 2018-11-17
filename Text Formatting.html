@@ -152,12 +152,15 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <p>
 <ul>
 <li>Disallow consecutive zeros in <code>arg-id</code>.
-<li>Specify formatting of arithmetic types in terms of <code>to_chars</code>.
+<li>Specify formatting of arithmetic and pointer types in terms of
+    <code>to_chars</code>.
 <li>Clarify what is the current locale.
 <li>Use the shortest round-trip format as the default floating-point formatting.
 <li>Add missing specializations of <code>formatter</code>.
-<li>Clarify that the <code>sign</code> option applies to floating-point infinity and NaN.
-<li>Propose adding a new entry <code>&lt;format&gt;</code> to table 18 in section 15.5.1.2 [headers].
+<li>Clarify that the <code>sign</code> option applies to floating-point infinity
+    and NaN.
+<li>Propose adding a new entry <code>&lt;format&gt;</code> to table 18 in
+    section 15.5.1.2 [headers].
 <li>Add section numbers in Proposed wording.
 <li>Add a feature test macro.
 <li>Remove tautological Ensures clauses.
@@ -1531,7 +1534,7 @@ be displayed after the decimal point for a floating-point value formatted with
 for a floating-point value formatted with <code>'g'</code> or <code>'G'</code>.
 For non-arithmetic types the field indicates the maximum field size - in other
 words, how many characters will be used from the field content. The
-<code>precision</code> is not allowed for integer, character, boolean, and
+<code>precision</code> is not allowed for integer, character, Boolean, and
 pointer values.
 </p>
 
@@ -1576,9 +1579,11 @@ Finally, the <code>type</code> determines how the data should be presented.
 </table>
 
 <p>
-Formatting of objects of arithmetic types is done as if by calling
-<code>to_chars</code> and copying the output through the output iterator of the
-context with additional padding and adjustments as per format specifiers.
+Formatting of objects of arithmetic types and <code>const void*</code> is done
+as if by calling <code>to_chars</code> and copying the output through the output
+iterator of the context with additional padding and adjustments as per format
+specifiers. <code>[first, last)</code> is a range large enough to hold the
+output and <code>value</code> is the formatting argument value.
 </p>
 
 <p>The available integer presentation types and their mapping to
@@ -1630,11 +1635,6 @@ context with additional padding and adjustments as per format specifiers.
 </tr>
 </tbody>
 </table>
-
-<p>
-where <code>[first, last)</code> is a range large enough to hold the output and
-<code>value</code> is the argument value.
-</p>
 
 <p>
 Integer presentation types can also be used with character and boolean values.
@@ -1709,12 +1709,8 @@ specified.
 </tbody>
 </table>
 
-<p>
-where <code>[first, last)</code> is a range large enough to hold the output and
-<code>value</code> is the argument value.
-</p>
-
-<p>The available presentation types for pointers are:</p>
+<p>The available pointer presentation types and their mapping to
+<code>to_chars</code> are:</p>
 
 <table>
 <thead>
@@ -1723,8 +1719,8 @@ where <code>[first, last)</code> is a range large enough to hold the output and
 <tbody>
 <tr>
 <td><code>'p'</code></td>
-<td>Pointer format. This is the default type for pointers and may be
-    omitted.</td>
+<td><code>to_chars(first, last, reinterpret_cast&lt;uintptr_t&gt;(value), 16)</code>
+    with the prefix <code>"0x"</code> added to the output</td>
 </tr>
 <tr>
 <td>none</td>
