@@ -905,10 +905,8 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   template&lt;class OutputIterator, class charT&gt;
     using format_args_t = basic_format_args&lt;basic_format_context&lt;OutputIterator, charT&gt;&gt;;
 
-  template&lt;class Context, class... Args&gt;
+  template&lt;class Context = format_context, class... Args&gt;
     format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
-  template&lt;class... Args&gt;
-    format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);
   template&lt;class... Args&gt;
     format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);
 
@@ -1187,10 +1185,8 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 
 <dl>
 <dt>
-<pre><code>template&lt;class Context, class... Args&gt;
-  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
-template&lt;class... Args&gt;
-  format_arg_store&lt;format_context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
+<pre><code>template&lt;class Context = format_context, class... Args&gt;
+  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -1560,7 +1556,7 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tbody>
 </table>
 
-<p>The available character presentation types are:</p>
+<p>The available <code>charT</code> presentation types are:</p>
 
 <table>
 <thead>
@@ -1577,6 +1573,8 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tr>
 </tbody>
 </table>
+
+<p>where <code>charT</code> is the character type of the format string.</p>
 
 <p>
 Formatting of objects of arithmetic types and <code>const void*</code> is done
@@ -1631,7 +1629,8 @@ output and <code>value</code> is the formatting argument value.
 </tr>
 <tr>
 <td>none</td>
-<td>The same as <code>'d'</code>.</td>
+<td>The same as <code>'d'</code> if formatting argument type is not
+    <code>bool</code> or <code>charT</code>.</td>
 </tr>
 </tbody>
 </table>
