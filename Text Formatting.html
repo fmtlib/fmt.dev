@@ -164,6 +164,7 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <li>Add section numbers in Proposed wording.
 <li>Add a feature test macro.
 <li>Remove tautological Ensures clauses.
+<li>Merge two <code>make_format_args</code> overloads.
 </ul>
 </p>
 
@@ -955,265 +956,7 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
     size_t formatted_size(wstring_view fmt, const Args&amp;... args);
 }</code>
 </pre>
-
-<h4><a name="format.error">19.20.2 Class <code>format_error</code> [format.error]</a></h4>
-
-<!-- Wording similar to http://eel.is/c++draft/range.error -->
-<pre>
-<code>namespace std {
-  class format_error : public runtime_error {
-  public:
-    explicit format_error(const string&amp; what_arg);
-    explicit format_error(const char* what_arg);
-  };
-}</code>
-</pre>
-
-<p>
-The class <code>format_error</code> defines the type of objects thrown as
-exceptions to report errors from the formatting library.
-</p>
-
-<dl>
-<dt><code>format_error(const string&amp; what_arg);</code></dt>
-<dd>
-  <p><i>Ensures</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
-  </p>
-</dd>
-<dt><code>format_error(const char* what_arg);</code></dt>
-<dd>
-  <p><i>Ensures</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
-</dd>
-</dl>
-
-<h4><a name="format.arguments">19.20.3 Arguments [format.arguments]</a></h4>
-<h5>19.20.3.1 Class template <code>basic_format_arg</code></h5>
-<!-- Argument access API is provided for use cases such as dynamic width:
-     https://godbolt.org/g/wNhkk7 -->
-
-<pre>
-<code>namespace std {
-  template&lt;class Context&gt;
-  class basic_format_arg {
-  public:
-    class handle;
-
-    basic_format_arg();
-
-    explicit operator bool() const noexcept;
-
-    bool is_arithmetic() const;
-    bool is_integral() const;
-  };
-}</code>
-</pre>
-
-<!-- Wording is similar to http://www.eel.is/c++draft/string.view -->
-<p>
-The class template <code>basic_format_arg</code> describes an object that can
-refer to a formatting function argument. It is parameterized on a formatting
-context type (see <a href="#format.formatter">[format.formatter]</a>) and
-can hold a value of one of the following types:
-<ul>
-<li><code>bool</code>
-<li><code>charT</code>
-<li>any integral type other than <code>bool</code> and <code>charT</code>
-<li>any floating-point type
-<li><code>const charT*</code>
-<li><code>basic_string_view&lt;charT&gt;</code>
-<li><code>const void*</code>
-<li><code>basic_format_arg::handle</code> referring to an argument of a
-    user-defined type <code>T</code> with an enabled specialization of
-    <code>formatter&lt;T&gt;</code>
-<li><code>monostate</code> representing an empty state, i.e. when the
-    object does not refer to an argument
-</ul>
-where <code>charT</code> is <code>typename Context::char_type</code>.
-The value can be accessed via the visitation interface defined in the next
-section. <code>basic_format_arg</code> must preserve argument values, but
-does not have to distinguish between integral types other than <code>charT</code>
-and <code>bool</code>, e.g. an argument of type <code>short</code> can be stored
-as <code>int</code> and observed as <code>int</code> via the visitation
-interface. Similarly, <code>basic_format_arg</code> does not have to distinguish
-between floating-point types. 
-</p>
-
-<dl>
-<dt><code>basic_format_arg();</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
-doesn't refer to an argument.
-</p>
-<p><i>Ensures</i>: <code>!(*this)</code>.</p>
-</dd>
-<dt><code>explicit operator bool() const noexcept;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
-an argument.</p>
-</dd>
-<dt><code>bool is_arithmetic() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
-an argument of an arithmetic type.</p>
-</dd>
-<dt><code>bool is_integral() const;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
-an argument of an integral type.</p>
-</dd>
-</dl>
-
-<!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
-<pre>
-<code>namespace std {
-  template&lt;class Context&gt;
-  class basic_format_arg&lt;Context&gt;::handle {
-  public:
-    void format(Context&amp; ctx) const;
-  };
-}</code>
-</pre>
-
-<p>
-The class <code>handle</code> describes an object that can refer to a formatting
-function argument of a user-defined type.
-</p>
-
-<dl>
-<dt><code>void format(Context&amp; ctx) const;</code></dt>
-<dd>
-<!-- Similar effects example: http://eel.is/c%2B%2Bdraft/time.format -->
-<p><i>Effects</i>:
-Constructs a local variable of type 
-<code>typename Context::template formatter_type&lt;T&gt;</code> (named
-<code>f</code> for exposition purposes), where <code>T</code> is the type of the
-object <code>obj</code> referred to by this handle. Executes
-<code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
-Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
-</ol>
-</p>
-</dd>
-
-<h5>19.20.3.2 Argument visitation</h5>
-
-<!-- Similar to http://eel.is/c++draft/variant#visit -->
-<dl>
-<dt><pre><code>template&lt;class Visitor, class Context&gt;
-  <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
-<dd>
-<p><i>Requires:</i>
-The expression in the Effects section shall be a valid expression of the same
-type, for all alternative value types of a formatting argument.
-Otherwise, the program is ill-formed.</p>
-<p><i>Effects:</i>
-Let <code>value</code> be the value stored in <code>arg</code>.
-Returns <code>INVOKE(std::forward<Visitor>(vis), value);</code>.</p>
-<p><i>Remarks:</i>
-The return type is the common type of all possible <code>INVOKE</code>
-expressions in the Effects section. Since exact value types are
-implementation-defined, visitors should use type traits to handle multiple
-types.
-</p>
-<!-- Formatting example: http://eel.is/c%2B%2Bdraft/time.duration.cons
-     Compilation test: https://godbolt.org/g/ueEgXX -->
-<p>[ <i>Example:</i><pre>
-<code>  auto uint_value = visit_format_arg([](auto value) -&gt; unsigned {
-    if constexpr (std::is_unsigned_v&lt;decltype(value)&gt;)
-      return value;
-    return 0;
-  }, arg);</code>
-</pre> — <i>end example</i> ]
-</p>
-</dd>
-</dl>
-
-<h5>19.20.3.3 Class template <code>basic_format_args</code></h5>
-
-<pre>
-<code>namespace std {
-  template&lt;class Context&gt;
-  class basic_format_args {
-  public:
-    using size_type = size_t;
-
-    basic_format_args() noexcept;
-
-    template&lt;class... Args&gt;
-      basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);
-
-    basic_format_arg&lt;Context&gt; get(size_type i) const;
-  };
-}</code>
-</pre>
-
-<!-- Wording is similar to http://eel.is/c++draft/initializer_list.syn -->
-<p>
-An object of type <code>basic_format_args</code> provides access to formatting
-arguments. Copying a <code>basic_format_args</code> object does not copy the
-arguments.
-</p>
-
-<dl>
-<dt><code>basic_format_args() noexcept;</code></dt>
-<dd>
-<p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
-</p>
-<p><i>Ensures</i>: <code>!get(0)</code>.</p>
-</dd>
-</dl>
-
-<dl>
-<dt><pre><code>template&lt;class... Args&gt;
-  basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store);</code></pre></dt>
-<dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
-provides access to the arguments captured in <code>store</code>.
-</p>
-</dd>
-</dl>
-
-<dl>
-<dt><code>basic_format_arg&lt;Context&gt; get(size_type i) const;</code></dt>
-<dd>
-<p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
-argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
-Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
-</dd>
-</dl>
-
-<h5>19.20.3.4 Function template <code>make_format_args</code></h5>
-
-<dl>
-<dt>
-<pre><code>template&lt;class Context = format_context, class... Args&gt;
-  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
-</dt>
-<dd>
-
-<p>
-<i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that refers to formatting arguments <code>args</code>.
-</p>
-</dd>
-</dl>
-
-<h5>19.20.3.5 Function template <code>make_wformat_args</code></h5>
-
-<dl>
-<dt>
-<pre><code>template&lt;class... Args&gt;
-  format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
-</dt>
-<dd>
-
-<p>
-<i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that refers to formatting arguments <code>args</code>.
-</p>
-</dd>
-</dl>
-
-<h4><a name="format.functions">19.20.4 Formatting functions [format.functions]</a></h4>
+<h4><a name="format.functions">19.20.2 Formatting functions [format.functions]</a></h4>
 
 <dl>
 <dt>
@@ -1735,6 +1478,264 @@ specified.
 </tr>
 </tbody>
 </table>
+
+<h4><a name="format.error">19.20.3 Class <code>format_error</code> [format.error]</a></h4>
+
+<!-- Wording similar to http://eel.is/c++draft/range.error -->
+<pre>
+<code>namespace std {
+  class format_error : public runtime_error {
+  public:
+    explicit format_error(const string&amp; what_arg);
+    explicit format_error(const char* what_arg);
+  };
+}</code>
+</pre>
+
+<p>
+The class <code>format_error</code> defines the type of objects thrown as
+exceptions to report errors from the formatting library.
+</p>
+
+<dl>
+<dt><code>format_error(const string&amp; what_arg);</code></dt>
+<dd>
+  <p><i>Ensures</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
+  </p>
+</dd>
+<dt><code>format_error(const char* what_arg);</code></dt>
+<dd>
+  <p><i>Ensures</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
+</dd>
+</dl>
+
+<h4><a name="format.arguments">19.20.4 Arguments [format.arguments]</a></h4>
+<h5>19.20.4.1 Class template <code>basic_format_arg</code></h5>
+<!-- Argument access API is provided for use cases such as dynamic width:
+     https://godbolt.org/g/wNhkk7 -->
+
+<pre>
+<code>namespace std {
+  template&lt;class Context&gt;
+  class basic_format_arg {
+  public:
+    class handle;
+
+    basic_format_arg();
+
+    explicit operator bool() const noexcept;
+
+    bool is_arithmetic() const noexcept;
+    bool is_integral() const noexcept;
+  };
+}</code>
+</pre>
+
+<!-- Wording is similar to http://www.eel.is/c++draft/string.view -->
+<p>
+The class template <code>basic_format_arg</code> describes an object that can
+refer to a formatting function argument. It is parameterized on a formatting
+context type (see <a href="#format.formatter">[format.formatter]</a>) and
+can hold a value of one of the following types:
+<ul>
+<li><code>bool</code>
+<li><code>charT</code>
+<li>any integral type other than <code>bool</code> and <code>charT</code>
+<li>any floating-point type
+<li><code>const charT*</code>
+<li><code>basic_string_view&lt;charT&gt;</code>
+<li><code>const void*</code>
+<li><code>basic_format_arg::handle</code> referring to an argument of a
+    user-defined type <code>T</code> with an enabled specialization of
+    <code>formatter&lt;T&gt;</code>
+<li><code>monostate</code> representing an empty state, i.e. when the
+    object does not refer to an argument
+</ul>
+where <code>charT</code> is <code>typename Context::char_type</code>.
+The value can be accessed via the visitation interface defined in the next
+section. <code>basic_format_arg</code> must preserve argument values, but
+does not have to distinguish between integral types other than <code>charT</code>
+and <code>bool</code>, e.g. an argument of type <code>short</code> can be stored
+as <code>int</code> and observed as <code>int</code> via the visitation
+interface. Similarly, <code>basic_format_arg</code> does not have to distinguish
+between floating-point types. 
+</p>
+
+<dl>
+<dt><code>basic_format_arg();</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
+doesn't refer to an argument.
+</p>
+<p><i>Ensures</i>: <code>!(*this)</code>.</p>
+</dd>
+<dt><code>explicit operator bool() const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
+an argument.</p>
+</dd>
+<dt><code>bool is_arithmetic() const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
+an argument of an arithmetic type.</p>
+</dd>
+<dt><code>bool is_integral() const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
+an argument of an integral type.</p>
+</dd>
+</dl>
+
+<!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
+<pre>
+<code>namespace std {
+  template&lt;class Context&gt;
+  class basic_format_arg&lt;Context&gt;::handle {
+  public:
+    void format(Context&amp; ctx) const;
+  };
+}</code>
+</pre>
+
+<p>
+The class <code>handle</code> describes an object that can refer to a formatting
+function argument of a user-defined type.
+</p>
+
+<dl>
+<dt><code>void format(Context&amp; ctx) const;</code></dt>
+<dd>
+<!-- Similar effects example: http://eel.is/c%2B%2Bdraft/time.format -->
+<p><i>Effects</i>:
+Constructs a local variable of type 
+<code>typename Context::template formatter_type&lt;T&gt;</code> (named
+<code>f</code> for exposition purposes), where <code>T</code> is the type of the
+object <code>obj</code> referred to by this handle. Executes
+<code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
+Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
+</ol>
+</p>
+</dd>
+
+<h5>19.20.4.2 Argument visitation</h5>
+
+<!-- Similar to http://eel.is/c++draft/variant#visit -->
+<dl>
+<dt><pre><code>template&lt;class Visitor, class Context&gt;
+  <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
+<dd>
+<p><i>Requires:</i>
+The expression in the Effects section shall be a valid expression of the same
+type, for all alternative value types of a formatting argument.
+Otherwise, the program is ill-formed.</p>
+<p><i>Effects:</i>
+Let <code>value</code> be the value stored in <code>arg</code>.
+Returns <code>INVOKE(std::forward<Visitor>(vis), value);</code>.</p>
+<p><i>Remarks:</i>
+The return type is the common type of all possible <code>INVOKE</code>
+expressions in the Effects section. Since exact value types are
+implementation-defined, visitors should use type traits to handle multiple
+types.
+</p>
+<!-- Formatting example: http://eel.is/c%2B%2Bdraft/time.duration.cons
+     Compilation test: https://godbolt.org/g/ueEgXX -->
+<p>[ <i>Example:</i><pre>
+<code>  auto uint_value = visit_format_arg([](auto value) -&gt; unsigned {
+    if constexpr (std::is_unsigned_v&lt;decltype(value)&gt;)
+      return value;
+    return 0;
+  }, arg);</code>
+</pre> — <i>end example</i> ]
+</p>
+</dd>
+</dl>
+
+<h5>19.20.4.3 Class template <code>basic_format_args</code></h5>
+
+<pre>
+<code>namespace std {
+  template&lt;class Context&gt;
+  class basic_format_args {
+  public:
+    using size_type = size_t;
+
+    basic_format_args() noexcept;
+
+    template&lt;class... Args&gt;
+      basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;
+
+    basic_format_arg&lt;Context&gt; get(size_type i) const noexcept;
+  };
+}</code>
+</pre>
+
+<!-- Wording is similar to http://eel.is/c++draft/initializer_list.syn -->
+<p>
+An object of type <code>basic_format_args</code> provides access to formatting
+arguments. Copying a <code>basic_format_args</code> object does not copy the
+arguments.
+</p>
+
+<dl>
+<dt><code>basic_format_args() noexcept;</code></dt>
+<dd>
+<p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
+</p>
+<p><i>Ensures</i>: <code>!get(0)</code>.</p>
+</dd>
+</dl>
+
+<dl>
+<dt><pre><code>template&lt;class... Args&gt;
+  basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;</code></pre></dt>
+<dd>
+<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
+provides access to the arguments captured in <code>store</code>.
+</p>
+</dd>
+</dl>
+
+<dl>
+<dt><code>basic_format_arg&lt;Context&gt; get(size_type i) const noexcept;</code></dt>
+<dd>
+<p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
+argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
+Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
+</dd>
+</dl>
+
+<h5>19.20.4.4 Function template <code>make_format_args</code></h5>
+
+<dl>
+<dt>
+<pre><code>template&lt;class Context = format_context, class... Args&gt;
+  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+
+<p>
+<i>Effects</i>: The function returns a <code>format_arg_store</code> object
+that refers to formatting arguments <code>args</code>.
+</p>
+</dd>
+</dl>
+
+<h5>19.20.4.5 Function template <code>make_wformat_args</code></h5>
+
+<dl>
+<dt>
+<pre><code>template&lt;class... Args&gt;
+  format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
+</dt>
+<dd>
+
+<p>
+<i>Effects</i>: The function returns a <code>format_arg_store</code> object
+that refers to formatting arguments <code>args</code>.
+</p>
+</dd>
+</dl>
+
 
 <h4><a name="format.formatter">19.20.5 Formatter [format.formatter]</a></h4>
 <h5>19.20.5.1 Class template <code>basic_parse_context</code></h5>
