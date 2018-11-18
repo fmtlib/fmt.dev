@@ -151,6 +151,9 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
   href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r3.html">R3</a></h2>
 <p>
 <ul>
+<li>Use <code>OutputIterator</code> concept in formatting functions that take
+    output iterators and replace the <code>Size</code> template parameter with
+    <code>iter_difference_t</code>.
 <li>Disallow consecutive zeros in <code>arg-id</code> and <code>width</code>.
 <li>Specify formatting of arithmetic and pointer types in terms of
     <code>to_chars</code>.
@@ -920,35 +923,29 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   string vformat(string_view fmt, format_args args);
   wstring vformat(wstring_view fmt, wformat_args args);
 
-  template&lt;class OutputIterator, class... Args&gt;
-    OutputIterator format_to(OutputIterator out, string_view fmt,
-                             const Args&amp;... args);
-  template&lt;class OutputIterator, class... Args&gt;
-    OutputIterator format_to(OutputIterator out, wstring_view fmt,
-                             const Args&amp;... args);
+  template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+    O format_to(O out, string_view fmt, const Args&amp;... args);
+  template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+    O format_to(O out, wstring_view fmt, const Args&amp;... args);
+
+  template&lt;class T, OutputIterator&lt;const T&amp;&gt; O&gt;
+    O vformat_to(O out, string_view fmt, format_args_t&lt;O, char&gt; args);
+  template&lt;class T, OutputIterator&lt;const T&amp;&gt; O&gt;
+    O vformat_to(O out, wstring_view fmt, format_args_t&lt;O, wchar_t&gt; args);
 
   template&lt;class OutputIterator&gt;
-    OutputIterator vformat_to(OutputIterator out, string_view fmt,
-                              format_args_t&lt;OutputIterator, char&gt; args);
-  template&lt;class OutputIterator&gt;
-    OutputIterator vformat_to(OutputIterator out, wstring_view fmt,
-                              format_args_t&lt;OutputIterator, wchar_t&gt; args);
-
-  template&lt;class OutputIterator, class Size&gt;
     struct format_to_n_result {
       OutputIterator out;
-      Size size;
+      iter_difference_t&lt;OutputIterator&gt; size;
     };
   <!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch
        vformat_to_n is not provided but it can be with an iterator adapter. -->
-  template&lt;class OutputIterator, class Size, class... Args&gt;
-    format_to_n_result&lt;OutputIterator, Size&gt;
-      format_to_n(OutputIterator out, Size n, string_view fmt,
-                  const Args&amp;... args);
-  template&lt;class OutputIterator, class Size, class... Args&gt;
-    format_to_n_result&lt;OutputIterator, Size&gt;
-      format_to_n(OutputIterator out, Size n, wstring_view fmt,
-                  const Args&amp;... args);
+  template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+    format_to_n_result&lt;O&gt;
+      format_to_n(O out, iter_difference_t&lt;O&gt; n, string_view fmt, const Args&amp;... args);
+  template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+    format_to_n_result&lt;O&gt;
+      format_to_n(O out, iter_difference_t&lt;O&gt; n, wstring_view fmt, const Args&amp;... args);
 
   template&lt;class... Args&gt;
     size_t formatted_size(string_view fmt, const Args&amp;... args);
@@ -999,9 +996,8 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template&lt;class OutputIterator, class... Args&gt;
-  OutputIterator format_to(OutputIterator out, string_view fmt,
-                           const Args&amp;... args);</code></pre>
+<pre><code>template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+  O format_to(O out, string_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 <p><i>Returns</i>: <code>vformat_to(out, fmt, make_format_args(args...))</code>.</p>
@@ -1010,9 +1006,8 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template&lt;class OutputIterator, class... Args&gt;
-  OutputIterator format_to(OutputIterator out, wstring_view fmt,
-                           const Args&amp;... args);</code></pre>
+<pre><code>template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+  O format_to(O out, wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 <p><i>Returns</i>: <code>vformat_to(out, fmt, make_wformat_args(args...))</code>.</p>
@@ -1021,12 +1016,10 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template&lt;class OutputIterator, class... Args&gt;
-  OutputIterator vformat_to(OutputIterator out, string_view fmt,
-                            format_args_t&lt;OutputIterator, char&gt; args);
-template&lt;class OutputIterator, class... Args&gt;
-  OutputIterator vformat_to(OutputIterator out, wstring_view fmt,
-                            format_args_t&lt;OutputIterator, wchar_t&gt; args);</code></pre>
+<pre><code>template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+  O vformat_to(O out, string_view fmt, format_args_t&lt;O, char&gt; args);
+template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+  O vformat_to(O out, wstring_view fmt, format_args_t&lt;O, wchar_t&gt; args);</code></pre>
 </dt>
 <dd>
 
@@ -1045,14 +1038,12 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template&lt;class OutputIterator, class Size, class... Args&gt;
-  format_to_n_result&lt;OutputIterator, Size&gt;
-    format_to_n(OutputIterator out, Size n, string_view fmt,
-                const Args&amp;... args);
-template&lt;class OutputIterator, class Size, class... Args&gt;
-  format_to_n_result&lt;OutputIterator, Size&gt;
-    format_to_n(OutputIterator out, Size n, wstring_view fmt,
-                const Args&amp;... args);</code></pre>
+<pre><code>template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+  format_to_n_result&lt;O&gt;
+    format_to_n(O out, iter_difference_t&lt;O&gt; n, string_view fmt, const Args&amp;... args);
+template&lt;class T, OutputIterator&lt;const T&amp;&gt; O, class... Args&gt;
+  format_to_n_result&lt;O&gt;
+    format_to_n(O out, iter_difference_t&lt;O&gt; n, wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
