@@ -887,9 +887,9 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
        containers with contiguous storage by type-erasing reallocation.
        Example of unspecified types as template params:
        http://eel.is/c++draft/time.duration.literals -->
-  template&lt;class OutputIterator, class charT&gt; class basic_format_context;
-  using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
-  using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
+  template&lt;class charT, OutputIterator&lt;const charT&amp;&gt; O&gt; class basic_format_context;
+  using format_context = basic_format_context&lt;char, <i>unspecified</i>&gt;;
+  using wformat_context = basic_format_context&lt;wchar_t, <i>unspecified</i>&gt;;
 
   template&lt;class T, class charT = char&gt; struct formatter;
   <!-- Argument access API is provided for use cases such as dynamic width:
@@ -906,8 +906,8 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   using format_args = basic_format_args&lt;format_context&gt;;
   using wformat_args = basic_format_args&lt;wformat_context&gt;;
 
-  template&lt;class OutputIterator, class charT&gt;
-    using format_args_t = basic_format_args&lt;basic_format_context&lt;OutputIterator, charT&gt;&gt;;
+  template&lt;class charT, OutputIterator&lt;const charT&amp;&gt; O&gt;
+    using format_args_t = basic_format_args&lt;basic_format_context&lt;charT, O&gt;&gt;;
 
   template&lt;class Context = format_context, class... Args&gt;
     format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);
@@ -1815,10 +1815,10 @@ argument indexing.</p>
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
 <code>namespace std {
-  template&lt;class OutputIterator, class charT&gt;
+  template&lt;class charT, OutputIterator&lt;const charT&amp;&gt; O&gt;
   class basic_format_context {
   public:
-    using iterator = OutputIterator;
+    using iterator = O;
     using char_type = charT;
     using args_type = basic_format_args&lt;basic_format_context&gt;;
 
@@ -1944,7 +1944,7 @@ lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
 to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
 <code>basic_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
 <code>fc</code> is an lvalue of type
-<code>basic_format_context&lt;OutputIterator, charT&gt;</code> (denoted by
+<code>basic_format_context&lt;charT, OutputIterator&gt;</code> (denoted by
 <code>FC</code>). <code>pc.begin()</code> points to the beginning of the
 <code>format-spec</code> (<a href="#format.syntax">[format.syntax]</a>) portion
 of the format string. If <code>format-spec</code> is empty then either
