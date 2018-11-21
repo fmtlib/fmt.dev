@@ -983,13 +983,11 @@ wstring vformat(wstring_view fmt, wformat_args args);</code></pre>
 </dt>
 <dd>
 <p>
-<i>Effects</i>: The function returns a <code>string</code> object
-constructed from the format string argument <code>fmt</code> with each
-replacement field substituted with the character representation of the
-argument it refers to, formatted according to the specification given in the
-field.
+<!-- http://eel.is/c++draft/string.conversions#7 -->
+<i>Returns</i>: A string object holding the character representation of
+formatting arguments provided by <code>args</code> formatted according to
+specifications given in <code>fmt</code>.
 </p>
-<p><i>Returns</i>: The formatted string.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
@@ -1031,13 +1029,13 @@ template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
 <dd>
 
 <p>
-<i>Effects</i>: The function writes to the range <code>[out, out + size)</code>,
-where <code>size</code> is the output size, the format string <code>fmt
-</code> with each replacement field substituted with the character
-representation of the argument it refers to, formatted according to the
-specification given in the field.
+<i>Effects</i>:
+Places the character representation of formatting arguments provided by
+<code>args</code> formatted according to specifications given in
+<code>fmt</code> into the range <code>[out, out + N)</code>, where
+<code>N</code> is the formatted output size.
 </p>
-<p><i>Returns</i>: The end of the output range.</p>
+<p><i>Returns</i>: <code>out + N</code>.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
@@ -1055,10 +1053,11 @@ template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
 <dd>
 
 <p>
-<i>Effects</i>: The function writes to the range <code>[out, out + n)</code>
-the format string <code>fmt</code> with each replacement field substituted
-with the character representation of the argument it refers to, formatted
-according to the specification given in the field.
+<i>Effects</i>:
+Places the character representation of formatting arguments provided by
+<code>args</code> formatted according to specifications given in
+<code>fmt</code> into the range <code>[out, out + min(n, N))</code>, where
+<code>N</code> is the formatted output size.
 </p>
 <p><i>Returns</i>: <code>format_to_n_result</code> containing the end of the
 output range and the total (not truncated) output size.</p>
@@ -1076,12 +1075,9 @@ template&lt;class... Args&gt;
 </dt>
 <dd>
 <p>
-<i>Effects</i>: The function returns the number of characters in the output of
+<i>Returns</i>: The number of characters in the output of
 <code>format(fmt, args...)</code> without constructing the formatted
 string.
-</p>
-<p><i>Returns</i>: The number of characters in the output of
-<code>format(fmt, args...)</code>.
 </p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
