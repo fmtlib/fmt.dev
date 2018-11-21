@@ -154,6 +154,7 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <li>Use <code>OutputIterator</code> concept in formatting functions that take
     output iterators and replace the <code>Size</code> template parameter with
     <code>iter_difference_t</code>.
+<li>Rename <code>*parse_context</code> to <code>*format_parse_context</code>.
 <li>Disallow consecutive zeros in <code>arg-id</code> and <code>width</code>.
 <li>Specify formatting of arithmetic and pointer types in terms of
     <code>to_chars</code>.
@@ -453,7 +454,7 @@ string date = format("The date is {0:%Y-%m-%d}.", *localtime(&amp;t));
 <pre class="example">
 <code>template&lt;&gt;
   struct formatter&lt;tm&gt; {
-    constexpr parse_context::iterator parse(parse_context&amp; ctx);
+    constexpr format_parse_context::iterator parse(format_parse_context&amp; ctx);
 
     template&lt;class FormatContext&gt;
       typename FormatContext::iterator format(const tm&amp; tm, FormatContext&amp; ctx);
@@ -488,7 +489,7 @@ formatted as an argument and therefore some other way of parameterizing it on
 the argument type <code>T</code> such as introducing a dummy argument has to be
 used, e.g.
 <pre class="example">
-<code>constexpr auto parse(type&lt;T&gt;, parse_context&amp; ctx);
+<code>constexpr auto parse(type&lt;T&gt;, format_parse_context&amp; ctx);
 </code></pre>
 </p>
 
@@ -770,7 +771,7 @@ template&lt;&gt;
     int width_arg_index = 0;
 
     // Parses dynamic width in the format "{&lt;digit&gt;}".
-    auto parse(parse_context&amp; parse_ctx) {
+    auto parse(format_parse_context&amp; parse_ctx) {
       auto iter = parse_ctx.begin();
       auto get_char = [&amp;]() { return iter != parse_ctx.end() ? *iter : 0; };
 
@@ -879,9 +880,9 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   class format_error;
 
   // <a href="#format.formatter">[format.formatter]</a>, formatter
-  template&lt;class charT&gt; class basic_parse_context;
-  using parse_context = basic_parse_context&lt;char&gt;;
-  using wparse_context = basic_parse_context&lt;wchar_t&gt;;
+  template&lt;class charT&gt; class basic_format_parse_context;
+  using format_parse_context = basic_format_parse_context&lt;char&gt;;
+  using wformat_parse_context = basic_format_parse_context&lt;wchar_t&gt;;
   <!-- Exact string formatting iterator type is unspecified - it can be
        back_insert_iterator<string> or a similar type, possibly reused between
        containers with contiguous storage by type-erasing reallocation.
@@ -1000,7 +1001,10 @@ valid format string.</p>
   O format_to(O out, string_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-<p><i>Returns</i>: <code>vformat_to(out, fmt, make_format_args(args...))</code>.</p>
+<p>
+  <i>Returns</i>:
+  <code>vformat_to(out, fmt, make_format_args&lt;basic_format_context&lt;char, O&gt;&gt;(args...))</code>.
+</p>
 </dd>
 </dl>
 
@@ -1010,7 +1014,10 @@ valid format string.</p>
   O format_to(O out, wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-<p><i>Returns</i>: <code>vformat_to(out, fmt, make_wformat_args(args...))</code>.</p>
+<p>
+  <i>Returns</i>:
+  <code>vformat_to(out, fmt, make_format_args&lt;basic_format_context&lt;wchar_t, O&gt;&gt;(args...))</code>.
+</p>
 </dd>
 </dl>
 
@@ -1729,19 +1736,19 @@ that refers to formatting arguments <code>args</code>.
 
 
 <h4><a name="format.formatter">19.20.5 Formatter [format.formatter]</a></h4>
-<h5>19.20.5.1 Class template <code>basic_parse_context</code></h5>
+<h5>19.20.5.1 Class template <code>basic_format_parse_context</code></h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
 <code>namespace std {
   template&lt;class charT&gt;
-  class basic_parse_context {
+  class basic_format_parse_context {
   public:
     using char_type = charT;
     using const_iterator = typename basic_string_view&lt;charT&gt;::const_iterator;
     using iterator = const_iterator;
 
-    explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt; fmt);
+    explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt);
 
     constexpr const_iterator begin() const noexcept;
     constexpr const_iterator end() const noexcept;
@@ -1754,8 +1761,8 @@ that refers to formatting arguments <code>args</code>.
 </pre>
 
 <p>
-The class template <code>basic_parse_context</code> provides access the format
-string range being parsed and the argument counter for automatic indexing.
+The class template <code>basic_format_parse_context</code> provides access the
+format string range being parsed and the argument counter for automatic indexing.
 </p>
 
 <dl>
@@ -1768,7 +1775,7 @@ string range being parsed and the argument counter for automatic indexing.
 >[iterator.requirements.general]</a>) whose <code>value_type</code> is the
 template parameter <code>charT</code>.</p>
 </dd-->
-<dt><code>explicit constexpr basic_parse_context(basic_string_view&lt;charT&gt;	fmt);</code></dt>
+<dt><code>explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt;	fmt);</code></dt>
 <dd>
 <p><i>Effects</i>: Constructs a parsing context from the format string
 <code>fmt</code>.</p>
@@ -1825,7 +1832,7 @@ argument indexing.</p>
     template&lt;class T&gt;
       using formatter_type = formatter&lt;T&gt;;
 
-    basic_parse_context&lt;charT&gt;&amp; parse_context();
+    basic_format_parse_context&lt;charT&gt;&amp; parse_context();
 
     iterator out();
     void advance_to(iterator it);
@@ -1841,7 +1848,7 @@ string parsing context, output iterator and formatting arguments.
 </p>
 
 <dl>
-<dt><code>basic_parse_context&lt;charT&gt;&amp; parse_context();</code></dt>
+<dt><code>basic_format_parse_context&lt;charT&gt;&amp; parse_context();</code></dt>
 <dd>
 <p><i>Returns</i>: A reference to the format string parsing context.</p>
 </dd>
@@ -1942,7 +1949,7 @@ Given character type <code>charT</code>, output iterator type
 Table 1 <code>f</code> is a value of type <code>F</code>, <code>u</code> is an
 lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
 to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
-<code>basic_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
+<code>basic_format_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
 <code>fc</code> is an lvalue of type
 <code>basic_format_context&lt;charT, OutputIterator&gt;</code> (denoted by
 <code>FC</code>). <code>pc.begin()</code> points to the beginning of the
