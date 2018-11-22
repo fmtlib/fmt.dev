@@ -1211,14 +1211,15 @@ The meaning of the various alignment options is as follows:
 </table>
 
 <p>[ <i>Example:</i><pre>
-<code>  string s0 = format("{:6}", 42);      // s0 == "    42"
+<code>  char c = 120;
+  string s0 = format("{:6}", 42);      // s0 == "    42"
   string s1 = format("{:6}", 'x');     // s1 == "x     "
   string s2 = format("{:*&lt;6}", 'x');   // s2 == "x*****"
   string s3 = format("{:*&gt;6}", 'x');   // s3 == "*****x"
   string s4 = format("{:*^6}", 'x');   // s4 == "**x***"
-  string s5 = format("{:6d}", 'x');    // s5 == "   120" (depends on the character set)
-  string s6 = format("{:=6}", 'x');    // Error: '=' with charT and no integer presentation type
-  string s7 = format("{:=+06d}", 'x'); // s7 == "+00120" (depends on the character set)
+  string s5 = format("{:=6}", 'x');    // Error: '=' with charT and no integer presentation type
+  string s6 = format("{:6d}", c);      // s6 == "   120"
+  string s7 = format("{:=+06d}", c);   // s7 == "+00120"
   string s8 = format("{:6}", true);    // s8 == "true  "</code>
 </pre> — <i>end example</i> ]
 </p>
@@ -1559,70 +1560,53 @@ exceptions to report errors from the formatting library.
   public:
     class handle;
 
-    basic_format_arg();
+    basic_format_arg() noexcept;
 
     explicit operator bool() const noexcept;
 
     bool is_arithmetic() const noexcept;
     bool is_integral() const noexcept;
+
+  private:
+    using char_type = typename Context::char_type;                         <i>// exposition only</i>
+
+    variant&lt;monostate, bool, char_type, int, unsigned int, long long int,
+            unsigned long long int, double, long double, const char_type*,
+            basic_string_view&lt;char_type&gt;, const void*, handle&gt; value;      <i>// exposition only</i>
   };
 }</code>
 </pre>
 
 <!-- Wording is similar to http://www.eel.is/c++draft/string.view -->
 <p>
-The class template <code>basic_format_arg</code> describes an object that can
-refer to a formatting function argument. It is parameterized on a formatting
-context type (see <a href="#format.formatter">[format.formatter]</a>) and
-can hold a value of one of the following types:
-<ul>
-<li><code>bool</code>
-<li><code>charT</code>
-<li>any integral type other than <code>bool</code> and <code>charT</code>
-<li>any floating-point type
-<li><code>const charT*</code>
-<li><code>basic_string_view&lt;charT&gt;</code>
-<li><code>const void*</code>
-<li><code>basic_format_arg::handle</code> referring to an argument of a
-    user-defined type <code>T</code> with an enabled specialization of
-    <code>formatter&lt;T&gt;</code>
-<li><code>monostate</code> representing an empty state, i.e. when the
-    object does not refer to an argument
-</ul>
-where <code>charT</code> is <code>typename Context::char_type</code>.
-The value can be accessed via the visitation interface defined in the next
-section. <code>basic_format_arg</code> must preserve argument values, but
-does not have to distinguish between integral types other than <code>charT</code>
-and <code>bool</code>, e.g. an argument of type <code>short</code> can be stored
-as <code>int</code> and observed as <code>int</code> via the visitation
-interface. Similarly, <code>basic_format_arg</code> does not have to distinguish
-between floating-point types. 
+An instance of <code>basic_format_arg</code> provides access to a formatting
+argument for user-defined formatters.
 </p>
 
 <dl>
-<dt><code>basic_format_arg();</code></dt>
+<dt><code>basic_format_arg() noexcept;</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_arg</code> object that
-doesn't refer to an argument.
-</p>
 <p><i>Ensures</i>: <code>!(*this)</code>.</p>
 </dd>
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
-an argument.</p>
+<p><i>Returns</i>: <code>holds_alternative&lt;monostate&gt;(value)</code>.</p>
 </dd>
 <dt><code>bool is_arithmetic() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
-an argument of an arithmetic type.</p>
+<p><i>Returns</i>: <code>visit([](auto v) { return is_arithmetic_v&lt;decltype(v)&gt;; }, value)</code>.</p>
 </dd>
 <dt><code>bool is_integral() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>true</code> if and only if <code>*this</code> refers to
-an argument of an integral type.</p>
+<p><i>Returns</i>: <code>visit([](auto v) { return is_integral_v&lt;decltype(v)&gt;; }, value)</code>.</p>
 </dd>
 </dl>
+
+[ <i>Note:</i> Implementations are encouraged to take advantage of the
+ordering of the alternative types in <code>value</code> and implement
+<code>is_arithmetic</code> and <code>is_integral</code> more efficiently based
+on <code>value.index()</code>.
+<i>— end note</i> ]
 
 <!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
 <pre>
