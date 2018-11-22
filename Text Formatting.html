@@ -1054,14 +1054,16 @@ template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
 <dd>
 
 <p>
+Let <code>N</code> be the formatted output size and <code>M</code> be
+<code>min(max(n, 0), N)</code>.
+</p>
+<p>
 <i>Effects</i>:
 Places the character representation of formatting arguments provided by
 <code>args</code> formatted according to specifications given in
-<code>fmt</code> into the range <code>[out, out + min(n, N))</code>, where
-<code>N</code> is the formatted output size.
+<code>fmt</code> into the range <code>[out, out + M)</code>.
 </p>
-<p><i>Returns</i>: <code>format_to_n_result</code> containing the end of the
-output range and the total (not truncated) output size.</p>
+<p><i>Returns</i>: <code>{out + M, N}</code>.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
@@ -1076,9 +1078,9 @@ template&lt;class... Args&gt;
 </dt>
 <dd>
 <p>
-<i>Returns</i>: The number of characters in the output of
-<code>format(fmt, args...)</code> without constructing the formatted
-string.
+<i>Returns</i>: The number of characters in the character representation of
+formatting arguments <code>args</code> formatted according to specifications
+given in <code>fmt</code>.
 </p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
@@ -1089,7 +1091,7 @@ valid format string.</p>
 The <code>fmt</code> string consists of zero or more <em>replacement
 fields</em>, <em>escape sequences</em>, and ordinary multibyte characters. All
 ordinary multibyte characters are copied unchanged to the output. An escape
-sequence is one of <code>{{</code> or <code>}}</code>; it is replaced with
+sequence is one of <code>{{</code> or <code>}}</code>. It is replaced with
 <code>{</code> or <code>}</code> respectively in the output. The syntax of
 replacement fields is as follows:
 
@@ -1110,6 +1112,11 @@ instead of the replacement field. The optional <code>format-spec</code> field
 specifies a non-default format for the replacement value.
 </p>
 
+<p>[ <i>Example:</i><pre>
+<code>  string s = format("{0}-{{", 8); // s == "8-{"</code>
+</pre> — <i>end example</i> ]
+</p>
+
 <p>
 If the numeric <code>arg-id</code>s in a format string are 0, 1, 2, ... in
 sequence, they can all be omitted (not just some) and the numbers 0, 1, 2, ...
@@ -1118,10 +1125,10 @@ is not allowed.
 </p>
 
 <p>[ <i>Example:</i><pre>
-<code>  string s0 = format("{} to {}", "a", "b");   // OK: automatic indexing
+<code>  string s0 = format("{} to {}",   "a", "b"); // OK: automatic indexing
   string s1 = format("{1} to {0}", "a", "b"); // OK: manual indexing
-  string s2 = format("{0} to {}", "a", "b");  // Error: mixing automatic and manual indexing
-  string s3 = format("{} to {1}", "a", "b");  // Error: mixing automatic and manual indexing</code>
+  string s2 = format("{0} to {}",  "a", "b"); // Error: mixing automatic and manual indexing
+  string s3 = format("{} to {1}",  "a", "b"); // Error: mixing automatic and manual indexing</code>
 </pre> — <i>end example</i> ]
 </p>
 
@@ -1148,7 +1155,7 @@ type            ::= 'a' | 'A' | 'b' | 'B' | 'c' | 'd' | 'e' | 'E' | 'f' | 'F' |
 
 <p>
 where <code>std-format-spec</code> defines a common formatting mini-language
-supported by built-in types and strings, while <code>custom-format-spec</code>
+supported by fundamental and string types, while <code>custom-format-spec</code>
 is a placeholder for user-defined mini-languages. Some of the formatting options
 are only supported by arithmetic types.
 </p>
@@ -1162,6 +1169,8 @@ then it is assumed that both the fill character and the alignment option are
 absent.
 </p>
 
+<p>Let <code>charT</code> be <code>decltype(fmt)::value_type</code>.</p>
+
 <p>
 The meaning of the various alignment options is as follows:
 </p>
@@ -1174,19 +1183,22 @@ The meaning of the various alignment options is as follows:
 <tr>
 <td><code>'&lt;'</code></td>
 <td>Forces the field to be left-aligned within the available space. This is
-    the default for non-arithmetic types.</td>
+    the default for non-arithmetic types, <code>charT</code>, and
+    <code>bool</code>, unless an integer presentation type is specified.</td>
 </tr>
 <tr>
 <td><code>'&gt;'</code></td>
 <td>Forces the field to be right-aligned within the available space. This is
-    the default for arithmetic types.</td>
+    the default for arithmetic types other than <code>charT</code> and
+    <code>bool</code> or when an integer presentation type is specified.</td>
 </tr>
 <tr>
 <td><code>'='</code></td>
 <td>Forces the padding to be placed after the sign (if any) but before the
     digits. This is used for printing fields in the form
     <code>+000000120</code>. This alignment option is only valid for arithmetic
-    types.</td>
+    types other than <code>charT</code> and <code>bool</code> or when an
+    integer presentation type is specified.</td>
 </tr>
 <tr>
 <td><code>'^'</code></td>
@@ -1195,6 +1207,16 @@ The meaning of the various alignment options is as follows:
 </tbody>
 </table>
 
+<p>[ <i>Example:</i><pre>
+<code>  string s0 = format("{:6}", 42);      // s0 == "    42"
+  string s1 = format("{:6}", 'x');     // s1 == "x     "
+  string s2 = format("{:6d}", 'x');    // s2 == "   120" (depends on the character set)
+  string s3 = format("{:=6}", 'x');    // Error: '=' with charT and no integer presentation type
+  string s4 = format("{:=+06d}", 'x'); // s4 == "+00120" (depends on the character set)
+  string s5 = format("{:6}", true);    // s5 == "true  "</code>
+</pre> — <i>end example</i> ]
+</p>
+
 <p>
 Note that unless a minimum field width is defined, the field width will be
 determined by the width of the content, meaning that the alignment option has no
@@ -1202,8 +1224,9 @@ effect.
 </p>
 
 <p>
-The <code>sign</code> option is only valid for arithmetic types, and can be one
-of the following:
+The <code>sign</code> option is only valid for arithmetic types other than
+<code>charT</code> and <code>bool</code> or when an integer presentation type is
+specified. It can be one of the following:
 </p>
 
 <table>
