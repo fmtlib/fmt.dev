@@ -1202,7 +1202,10 @@ The meaning of the various alignment options is as follows:
 </tr>
 <tr>
 <td><code>'^'</code></td>
-<td>Forces the field to be centered within the available space.</td>
+<td>Forces the field to be centered within the available space by inserting
+    <code>N / 2</code> and <code>N - N / 2</code> fill characters before and
+    after the value respectively, where <code>N</code> is the total number of
+    fill characters to insert.</td>
 </tr>
 </tbody>
 </table>
@@ -1210,10 +1213,13 @@ The meaning of the various alignment options is as follows:
 <p>[ <i>Example:</i><pre>
 <code>  string s0 = format("{:6}", 42);      // s0 == "    42"
   string s1 = format("{:6}", 'x');     // s1 == "x     "
-  string s2 = format("{:6d}", 'x');    // s2 == "   120" (depends on the character set)
-  string s3 = format("{:=6}", 'x');    // Error: '=' with charT and no integer presentation type
-  string s4 = format("{:=+06d}", 'x'); // s4 == "+00120" (depends on the character set)
-  string s5 = format("{:6}", true);    // s5 == "true  "</code>
+  string s2 = format("{:*&lt;6}", 'x');   // s2 == "x*****"
+  string s3 = format("{:*&gt;6}", 'x');   // s3 == "*****x"
+  string s4 = format("{:*^6}", 'x');   // s4 == "**x***"
+  string s5 = format("{:6d}", 'x');    // s5 == "   120" (depends on the character set)
+  string s6 = format("{:=6}", 'x');    // Error: '=' with charT and no integer presentation type
+  string s7 = format("{:=+06d}", 'x'); // s7 == "+00120" (depends on the character set)
+  string s8 = format("{:6}", true);    // s8 == "true  "</code>
 </pre> — <i>end example</i> ]
 </p>
 
@@ -1256,11 +1262,22 @@ specified. It can be one of the following:
 The <code>sign</code> option applies to floating-point infinity and NaN.
 </p>
 
+<p>[ <i>Example:</i><pre>
+<code>  double inf = std::numeric_limits&lt;double&gt;::infinity();
+  double nan = std::numeric_limits&lt;double&gt;::quiet_NaN();
+  string s0 = format("{0:} {0:+} {0:-} {0: }", 1);   // s0 == "1 +1 1  1"
+  string s1 = format("{0:} {0:+} {0:-} {0: }", -1);  // s1 == "-1 -1 -1 -1"
+  string s2 = format("{0:} {0:+} {0:-} {0: }", inf); // s2 == "inf +inf inf  inf"
+  string s3 = format("{0:} {0:+} {0:-} {0: }", nan); // s3 == "nan +nan nan  nan"</code>
+</pre> — <i>end example</i> ]
+</p>
+
 <p>
 The <code>'#'</code> option causes the <em>alternate form</em> to be used for
-the conversion.
-This option is only valid for integer and floating-point types. For integers,
-when binary, octal, or hexadecimal output is used, this option adds the respective
+the conversion. This option is only valid for arithmetic types other than
+<code>charT</code> and <code>bool</code> or when an integer presentation type is
+specified. For integers, when binary, octal, or hexadecimal output is used, this
+option adds the respective
 prefix <code>"0b"</code> (<code>"0B"</code>), <code>"0"</code>, or
 <code>"0x"</code> (<code>"0X"</code>) to the output value. Whether the prefix
 is lower-case or upper-case is determined by the case of the type format
@@ -1285,14 +1302,10 @@ type of <code>'='</code>.
 </p>
 
 <p>
-The <code>precision</code> is a decimal number indicating how many digits should
-be displayed after the decimal point for a floating-point value formatted with
-<code>'f'</code> and <code>'F'</code>, or before and after the decimal point
-for a floating-point value formatted with <code>'g'</code> or <code>'G'</code>.
-For non-arithmetic types the field indicates the maximum field size - in other
-words, how many characters will be used from the field content. The
-<code>precision</code> is not allowed for integer, character, boolean, and
-pointer values.
+The <code>precision</code> field is a decimal integer defining the precision
+or maximum field size. It can only be used with floating-point and string
+types. For floating-point types this field specifies the formatting precision.
+For string types it specifies how many characters will be used from the string.
 </p>
 
 <p>
@@ -1335,14 +1348,17 @@ Finally, the <code>type</code> determines how the data should be presented.
 </tbody>
 </table>
 
-<p>where <code>charT</code> is the character type of the format string.</p>
-
 <p>
 Formatting of objects of arithmetic types and <code>const void*</code> is done
 as if by calling <code>to_chars</code> and copying the output through the output
 iterator of the context with additional padding and adjustments as per format
-specifiers. <code>[first, last)</code> is a range large enough to hold the
-output and <code>value</code> is the formatting argument value.
+specifiers.
+</p>
+
+<p>
+Let <code>[first, last)</code> be a range large enough to hold the
+<code>to_chars</code> output and <code>value</code> be the formatting argument
+value.
 </p>
 
 <p>The available integer presentation types and their mapping to
@@ -1391,16 +1407,16 @@ output and <code>value</code> is the formatting argument value.
 <tr>
 <td>none</td>
 <td>The same as <code>'d'</code> if formatting argument type is not
-    <code>bool</code> or <code>charT</code>.</td>
+    <code>charT</code> or <code>bool</code>.</td>
 </tr>
 </tbody>
 </table>
 
 <p>
-Integer presentation types can also be used with character and boolean values.
-Boolean values are formatted using textual representation, either
-<code>"true"</code> or <code>"false"</code>, if the presentation type is not
-specified.
+Integer presentation types can also be used with <code>charT</code> and
+<code>bool</code> values. Values of type <code>bool</code> are formatted using
+textual representation, either <code>"true"</code> or <code>"false"</code>, if
+the presentation type is not specified.
 </p>
 
 <p>[ <i>Example:</i><pre>
@@ -1496,6 +1512,10 @@ specified.
 </tr>
 </tbody>
 </table>
+
+<p>
+A format string that doesn't conform to the current specification is invalid.
+</p>
 
 <h4><a name="format.error">19.20.3 Class <code>format_error</code> [format.error]</a></h4>
 
