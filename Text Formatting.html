@@ -1519,7 +1519,138 @@ A format string that doesn't conform to the current specification is invalid.
 </p>
 
 <h4><a name="format.formatter">19.20.3 Formatter [format.formatter]</a></h4>
-<h5>19.20.3.1 Class template <code>basic_format_parse_context</code></h5>
+
+<h5>19.20.3.1 Class template <code>formatter</code></h5>
+
+<!-- Based on http://eel.is/c++draft/unord.hash -->
+<p>
+The functions defined in <a href="#format.functions">[format.functions]</a> use
+specializations of the class template <code>formatter</code> to format
+individual arguments.
+</p>
+
+<p>
+Each specialization of <code>formatter</code> is either enabled or disabled, as
+described below. [ <i>Note:</i> Enabled specializations meet the
+<i>Formatter</i> requirements, and disabled specializations do not.
+<i>— end note</i> ] Each header that declares the template <code>formatter</code>
+provides enabled specializations
+
+<ul>
+<li><pre><code>template &lt;&gt; struct formatter&lt;<i>charT</i>*, <i>charT</i>&gt;;</code></pre>
+<li><pre><code>template &lt;&gt; struct formatter&lt;const <i>charT</i>*, <i>charT</i>&gt;</code></pre>
+<li><pre><code>template &lt;size_t N&gt; struct formatter&lt;const <i>charT</i>[N], <i>charT</i>&gt;</code></pre>
+<li><pre><code>template &lt;class traits, class Allocator&gt;
+  struct formatter&lt;std::basic_string&lt;<i>charT</i>, traits, Allocator&gt;, <i>charT</i>&gt;</code></pre>
+<li><pre><code>template &lt;class traits&gt;
+  struct formatter&lt;std::basic_string_view&lt;<i>charT</i>, traits&gt;, <i>charT</i>&gt;</code></pre>
+<li>specialiazations of <code>formatter</code> for <code>nullptr_t</code>,
+<code>void*</code>, <code>const void*</code>, <code>bool</code>, and all
+cv-unqualified standard integer types, extended integer types, and
+floating-point types as the first template argument and <i>charT</i> as the
+second template argument,
+</ul>
+where <i>charT</i> is <code>char</code> or <code>wchar_t</code>
+(both sets of specializations are provided).
+</p>
+
+<p>
+For any types <code>T</code> and <code>charT</code> for which neither the
+library nor the user provides an explicit or partial specialization of the class
+template <code>formatter</code>, <code>formatter&lt;T, charT&gt;</code> is
+disabled.
+</p>
+
+<p>
+If the library provides an explicit or partial specialization of
+<code>formatter&lt;T, charT&gt;</code>, that specialization is enabled except as
+noted otherwise.
+</p>
+
+<p>
+If <code>F</code> is a disabled specialization of <code>formatter</code>, these
+values are <code>false</code>: <code>is_default_constructible_v&lt;F&gt;</code>,
+<code>is_copy_constructible_v&lt;F&gt;</code>,
+<code>is_move_constructible_v&lt;F&gt;</code>,
+<code>is_copy_assignable_v&lt;F&gt;</code>,
+<code>is_move_assignable_v&lt;F&gt;</code>.
+</p>
+
+<p>
+An enabled specialization <code>formatter&lt;T, charT&gt;</code> will satisfy
+the <i>Formatter</i> requirements.
+</p>
+
+<h5>19.20.3.2 <i>Formatter</i> requirements</h5>
+
+<!-- Based on http://eel.is/c++draft/hash.requirements -->
+<p>
+A type <code>F</code> meets the <i>Formatter</i> requirements if:
+<ul class="itemize">
+<li>it satisfies the <i>Cpp17DefaultConstructible</i>
+    (Table <a href="http://eel.is/c++draft/utility.arg.requirements#tab:defaultconstructible">24</a>),
+    <i>Cpp17CopyConstructible</i>
+    (Table <a href="http://eel.is/c++draft/utility.arg.requirements#tab:copyconstructible">26</a>),
+    <i>Cpp17CopyAssignable</i>
+    (Table <a href="http://eel.is/c++draft/utility.arg.requirements#tab:copyassignable">28</a>), and
+    <i>Cpp17Destructible</i>
+    (Table <a href="http://eel.is/c++draft/utility.arg.requirements#tab:destructible">29</a>) requirements,
+<li>it is swappable
+    (<a href="http://eel.is/c++draft/swappable.requirements">[swappable.requirements]</a>)
+    for lvalues, and
+<li>the expressions shown in Table 1 are valid and have the indicated
+    semantics.
+</ul>
+<p>
+Given character type <code>charT</code>, output iterator type
+<code>OutputIterator</code>, and formatting argument type <code>T</code>, in
+Table 1 <code>f</code> is a value of type <code>F</code>, <code>u</code> is an
+lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
+to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
+<code>basic_format_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
+<code>fc</code> is an lvalue of type
+<code>basic_format_context&lt;OutputIterator, charT&gt;</code> (denoted by
+<code>FC</code>). <code>pc.begin()</code> points to the beginning of the
+<code>format-spec</code> (<a href="#format.syntax">[format.syntax]</a>) portion
+of the format string. If <code>format-spec</code> is empty then either
+<code>pc.begin() == pc.end()</code> or <code>*pc.begin() == '}'</code>.
+</p>
+
+<table>
+<caption>Table 1 — <i>Formatter</i> requirements</caption>
+<thead>
+<tr><th>Expression</th><th>Return type</th><th>Requirement</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><code>f.parse(pc)</code></td>
+<td><code>PC::iterator</code></td>
+<td>
+Shall parse <code>format-spec</code> for type <code>T</code>, store the parsed
+specifiers in <code>*this</code>, and return an iterator past the end of the
+parsed range.
+</td>
+</tr>
+<tr>
+<td><code>f.format(t,&nbsp;fc)</code></td>
+<!-- FormatContext is a template param because we don't know the output
+     iterator type. -->
+<td><code>FC::iterator</code></td>
+<td>
+Shall format <code>t</code> according to the specifiers stored in
+<code>*this</code>, write the output to <code>fc.out()</code> and return an
+iterator past the end of the output range.
+</td>
+</tr>
+<tr>
+<td><code>f.format(u,&nbsp;fc)</code></td>
+<td><code>FC::iterator</code></td>
+<td>Shall not modify u.</td>
+</tr>
+</tbody>
+</table>
+
+<h5>19.20.3.3 Class template <code>basic_format_parse_context</code></h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
@@ -1599,7 +1730,7 @@ argument indexing.</p>
 </dd>
 </dl>
 
-<h5>19.20.3.2 Class template <code>basic_format_context</code></h5>
+<h5>19.20.3.4 Class template <code>basic_format_context</code></h5>
 
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
@@ -1626,7 +1757,7 @@ argument indexing.</p>
 
 <p>
 The class template <code>basic_format_context</code> provides access to format
-string parsing context, output iterator and formatting arguments.
+string parsing context, output iterator, and formatting arguments.
 </p>
 
 <dl>
@@ -1651,128 +1782,6 @@ range.</p>
 access to formatting arguments.</p>
 </dd>
 </dl>
-
-<h5>19.20.3.3 Class template <code>formatter</code></h5>
-
-<!-- Based on http://eel.is/c++draft/unord.hash -->
-<p>
-The functions defined in <a href="#format.functions">[format.functions]</a> use
-specializations of the class template <code>formatter</code> to format individual
-arguments.
-</p>
-
-<p>
-Each specialization of <code>formatter</code> is either enabled or disabled, as
-described below. [ <i>Note:</i> Enabled specializations meet the
-<code>Formatter</code> requirements, and disabled specializations do not.
-<i>— end note</i> ] Each header that declares the template <code>formatter</code>
-provides enabled specializations
-
-<ul>
-<li><code>formatter&lt;char*, char&gt;</code>,
-<li><code>formatter&lt;const char*, char&gt;</code>,
-<li><code>formatter&lt;std::string, char&gt;</code>,
-<li><code>formatter&lt;std::string_view, char&gt;</code>,
-<li><code>formatter&lt;wchar_t*, wchar_t&gt;</code>,
-<li><code>formatter&lt;const wchar_t*, wchar_t&gt;</code>,
-<li><code>formatter&lt;std::wstring, wchar_t&gt;</code>,
-<li><code>formatter&lt;std::wstring_view, wchar_t&gt;</code>,
-<li>specialiazations of <code>formatter</code> for <code>nullptr_t</code>,
-<code>void*</code>, <code>const void*</code>, and all cv-unqualified arithmetic
-types for both <code>char</code> and <code>wchar_t</code>.
-</ul>
-</p>
-
-<p>
-For any type
-<code>T</code> for which neither the library nor the user provides an explicit or
-partial specialization of the class template <code>formatter</code>,
-<code>formatter&lt;T&gt;</code> is disabled.
-</p>
-
-<p>
-If the library provides an explicit or partial specialization of
-<code>formatter&lt;T&gt;</code>, that specialization is enabled except as noted
-otherwise.
-</p>
-
-<p>
-If <code>F</code> is a disabled specialization of <code>formatter</code>, these
-values are <code>false</code>: <code>is_default_constructible_v&lt;F&gt;</code>,
-<code>is_copy_constructible_v&lt;F&gt;</code>,
-<code>is_move_constructible_v&lt;F&gt;</code>,
-<code>is_copy_assignable_v&lt;F&gt;</code>,
-<code>is_move_assignable_v&lt;F&gt;</code>.
-</p>
-
-<p>
-An enabled specialization <code>formatter&lt;T&gt;</code> will satisfy the
-<code>Formatter</code> requirements (Table 1), with <code>T</code> as the
-formatted argument type, the <code>DefaultConstructible</code> requirements, and
-the <code>CopyAssignable</code> requirements.
-</p>
-
-<h5>19.20.3.4 Formatter requirements</h5>
-
-<!-- Based on http://eel.is/c++draft/hash.requirements -->
-<p>
-A type <code>F</code> meets the <code>Formatter</code> requirements if:
-<ul class="itemize">
-<li>it satisfies the <code>CopyConstructible</code> and
-    <code>Destructible</code>  requirements, and
-<li>the expressions shown in Table 1 are valid and have the indicated
-    semantics.
-</ul>
-</p>
-
-<p>
-Given character type <code>charT</code>, output iterator type
-<code>OutputIterator</code>, and formatted argument type <code>T</code>, in
-Table 1 <code>f</code> is a value of type <code>F</code>, <code>u</code> is an
-lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
-to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
-<code>basic_format_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
-<code>fc</code> is an lvalue of type
-<code>basic_format_context&lt;OutputIterator, charT&gt;</code> (denoted by
-<code>FC</code>). <code>pc.begin()</code> points to the beginning of the
-<code>format-spec</code> (<a href="#format.syntax">[format.syntax]</a>) portion
-of the format string. If <code>format-spec</code> is empty then either
-<code>pc.begin() == pc.end()</code> or <code>*pc.begin() == '}'</code>.
-</p>
-
-<table>
-<caption>Table 1 — <code>Formatter</code> requirements</caption>
-<thead>
-<tr><th>Expression</th><th>Return type</th><th>Requirement</th></tr>
-</thead>
-<tbody>
-<tr>
-<td><code>f.parse(pc)</code></td>
-<td><code>PC::iterator</code></td>
-<td>
-Shall parse <code>format-spec</code> for type <code>T</code>, store the parsed
-specifiers in <code>*this</code>, and return an iterator past the end of the
-parsed range.
-</td>
-</tr>
-<tr>
-<td><code>f.format(t,&nbsp;fc)</code></td>
-<!-- FormatContext is a template param because we don't know the output
-     iterator type. -->
-<td><code>FC::iterator</code></td>
-<td>
-Shall format <code>t</code> according to the specifiers stored in
-<code>*this</code>, write the output to <code>fc.out()</code> and return an
-iterator past the end of the output range.
-</td>
-</tr>
-<tr>
-<td><code>f.format(u,&nbsp;fc)</code></td>
-<td><code>FC::iterator</code></td>
-<td>Shall not modify u.</td>
-</tr>
-</tbody>
-</table>
 
 <h4><a name="format.error">19.20.4 Class <code>format_error</code> [format.error]</a></h4>
 
@@ -1813,11 +1822,14 @@ exceptions to report errors from the formatting library.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg {
-    using char_type = typename Context::char_type;                         <i>// exposition only</i>
+    using char_type = typename Context::char_type;                     <i>// exposition only</i>
 
-    variant&lt;monostate, bool, char_type, int, unsigned int, long long int,
-            unsigned long long int, double, long double, const char_type*,
-            basic_string_view&lt;char_type&gt;, const void*, handle&gt; value;      <i>// exposition only</i>
+    variant&lt;monostate, bool, char_type,
+            int, unsigned int, long long int, unsigned long long int,
+            <i>extended-integer-types</i>,
+            double, long double,
+            const char_type*, basic_string_view&lt;char_type&gt;,
+            const void*, handle&gt; value;                                <i>// exposition only</i>
 
   public:
     class handle;
