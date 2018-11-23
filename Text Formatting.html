@@ -1557,6 +1557,12 @@ exceptions to report errors from the formatting library.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg {
+    using char_type = typename Context::char_type;                         <i>// exposition only</i>
+
+    variant&lt;monostate, bool, char_type, int, unsigned int, long long int,
+            unsigned long long int, double, long double, const char_type*,
+            basic_string_view&lt;char_type&gt;, const void*, handle&gt; value;      <i>// exposition only</i>
+
   public:
     class handle;
 
@@ -1566,13 +1572,6 @@ exceptions to report errors from the formatting library.
 
     bool is_arithmetic() const noexcept;
     bool is_integral() const noexcept;
-
-  private:
-    using char_type = typename Context::char_type;                         <i>// exposition only</i>
-
-    variant&lt;monostate, bool, char_type, int, unsigned int, long long int,
-            unsigned long long int, double, long double, const char_type*,
-            basic_string_view&lt;char_type&gt;, const void*, handle&gt; value;      <i>// exposition only</i>
   };
 }</code>
 </pre>
@@ -1613,6 +1612,8 @@ on <code>value.index()</code>.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
+    function&lt;void(Context&amp; ctx) const&gt; func; // Exposition only
+
   public:
     void format(Context&amp; ctx) const;
   };
@@ -1620,8 +1621,8 @@ on <code>value.index()</code>.
 </pre>
 
 <p>
-The class <code>handle</code> describes an object that can refer to a formatting
-function argument of a user-defined type.
+The class <code>handle</code> allows formatting an object of a non-fundamental
+type.
 </p>
 
 <dl>
@@ -1646,23 +1647,14 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 <dt><pre><code>template&lt;class Visitor, class Context&gt;
   <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
 <dd>
-<p><i>Requires:</i>
-The expression in the Effects section shall be a valid expression of the same
-type, for all alternative value types of a formatting argument.
-Otherwise, the program is ill-formed.</p>
-<p><i>Effects:</i>
-Let <code>value</code> be the value stored in <code>arg</code>.
-Returns <code>INVOKE(std::forward<Visitor>(vis), value);</code>.</p>
+<p><i>Returns:</i> <code>visit(vis, arg.value)</code>.</p>
 <p><i>Remarks:</i>
-The return type is the common type of all possible <code>INVOKE</code>
-expressions in the Effects section. Since exact value types are
-implementation-defined, visitors should use type traits to handle multiple
-types.
+The return type is the type of the expression in the <i>Returns</i> section.
 </p>
 <!-- Formatting example: http://eel.is/c%2B%2Bdraft/time.duration.cons
      Compilation test: https://godbolt.org/g/ueEgXX -->
 <p>[ <i>Example:</i><pre>
-<code>  auto uint_value = visit_format_arg([](auto value) -&gt; unsigned {
+<code>  auto ull_value = visit_format_arg([](auto value) -&gt; unsigned long long {
     if constexpr (std::is_unsigned_v&lt;decltype(value)&gt;)
       return value;
     return 0;
@@ -1679,14 +1671,12 @@ types.
   template&lt;class Context&gt;
   class basic_format_args {
   public:
-    using size_type = size_t;
-
     basic_format_args() noexcept;
 
     template&lt;class... Args&gt;
       basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;
 
-    basic_format_arg&lt;Context&gt; get(size_type i) const noexcept;
+    basic_format_arg&lt;Context&gt; get(size_t i) const noexcept;
   };
 }</code>
 </pre>
@@ -1718,7 +1708,7 @@ provides access to the arguments captured in <code>store</code>.
 </dl>
 
 <dl>
-<dt><code>basic_format_arg&lt;Context&gt; get(size_type i) const noexcept;</code></dt>
+<dt><code>basic_format_arg&lt;Context&gt; get(size_t i) const noexcept;</code></dt>
 <dd>
 <p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
 argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
