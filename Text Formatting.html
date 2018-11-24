@@ -169,6 +169,9 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <li>Add a feature test macro.
 <li>Remove tautological Ensures clauses.
 <li>Merge two <code>make_format_args</code> overloads.
+<li>Replace <code>args()</code> with <code>arg(size_t)</code> in
+    <code>basic_format_context</code>.
+<li>Make <code>format_arg_store</code> exposition-only.
 </ul>
 </p>
 
@@ -913,7 +916,7 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   template&lt;class Visitor, class Context&gt;
     <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
-  template&lt;class Context, class... Args&gt; using format_arg_store = <i>unspecified</i>;
+  template&lt;class Context, class... Args&gt; class format_arg_store; // <i>exposition only</i>
 
   template&lt;class Context&gt; class basic_format_args;
   using format_args = basic_format_args&lt;format_context&gt;;
@@ -956,13 +959,11 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   <!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch
        vformat_to_n is not provided but it can be with an iterator adapter. -->
   template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
-    format_to_n_result&lt;O&gt;
-      format_to_n(O out, iter_difference_t&lt;O&gt; n, string_view fmt,
-                  const Args&amp;... args);
+    format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
+                                      string_view fmt, const Args&amp;... args);
   template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
-    format_to_n_result&lt;O&gt;
-      format_to_n(O out, iter_difference_t&lt;O&gt; n, wstring_view fmt,
-                  const Args&amp;... args);
+    format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
+                                      wstring_view fmt, const Args&amp;... args);
 
   template&lt;class... Args&gt;
     size_t formatted_size(string_view fmt, const Args&amp;... args);
@@ -1060,11 +1061,11 @@ valid format string.</p>
 <dl>
 <dt>
 <pre><code>template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
-  format_to_n_result&lt;O&gt;
-    format_to_n(O out, iter_difference_t&lt;O&gt; n, string_view fmt, const Args&amp;... args);
+  format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
+                                    string_view fmt, const Args&amp;... args);
 template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
-  format_to_n_result&lt;O&gt;
-    format_to_n(O out, iter_difference_t&lt;O&gt; n, wstring_view fmt, const Args&amp;... args);</code></pre>
+  format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
+                                    wstring_view fmt, const Args&amp;... args);</code></pre>
 </dt>
 <dd>
 
@@ -1700,12 +1701,20 @@ iterator past the end of the output range.
 <code>namespace std {
   template&lt;class charT&gt;
   class basic_format_parse_context {
+    iterator begin_;                              // <i>exposition only</i>
+    iterator end_;                                // <i>exposition only</i>
+    enum indexing { unknown, manual, automatic }; // <i>exposition only</i>
+    indexing indexing_;                           // <i>exposition only</i>
+    size_t next_arg_id_;                          // <i>exposition only</i>
+
   public:
     using char_type = charT;
     using const_iterator = typename basic_string_view&lt;charT&gt;::const_iterator;
     using iterator = const_iterator;
 
     explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt) noexcept;
+    basic_format_parse_context(const basic_format_parse_context&amp;) = delete;
+    basic_format_parse_context&amp; operator=(const basic_format_parse_context&amp;) = delete;
 
     constexpr const_iterator begin() const noexcept;
     constexpr const_iterator end() const noexcept;
@@ -1718,9 +1727,9 @@ iterator past the end of the output range.
 </pre>
 
 <p>
-The class template <code>basic_format_parse_context</code> holds
-the format string range being parsed and the argument counter for automatic
-indexing.
+An instance of <code>basic_format_parse_context</code> holds the format
+string parsing state consisting of the format string range being parsed and the
+argument counter for automatic indexing.
 </p>
 
 <dl>
@@ -1735,41 +1744,41 @@ template parameter <code>charT</code>.</p>
 </dd-->
 <dt><code>explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt;	fmt) noexcept;</code></dt>
 <dd>
-<p><i>Ensures</i>: <code>begin() == fmt.begin()</code>,
-<code>end() == fmt.end()</code>, and <code>next_arg_id() == 0</code>.</p>
+<p><i>Effects</i>: Initializes <code>begin_</code> with <code>fmt.begin()</code>,
+<code>end_</code> with <code>fmt.end()</code>, <code>indexing_</code> with
+<code>unknown</code>, and <code>next_arg_id_</code> with <code>0</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
 <dd>
 <!-- Similar to http://eel.is/c++draft/string.iterators -->
-<p><i>Returns</i>: An iterator referring to the first character in the format
-string range being parsed.</p>
+<p><i>Returns</i>: <code>begin_</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator end() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: An iterator referring to the position one past the last
-character in the format string range being parsed.</p>
+<p><i>Returns</i>: <code>end_</code>.</p>
 </dd>
-<dt><code>void advance_to(iterator it);</code></dt>
+<dt><code>constexpr void advance_to(iterator it);</code></dt>
 <dd>
-<p><i>Effects</i>: Advances the beginning of the parsed format string range to
-<code>it</code>.</p>
-<p><i>Requires</i>: <code>end()</code> shall be reachable from <code>it</code>.
-<p><i>Ensures</i>: <code>begin() == it</code>.</p>
+<p><i>Requires</i>: <code>end()</code> shall be reachable from <code>it</code>.</p>
+<p><i>Effects</i>: Equivalent to: <code>begin_ = it</code>.</p>
 </dd>
 <dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
-<p><i>Returns</i>: The next argument identifier starting from 0. Each subsequent
-call to <code>next_arg_id</code> gives an identifier which is 1 greater than the
-one returned from the previous call for the same context object.</p>
-<p><i>Throws</i>: <code>format_error</code> if <code>check_arg_id</code>
-has been called earlier which indicates mixing of automatic and manual
-argument indexing.</p>
+<p><i>Effects</i>: Equivalent to:
+<pre><code>  if (indexing_ == unknown)
+    indexing_ = automatic;
+  return next_arg_id_++;</code></pre></p>
+<p><i>Throws</i>: <code>format_error</code> if <code>indexing_ == manual</code>
+which indicates mixing of automatic and manual argument indexing.</p>
 </dd>
 <dt><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
-<p><i>Throws</i>: <code>format_error</code> if <code>next_arg_id</code>
-has been called earlier which indicates mixing of automatic and manual
-argument indexing.</p>
+<p><i>Effects</i>: Equivalent to:
+<pre><code>  if (indexing_ == unknown)
+    indexing_ = manual;</code></pre></p>
+<p><i>Throws</i>: <code>format_error</code> if
+<code>indexing_ == automatic</code> which indicates mixing of automatic and
+manual argument indexing.</p>
 </dd>
 </dl>
 
@@ -1780,84 +1789,92 @@ argument indexing.</p>
 <code>namespace std {
   template&lt;class O, class charT&gt; requires OutputIterator&lt;O, const charT&amp;&gt;
   class basic_format_context {
+    basic_format_parse_context&lt;charT&gt; parse_context_; // <i>exposition only</i>
+    basic_format_args&lt;basic_format_context&gt; args_;    // <i>exposition only</i>
+    O out_;                                           // <i>exposition only</i>
+
   public:
     using iterator = O;
     using char_type = charT;
-    using args_type = basic_format_args&lt;basic_format_context&gt;;
 
     template&lt;class T&gt;
       using formatter_type = formatter&lt;T&gt;;
 
-    basic_format_parse_context&lt;charT&gt;&amp; parse_context();
+    basic_format_parse_context&lt;charT&gt;&amp; parse_context() noexcept;
+    basic_format_arg&lt;basic_format_context&gt; arg(size_t id) const;
 
     iterator out();
     void advance_to(iterator it);
-
-    args_type args() const;
   };
 }</code>
 </pre>
 
 <p>
-The class template <code>basic_format_context</code> provides access to format
-string parsing context, output iterator, and formatting arguments.
+An instance of <code>basic_format_context</code> holds formatting state
+consisting of the format string parsing context, formatting arguments, and
+output iterator.
 </p>
 
 <dl>
-<dt><code>basic_format_parse_context&lt;charT&gt;&amp; parse_context();</code></dt>
+<dt><code>basic_format_parse_context&lt;charT&gt;&amp; parse_context() noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: A reference to the format string parsing context.</p>
+<p><i>Returns</i>: <code>parse_context_</code>.</p>
+</dd>
+<dt><code>basic_format_args&lt;basic_format_context&gt; arg(size_t id) const;</code></dt>
+<dd>
+<p><i>Returns</i>: <code>args_.get(i)</code>.</p>
 </dd>
 <dt><code>iterator out();</code></dt>
 <dd>
-<p><i>Returns</i>: An iterator referring to the current position in the output
-range.</p>
+<p><i>Returns</i>: <code>out_</code>.</p>
 </dd>
 <dt><code>void advance_to(iterator it);</code></dt>
 <dd>
-<p><i>Effects</i>: Advances the current position in the output range to
-<code>it</code>.</p>
-<p><i>Ensures</i>: <code>out() == it</code>.</p>
-</dd>
-<dt><code>args_type args() const;</code></dt>
-<dd>
-<p><i>Returns</i>: A copy of the <code>args_type</code> object that provides
-access to formatting arguments.</p>
+<p><i>Effects</i>: Equivalent to: <code>out_ = it</code>.</p>
 </dd>
 </dl>
-
-<h4><a name="format.error">19.20.4 Class <code>format_error</code> [format.error]</a></h4>
-
-<!-- Wording similar to http://eel.is/c++draft/range.error -->
-<pre>
-<code>namespace std {
-  class format_error : public runtime_error {
-  public:
-    explicit format_error(const string&amp; what_arg);
-    explicit format_error(const char* what_arg);
+<p>[ <i>Example:</i><pre>
+<code>  struct S {
+    int value;
   };
-}</code>
-</pre>
 
-<p>
-The class <code>format_error</code> defines the type of objects thrown as
-exceptions to report errors from the formatting library.
+  template&lt;&gt; struct std::formatter&lt;S&gt; {
+    int width_arg_id = 0;
+
+    // Parses a width argument id in the format { &lt;digit&gt; }.
+    constexpr auto parse(format_parse_context&amp; ctx) {
+      auto iter = ctx.begin();
+      auto get_char = [&amp;]() { return iter != ctx.end() ? *iter : 0; };
+      if (get_char() != '{')
+        return iter;
+      ++iter;
+      char c = get_char();
+      if (!std::isdigit(c) || (++iter, get_char()) != '}')
+        throw format_error("invalid format");
+      width_arg_id = c - '0';
+      ctx.check_arg_id(width_arg_id);
+      return ++iter;
+    }
+
+    // Formats S with width given by the argument width_arg_id.
+    auto format(S s, format_context&amp; ctx) {
+      int width = visit_format_arg([](auto value) -&gt; int {
+        if constexpr (!std::is_integral_v&lt;decltype(value)&gt;)
+          throw format_error("width is not integral");
+        else if (value &lt; 0 || value &gt; std::numeric_limits&lt;int&gt;::max())
+          throw format_error("invalid width");
+        else
+          return value;
+        }, ctx.arg(width_arg_id));
+      return format_to(ctx.out(), "{0:{1}}", s.value, width);
+    }
+  };
+
+  std::string s = format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
 </p>
 
-<dl>
-<dt><code>format_error(const string&amp; what_arg);</code></dt>
-<dd>
-  <p><i>Ensures</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
-  </p>
-</dd>
-<dt><code>format_error(const char* what_arg);</code></dt>
-<dd>
-  <p><i>Ensures</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
-</dd>
-</dl>
-
-<h4><a name="format.arguments">19.20.5 Arguments [format.arguments]</a></h4>
-<h5>19.20.5.1 Class template <code>basic_format_arg</code></h5>
+<h4><a name="format.arguments">19.20.4 Arguments [format.arguments]</a></h4>
+<h5>19.20.4.1 Class template <code>basic_format_arg</code></h5>
 <!-- Argument access API is provided for use cases such as dynamic width:
      https://godbolt.org/g/wNhkk7 -->
 
@@ -1872,7 +1889,7 @@ exceptions to report errors from the formatting library.
             <i>extended-integer-types</i>,
             double, long double,
             const char_type*, basic_string_view&lt;char_type&gt;,
-            const void*, handle&gt; value;                                <i>// exposition only</i>
+            const void*, handle&gt; value_;                               <i>// exposition only</i>
 
   public:
     class handle;
@@ -1900,22 +1917,22 @@ argument for user-defined formatters.
 </dd>
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>!holds_alternative&lt;monostate&gt;(value)</code>.</p>
+<p><i>Returns</i>: <code>!holds_alternative&lt;monostate&gt;(value_)</code>.</p>
 </dd>
 <dt><code>bool is_arithmetic() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>visit([](auto v) { return is_arithmetic_v&lt;decltype(v)&gt;; }, value)</code>.</p>
+<p><i>Returns</i>: <code>visit([](auto v) { return is_arithmetic_v&lt;decltype(v)&gt;; }, value_)</code>.</p>
 </dd>
 <dt><code>bool is_integral() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>visit([](auto v) { return is_integral_v&lt;decltype(v)&gt;; }, value)</code>.</p>
+<p><i>Returns</i>: <code>visit([](auto v) { return is_integral_v&lt;decltype(v)&gt;; }, value_)</code>.</p>
 </dd>
 </dl>
 
 [ <i>Note:</i> Implementations are encouraged to take advantage of the
-ordering of the alternative types in <code>value</code> and implement
+ordering of the alternative types in <code>value_</code> and implement
 <code>is_arithmetic</code> and <code>is_integral</code> more efficiently based
-on <code>value.index()</code>.
+on <code>value_.index()</code>.
 <i>— end note</i> ]
 
 <!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
@@ -1923,7 +1940,7 @@ on <code>value.index()</code>.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
-    function&lt;void(Context&amp; ctx) const&gt; func; // Exposition only
+    function&lt;void(Context&amp; ctx) const&gt; func; // <i>exposition only</i>
 
   public:
     void format(Context&amp; ctx) const;
@@ -1951,31 +1968,21 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 </p>
 </dd>
 
-<h5>19.20.5.2 Argument visitation</h5>
+<h5>19.20.4.2 Argument visitation</h5>
 
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl>
 <dt><pre><code>template&lt;class Visitor, class Context&gt;
   <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
 <dd>
-<p><i>Returns:</i> <code>visit(vis, arg.value)</code>.</p>
+<p><i>Returns:</i> <code>visit(vis, arg.value_)</code>.</p>
 <p><i>Remarks:</i>
 The return type is the type of the expression in the <i>Returns</i> section.
-</p>
-<!-- Formatting example: http://eel.is/c%2B%2Bdraft/time.duration.cons
-     Compilation test: https://godbolt.org/g/ueEgXX -->
-<p>[ <i>Example:</i><pre>
-<code>  auto ull_value = visit_format_arg([](auto value) -&gt; unsigned long long {
-    if constexpr (std::is_unsigned_v&lt;decltype(value)&gt;)
-      return value;
-    return 0;
-  }, arg);</code>
-</pre> — <i>end example</i> ]
 </p>
 </dd>
 </dl>
 
-<h5>19.20.5.3 Class template <code>basic_format_args</code></h5>
+<h5>19.20.4.3 Class template <code>basic_format_args</code></h5>
 
 <pre>
 <code>namespace std {
@@ -2027,7 +2034,7 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 </dd>
 </dl>
 
-<h5>19.20.5.4 Function template <code>make_format_args</code></h5>
+<h5>19.20.4.4 Function template <code>make_format_args</code></h5>
 
 <dl>
 <dt>
@@ -2043,7 +2050,7 @@ that refers to formatting arguments <code>args</code>.
 </dd>
 </dl>
 
-<h5>19.20.5.5 Function template <code>make_wformat_args</code></h5>
+<h5>19.20.4.5 Function template <code>make_wformat_args</code></h5>
 
 <dl>
 <dt>
@@ -2056,6 +2063,36 @@ that refers to formatting arguments <code>args</code>.
 <i>Effects</i>: The function returns a <code>format_arg_store</code> object
 that refers to formatting arguments <code>args</code>.
 </p>
+</dd>
+</dl>
+
+<h4><a name="format.error">19.20.5 Class <code>format_error</code> [format.error]</a></h4>
+
+<!-- Wording similar to http://eel.is/c++draft/range.error -->
+<pre>
+<code>namespace std {
+  class format_error : public runtime_error {
+  public:
+    explicit format_error(const string&amp; what_arg);
+    explicit format_error(const char* what_arg);
+  };
+}</code>
+</pre>
+
+<p>
+The class <code>format_error</code> defines the type of objects thrown as
+exceptions to report errors from the formatting library.
+</p>
+
+<dl>
+<dt><code>format_error(const string&amp; what_arg);</code></dt>
+<dd>
+  <p><i>Ensures</i>: <code>strcmp(what(), what_arg.c_str()) == 0</code>.
+  </p>
+</dd>
+<dt><code>format_error(const char* what_arg);</code></dt>
+<dd>
+  <p><i>Ensures</i>: <code>strcmp(what(), what_arg) == 0</code>.</p>
 </dd>
 </dl>
 
