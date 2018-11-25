@@ -885,7 +885,7 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
 <h3>19.20 Formatting utilities [format]</h3>
 
 <!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
-     Code check: https://godbolt.org/z/KrClWw -->
+     Code check: https://godbolt.org/z/-dsVgq -->
 <h4>19.20.1 Header <code>&lt;format&gt;</code> synopsis [format.syn]</h4>
 
 <pre>
@@ -1038,9 +1038,9 @@ valid format string.</p>
 
 <dl>
 <dt>
-<pre><code>template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
+<pre><code>template&lt;OutputIterator&lt;const char&amp;&gt; O&gt;
   O vformat_to(O out, string_view fmt, format_args_t&lt;O, char&gt; args);
-template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
+template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O&gt;
   O vformat_to(O out, wstring_view fmt, format_args_t&lt;O, wchar_t&gt; args);</code></pre>
 </dt>
 <dd>
@@ -1700,6 +1700,12 @@ iterator past the end of the output range.
 <code>namespace std {
   template&lt;class charT&gt;
   class basic_format_parse_context {
+  public:
+    using char_type = charT;
+    using const_iterator = typename basic_string_view&lt;charT&gt;::const_iterator;
+    using iterator = const_iterator;
+
+  private:
     iterator begin_;                              // <i>exposition only</i>
     iterator end_;                                // <i>exposition only</i>
     enum indexing { unknown, manual, automatic }; // <i>exposition only</i>
@@ -1707,17 +1713,13 @@ iterator past the end of the output range.
     size_t next_arg_id_;                          // <i>exposition only</i>
 
   public:
-    using char_type = charT;
-    using const_iterator = typename basic_string_view&lt;charT&gt;::const_iterator;
-    using iterator = const_iterator;
-
     explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt) noexcept;
     basic_format_parse_context(const basic_format_parse_context&amp;) = delete;
     basic_format_parse_context&amp; operator=(const basic_format_parse_context&amp;) = delete;
 
     constexpr const_iterator begin() const noexcept;
     constexpr const_iterator end() const noexcept;
-    constexpr void advance_to(const_iterator it);
+    constexpr void advance_to(iterator it);
 
     constexpr size_t next_arg_id();
     constexpr void check_arg_id(size_t id);
@@ -1759,7 +1761,7 @@ template parameter <code>charT</code>.</p>
 <dt><code>constexpr void advance_to(iterator it);</code></dt>
 <dd>
 <p><i>Requires</i>: <code>end()</code> shall be reachable from <code>it</code>.</p>
-<p><i>Effects</i>: Equivalent to: <code>begin_ = it</code>.</p>
+<p><i>Effects</i>: Equivalent to: <code>begin_ = it;</code></p>
 </dd>
 <dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
@@ -1820,9 +1822,9 @@ output iterator.
 <dd>
 <p><i>Returns</i>: <code>parse_context_</code>.</p>
 </dd>
-<dt><code>basic_format_args&lt;basic_format_context&gt; arg(size_t id) const;</code></dt>
+<dt><code>basic_format_arg&lt;basic_format_context&gt; arg(size_t id) const;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>args_.get(i)</code>.</p>
+<p><i>Returns</i>: <code>args_.get(id)</code>.</p>
 </dd>
 <dt><code>iterator out();</code></dt>
 <dd>
@@ -1830,7 +1832,7 @@ output iterator.
 </dd>
 <dt><code>void advance_to(iterator it);</code></dt>
 <dd>
-<p><i>Effects</i>: Equivalent to: <code>out_ = it</code>.</p>
+<p><i>Effects</i>: Equivalent to: <code>out_ = it;</code></p>
 </dd>
 </dl>
 <p>[ <i>Example:</i><pre>
@@ -1882,36 +1884,37 @@ output iterator.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg {
-    using char_type = typename Context::char_type;                     <i>// exposition only</i>
+  public:
+    class handle;
+
+    using char_type = typename Context::char_type;                       <i>// exposition only</i>
 
     variant&lt;monostate, bool, char_type,
             int, unsigned int, long long int, unsigned long long int,
             double, long double,
             const char_type*, basic_string_view&lt;char_type&gt;,
-            const void*, handle&gt; value_;                               <i>// exposition only</i>
-
-  public:
-    class handle;
+            const void*, handle&gt; value;                                  <i>// exposition only</i>
 
     basic_format_arg() noexcept;
 
-    template&lt;Integral I&gt; explicit basic_format_arg(I val) noexcept;    <i>// exposition only</i>
-    explicit basic_format_arg(float val) noexcept;                     <i>// exposition only</i>
-    explicit basic_format_arg(double val) noexcept;                    <i>// exposition only</i>
-    explicit basic_format_arg(long double val) noexcept;               <i>// exposition only</i>
-    explicit basic_format_arg(const char_type* val) noexcept;          <i>// exposition only</i>
-    explicit basic_format_arg(const void* val) noexcept;               <i>// exposition only</i>
+    template&lt;Integral I&gt; explicit basic_format_arg(I val) noexcept;      <i>// exposition only</i>
+    explicit basic_format_arg(float val) noexcept;                       <i>// exposition only</i>
+    explicit basic_format_arg(double val) noexcept;                      <i>// exposition only</i>
+    explicit basic_format_arg(long double val) noexcept;                 <i>// exposition only</i>
+    explicit basic_format_arg(const char_type* val) noexcept;            <i>// exposition only</i>
+    explicit basic_format_arg(const void* val) noexcept;                 <i>// exposition only</i>
+    explicit basic_format_arg(nullptr_t) noexcept;                       <i>// exposition only</i>
 
     template&lt;class traits&gt;
       explicit basic_format_arg(
-        string_view&lt;char_type, traits&gt; val) noexcept;                  <i>// exposition only</i>
+        basic_string_view&lt;char_type, traits&gt; val) noexcept;              <i>// exposition only</i>
 
     template&lt;class traits, class Allocator&gt;
       explicit basic_format_arg(
-        const string&lt;char_type, traits, Allocator&gt;&amp; val) noexcept;     <i>// exposition only</i>
+        const basic_string&lt;char_type, traits, Allocator&gt;&amp; val) noexcept; <i>// exposition only</i>
 
     template&lt;class T&gt;
-      explicit basic_format_arg(const T&amp; val) noexcept;                <i>// exposition only</i>
+      explicit basic_format_arg(const T&amp; val) noexcept;                  <i>// exposition only</i>
 
     explicit operator bool() const noexcept;
 
@@ -1937,25 +1940,25 @@ explicit basic_format_arg(I val) noexcept;</code></dt>
 <p><i>Effects</i>:
 <ul class="itemize">
 <li>if <code>I</code> is <code>bool</code> or <code>char_type</code>,
-    initializes <code>value_</code> with <code>val</code>,
+    initializes <code>value</code> with <code>val</code>,
 <li>if <code>I</code> is <code>char</code> and <code>char_type</code> is
-    <code>wchar_t</code>, initializes <code>value_</code> with
+    <code>wchar_t</code>, initializes <code>value</code> with
     <code>static_cast&lt;wchar_t&gt;(val)</code>,
 <li>if <code>I</code> is a standard signed integer type or an extended signed
     integer type and <code>sizeof(I) &lt;= sizeof(int)</code>, initializes
-    <code>value_</code> with <code>static_cast&lt;int&gt;(val)</code>,
+    <code>value</code> with <code>static_cast&lt;int&gt;(val)</code>,
 <li>if <code>I</code> is a standard unsigned integer type or an extended
     unsigned integer type and <code>sizeof(I) &lt;= sizeof(unsigned int)</code>,
-    initializes <code>value_</code> with
+    initializes <code>value</code> with
     <code>static_cast&lt;unsigned int&gt;(val)</code>,
 <li>if <code>I</code> is a standard signed integer type or an extended signed
     integer type and <code>sizeof(I) &lt;= sizeof(long long int)</code>,
-    initializes <code>value_</code> with
+    initializes <code>value</code> with
     <code>static_cast&lt;long long int&gt;(val)</code>,
 <li>if <code>I</code> is a standard unsigned integer type or an extended
     unsigned integer type and
     <code>sizeof(I) &lt;= sizeof(unsigned long long int)</code>, initializes
-    <code>value_</code> with
+    <code>value</code> with
     <code>static_cast&lt;unsigned long long int&gt;(val)</code>,
 <li>otherwise the program is ill-formed.
 </ul>
@@ -1964,8 +1967,8 @@ explicit basic_format_arg(I val) noexcept;</code></dt>
 
 <dt><code>explicit basic_format_arg(float val) noexcept;</code></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>value_</code> with
-  <code>static_cast&lt;double&gt;(value)</code>.</p>
+  <p><i>Effects</i>: Initializes <code>value</code> with
+  <code>static_cast&lt;double&gt;(val)</code>.</p>
 </dd>
 
 <dt><code>explicit basic_format_arg(double val) noexcept;<br>
@@ -1973,28 +1976,34 @@ explicit basic_format_arg(long double val) noexcept;<br>
 explicit basic_format_arg(const char_type* val) noexcept;<br>
 explicit basic_format_arg(const void* val) noexcept;</code></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <p><i>Effects</i>: Initializes <code>value</code> with
   <code>val</code>.</p>
 </dd>
 
-<dt><pre><code>template&lt;class traits&gt;
-  explicit basic_format_arg(string_view&lt;char_type, traits&gt; val) noexcept;</code></pre></dt>
+<dt><code>explicit basic_format_arg(nullptr_t) noexcept;</code></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <p><i>Effects</i>: Initializes <code>value</code> with
+  <code>static_cast&lt;const void*&gt;(nullptr)</code>.</p>
+</dd>
+
+<dt><pre><code>template&lt;class traits&gt;
+  explicit basic_format_arg(basic_string_view&lt;char_type, traits&gt; val) noexcept;</code></pre></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value</code> with
   <code>basic_string_view&lt;char_type&gt;(val.data(), val.size())</code>.</p>
 </dd>
 
 <dt><pre><code>template&lt;class traits, class Allocator&gt;
   explicit basic_format_arg(
-    const string&lt;char_type, traits, Allocator&gt;&amp; val) noexcept;</code></pre></dt>
+    const basic_string&lt;char_type, traits, Allocator&gt;&amp; val) noexcept;</code></pre></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <p><i>Effects</i>: Initializes <code>value</code> with
   <code>basic_string_view&lt;char_type&gt;(val.data(), val.size())</code>.</p>
 </dd>
 
 <dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T&amp; val) noexcept;</code></pre></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <p><i>Effects</i>: Initializes <code>value</code> with
   <code>handle(val)</code>.</p>
   <p><i>Remarks</i>: This constructor shall not participate in overload
   resolution unless <code>formatter&lt;T, char_type&gt;</code> is enabled.</p>
@@ -2002,22 +2011,22 @@ explicit basic_format_arg(const void* val) noexcept;</code></dt>
 
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>!holds_alternative&lt;monostate&gt;(value_)</code>.</p>
+<p><i>Returns</i>: <code>!holds_alternative&lt;monostate&gt;(value)</code>.</p>
 </dd>
 <dt><code>bool is_arithmetic() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>visit([](auto v) { return is_arithmetic_v&lt;decltype(v)&gt;; }, value_)</code>.</p>
+<p><i>Returns</i>: <code>visit([](auto v) { return is_arithmetic_v&lt;decltype(v)&gt;; }, value)</code>.</p>
 </dd>
 <dt><code>bool is_integral() const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>visit([](auto v) { return is_integral_v&lt;decltype(v)&gt;; }, value_)</code>.</p>
+<p><i>Returns</i>: <code>visit([](auto v) { return is_integral_v&lt;decltype(v)&gt;; }, value)</code>.</p>
 </dd>
 </dl>
 
 [ <i>Note:</i> Implementations are encouraged to take advantage of the
-ordering of the alternative types in <code>value_</code> and implement
+ordering of the alternative types in <code>value</code> and implement
 <code>is_arithmetic</code> and <code>is_integral</code> more efficiently as a
-range check on <code>value_.index()</code>.
+range check on <code>value.index()</code>.
 <i>— end note</i> ]
 
 <!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
@@ -2025,11 +2034,11 @@ range check on <code>value_.index()</code>.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
-    const void* ptr_;                       // <i>exposition only</i>
-    void (*format_)(Context&amp;, const void*); // <i>exposition only</i>
+    const void* ptr_;                                         // <i>exposition only</i>
+    void (*format_)(Context&amp;, const void*);                   // <i>exposition only</i>
 
   public:
-    template&lt;class T&gt; handle(const T&amp; val); // <i>exposition only</i>
+    template&lt;class T&gt; explicit handle(const T&amp; val) noexcept; // <i>exposition only</i>
 
     void format(Context&amp; ctx) const;
   };
@@ -2042,13 +2051,13 @@ type.
 </p>
 
 <dl>
-<dt><code>template&lt;class T&gt; handle(const T&amp; val);</code></dt>
+<dt><code>template&lt;class T&gt; explicit handle(const T&amp; val) noexcept;</code></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>ptr_</code> to <code>&amp;val</code> and
-  <code>format_</code> to <pre><code>[](Context&amp; ctx, const void* ptr) {
+  <p><i>Effects</i>: Initializes <code>ptr_</code> with <code>&amp;val</code>
+  and <code>format_</code> with <pre><code>[](Context&amp; ctx, const void* ptr) {
     typename Context::template formatter_type&lt;T&gt; f;
     ctx.parse_context().advance_to(f.parse(ctx.parse_context()));
-    ctx.advance_to(f.format(*static_cast&lt;const T*&gt;, ctx));
+    ctx.advance_to(f.format(*static_cast&lt;const T*&gt;(ptr), ctx));
   }</code></pre></p>
 </dd>
 <dt><code>void format(Context&amp; ctx) const;</code></dt>
@@ -2064,7 +2073,7 @@ type.
 <dt><pre><code>template&lt;class Visitor, class Context&gt;
   <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></pre></dt>
 <dd>
-<p><i>Returns:</i> <code>visit(vis, arg.value_)</code>.</p>
+<p><i>Returns:</i> <code>visit(vis, arg.value)</code>.</p>
 <p><i>Remarks:</i>
 The return type is the type of the expression in the <i>Returns</i> section.
 </p>
@@ -2111,7 +2120,7 @@ arguments.
 <dl>
 <dt><code>basic_format_args() noexcept;</code></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>size_</code> to <code>0</code>.</p>
+  <p><i>Effects</i>: Initializes <code>size_</code> with <code>0</code>.</p>
 </dd>
 </dl>
 
@@ -2119,8 +2128,8 @@ arguments.
 <dt><pre><code>template&lt;class... Args&gt;
   basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;</code></pre></dt>
 <dd>
-  <p><i>Effects</i>: Initializes <code>size_</code> to
-  <code>sizeof...(Args)</code> and <code>data_</code> to <code>store.args.data()</code>.
+  <p><i>Effects</i>: Initializes <code>size_</code> with
+  <code>sizeof...(Args)</code> and <code>data_</code> with <code>store.args.data()</code>.
 </p>
 </dd>
 </dl>
@@ -2128,7 +2137,7 @@ arguments.
 <dl>
 <dt><code>basic_format_arg&lt;Context&gt; get(size_t i) const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: <code>i &lt; size_ ? args_[i] : {}</code>.</p>
+<p><i>Returns</i>: <code>i &lt; size_ ? data_[i] : basic_format_arg&lt;Context&gt;()</code>.</p>
 </dd>
 </dl>
 
@@ -2145,7 +2154,7 @@ former. <i>— end note</i> ]
   format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-  <p><i>Returns</i>: <code>{basic_format_args&lt;Context&gt;(args...)}</code>.</p>
+  <p><i>Returns</i>: <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
 
@@ -2157,7 +2166,7 @@ former. <i>— end note</i> ]
   format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-  <p><i>Returns</i>: <code>{basic_format_args&lt;Context&gt;(args...)}</code>.</p>
+  <p><i>Returns</i>: <code>{basic_format_arg&lt;wformat_context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
 
