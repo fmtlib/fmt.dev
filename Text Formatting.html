@@ -916,7 +916,7 @@ Add a new section in 19 <a href="http://eel.is/c++draft/#utilities">[utilities]<
   template&lt;class Visitor, class Context&gt;
     <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
-  template&lt;class Context, class... Args&gt; class format_arg_store; // <i>exposition only</i>
+  template&lt;class Context, class... Args&gt; struct format_arg_store; // <i>exposition only</i>
 
   template&lt;class Context&gt; class basic_format_args;
   using format_args = basic_format_args&lt;format_context&gt;;
@@ -1536,8 +1536,6 @@ A format string that doesn't conform to the current specification is invalid.
 
 <h4><a name="format.formatter">19.20.3 Formatter [format.formatter]</a></h4>
 
-<h5>19.20.3.1 Class template <code>formatter</code></h5>
-
 <!-- Based on http://eel.is/c++draft/unord.hash -->
 <p>
 The functions defined in <a href="#format.functions">[format.functions]</a> use
@@ -1606,26 +1604,26 @@ the <i>Formatter</i> requirements.
 
 <p>[ <i>Example:</i><pre><code>  #include &lt;format&gt;
 
-  struct foo {
-    unsigned value;
-  };
+  enum color { red, green, blue };
 
-  template&lt;&gt; struct std::formatter&lt;foo&gt; : std::formatter&lt;unsigned&gt; {
-    auto format(foo f, format_context&amp; ctx) {
-      return formatter&lt;unsigned&gt;::format(f.value, ctx);
+  const char* color_names[] = { "red", "green", "blue" };
+
+  template&lt;&gt; struct std::formatter&lt;color&gt; : std::formatter&lt;const char*&gt; {
+    auto format(color c, format_context&amp; ctx) {
+      return formatter&lt;const char*&gt;::format(color_names[c], ctx);
     }
   };
 
-  struct bar {};
+  struct err {};
 
-  string s0 = std::format("{}", 42);      // OK: library provided formatter
-  string s1 = std::format("{}", L"baz");  // Ill-formed: disabled formatter
-  string s2 = std::format("{}", foo{42}); // OK: user provided formatter
-  string s3 = std::format("{}", bar{});   // Ill-formed: disabled formatter</code>
+  string s0 = std::format("{}", 42);     // OK: library-provided formatter
+  string s1 = std::format("{}", L"foo"); // Ill-formed: disabled formatter
+  string s2 = std::format("{}", red);    // OK: user-provided formatter
+  string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
 </p>
 
-<h5>19.20.3.2 <i>Formatter</i> requirements</h5>
+<h5>19.20.3.1 <i>Formatter</i> requirements [formatter.requirements]</h5>
 
 <!-- Based on http://eel.is/c++draft/hash.requirements -->
 <p>
@@ -1694,7 +1692,8 @@ iterator past the end of the output range.
 </tbody>
 </table>
 
-<h5>19.20.3.3 Class template <code>basic_format_parse_context</code></h5>
+<h5>19.20.3.2 Class template <code>basic_format_parse_context</code>
+[format.parse_context]</h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
@@ -1782,7 +1781,8 @@ manual argument indexing.</p>
 </dd>
 </dl>
 
-<h5>19.20.3.4 Class template <code>basic_format_context</code></h5>
+<h5>19.20.3.3 Class template <code>basic_format_context</code>
+[format.context]</h5>
 
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
@@ -1874,7 +1874,7 @@ output iterator.
 </p>
 
 <h4><a name="format.arguments">19.20.4 Arguments [format.arguments]</a></h4>
-<h5>19.20.4.1 Class template <code>basic_format_arg</code></h5>
+<h5>19.20.4.1 Class template <code>basic_format_arg</code> [format.arg]</h5>
 <!-- Argument access API is provided for use cases such as dynamic width:
      https://godbolt.org/g/wNhkk7 -->
 
@@ -1886,7 +1886,6 @@ output iterator.
 
     variant&lt;monostate, bool, char_type,
             int, unsigned int, long long int, unsigned long long int,
-            <i>extended-integer-types</i>,
             double, long double,
             const char_type*, basic_string_view&lt;char_type&gt;,
             const void*, handle&gt; value_;                               <i>// exposition only</i>
@@ -1895,6 +1894,24 @@ output iterator.
     class handle;
 
     basic_format_arg() noexcept;
+
+    template&lt;Integral I&gt; explicit basic_format_arg(I val) noexcept;    <i>// exposition only</i>
+    explicit basic_format_arg(float val) noexcept;                     <i>// exposition only</i>
+    explicit basic_format_arg(double val) noexcept;                    <i>// exposition only</i>
+    explicit basic_format_arg(long double val) noexcept;               <i>// exposition only</i>
+    explicit basic_format_arg(const char_type* val) noexcept;          <i>// exposition only</i>
+    explicit basic_format_arg(const void* val) noexcept;               <i>// exposition only</i>
+
+    template&lt;class traits&gt;
+      explicit basic_format_arg(
+        string_view&lt;char_type, traits&gt; val) noexcept;                  <i>// exposition only</i>
+
+    template&lt;class traits, class Allocator&gt;
+      explicit basic_format_arg(
+        const string&lt;char_type, traits, Allocator&gt;&amp; val) noexcept;     <i>// exposition only</i>
+
+    template&lt;class T&gt;
+      explicit basic_format_arg(const T&amp; val) noexcept;                <i>// exposition only</i>
 
     explicit operator bool() const noexcept;
 
@@ -1912,9 +1929,75 @@ argument for user-defined formatters.
 
 <dl>
 <dt><code>basic_format_arg() noexcept;</code></dt>
+<dd><p><i>Ensures</i>: <code>!(*this)</code>.</p></dd>
+
+<dt><code>template&lt;Integral I&gt;
+explicit basic_format_arg(I val) noexcept;</code></dt>
 <dd>
-<p><i>Ensures</i>: <code>!(*this)</code>.</p>
+<p><i>Effects</i>:
+<ul class="itemize">
+<li>if <code>I</code> is <code>bool</code> or <code>char_type</code>,
+    initializes <code>value_</code> with <code>val</code>,
+<li>if <code>I</code> is <code>char</code> and <code>char_type</code> is
+    <code>wchar_t</code>, initializes <code>value_</code> with
+    <code>static_cast&lt;wchar_t&gt;(val)</code>,
+<li>if <code>I</code> is a standard signed integer type or an extended signed
+    integer type and <code>sizeof(I) &lt;= sizeof(int)</code>, initializes
+    <code>value_</code> with <code>static_cast&lt;int&gt;(val)</code>,
+<li>if <code>I</code> is a standard unsigned integer type or an extended
+    unsigned integer type and <code>sizeof(I) &lt;= sizeof(unsigned int)</code>,
+    initializes <code>value_</code> with
+    <code>static_cast&lt;unsigned int&gt;(val)</code>,
+<li>if <code>I</code> is a standard signed integer type or an extended signed
+    integer type and <code>sizeof(I) &lt;= sizeof(long long int)</code>,
+    initializes <code>value_</code> with
+    <code>static_cast&lt;long long int&gt;(val)</code>,
+<li>if <code>I</code> is a standard unsigned integer type or an extended
+    unsigned integer type and
+    <code>sizeof(I) &lt;= sizeof(unsigned long long int)</code>, initializes
+    <code>value_</code> with
+    <code>static_cast&lt;unsigned long long int&gt;(val)</code>,
+<li>otherwise the program is ill-formed.
+</ul>
+</p>
 </dd>
+
+<dt><code>explicit basic_format_arg(float val) noexcept;</code></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <code>static_cast&lt;double&gt;(value)</code>.</p>
+</dd>
+
+<dt><code>explicit basic_format_arg(double val) noexcept;<br>
+explicit basic_format_arg(long double val) noexcept;<br>
+explicit basic_format_arg(const char_type* val) noexcept;<br>
+explicit basic_format_arg(const void* val) noexcept;</code></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <code>val</code>.</p>
+</dd>
+
+<dt><pre><code>template&lt;class traits&gt;
+  explicit basic_format_arg(string_view&lt;char_type, traits&gt; val) noexcept;</code></pre></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <code>basic_string_view&lt;char_type&gt;(val.data(), val.size())</code>.</p>
+</dd>
+
+<dt><pre><code>template&lt;class traits, class Allocator&gt;
+  explicit basic_format_arg(
+    const string&lt;char_type, traits, Allocator&gt;&amp; val) noexcept;</code></pre></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <code>basic_string_view&lt;char_type&gt;(val.data(), val.size())</code>.</p>
+</dd>
+
+<dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T&amp; val) noexcept;</code></pre></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value_</code> with
+  <code>handle(val)</code>.</p>
+</dd>
+
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>!holds_alternative&lt;monostate&gt;(value_)</code>.</p>
@@ -1940,7 +2023,7 @@ on <code>value_.index()</code>.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
-    function&lt;void(Context&amp; ctx) const&gt; func; // <i>exposition only</i>
+    function&lt;void(Context&amp;)&gt; format_; // <i>exposition only</i>
 
   public:
     void format(Context&amp; ctx) const;
@@ -1956,19 +2039,10 @@ type.
 <dl>
 <dt><code>void format(Context&amp; ctx) const;</code></dt>
 <dd>
-<!-- Similar effects example: http://eel.is/c%2B%2Bdraft/time.format -->
-<p><i>Effects</i>:
-Constructs a local variable of type
-<code>typename Context::template formatter_type&lt;T&gt;</code> (named
-<code>f</code> for exposition purposes), where <code>T</code> is the type of the
-object <code>obj</code> referred to by this handle. Executes
-<code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
-Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
-</ol>
-</p>
+<p><i>Effects</i>: Equivalent to: <code>format_(ctx);</code></p>
 </dd>
 
-<h5>19.20.4.2 Argument visitation</h5>
+<h5>19.20.4.2 Argument visitation [format.visit]</h5>
 
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl>
@@ -1982,7 +2056,29 @@ The return type is the type of the expression in the <i>Returns</i> section.
 </dd>
 </dl>
 
-<h5>19.20.4.3 Class template <code>basic_format_args</code></h5>
+<h5>19.20.4.3 Class template <code>format_arg_store</code></h5>
+
+<pre>
+<code>namespace std {
+  template&lt;class Context, class... Args&gt;
+  struct format_arg_store { // <i>exposition only</i>
+    std::array&lt;basic_format_arg&lt;Context&gt;, sizeof...(Args)&gt; data;
+  };
+}</code>
+</pre>
+
+TODO
+
+Constructs a local variable of type
+<code>typename Context::template formatter_type&lt;T&gt;</code> (named
+<code>f</code> for exposition purposes), where <code>T</code> is the type of the
+object <code>obj</code> referred to by this handle. Executes
+<code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
+Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
+</ol>
+</p>
+
+<h5>19.20.4.4 Class template <code>basic_format_args</code></h5>
 
 <pre>
 <code>namespace std {
@@ -2009,8 +2105,6 @@ arguments.
 <dl>
 <dt><code>basic_format_args() noexcept;</code></dt>
 <dd>
-<p><i>Effects</i>: Constructs an empty <code>basic_format_args</code> object.
-</p>
 <p><i>Ensures</i>: <code>!get(0)</code>.</p>
 </dd>
 </dl>
@@ -2034,7 +2128,7 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
 </dd>
 </dl>
 
-<h5>19.20.4.4 Function template <code>make_format_args</code></h5>
+<h5>19.20.4.5 Function template <code>make_format_args</code></h5>
 
 <dl>
 <dt>
@@ -2042,15 +2136,11 @@ Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
   format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-
-<p>
-<i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that refers to formatting arguments <code>args</code>.
-</p>
+  <p><i>Returns</i>: <code>{basic_format_args&lt;Context&gt;(args...)}</code>.</p>
 </dd>
 </dl>
 
-<h5>19.20.4.5 Function template <code>make_wformat_args</code></h5>
+<h5>19.20.4.6 Function template <code>make_wformat_args</code></h5>
 
 <dl>
 <dt>
@@ -2058,11 +2148,7 @@ that refers to formatting arguments <code>args</code>.
   format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></pre>
 </dt>
 <dd>
-
-<p>
-<i>Effects</i>: The function returns a <code>format_arg_store</code> object
-that refers to formatting arguments <code>args</code>.
-</p>
+  <p><i>Returns</i>: <code>{basic_format_args&lt;Context&gt;(args...)}</code>.</p>
 </dd>
 </dl>
 
