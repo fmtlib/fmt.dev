@@ -131,11 +131,11 @@ ul.itemize > li:before {
 <body>
 
 <address align=right>
-Document number: D0645R4<br>
+Document number: P0645R4<br>
 Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2018-11-07
+2018-11-25
 </address>
 <hr>
 
@@ -1996,6 +1996,8 @@ explicit basic_format_arg(const void* val) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Initializes <code>value_</code> with
   <code>handle(val)</code>.</p>
+  <p><i>Remarks</i>: This constructor shall not participate in overload
+  resolution unless <code>formatter&lt;T, char_type&gt;</code> is enabled.</p>
 </dd>
 
 <dt><code>explicit operator bool() const noexcept;</code></dt>
@@ -2014,8 +2016,8 @@ explicit basic_format_arg(const void* val) noexcept;</code></dt>
 
 [ <i>Note:</i> Implementations are encouraged to take advantage of the
 ordering of the alternative types in <code>value_</code> and implement
-<code>is_arithmetic</code> and <code>is_integral</code> more efficiently based
-on <code>value_.index()</code>.
+<code>is_arithmetic</code> and <code>is_integral</code> more efficiently as a
+range check on <code>value_.index()</code>.
 <i>— end note</i> ]
 
 <!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
@@ -2023,9 +2025,12 @@ on <code>value_.index()</code>.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
-    function&lt;void(Context&amp;)&gt; format_; // <i>exposition only</i>
+    const void* ptr_;                       // <i>exposition only</i>
+    void (*format_)(Context&amp;, const void*); // <i>exposition only</i>
 
   public:
+    template&lt;class T&gt; handle(const T&amp; val); // <i>exposition only</i>
+
     void format(Context&amp; ctx) const;
   };
 }</code>
@@ -2037,10 +2042,20 @@ type.
 </p>
 
 <dl>
+<dt><code>template&lt;class T&gt; handle(const T&amp; val);</code></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>ptr_</code> to <code>&amp;val</code> and
+  <code>format_</code> to <pre><code>[](Context&amp; ctx, const void* ptr) {
+    typename Context::template formatter_type&lt;T&gt; f;
+    ctx.parse_context().advance_to(f.parse(ctx.parse_context()));
+    ctx.advance_to(f.format(*static_cast&lt;const T*&gt;, ctx));
+  }</code></pre></p>
+</dd>
 <dt><code>void format(Context&amp; ctx) const;</code></dt>
 <dd>
-<p><i>Effects</i>: Equivalent to: <code>format_(ctx);</code></p>
+  <p><i>Effects</i>: Equivalent to: <code>format_(ctx, ptr_);</code></p>
 </dd>
+</dl>
 
 <h5>19.20.4.2 Argument visitation [format.visit]</h5>
 
@@ -2062,21 +2077,10 @@ The return type is the type of the expression in the <i>Returns</i> section.
 <code>namespace std {
   template&lt;class Context, class... Args&gt;
   struct format_arg_store { // <i>exposition only</i>
-    std::array&lt;basic_format_arg&lt;Context&gt;, sizeof...(Args)&gt; data;
+    array&lt;basic_format_arg&lt;Context&gt;, sizeof...(Args)&gt; args;
   };
 }</code>
 </pre>
-
-TODO
-
-Constructs a local variable of type
-<code>typename Context::template formatter_type&lt;T&gt;</code> (named
-<code>f</code> for exposition purposes), where <code>T</code> is the type of the
-object <code>obj</code> referred to by this handle. Executes
-<code>ctx.parse_context().advance_to(f.parse(ctx.parse_context()))</code>.
-Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
-</ol>
-</p>
 
 <h5>19.20.4.4 Class template <code>basic_format_args</code></h5>
 
@@ -2084,6 +2088,9 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 <code>namespace std {
   template&lt;class Context&gt;
   class basic_format_args {
+    size_t size_;                           // <i>exposition only</i>
+    const basic_format_arg&lt;Context&gt;* data_; // <i>exposition only</i>
+
   public:
     basic_format_args() noexcept;
 
@@ -2097,15 +2104,14 @@ Then calls <code>ctx.advance_to(f.format(obj, ctx))</code>.
 
 <!-- Wording is similar to http://eel.is/c++draft/initializer_list.syn -->
 <p>
-An object of type <code>basic_format_args</code> provides access to formatting
-arguments. Copying a <code>basic_format_args</code> object does not copy the
+An instance <code>basic_format_args</code> provides access to formatting
 arguments.
 </p>
 
 <dl>
 <dt><code>basic_format_args() noexcept;</code></dt>
 <dd>
-<p><i>Ensures</i>: <code>!get(0)</code>.</p>
+  <p><i>Effects</i>: Initializes <code>size_</code> to <code>0</code>.</p>
 </dd>
 </dl>
 
@@ -2113,8 +2119,8 @@ arguments.
 <dt><pre><code>template&lt;class... Args&gt;
   basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;</code></pre></dt>
 <dd>
-<p><i>Effects</i>: Constructs a <code>basic_format_args</code> object that
-provides access to the arguments captured in <code>store</code>.
+  <p><i>Effects</i>: Initializes <code>size_</code> to
+  <code>sizeof...(Args)</code> and <code>data_</code> to <code>store.args.data()</code>.
 </p>
 </dd>
 </dl>
@@ -2122,11 +2128,14 @@ provides access to the arguments captured in <code>store</code>.
 <dl>
 <dt><code>basic_format_arg&lt;Context&gt; get(size_t i) const noexcept;</code></dt>
 <dd>
-<p><i>Returns</i>: A <code>basic_format_arg</code> object that represents an
-argument at index <code>i</code> if <code>i &lt;</code> the number of arguments.
-Otherwise, returns an empty <code>basic_format_arg</code> object.</p>
+<p><i>Returns</i>: <code>i &lt; size_ ? args_[i] : {}</code>.</p>
 </dd>
 </dl>
+
+[ <i>Note:</i> Implementations are encouraged to optimize the representation of
+<code>basic_format_args</code> for small number of formatting arguments by
+storing indices of type alternatives separately from values and packing the
+former. <i>— end note</i> ]
 
 <h5>19.20.4.5 Function template <code>make_format_args</code></h5>
 
