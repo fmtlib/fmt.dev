@@ -590,22 +590,32 @@ It doesn&#8217;t support user-defined types with custom formatters.</p>
 <dd><p>Converts <em>value</em> to <code class="docutils literal"><span class="pre">std::wstring</span></code> using the default format for type <em>T</em>. </p>
 </dd></dl>
 
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;fmt::to_string_view&#8221; with arguments (const T&amp;) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
-Potential matches:
-</p>
-<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Char</span><span class="o">&gt;</span>
-  <span class="n">basic_string_view</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string_view</span><span class="p">(</span><span class="n">basic_string_view</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;</span><span class="p">)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Char</span><span class="o">&gt;</span>
-  <span class="n">basic_string_view</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string_view</span><span class="p">(</span><span class="k">const</span> <span class="n">Char</span> <span class="o">*</span><span class="p">)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Char</span><span class="o">&gt;</span>
-  <span class="n">basic_string_view</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string_view</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">basic_string</span><span class="o">&lt;</span><span class="n">Char</span><span class="o">&gt;&amp;</span><span class="p">)</span>
-<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">S</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Enable</span> <span class="o">=</span> <span class="k">typename</span> <span class="n">std</span><span class="o">::</span><span class="n">enable_if</span><span class="o">&lt;</span><span class="n">is_compile_string</span><span class="o">&lt;</span><span class="n">S</span><span class="o">&gt;::</span><span class="n">value</span><span class="o">&gt;::</span><span class="n">type</span><span class="o">&gt;</span>
-  <span class="n">basic_string_view</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">S</span><span class="o">::</span><span class="n">char_type</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">to_string_view</span><span class="p">(</span><span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">)</span>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> Char&gt;</dt>
+<dt id="_CPPv2N3fmt14to_string_viewE17basic_string_viewI4CharE">
+<span id="fmt::to_string_view__basic_string_view:Char:"></span><span class="target" id="formatnamespacefmt_1abbe8f1e92506f38dcf08f728befe7fb8"></span><a class="reference internal" href="#_CPPv2N3fmt17basic_string_viewE" title="fmt::basic_string_view">basic_string_view</a>&lt;Char&gt; <code class="descclassname">fmt::</code><code class="descname">to_string_view</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N3fmt17basic_string_viewE" title="fmt::basic_string_view">basic_string_view</a>&lt;Char&gt; <em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt14to_string_viewE17basic_string_viewI4CharE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>The function <code class="docutils literal"><span class="pre">to_string_view</span></code> adapts non-intrusively any kind of string or
+string-like type if the user provides a (possibly templated) overload of
+<code class="docutils literal"><span class="pre">to_string_view</span></code> which takes an instance of the string class
+<code class="docutils literal"><span class="pre">StringType&lt;Char&gt;</span></code> and returns a <code class="docutils literal"><span class="pre">fmt::basic_string_view&lt;Char&gt;</span></code>.
+The conversion function must live in the very same namespace as
+<code class="docutils literal"><span class="pre">StringType&lt;Char&gt;</span></code> to be picked up by ADL. Non-templated string types
+like f.e. QString must return a <code class="docutils literal"><span class="pre">basic_string_view</span></code> with a fixed matching
+char type.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">my_ns</span> <span class="p">{</span>
+<span class="kr">inline</span> <span class="n">string_view</span> <span class="n">to_string_view</span><span class="p">(</span><span class="k">const</span> <span class="n">my_string</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span><span class="n">s</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">s</span><span class="p">.</span><span class="n">length</span><span class="p">()};</span>
+<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="n">my_string</span><span class="p">(</span><span class="s">&quot;The answer is {}&quot;</span><span class="p">),</span> <span class="mi">42</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
+ </p>
+</dd></dl>
+
 <dl class="class">
 <dt>
 <span class="target" id="formatclassfmt_1_1basic__memory__buffer"></span><em class="property">template </em>&lt;typename <em>T</em>, std::size_t <em>SIZE</em> = inline_buffer_size, typename <em>Allocator</em> = std::allocator&lt;T&gt;&gt;</dt>
