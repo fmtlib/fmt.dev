@@ -148,6 +148,14 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 
 <h3>Changes since
 <a
+  href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r4.html">R4</a></h3>
+
+<ul>
+<li>Remove <code>is_arithmetic</code> and <code>is_integral</code>.
+</ul>
+
+<h3>Changes since
+<a
   href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r3.html">R3</a></h3>
 
 <ul>
@@ -1910,9 +1918,6 @@ output iterator.
       explicit basic_format_arg(const T&amp; val) noexcept;                  <i>// exposition only</i>
 
     explicit operator bool() const noexcept;
-
-    bool is_arithmetic() const noexcept;
-    bool is_integral() const noexcept;
   };
 }</code>
 </pre>
@@ -2006,21 +2011,7 @@ explicit basic_format_arg(const void* val) noexcept;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>!holds_alternative&lt;monostate&gt;(value)</code>.</p>
 </dd>
-<dt><code>bool is_arithmetic() const noexcept;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>visit([](auto v) { return is_arithmetic_v&lt;decltype(v)&gt;; }, value)</code>.</p>
-</dd>
-<dt><code>bool is_integral() const noexcept;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>visit([](auto v) { return is_integral_v&lt;decltype(v)&gt;; }, value)</code>.</p>
-</dd>
 </dl>
-
-[ <i>Note:</i> Implementations are encouraged to take advantage of the
-ordering of the alternative types in <code>value</code> and implement
-<code>is_arithmetic</code> and <code>is_integral</code> more efficiently as a
-range check on <code>value.index()</code>.
-<i>— end note</i> ]
 
 <!-- Nested class example: http://eel.is/c++draft/istream::sentry -->
 <pre>
