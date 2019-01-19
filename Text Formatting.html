@@ -131,11 +131,11 @@ ul.itemize > li:before {
 <body>
 
 <address style="text-align: right">
-Document number: P0645R4<br>
+Document number: P0645R5<br>
 Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2018-11-25
+2019-01-13
 </address>
 <hr>
 
@@ -154,6 +154,8 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <li>Clarify that <code>s</code> in <code>basic_format_arg(const char_type* s)</code>
   shall point to a NTCTS.
 <li>Remove <code>is_arithmetic</code> and <code>is_integral</code>.
+<li>Clarify that the formatter output should be deterministic in
+    <a href="#requirements-table">Table 1 — Formatter requirements.</a>
 </ul>
 
 <h3>Changes since
@@ -1662,7 +1664,7 @@ of the format string. If <code>format-spec</code> is empty then either
 </p>
 
 <table>
-<caption>Table 1 — <i>Formatter</i> requirements</caption>
+<a name="requirements-table"><caption>Table 1 — <i>Formatter</i> requirements</caption></a>
 <thead>
 <tr><th>Expression</th><th>Return type</th><th>Requirement</th></tr>
 </thead>
@@ -1685,6 +1687,12 @@ parsed range.
 Shall format <code>t</code> according to the specifiers stored in
 <code>*this</code>, write the output to <code>fc.out()</code> and return an
 iterator past the end of the output range.
+<!-- Determinism: the output should only depend on value, format string and
+     locale for formatted_size to work.
+     Example: http://eel.is/c++draft/hash.requirements#tab:hash -->
+The output shall only depend on <code>t</code>, the current global locale,
+and the format string range <code>[pc.begin(), pc.end())</code> from the last
+call to <code>f.parse(pc)</code>.
 </td>
 </tr>
 <tr>
@@ -2072,7 +2080,7 @@ The return type is the type of the expression in the <i>Returns</i> section.
 </dd>
 </dl>
 
-<h5>19.20.4.3 Class template <code>format_arg_store</code></h5>
+<h5>19.20.4.3 Class template <code>format_arg_store</code> [format.arg_store]</h5>
 
 <pre>
 <code>namespace std {
@@ -2083,7 +2091,7 @@ The return type is the type of the expression in the <i>Returns</i> section.
 }</code>
 </pre>
 
-<h5>19.20.4.4 Class template <code>basic_format_args</code></h5>
+<h5>19.20.4.4 Class template <code>basic_format_args</code> [format.basic_args]</h5>
 
 <pre>
 <code>namespace std {
@@ -2138,7 +2146,7 @@ arguments.
 storing indices of type alternatives separately from values and packing the
 former. <i>— end note</i> ]
 
-<h5>19.20.4.5 Function template <code>make_format_args</code></h5>
+<h5>19.20.4.5 Function template <code>make_format_args</code> [format.make_args]</h5>
 
 <dl>
 <dt>
@@ -2150,7 +2158,7 @@ former. <i>— end note</i> ]
 </dd>
 </dl>
 
-<h5>19.20.4.6 Function template <code>make_wformat_args</code></h5>
+<h5>19.20.4.6 Function template <code>make_wformat_args</code> [format.make_wargs]</h5>
 
 <dl>
 <dt>
