@@ -1621,10 +1621,10 @@ the <i>Formatter</i> requirements.
 
   struct err {};
 
-  string s0 = std::format("{}", 42);     // OK: library-provided formatter
-  string s1 = std::format("{}", L"foo"); // Ill-formed: disabled formatter
-  string s2 = std::format("{}", red);    // OK: user-provided formatter
-  string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
+  std::string s0 = std::format("{}", 42);     // OK: library-provided formatter
+  std::string s1 = std::format("{}", L"foo"); // Ill-formed: disabled formatter
+  std::string s2 = std::format("{}", red);    // OK: user-provided formatter
+  std::string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
 </p>
 
@@ -1703,7 +1703,7 @@ call to <code>f.parse(pc)</code>.
 </tbody>
 </table>
 
-<h5>19.20.3.2 Class template <code>basic_format_parse_context</code>
+<h5><a name="format.parse_context">19.20.3.2 Class template <code>basic_format_parse_context</a></code>
 [format.parse_context]</h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
@@ -1913,7 +1913,6 @@ output iterator.
     explicit basic_format_arg(double n) noexcept;                      <i>// exposition only</i>
     explicit basic_format_arg(long double n) noexcept;                 <i>// exposition only</i>
     explicit basic_format_arg(const char_type* s) noexcept;            <i>// exposition only</i>
-    explicit basic_format_arg(const void* p) noexcept;                 <i>// exposition only</i>
     explicit basic_format_arg(nullptr_t) noexcept;                     <i>// exposition only</i>
 
     template&lt;class traits&gt;
@@ -1924,6 +1923,8 @@ output iterator.
       explicit basic_format_arg(
         const basic_string&lt;char_type, traits, Allocator&gt;&amp; s) noexcept; <i>// exposition only</i>
 
+    template&lt;class T&gt;
+      explicit basic_format_arg(const T* p) noexcept;                  <i>// exposition only</i>
     template&lt;class T&gt;
       explicit basic_format_arg(const T&amp; v) noexcept;                  <i>// exposition only</i>
 
@@ -1980,8 +1981,7 @@ explicit basic_format_arg(I n) noexcept;</code></dt>
 </dd>
 
 <dt><code>explicit basic_format_arg(double n) noexcept;<br>
-explicit basic_format_arg(long double n) noexcept;<br>
-explicit basic_format_arg(const void* n) noexcept;</code></dt>
+explicit basic_format_arg(long double n) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Initializes <code>value</code> with
   <code>n</code>.</p>
@@ -2013,6 +2013,13 @@ explicit basic_format_arg(const void* n) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Initializes <code>value</code> with
   <code>basic_string_view&lt;char_type&gt;(s.data(), s.size())</code>.</p>
+</dd>
+
+<dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T* p) noexcept;</code></pre></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value</code> with <code>p</code>.</p>
+  <p><i>Remarks</i>: This constructor shall not participate in overload
+  resolution unless <code>T</code> is <code>void</code>.</p>
 </dd>
 
 <dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T&amp; v) noexcept;</code></pre></dt>
@@ -2146,7 +2153,7 @@ arguments.
 storing indices of type alternatives separately from values and packing the
 former. <i>— end note</i> ]
 
-<h5>19.20.4.5 Function template <code>make_format_args</code> [format.make_args]</h5>
+<h5><a name="format.make_args">19.20.4.5 Function template <code>make_format_args</code> [format.make_args]</a></h5>
 
 <dl>
 <dt>
