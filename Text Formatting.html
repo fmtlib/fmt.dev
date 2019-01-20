@@ -135,7 +135,7 @@ Document number: P0645R5<br>
 Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2019-01-13
+2019-01-20
 </address>
 <hr>
 
@@ -156,6 +156,7 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <li>Remove <code>is_arithmetic</code> and <code>is_integral</code>.
 <li>Clarify that the formatter output should be deterministic in
     <a href="#requirements-table">Table 1 — Formatter requirements</a>.
+<li>Minor wording corrections.
 </ul>
 
 <h3>Changes since
@@ -1887,7 +1888,7 @@ output iterator.
 </p>
 
 <h4><a name="format.arguments">19.20.4 Arguments [format.arguments]</a></h4>
-<h5>19.20.4.1 Class template <code>basic_format_arg</code> [format.arg]</h5>
+<h5><a name="format.arg">19.20.4.1 Class template <code>basic_format_arg</code> [format.arg]</a></h5>
 <!-- Argument access API is provided for use cases such as dynamic width:
      https://godbolt.org/g/wNhkk7 -->
 
@@ -1913,7 +1914,6 @@ output iterator.
     explicit basic_format_arg(double n) noexcept;                      <i>// exposition only</i>
     explicit basic_format_arg(long double n) noexcept;                 <i>// exposition only</i>
     explicit basic_format_arg(const char_type* s) noexcept;            <i>// exposition only</i>
-    explicit basic_format_arg(nullptr_t) noexcept;                     <i>// exposition only</i>
 
     template&lt;class traits&gt;
       explicit basic_format_arg(
@@ -1923,6 +1923,7 @@ output iterator.
       explicit basic_format_arg(
         const basic_string&lt;char_type, traits, Allocator&gt;&amp; s) noexcept; <i>// exposition only</i>
 
+    explicit basic_format_arg(nullptr_t) noexcept;                     <i>// exposition only</i>
     template&lt;class T&gt;
       explicit basic_format_arg(const T* p) noexcept;                  <i>// exposition only</i>
     template&lt;class T&gt;
@@ -1995,12 +1996,6 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <code>s</code>.</p>
 </dd>
 
-<dt><code>explicit basic_format_arg(nullptr_t) noexcept;</code></dt>
-<dd>
-  <p><i>Effects</i>: Initializes <code>value</code> with
-  <code>static_cast&lt;const void*&gt;(nullptr)</code>.</p>
-</dd>
-
 <dt><pre><code>template&lt;class traits&gt;
   explicit basic_format_arg(basic_string_view&lt;char_type, traits&gt; s) noexcept;</code></pre></dt>
 <dd>
@@ -2013,6 +2008,12 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Initializes <code>value</code> with
   <code>basic_string_view&lt;char_type&gt;(s.data(), s.size())</code>.</p>
+</dd>
+
+<dt><code>explicit basic_format_arg(nullptr_t) noexcept;</code></dt>
+<dd>
+  <p><i>Effects</i>: Initializes <code>value</code> with
+  <code>static_cast&lt;const void*&gt;(nullptr)</code>.</p>
 </dd>
 
 <dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T* p) noexcept;</code></pre></dt>
