@@ -1023,7 +1023,7 @@ valid format string.</p>
 <dd>
 <p>
   <i>Returns</i>:
-  <code>vformat_to(out, fmt, make_format_args&lt;basic_format_context&lt;O, char&gt;&gt;(args...))</code>.
+  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;O, char&gt;&gt;(args...)})</code>.
 </p>
 </dd>
 </dl>
@@ -1036,7 +1036,7 @@ valid format string.</p>
 <dd>
 <p>
   <i>Returns</i>:
-  <code>vformat_to(out, fmt, make_format_args&lt;basic_format_context&lt;O, wchar_t&gt;&gt;(args...))</code>.
+  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;O, wchar_t&gt;&gt;(args...)})</code>.
 </p>
 </dd>
 </dl>
@@ -1776,7 +1776,7 @@ template parameter <code>charT</code>.</p>
 </dd>
 <dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
-<p><i>Effects</i>: Equivalent to:
+<p><i>Effects</i>: If <code>indexing_ != manual</code>, equivalent to:
 <pre><code>  if (indexing_ == unknown)
     indexing_ = automatic;
   return next_arg_id_++;</code></pre></p>
@@ -1785,7 +1785,7 @@ which indicates mixing of automatic and manual argument indexing.</p>
 </dd>
 <dt><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
-<p><i>Effects</i>: Equivalent to:
+<p><i>Effects</i>: If <code>indexing_ != automatic</code>, equivalent to:
 <pre><code>  if (indexing_ == unknown)
     indexing_ = manual;</code></pre></p>
 <p><i>Throws</i>: <code>format_error</code> if
@@ -1794,8 +1794,8 @@ manual argument indexing.</p>
 </dd>
 </dl>
 
-<h5>19.20.3.3 Class template <code>basic_format_context</code>
-[format.context]</h5>
+<h5><a name="format.context">19.20.3.3 Class template <code>basic_format_context</code>
+[format.context]</a></h5>
 
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
@@ -1883,7 +1883,7 @@ output iterator.
     }
   };
 
-  std::string s = format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
+  std::string s = std::format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
 </p>
 
 <h4><a name="format.arguments">19.20.4 Arguments [format.arguments]</a></h4>
