@@ -151,7 +151,8 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
   href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r4.html">R5</a></h3>
 
 <ul>
-  <li>
+  <li>Separate parsing context from formatting context and remove
+    <code>basic_format_context::parse_context()</code>.
 </ul>
 
 <h3>Changes since
@@ -1811,9 +1812,8 @@ manual argument indexing.</p>
 <code>namespace std {
   template&lt;class O, class charT&gt; requires OutputIterator&lt;O, const charT&amp;&gt;
   class basic_format_context {
-    basic_format_parse_context&lt;charT&gt; parse_context_; // <i>exposition only</i>
-    basic_format_args&lt;basic_format_context&gt; args_;    // <i>exposition only</i>
-    O out_;                                           // <i>exposition only</i>
+    basic_format_args&lt;basic_format_context&gt; args_; // <i>exposition only</i>
+    O out_;                                        // <i>exposition only</i>
 
   public:
     using iterator = O;
@@ -1822,7 +1822,6 @@ manual argument indexing.</p>
     template&lt;class T&gt;
       using formatter_type = formatter&lt;T&gt;;
 
-    basic_format_parse_context&lt;charT&gt;&amp; parse_context() noexcept;
     basic_format_arg&lt;basic_format_context&gt; arg(size_t id) const;
 
     iterator out();
@@ -1833,15 +1832,10 @@ manual argument indexing.</p>
 
 <p>
 An instance of <code>basic_format_context</code> holds formatting state
-consisting of the format string parsing context, formatting arguments, and
-output iterator.
+consisting of the formatting arguments and the output iterator.
 </p>
 
 <dl>
-<dt><code>basic_format_parse_context&lt;charT&gt;&amp; parse_context() noexcept;</code></dt>
-<dd>
-<p><i>Returns</i>: <code>parse_context_</code>.</p>
-</dd>
 <dt><code>basic_format_arg&lt;basic_format_context&gt; arg(size_t id) const;</code></dt>
 <dd>
 <p><i>Returns</i>: <code>args_.get(id)</code>.</p>
@@ -2057,12 +2051,13 @@ member is ill-formed unless the user provides an enabled specialization of
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
     const void* ptr_;                                         // <i>exposition only</i>
-    void (*format_)(Context&amp;, const void*);                   // <i>exposition only</i>
+    void (*format_)(basic_format_parse_context&lt;char_type&gt;&amp;,
+                    Context&amp;, const void*);                   // <i>exposition only</i>
 
   public:
     template&lt;class T&gt; explicit handle(const T&amp; val) noexcept; // <i>exposition only</i>
 
-    void format(Context&amp; ctx) const;
+    void format(basic_format_parse_context&lt;char_type&gt;&amp;, Context&amp; ctx) const;
   };
 }</code>
 </pre>
@@ -2076,15 +2071,16 @@ type.
 <dt><code>template&lt;class T&gt; explicit handle(const T&amp; val) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Initializes <code>ptr_</code> with <code>&amp;val</code>
-  and <code>format_</code> with <pre><code>[](Context&amp; ctx, const void* ptr) {
+  and <code>format_</code> with
+  <pre><code>[](basic_format_parse_context&lt;char_type&gt;&amp; parse_ctx, Context&amp; format_ctx, const void* ptr) {
     typename Context::template formatter_type&lt;T&gt; f;
-    ctx.parse_context().advance_to(f.parse(ctx.parse_context()));
-    ctx.advance_to(f.format(*static_cast&lt;const T*&gt;(ptr), ctx));
+    parse_ctx.advance_to(f.parse(parse_ctx));
+    format_ctx.advance_to(f.format(*static_cast&lt;const T*&gt;(ptr), format_ctx));
   }</code></pre></p>
 </dd>
-<dt><code>void format(Context&amp; ctx) const;</code></dt>
+<dt><code>void format(basic_format_parse_context&lt;char_type&gt;&amp; parse_ctx, Context&amp; format_ctx) const;</code></dt>
 <dd>
-  <p><i>Effects</i>: Equivalent to: <code>format_(ctx, ptr_);</code></p>
+  <p><i>Effects</i>: Equivalent to: <code>format_(parse_ctx, format_ctx, ptr_);</code></p>
 </dd>
 </dl>
 
