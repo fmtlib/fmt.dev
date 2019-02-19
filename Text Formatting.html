@@ -146,9 +146,15 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 
 <h2><a name="History">Revision History</a></h2>
 
-<h3>Changes since
-<a
-  href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0645r4.html">R5</a></h3>
+<h3>Changes since R6</h3>
+
+<ul>
+  <li>Replace overload resolution <i>Remarks</i> with <i>Constraints</i> per
+      <a href="http://wg21.link/p1369">p1369</a>.</li>
+  <li>Remove "shall" from <i>Expects</i> wording.</li>
+</ul>
+
+<h3>Changes since R5</h3>
 
 <ul>
   <li>Separate parsing context from formatting context and remove
@@ -1998,7 +2004,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 
 <dt><code>explicit basic_format_arg(const char_type* s) noexcept;</code></dt>
 <dd>
-  <p><i>Expects</i>: <code>s</code> shall point to a NTCTS
+  <p><i>Expects</i>: <code>s</code> points to a NTCTS
      (<a href="http://eel.is/c++draft/defns.ntcts">[defns.ntcts]</a>).</p>
   <p><i>Effects</i>: Initializes <code>value</code> with
   <code>s</code>.</p>
@@ -2024,19 +2030,17 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <code>static_cast&lt;const void*&gt;(nullptr)</code>.</p>
 </dd>
 
-<dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T* p) noexcept;</code></pre></dt>
+<dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(T* p) noexcept;</code></pre></dt>
 <dd>
+<p><i>Constraints</i>: <code>is_void_v&lt;T&gt;</code> is <code>true</code>.</p>
   <p><i>Effects</i>: Initializes <code>value</code> with <code>p</code>.</p>
-  <p><i>Remarks</i>: This constructor shall not participate in overload
-  resolution unless <code>T</code> is <code>void</code>.</p>
 </dd>
 
 <dt><pre><code>template&lt;class T&gt; explicit basic_format_arg(const T&amp; v) noexcept;</code></pre></dt>
 <dd>
+  <p><i>Constraints</i>: <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled.</p>
   <p><i>Effects</i>: Initializes <code>value</code> with
   <code>handle(v)</code>.</p>
-  <p><i>Remarks</i>: This constructor shall not participate in overload
-  resolution unless <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled.</p>
 </dd>
 
 <p>
