@@ -9,30 +9,32 @@ Group: WG21
 URL: http://fmtlib.net/D1496R0.html
 !Source: <a href="https://github.com/fmtlib/blob/master/source/D1496R0.bs">github.com/fmtlib/blob/master/source/D1496R0.bs</a>
 Editor: Victor Zverovich, victor.zverovich@gmail.com
+Editor: Alan Talbot, cpp@alantalbot.com
 No abstract: true
 Date: 2019-02-20
 Markup Shorthands: markdown yes
 </pre>
 
-Abstract {#abstract}
-========
+Introduction {#intro}
+============
 
-During the Library Evolution Working Group review of D0645R6, it has
-been suggested to clarify how negative floating point zero is handled.
+During the Library Evolution Working Group review of [[D0645R6]], it has been
+suggested that formatting of negative floating point zero should be clarified.
 This is done in the current paper.
 
 Status quo {#statusquo}
 ==========
 
-Floating point formatting in D0645R6 is expressed in terms of
-`to_chars` ([[charconv.to.chars](http://eel.is/c++draft/charconv.to.chars)])
-and the latter is expressed in terms of `printf`:
+Floating point formatting in [[D0645R6]] is expressed in terms of `to_chars`
+([[charconv.to.chars](http://eel.is/c++draft/charconv.to.chars)]) and the latter
+is expressed in terms of `printf`:
 
 > `value` is converted to a string in the style of `printf` in the `"C"` locale.
 
-The current implementation behavior is to print `-` for `-0.0` with MSVC
-`to_chars`, libc `printf`, and the {fmt} library that implements P0645. For
-example, both
+[[N1256]] doesn't appear to explicitly specify whether `'-'` should be output
+for negative zero. The current implementation behavior is to print `'-'` for
+`-0.0` with MSVC `to_chars`, libc `printf`, and the {fmt} library that
+implements [[D0645R6]]. For example, both
 
 <pre>
 to_chars(begin, end, -0.0);
@@ -46,9 +48,45 @@ printf("%g", -0.0);
 
 produce `"-0"`.
 
+Suppressing the output of `'-'` {#suppress}
+===============================
+
+Alternatively we could add a new format specifier to suppress the output of
+`'-'` for negative zero, e.g. `'z'` (subject to bikeshedding):
+
+<pre>
+string s1 = format("{0:z} {0:+z} {0:-z} {0: z}", 0.0);   // s1 == "0 +0 0  0"
+string s2 = format("{0:z} {0:+z} {0:-z} {0: z}", -0.0);  // s2 == "0 +0 0  0"
+</pre>
+
+in addition to
+
+<pre>
+string s3 = format("{0} {0:+} {0:-} {0: }", 0.0);   // s3 == "0 +0 0  0"
+string s4 = format("{0} {0:+} {0:-} {0: }", -0.0);  // s4 == "-0 -0 -0 -0"
+</pre>
+
 Options {#options}
 =======
 
-1. Don't do anything: `std::format` will give the same output as `to_chars`.
-2. Require that `std::format` outputs `-` for `-0.0` regardless of `to_chars`.
-3. Require that `std::format` does not output `-` for `-0.0` regardless of `to_chars`.
+1. Don't do anything: `std::format` will give the same output as `std::to_chars`
+    for `-0.0`.
+2. Add a format specifier to suppress the output of `'-'` for `-0.0`.
+
+<pre class=biblio>
+{
+    "D0645R6": {
+        "href": "http://wiki.edg.com/pub/Wg21kona2019/P0645/D0645R6.html",
+        "title": "Text Formatting",
+        "authors": ["Victor Zverovich"]
+    }
+}
+</pre>
+<pre class=biblio>
+{
+    "N1256": {
+        "href": "http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf",
+        "title": "WG14/N1256 Committee Draft"
+    }
+}
+</pre>

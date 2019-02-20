@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 7d8ce2d953ffaca8e344c0dab76f68fc292738a6" name="generator">
   <link href="http://fmtlib.net/D1496R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d4808abc19404a7ae7a1c5c6e25b0804d1696fb3" name="document-revision">
+  <meta content="6cb94675549291488f3ad47a89a34314439518ac" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1445,9 +1445,11 @@ pre .property::before, pre .property::after {
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="http://fmtlib.net/D1496R0.html">http://fmtlib.net/D1496R0.html</a>
-     <dt>Author:
+     <dt>Authors:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
+     <dd>
+      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:cpp@alantalbot.com">Alan Talbot</a>
      <dt>Audience:
      <dd>LEWG
      <dt>Project:
@@ -1464,38 +1466,52 @@ pre .property::before, pre .property::after {
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#abstract"><span class="secno">1</span> <span class="content">Abstract</span></a>
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#statusquo"><span class="secno">2</span> <span class="content">Status quo</span></a>
-    <li><a href="#options"><span class="secno">3</span> <span class="content">Options</span></a>
+    <li><a href="#suppress"><span class="secno">3</span> <span class="content">Suppressing the output of <code class="highlight"><c- sc>'-'</c-></code></span></a>
+    <li><a href="#options"><span class="secno">4</span> <span class="content">Options</span></a>
+    <li>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ol class="toc">
+      <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
+     </ol>
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="abstract"><span class="secno">1. </span><span class="content">Abstract</span><a class="self-link" href="#abstract"></a></h2>
-   <p>During the Library Evolution Working Group review of D0645R6, it has
-been suggested to clarify how negative floating point zero is handled.
+   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+   <p>During the Library Evolution Working Group review of <a data-link-type="biblio" href="#biblio-d0645r6">[D0645R6]</a>, it has been
+suggested that formatting of negative floating point zero should be clarified.
 This is done in the current paper.</p>
    <h2 class="heading settled" data-level="2" id="statusquo"><span class="secno">2. </span><span class="content">Status quo</span><a class="self-link" href="#statusquo"></a></h2>
-   <p>Floating point formatting in D0645R6 is expressed in terms of <code class="highlight"><c- n>to_chars</c-></code> (<a href="http://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>])
-and the latter is expressed in terms of <code class="highlight"><c- n>printf</c-></code>:</p>
+   <p>Floating point formatting in <a data-link-type="biblio" href="#biblio-d0645r6">[D0645R6]</a> is expressed in terms of <code class="highlight"><c- n>to_chars</c-></code> (<a href="http://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>]) and the latter
+is expressed in terms of <code class="highlight"><c- n>printf</c-></code>:</p>
    <blockquote>
     <p><code class="highlight"><c- n>value</c-></code> is converted to a string in the style of <code class="highlight"><c- n>printf</c-></code> in the <code class="highlight"><c- s>"C"</c-></code> locale.</p>
    </blockquote>
-   <p>The current implementation behavior is to print <code class="highlight"><c- o>-</c-></code> for <code class="highlight"><c- o>-</c-><c- mf>0.0</c-></code> with MSVC <code class="highlight"><c- n>to_chars</c-></code>, libc <code class="highlight"><c- n>printf</c-></code>, and the {fmt} library that implements P0645. For
-example, both</p>
+   <p><a data-link-type="biblio" href="#biblio-n1256">[N1256]</a> doesn’t appear to explicitly specify whether <code class="highlight"><c- sc>'-'</c-></code> should be output
+for negative zero. The current implementation behavior is to print <code class="highlight"><c- sc>'-'</c-></code> for <code class="highlight"><c- o>-</c-><c- mf>0.0</c-></code> with MSVC <code class="highlight"><c- n>to_chars</c-></code>, libc <code class="highlight"><c- n>printf</c-></code>, and the {fmt} library that
+implements <a data-link-type="biblio" href="#biblio-d0645r6">[D0645R6]</a>. For example, both</p>
 <pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>begin</c-><c- p>,</c-> <c- n>end</c-><c- p>,</c-> <c- o>-</c-><c- mf>0.0</c-><c- p>);</c->
 </pre>
    <p>and</p>
 <pre class="highlight"><c- n>printf</c-><c- p>(</c-><c- s>"%g"</c-><c- p>,</c-> <c- o>-</c-><c- mf>0.0</c-><c- p>);</c->
 </pre>
    <p>produce <code class="highlight"><c- s>"-0"</c-></code>.</p>
-   <h2 class="heading settled" data-level="3" id="options"><span class="secno">3. </span><span class="content">Options</span><a class="self-link" href="#options"></a></h2>
+   <h2 class="heading settled" data-level="3" id="suppress"><span class="secno">3. </span><span class="content">Suppressing the output of <code class="highlight"><c- sc>'-'</c-></code></span><a class="self-link" href="#suppress"></a></h2>
+   <p>Alternatively we could add a new format specifier to suppress the output of <code class="highlight"><c- sc>'-'</c-></code> for negative zero, e.g. <code class="highlight"><c- sc>'z'</c-></code> (subject to bikeshedding):</p>
+<pre class="highlight"><c- n>string</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"{0:z} {0:+z} {0:-z} {0: z}"</c-><c- p>,</c-> <c- mf>0.0</c-><c- p>);</c->   <c- c1>// s1 == "0 +0 0  0"</c->
+<c- n>string</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"{0:z} {0:+z} {0:-z} {0: z}"</c-><c- p>,</c-> <c- o>-</c-><c- mf>0.0</c-><c- p>);</c->  <c- c1>// s2 == "0 +0 0  0"</c->
+</pre>
+   <p>in addition to</p>
+<pre class="highlight"><c- n>string</c-> <c- n>s3</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"{0} {0:+} {0:-} {0: }"</c-><c- p>,</c-> <c- mf>0.0</c-><c- p>);</c->   <c- c1>// s3 == "0 +0 0  0"</c->
+<c- n>string</c-> <c- n>s4</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"{0} {0:+} {0:-} {0: }"</c-><c- p>,</c-> <c- o>-</c-><c- mf>0.0</c-><c- p>);</c->  <c- c1>// s4 == "-0 -0 -0 -0"</c->
+</pre>
+   <h2 class="heading settled" data-level="4" id="options"><span class="secno">4. </span><span class="content">Options</span><a class="self-link" href="#options"></a></h2>
    <ol>
     <li data-md>
-     <p>Don’t do anything: <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> will give the same output as <code class="highlight"><c- n>to_chars</c-></code>.</p>
+     <p>Don’t do anything: <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> will give the same output as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> for <code class="highlight"><c- o>-</c-><c- mf>0.0</c-></code>.</p>
     <li data-md>
-     <p>Require that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> outputs <code class="highlight"><c- o>-</c-></code> for <code class="highlight"><c- o>-</c-><c- mf>0.0</c-></code> regardless of <code class="highlight"><c- n>to_chars</c-></code>.</p>
-    <li data-md>
-     <p>Require that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> does not output <code class="highlight"><c- o>-</c-></code> for <code class="highlight"><c- o>-</c-><c- mf>0.0</c-></code> regardless of <code class="highlight"><c- n>to_chars</c-></code>.</p>
+     <p>Add a format specifier to suppress the output of <code class="highlight"><c- sc>'-'</c-></code> for <code class="highlight"><c- o>-</c-><c- mf>0.0</c-></code>.</p>
    </ol>
   </main>
 <script>
@@ -1627,3 +1643,11 @@ example, both</p>
 
 })();
 </script>
+  <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
+  <dl>
+   <dt id="biblio-d0645r6">[D0645R6]
+   <dd>Victor Zverovich. <a href="http://wiki.edg.com/pub/Wg21kona2019/P0645/D0645R6.html">Text Formatting</a>. URL: <a href="http://wiki.edg.com/pub/Wg21kona2019/P0645/D0645R6.html">http://wiki.edg.com/pub/Wg21kona2019/P0645/D0645R6.html</a>
+   <dt id="biblio-n1256">[N1256]
+   <dd><a href="http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf">WG14/N1256 Committee Draft</a>. URL: <a href="http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf">http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf</a>
+  </dl>
