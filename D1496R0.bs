@@ -1,0 +1,54 @@
+<pre class='metadata'>
+Title: Formatting of negative zero
+Shortname: D1496
+Revision: 0
+!Draft Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL: http://fmtlib.net/D1496R0.html
+!Source: <a href="https://github.com/fmtlib/blob/master/source/D1496R0.bs">github.com/fmtlib/blob/master/source/D1496R0.bs</a>
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2019-02-20
+Markup Shorthands: markdown yes
+</pre>
+
+Abstract {#abstract}
+========
+
+During the Library Evolution Working Group review of D0645R6, it has
+been suggested to clarify how negative floating point zero is handled.
+This is done in the current paper.
+
+Status quo {#statusquo}
+==========
+
+Floating point formatting in D0645R6 is expressed in terms of
+`to_chars` ([[charconv.to.chars](http://eel.is/c++draft/charconv.to.chars)])
+and the latter is expressed in terms of `printf`:
+
+> `value` is converted to a string in the style of `printf` in the `"C"` locale.
+
+The current implementation behavior is to print `-` for `-0.0` with MSVC
+`to_chars`, libc `printf`, and the {fmt} library that implements P0645. For
+example, both
+
+<pre>
+to_chars(begin, end, -0.0);
+</pre>
+
+and
+
+<pre>
+printf("%g", -0.0);
+</pre>
+
+produce `"-0"`.
+
+Options {#options}
+=======
+
+1. Don't do anything: `std::format` will give the same output as `to_chars`.
+2. Require that `std::format` outputs `-` for `-0.0` regardless of `to_chars`.
+3. Require that `std::format` does not output `-` for `-0.0` regardless of `to_chars`.
