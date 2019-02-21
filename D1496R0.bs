@@ -8,8 +8,9 @@ Status: D
 Group: WG21
 URL: http://fmtlib.net/D1496R0.html
 !Source: <a href="https://github.com/fmtlib/blob/master/source/D1496R0.bs">github.com/fmtlib/blob/master/source/D1496R0.bs</a>
-Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Alan Talbot, cpp@alantalbot.com
+Editor: Jorg Brown, jorg.brown@gmail.com
+Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
 Date: 2019-02-20
 Markup Shorthands: markdown yes
@@ -51,8 +52,27 @@ produce `"-0"`.
 Suppressing the output of `'-'` {#suppress}
 ===============================
 
-Alternatively we could add a new format specifier to suppress the output of
-`'-'` for negative zero, e.g. `'z'` (subject to bikeshedding):
+In a use case Alan is familiar with the software generates dozens of tabular
+reports, each of which has dozens or hundreds of columns, most of which display
+floating point numbers. The consumers of these reports do not care about or
+understand negative zero, and will complain if some zeros have a minus sign.
+With existing output options, negative zeros appear a significant percentage of
+the time for no reason which a user of the software would understand. It is
+therefore necessary to do a floating point test for negative zero and change the
+floating point value in every conversion from floating point to text. This of
+course has been factored out into a home-grown formatting facility, which is a
+source of subtle bugs. 
+
+With a standard text formatting facility, `std::format` can be used to convert
+from floating point to text with a formatting string determined in one place by
+various user settings. If `std::format` supports the notion of suppressing
+negative zero, then it is a simple matter of adding that flag to the number
+format string (probably in one place in the code). It can also trivially be a
+user selection. None of the hundreds of places where the conversion is actually
+done needs to know about negative zero, so no home-grown facility is needed.
+
+To address this use case we could add a new format specifier to suppress the
+output of `'-'` for negative zero, e.g. `'z'` (subject to bikeshedding):
 
 <pre>
 string s1 = format("{0:z} {0:+z} {0:-z} {0: z}", 0.0);   // s1 == "0 +0 0  0"
@@ -66,11 +86,61 @@ string s3 = format("{0} {0:+} {0:-} {0: }", 0.0);   // s3 == "0 +0 0  0"
 string s4 = format("{0} {0:+} {0:-} {0: }", -0.0);  // s4 == "-0 -0 -0 -0"
 </pre>
 
+It is possible to achieve similar functionality with [[D0645R6]] by providing a
+custom formatter:
+
+<pre>
+struct dbl {
+  double value;
+  dbl(double val) : value(val) {}
+};
+
+template &lt;&gt;
+struct formatter&lt;dbl&gt; : formatter&lt;double&gt; {
+  bool allow_negative_zero = true;
+
+  auto parse(format_parse_context& ctx) {
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && *it == 'z') {
+      allow_negative_zero = false;
+      ++it;
+    }
+    ctx.advance_to(it);
+    return formatter&lt;double&gt;::parse(ctx);
+  }
+
+  auto format(dbl d, format_context& ctx ) {
+    if (!allow_negative_zero)
+      d.value -= -0.0;
+    return formatter&lt;double&gt;::format(d.value, ctx);
+  }
+};
+
+string s1 = format("{0:z} {0:z+} {0:z-} {0:z }", dbl(0.0));  // s1 == "0.0 +0.0 0.0  0.0"
+string s2 = format("{0:z} {0:z+} {0:z-} {0:z }", dbl(-0.0)); // s2 == "0.0 +0.0 0.0  0.0"
+</pre>
+
+It is also possible to implement a custom format function that has such behavior
+by default:
+
+<pre>
+template &lt;typename T&gt; const T& maparg(const T& value) { return value; }
+dbl maparg(double value) { return value; }
+
+template &lt;typename... Args&gt;
+string myformat(string_view fmt, const Args&... args) {
+  return format(fmt, maparg(args)...);
+}
+
+string s3 = myformat("{0:z} {0:z+} {0:z-} {0:z }", 0.0);  // s3 == "0.0 +0.0 0.0  0.0"
+string s4 = myformat("{0:z} {0:z+} {0:z-} {0:z }", -0.0); // s4 == "0.0 +0.0 0.0  0.0"
+</pre>
+
 Options {#options}
 =======
 
-1. Don't do anything: `std::format` will give the same output as `std::to_chars`
-    for `-0.0`.
+1. Don't do anything: `std::format` will produce `'-'` for `-0.0` whenever
+    `std::to_chars` does.
 2. Add a format specifier to suppress the output of `'-'` for `-0.0`.
 
 <pre class=biblio>
