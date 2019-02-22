@@ -223,6 +223,11 @@ participate in an overload resolution if the latter is not a string.</p>
 <dt id="_CPPv2N3fmt3argERK1SRK1T">
 <span id="fmt::arg__SCR.TCR"></span><span class="target" id="formatnamespacefmt_1a83620cb0b5a5dd7ddb50489ecb6da9d3"></span>internal::named_arg&lt;T, fmt::char_t&lt;S&gt;&gt; <code class="descclassname">fmt::</code><code class="descname">arg</code><span class="sig-paren">(</span><em class="property">const</em> S &amp;<em>name</em>, <em class="property">const</em> T &amp;<em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt3argERK1SRK1T" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Returns a named argument to be used in a formatting function.</p>
+<p>The named argument holds a reference and does not extend the lifetime
+of its arguments.
+Consequently, a dangling reference can accidentally be created.
+The user should take care to only pass this function temporaries when
+the named argument is itself a temporary, as per the following example.</p>
 <p><strong>Example</strong>:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Elapsed time: {s:.2f} seconds&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;s&quot;</span><span class="p">,</span> <span class="mf">1.23</span><span class="p">));</span>
 </pre></div>
@@ -241,7 +246,8 @@ participate in an overload resolution if the latter is not a string.</p>
 <span id="fmt::make_format_args__ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a186dc064e5f80939a9834488a7819b58"></span><a class="reference internal" href="#_CPPv2N3fmt16format_arg_storeE" title="fmt::format_arg_store">format_arg_store</a>&lt;Context, Args...&gt; <code class="descclassname">fmt::</code><code class="descname">make_format_args</code><span class="sig-paren">(</span><em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt16make_format_argsEDpRK4Args" title="Permalink to this definition">¶</a></dt>
 <dd><p><p>Constructs an <a class="reference internal" href="#_CPPv2N3fmt16format_arg_storeE" title="fmt::format_arg_store"><code class="xref cpp cpp-any docutils literal"><span class="pre">format_arg_store</span></code></a> object that contains references to
 arguments and can be implicitly converted to <a class="reference internal" href="#_CPPv2N3fmt11format_argsE" title="fmt::format_args"><code class="xref cpp cpp-any docutils literal"><span class="pre">format_args</span></code></a>. <code class="xref cpp cpp-any docutils literal"><span class="pre">Context</span></code>
-can be omitted in which case it defaults to <code class="xref cpp cpp-any docutils literal"><span class="pre">context</span></code>.</p>
+can be omitted in which case it defaults to <code class="xref cpp cpp-any docutils literal"><span class="pre">context</span></code>.
+See <a class="reference internal" href="#_CPPv2N3fmt3argERK1SRK1T" title="fmt::arg"><code class="xref cpp cpp-any docutils literal"><span class="pre">arg()</span></code></a> for lifetime considerations.</p>
  </p>
 </dd></dl>
 
