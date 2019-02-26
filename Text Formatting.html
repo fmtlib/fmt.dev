@@ -135,7 +135,7 @@ Document number: D0645R6<br>
 Audience: Library Evolution, Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2019-02-17
+2019-02-26
 </address>
 <hr>
 
@@ -900,7 +900,7 @@ Add a new entry <code>&lt;format&gt;</code> to table 19 in section
         </tr>
         <tr>
           <td><ins>__cpp_lib_format</ins></td>
-          <td><ins>201811L</ins></td>
+          <td><ins>201902L</ins> <em style="background-color: yellow">** placeholder **</em></td>
           <td><ins>&lt;format&gt;</ins></td>
         </tr>
         <tr>
@@ -1117,10 +1117,10 @@ template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O&gt;
 <i>Effects</i>:
 Places the character representation of formatting arguments provided by
 <code>args</code> formatted according to specifications given in
-<code>fmt</code> into the range <code>[out, out + N)</code>, where
-<code>N</code> is the formatted output size.
+<code>fmt</code> into the range <code>[out, out + <i>N</i>)</code>, where
+<code><i>N</i></code> is the formatted output size.
 </p>
-<p><i>Returns</i>: <code>out + N</code>.</p>
+<p><i>Returns</i>: <code>out + <i>N</i></code>.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
@@ -1138,16 +1138,16 @@ template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
 <dd>
 
 <p>
-Let <code>N</code> be the formatted output size and <code>M</code> be
-<code>min(max(n, 0), N)</code>.
+Let <code><i>N</i></code> be the formatted output size and <code><i>N</i></code> be
+<code>min(max(n, 0), <i>N</i>)</code>.
 </p>
 <p>
 <i>Effects</i>:
 Places the character representation of formatting arguments provided by
 <code>args</code> formatted according to specifications given in
-<code>fmt</code> into the range <code>[out, out + M)</code>.
+<code>fmt</code> into the range <code>[out, out + <i>M</i>)</code>.
 </p>
-<p><i>Returns</i>: <code>{out + M, N}</code>.</p>
+<p><i>Returns</i>: <code>{out + <i>M</i>, <i>N</i>}</code>.</p>
 <p><i>Throws</i>: <code>format_error</code> if <code>fmt</code> is not a
 valid format string.</p>
 </dd>
@@ -1738,10 +1738,9 @@ of the format string. If <code>format-spec</code> is empty then either
 <td>
 <!-- The wording suggested by Tomasz Kamiński (with adjustments). -->
 Shall parse the range <code>[pc.begin(), pc.end())</code> until the first
-unmatched character according to the format specifications
-<code>format-spec</code> for type <code>T</code>. Shall throw
-<code>format_error</code> unless the whole range is parsed or the unmatched
-character is <code>'}'</code>.
+unmatched character according to the format specifications for type
+<code>T</code>. Shall throw <code>format_error</code> unless the whole range is
+parsed or the unmatched character is <code>'}'</code>.
 
 <p>
 [ <i>Note:</i> This allows formatters to emit meaningful error messsages.
