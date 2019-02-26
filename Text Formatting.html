@@ -954,6 +954,8 @@ Add a new section in 19
      Code check: https://godbolt.org/z/-dsVgq -->
 <h4><a name="format.syn">19.�.1 Header <code>&lt;format&gt;</code> synopsis [format.syn]</a></h4>
 
+TODO: should basic_format_context use concept?
+
 <pre>
 <code>namespace std {
   // <a href="#format.error">[format.error]</a>, class format_error
@@ -1734,9 +1736,20 @@ of the format string. If <code>format-spec</code> is empty then either
 <td><code>f.parse(pc)</code></td>
 <td><code>PC::iterator</code></td>
 <td>
-Shall parse <code>format-spec</code> for type <code>T</code>, store the parsed
-specifiers in <code>*this</code>, and return an iterator past the end of the
-parsed range.
+<!-- The wording suggested by Tomasz Kamiński (with adjustments). -->
+Shall parse the range <code>[pc.begin(), pc.end())</code> until the first
+unmatched character according to the format specifications
+<code>format-spec</code> for type <code>T</code>. Shall throw
+<code>format_error</code> unless the whole range is parsed or the unmatched
+character is <code>'}'</code>.
+
+<p>
+[ <i>Note:</i> This allows formatters to emit meaningful error messsages.
+<i>— end note</i> ]
+</p>
+
+Shall store the parsed format specifiers in <code>*this</code> and return an
+iterator past the end of the parsed range.
 </td>
 </tr>
 <tr>
