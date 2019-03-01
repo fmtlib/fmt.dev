@@ -1617,6 +1617,7 @@ described below. [ <i>Note:</i> Enabled specializations meet the
 <i>Formatter</i> requirements, and disabled specializations do not.
 <i>— end note</i> ] Each header that declares the template <code>formatter</code>
 provides enabled specializations
+</p>
 
 <ul>
 <li><pre><code>template&lt;&gt; struct formatter&lt;<i>charT</i>, <i>charT</i>&gt;;</code></pre>
@@ -1634,6 +1635,8 @@ cv-unqualified standard integer types, extended integer types, and
 floating-point types as the first template argument and <i>charT</i> as the
 second template argument,
 </ul>
+
+<p>
 where <i>charT</i> is <code>char</code> or <code>wchar_t</code>
 (both sets of specializations are provided).
 </p>
@@ -1726,7 +1729,7 @@ of the format string. If <code>format-spec</code> is empty then either
 </p>
 
 <table>
-<a name="requirements-table"><caption>Table � — <i>Formatter</i> requirements</caption></a>
+<caption><a name="requirements-table">Table � — <i>Formatter</i> requirements</a></caption>
 <thead>
 <tr><th>Expression</th><th>Return type</th><th>Requirement</th></tr>
 </thead>
@@ -1771,8 +1774,8 @@ call to <code>f.parse(pc)</code>.
 </tbody>
 </table>
 
-<h5><a name="format.parse_context">19.�.3.2 Class template <code>basic_format_parse_context</a></code>
-[format.parse_context]</h5>
+<h5><a name="format.parse_context">19.�.3.2 Class template <code>basic_format_parse_context</code>
+[format.parse_context]</a></h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
 <pre>
@@ -2478,7 +2481,7 @@ Google Benchmark library [19] to measure timings:
 
   auto data = generate_random_data&lt;int&gt;(1000);
 
-  void sprintf(benchmark::State &s) {
+  void sprintf(benchmark::State&amp; s) {
     size_t result = 0;
     while (s.KeepRunning()) {
       for (auto i: data) {
@@ -2490,7 +2493,7 @@ Google Benchmark library [19] to measure timings:
   }
   BENCHMARK(sprintf);
 
-  void ostringstream(benchmark::State &s) {
+  void ostringstream(benchmark::State&amp; s) {
     size_t result = 0;
     while (s.KeepRunning()) {
       for (auto i: data) {
@@ -2503,7 +2506,7 @@ Google Benchmark library [19] to measure timings:
   }
   BENCHMARK(ostringstream);
 
-  void to_string(benchmark::State &s) {
+  void to_string(benchmark::State&amp; s) {
     size_t result = 0;
     while (s.KeepRunning()) {
       for (auto i: data)
@@ -2513,7 +2516,7 @@ Google Benchmark library [19] to measure timings:
   }
   BENCHMARK(to_string);
 
-  void format(benchmark::State &s) {
+  void format(benchmark::State&amp; s) {
     size_t result = 0;
     while (s.KeepRunning()) {
       for (auto i: data)
@@ -2523,7 +2526,7 @@ Google Benchmark library [19] to measure timings:
   }
   BENCHMARK(format);
 
-  void format_to(benchmark::State &s) {
+  void format_to(benchmark::State&amp; s) {
     size_t result = 0;
     while (s.KeepRunning()) {
       for (auto i: data) {
