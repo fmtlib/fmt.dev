@@ -1847,19 +1847,19 @@ template parameter <code>charT</code>.</p>
 </dd>
 <dt><code>constexpr size_t next_arg_id();</code></dt>
 <dd>
-<p><i>Effects</i>: If <code>indexing_ != manual</code>, equivalent to:
+<p><i>Effects</i>: If <code>indexing_ != manual</code>, equivalent to:</p>
 <pre><code>  if (indexing_ == unknown)
     indexing_ = automatic;
-  return next_arg_id_++;</code></pre></p>
+  return next_arg_id_++;</code></pre>
 <p><i>Throws</i>: <code>format_error</code> if <code>indexing_ == manual</code>
 which indicates mixing of automatic and manual argument indexing.</p>
 </dd>
 <dt><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
 <p><i>Expects</i>: <code>id</code> is a valid argument id.</p>
-<p><i>Effects</i>: If <code>indexing_ != automatic</code>, equivalent to:
+<p><i>Effects</i>: If <code>indexing_ != automatic</code>, equivalent to:</p>
 <pre><code>  if (indexing_ == unknown)
-    indexing_ = manual;</code></pre></p>
+    indexing_ = manual;</code></pre>
 <p><i>Throws</i>: <code>format_error</code> if
 <code>indexing_ == automatic</code> which indicates mixing of automatic and
 manual argument indexing.</p>
@@ -2009,7 +2009,7 @@ argument for user-defined formatters.
 <dt><code>template&lt;Integral I&gt;
 explicit basic_format_arg(I n) noexcept;</code></dt>
 <dd>
-<p><i>Effects</i>:
+<p><i>Effects</i>:</p>
 <ul class="itemize">
 <li>if <code>I</code> is <code>bool</code> or <code>char_type</code>,
     initializes <code>value</code> with <code>n</code>,
@@ -2034,7 +2034,6 @@ explicit basic_format_arg(I n) noexcept;</code></dt>
     <code>static_cast&lt;unsigned long long int&gt;(n)</code>,
 <li>otherwise the program is ill-formed.
 </ul>
-</p>
 </dd>
 
 <dt><code>explicit basic_format_arg(float n) noexcept;</code></dt>
@@ -2089,13 +2088,13 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <p><i>Constraints</i>: <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled.</p>
   <p><i>Effects</i>: Initializes <code>value</code> with
   <code>handle(v)</code>.</p>
-</dd>
 
-<p>
-[ <i>Note:</i> Constructing <code>basic_format_arg</code> from a pointer to a
-member is ill-formed unless the user provides an enabled specialization of
-<code>formatter</code> for this pointer to member type. <i>— end note</i> ]
-</p>
+  <p>
+  [ <i>Note:</i> Constructing <code>basic_format_arg</code> from a pointer to a
+  member is ill-formed unless the user provides an enabled specialization of
+  <code>formatter</code> for this pointer to member type. <i>— end note</i> ]
+  </p>
+</dd>
 
 <dt><code>explicit operator bool() const noexcept;</code></dt>
 <dd>
@@ -2129,12 +2128,12 @@ type.
 <dt><code>template&lt;class T&gt; explicit handle(const T&amp; val) noexcept;</code></dt>
 <dd>
   <p><i>Effects</i>: Initializes <code>ptr_</code> with <code>&amp;val</code>
-  and <code>format_</code> with
+  and <code>format_</code> with</p>
   <pre><code>[](basic_format_parse_context&lt;char_type&gt;&amp; parse_ctx, Context&amp; format_ctx, const void* ptr) {
     typename Context::template formatter_type&lt;T&gt; f;
     parse_ctx.advance_to(f.parse(parse_ctx));
     format_ctx.advance_to(f.format(*static_cast&lt;const T*&gt;(ptr), format_ctx));
-  }</code></pre></p>
+  }</code></pre>
 </dd>
 <dt><code>void format(basic_format_parse_context&lt;char_type&gt;&amp; parse_ctx, Context&amp; format_ctx) const;</code></dt>
 <dd>
@@ -2306,18 +2305,19 @@ The FastFormat library <a href="#11">[11]</a> is another well-known formatting
 library. Similarly to this proposal, FastFormat uses brace-delimited format
 specifiers, but otherwise the format string syntax is different and the library
 has significant limitations <a href="#12">[12]</a>:
+</p>
 
 <blockquote>
+<p>
 Three features that have no hope of being accommodated within the current
 design are:
-
+</p>
 <ul>
 <li>Leading zeros (or any other non-space padding)
 <li>Octal/hexadecimal encoding
 <li>Runtime width/alignment specification
 </ul>
 </blockquote>
-</p>
 
 <p>
 Formatting facilities of the Folly library <a href="#13">[13]</a> are the
