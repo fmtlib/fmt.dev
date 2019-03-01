@@ -1185,7 +1185,7 @@ that is not part of a replacement field or an escape sequence is copied
 unchanged to the output. An escape sequence is one of <code>{{</code> or
 <code>}}</code>. It is replaced with <code>{</code> or <code>}</code>
 respectively in the output. The syntax of replacement fields is as follows:
-
+</p>
 <!-- The notation is the same as in http://eel.is/c++draft/facet.numpunct -->
 <pre class="codeblock">
 <code>replacement-field ::= '{' [arg-id] [':' format-spec] '}'
@@ -1194,7 +1194,6 @@ integer           ::= digit [integer]
 nonzero-digit     ::= '1'...'9'
 digit             ::= '0'...'9'</code>
 </pre>
-</p>
 
 <p>
 The <code>arg-id</code> field specifies the index of the argument in
@@ -1203,10 +1202,9 @@ instead of the replacement field. The optional <code>format-spec</code> field
 specifies a non-default format for the replacement value.
 </p>
 
-<p>[ <i>Example:</i><pre>
+[ <i>Example:</i><pre>
 <code>  string s = format("{0}-{{", 8); // s == "8-{"</code>
 </pre> — <i>end example</i> ]
-</p>
 
 <p>
 If the numeric <code>arg-id</code>s in a format string are 0, 1, 2, ... in
@@ -1215,13 +1213,12 @@ will be automatically used in that order. A format string is invalid if it
 contains a mix of automatic and manual indexing.
 </p>
 
-<p>[ <i>Example:</i><pre>
+[ <i>Example:</i><pre>
 <code>  string s0 = format("{} to {}",   "a", "b"); // OK: automatic indexing
   string s1 = format("{1} to {0}", "a", "b"); // OK: manual indexing
   string s2 = format("{0} to {}",  "a", "b"); // Error: mixing automatic and manual indexing
   string s3 = format("{} to {1}",  "a", "b"); // Error: mixing automatic and manual indexing</code>
 </pre> — <i>end example</i> ]
-</p>
 
 <p>
 The <code>format-spec</code> field contains <em>format specifications</em> that
@@ -1230,6 +1227,7 @@ alignment, padding, and decimal precision. Each type can define its own
 <em>formatting mini-language</em> or interpretation of the
 <code>format-spec</code> field. The syntax of format specifications is as
 follows:
+</p>
 
 <pre class="codeblock">
 <code>format-spec     ::= std-format-spec | custom-format-spec
@@ -1242,7 +1240,6 @@ precision       ::= integer | '{' arg-id '}'
 type            ::= 'a' | 'A' | 'b' | 'B' | 'c' | 'd' | 'e' | 'E' | 'f' | 'F' |
                     'g' | 'G' | 'n' | 'o' | 'p' | 's' | 'x' | 'X'</code>
 </pre>
-</p>
 
 <p>
 where <code>std-format-spec</code> defines a common formatting mini-language
@@ -1301,7 +1298,7 @@ The meaning of the various alignment options is as follows:
 </tbody>
 </table>
 
-<p>[ <i>Example:</i><pre>
+[ <i>Example:</i><pre>
 <code>  char c = 120;
   string s0 = format("{:6}", 42);      // s0 == "    42"
   string s1 = format("{:6}", 'x');     // s1 == "x     "
@@ -1313,7 +1310,6 @@ The meaning of the various alignment options is as follows:
   string s7 = format("{:=+06d}", c);   // s7 == "+00120"
   string s8 = format("{:6}", true);    // s8 == "true  "</code>
 </pre> — <i>end example</i> ]
-</p>
 
 <p>
 Unless a minimum field width is defined, the field width will be determined by
@@ -1353,7 +1349,7 @@ specified. It can be one of the following:
 The <code>sign</code> option applies to floating-point infinity and NaN.
 </p>
 
-<p>[ <i>Example:</i><pre>
+[ <i>Example:</i><pre>
 <code>  double inf = std::numeric_limits&lt;double&gt;::infinity();
   double nan = std::numeric_limits&lt;double&gt;::quiet_NaN();
   string s0 = format("{0:} {0:+} {0:-} {0: }", 1);   // s0 == "1 +1 1  1"
@@ -1361,7 +1357,6 @@ The <code>sign</code> option applies to floating-point infinity and NaN.
   string s2 = format("{0:} {0:+} {0:-} {0: }", inf); // s2 == "inf +inf inf  inf"
   string s3 = format("{0:} {0:+} {0:-} {0: }", nan); // s3 == "nan +nan nan  nan"</code>
 </pre> — <i>end example</i> ]
-</p>
 
 <p>
 The <code>'#'</code> option causes the <em>alternate form</em> to be used for
@@ -1510,13 +1505,12 @@ using textual representation, either <code>"true"</code> or
 <code>"false"</code>, if the presentation type is not specified.
 </p>
 
-<p>[ <i>Example:</i><pre>
+[ <i>Example:</i><pre>
 <code>  string s0 = format("{}", 42);                      // s0 == "42"
   string s1 = format("{0:b} {0:d} {0:o} {0:x}", 42); // s1 == "101010 42 52 2a"
   string s2 = format("{0:#x} {0:#X}", 42);           // s2 == "0x2a 0X2A"
   string s3 = format("{:n}", 1234);                  // s3 == "1,234" (depends on the locale)</code>
 </pre> — <i>end example</i> ]
-</p>
 
 <p>The available floating-point presentation types and their mapping to
 <code>to_chars</code> are:</p>
@@ -1676,7 +1670,7 @@ An enabled specialization <code>formatter&lt;T, charT&gt;</code> will satisfy
 the <i>Formatter</i> requirements.
 </p>
 
-<p>[ <i>Example:</i><pre><code>  #include &lt;format&gt;
+[ <i>Example:</i><pre><code>  #include &lt;format&gt;
 
   enum color { red, green, blue };
 
@@ -1695,7 +1689,6 @@ the <i>Formatter</i> requirements.
   std::string s2 = std::format("{}", red);    // OK: user-provided formatter
   std::string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
-</p>
 
 <h5>19.�.3.1 <i>Formatter</i> requirements [formatter.requirements]</h5>
 
@@ -1913,7 +1906,8 @@ consisting of the formatting arguments and the output iterator.
 <p><i>Effects</i>: Equivalent to: <code>out_ = it;</code></p>
 </dd>
 </dl>
-<p>[ <i>Example:</i><pre>
+
+[ <i>Example:</i><pre>
 <code>  struct S {
     int value;
   };
@@ -1951,7 +1945,6 @@ consisting of the formatting arguments and the output iterator.
   };
 
   std::string s = std::format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
-</p>
 
 <h4><a name="format.arguments">19.�.4 Arguments [format.arguments]</a></h4>
 <h5><a name="format.arg">19.�.4.1 Class template <code>basic_format_arg</code> [format.arg]</a></h5>
