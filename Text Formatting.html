@@ -150,6 +150,14 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 
 <h2><a name="History">Revision History</a></h2>
 
+<h3>Changes since R7</h3>
+
+<ul>
+  <li>Remove <code>std</code> qualifications.
+  <li>Remove <code>noexcept</code> from <code>basic_format_arg(const
+      char_type* s)</code> because it has a precondition.</li>
+</ul>
+
 <h3>Changes since R6</h3>
 
 <ul>
@@ -1352,8 +1360,8 @@ The <code>sign</code> option applies to floating-point infinity and NaN.
 </p>
 
 [ <i>Example:</i><pre>
-<code>  double inf = std::numeric_limits&lt;double&gt;::infinity();
-  double nan = std::numeric_limits&lt;double&gt;::quiet_NaN();
+<code>  double inf = numeric_limits&lt;double&gt;::infinity();
+  double nan = numeric_limits&lt;double&gt;::quiet_NaN();
   string s0 = format("{0:} {0:+} {0:-} {0: }", 1);   // s0 == "1 +1 1  1"
   string s1 = format("{0:} {0:+} {0:-} {0: }", -1);  // s1 == "-1 -1 -1 -1"
   string s2 = format("{0:} {0:+} {0:-} {0: }", inf); // s2 == "inf +inf inf  inf"
@@ -1628,9 +1636,9 @@ provides enabled specializations
 <li><pre><code>template&lt;&gt; struct formatter&lt;const <i>charT</i>*, <i>charT</i>&gt;;</code></pre>
 <li><pre><code>template&lt;size_t N&gt; struct formatter&lt;const <i>charT</i>[N], <i>charT</i>&gt;;</code></pre>
 <li><pre><code>template&lt;class traits, class Allocator&gt;
-  struct formatter&lt;std::basic_string&lt;<i>charT</i>, traits, Allocator&gt;, <i>charT</i>&gt;;</code></pre>
+  struct formatter&lt;basic_string&lt;<i>charT</i>, traits, Allocator&gt;, <i>charT</i>&gt;;</code></pre>
 <li><pre><code>template&lt;class traits&gt;
-  struct formatter&lt;std::basic_string_view&lt;<i>charT</i>, traits&gt;, <i>charT</i>&gt;;</code></pre>
+  struct formatter&lt;basic_string_view&lt;<i>charT</i>, traits&gt;, <i>charT</i>&gt;;</code></pre>
 <li>specializations of <code>formatter</code> for <code>nullptr_t</code>,
 <code>void*</code>, <code>const void*</code>, <code>bool</code>, and all
 cv-unqualified standard integer types, extended integer types, and
@@ -1681,7 +1689,7 @@ the <i>Formatter</i> requirements.
 
   const char* color_names[] = { "red", "green", "blue" };
 
-  template&lt;&gt; struct std::formatter&lt;color&gt; : std::formatter&lt;const char*&gt; {
+  template&lt;&gt; struct formatter&lt;color&gt; : formatter&lt;const char*&gt; {
     auto format(color c, format_context&amp; ctx) {
       return formatter&lt;const char*&gt;::format(color_names[c], ctx);
     }
@@ -1689,10 +1697,10 @@ the <i>Formatter</i> requirements.
 
   struct err {};
 
-  std::string s0 = std::format("{}", 42);     // OK: library-provided formatter
-  std::string s1 = std::format("{}", L"foo"); // Ill-formed: disabled formatter
-  std::string s2 = std::format("{}", red);    // OK: user-provided formatter
-  std::string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
+  string s0 = format("{}", 42);     // OK: library-provided formatter
+  string s1 = format("{}", L"foo"); // Ill-formed: disabled formatter
+  string s2 = format("{}", red);    // OK: user-provided formatter
+  string s3 = format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
 
 <h5>19.�.3.1 <i>Formatter</i> requirements [formatter.requirements]</h5>
@@ -1917,7 +1925,7 @@ consisting of the formatting arguments and the output iterator.
     int value;
   };
 
-  template&lt;&gt; struct std::formatter&lt;S&gt; {
+  template&lt;&gt; struct formatter&lt;S&gt; {
     int width_arg_id = 0;
 
     // Parses a width argument id in the format { &lt;digit&gt; }.
@@ -1928,7 +1936,7 @@ consisting of the formatting arguments and the output iterator.
         return iter;
       ++iter;
       char c = get_char();
-      if (!std::isdigit(c) || (++iter, get_char()) != '}')
+      if (!isdigit(c) || (++iter, get_char()) != '}')
         throw format_error("invalid format");
       width_arg_id = c - '0';
       ctx.check_arg_id(width_arg_id);
@@ -1938,9 +1946,9 @@ consisting of the formatting arguments and the output iterator.
     // Formats S with width given by the argument width_arg_id.
     auto format(S s, format_context&amp; ctx) {
       int width = visit_format_arg([](auto value) -&gt; int {
-        if constexpr (!std::is_integral_v&lt;decltype(value)&gt;)
+        if constexpr (!is_integral_v&lt;decltype(value)&gt;)
           throw format_error("width is not integral");
-        else if (value &lt; 0 || value &gt; std::numeric_limits&lt;int&gt;::max())
+        else if (value &lt; 0 || value &gt; numeric_limits&lt;int&gt;::max())
           throw format_error("invalid width");
         else
           return value;
@@ -1949,7 +1957,7 @@ consisting of the formatting arguments and the output iterator.
     }
   };
 
-  std::string s = std::format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
+  string s = format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
 
 <h4><a name="format.arguments">19.�.4 Arguments [format.arguments]</a></h4>
 <h5><a name="format.arg">19.�.4.1 Class template <code>basic_format_arg</code> [format.arg]</a></h5>
@@ -1977,7 +1985,7 @@ consisting of the formatting arguments and the output iterator.
     explicit basic_format_arg(float n) noexcept;                       <i>// exposition only</i>
     explicit basic_format_arg(double n) noexcept;                      <i>// exposition only</i>
     explicit basic_format_arg(long double n) noexcept;                 <i>// exposition only</i>
-    explicit basic_format_arg(const char_type* s) noexcept;            <i>// exposition only</i>
+    explicit basic_format_arg(const char_type* s);                     <i>// exposition only</i>
 
     template&lt;class traits&gt;
       explicit basic_format_arg(
@@ -2051,7 +2059,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <code>n</code>.</p>
 </dd>
 
-<dt><code>explicit basic_format_arg(const char_type* s) noexcept;</code></dt>
+<dt><code>explicit basic_format_arg(const char_type* s);</code></dt>
 <dd>
   <p><i>Expects</i>: <code>s</code> points to a NTCTS
      (<a href="http://eel.is/c++draft/defns.ntcts">[defns.ntcts]</a>).</p>
