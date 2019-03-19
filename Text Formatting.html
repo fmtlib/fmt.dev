@@ -189,6 +189,9 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
       <code>format_to</code></a> specifications to propagate <i>Throws</i>.
   <li>Merge the two <a href="#format_to-def">
       <code>format_to</code></a> specifications into one.</li>
+  <li>Add commas around "formatted according to specifications given in
+      <code>fmt</code>" in the specifications of <a href="#vformat_to-def"><code>vformat_to</code></a> and
+      <a href="#format_to_n-def"><code>format_to_n</code></a>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg"><code>basic_format_arg(const
       char_type* s)</code></a> because it has a precondition.
@@ -1164,10 +1167,10 @@ return vformat_to(out, fmt, {make_format_args&lt;context&gt;(args...)});</code>
 </p>
 </dd>
 
-<dt><code>template&lt;class Out&gt;
+<dt><a name="vformat_to-def"><code>template&lt;class Out&gt;
   Out vformat_to(Out out, string_view fmt, format_args_t&lt;Out, char&gt; args);
 template&lt;class Out&gt;
-  Out vformat_to(Out out, wstring_view fmt, format_args_t&lt;Out, wchar_t&gt; args);</code>
+  Out vformat_to(Out out, wstring_view fmt, format_args_t&lt;Out, wchar_t&gt; args);</code></a>
 </dt>
 <dd>
 
@@ -1178,8 +1181,8 @@ template&lt;class Out&gt;
 <p>
 <i>Effects:</i>
 Places the character representation of formatting arguments provided by
-<code>args</code> formatted according to specifications given in
-<code>fmt</code> into the range <code>[out, out + <i>N</i>)</code>, where
+<code>args</code>, formatted according to specifications given in
+<code>fmt</code>, into the range <code>[out, out + <i>N</i>)</code>, where
 <code><i>N</i></code> is the formatted output size.
 </p>
 <p><i>Returns:</i> <code>out + <i>N</i></code>.</p>
@@ -1187,7 +1190,7 @@ Places the character representation of formatting arguments provided by
 valid format string.</p>
 </dd>
 
-<dt><code>template&lt;class Out, class... Args&gt;
+<dt><a name="format_to_n-def"></a><code>template&lt;class Out, class... Args&gt;
   format_to_n_result&lt;Out&gt; format_to_n(Out out, iter_difference_t&lt;Out&gt; n,
                                       string_view fmt, const Args&amp;... args);
 template&lt;class Out, class... Args&gt;
@@ -1207,8 +1210,8 @@ Let <code><i>N</i></code> be the formatted output size and <code><i>N</i></code>
 <p>
 <i>Effects:</i>
 Places the character representation of formatting arguments provided by
-<code>args</code> formatted according to specifications given in
-<code>fmt</code> into the range <code>[out, out + <i>M</i>)</code>.
+<code>args</code>, formatted according to specifications given in
+<code>fmt</code>, into the range <code>[out, out + <i>M</i>)</code>.
 </p>
 <p><i>Returns:</i> <code>{out + <i>M</i>, <i>N</i>}</code>.</p>
 <p><i>Throws:</i> <code>format_error</code> if <code>fmt</code> is not a
