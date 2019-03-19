@@ -184,6 +184,11 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
       P1369 Guidelines for Formulating Library Semantics Specifications</a>.
   <li>Rename <code>O</code> to <code>Out</code> in template parameters to make
       them distinguishable from <code>0</code>.
+  <li>Replace "<i>Returns:</i>" with "<i>Effects:</i> Equivalent to:" in
+      <a href="#format-def"><code>format</code></a> and <a href="#format_to-def">
+      <code>format_to</code></a> specifications to propagate <i>Throws</i>.
+  <li>Merge the two <a href="#format_to-def">
+      <code>format_to</code></a> specifications into one.</li>
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg"><code>basic_format_arg(const
       char_type* s)</code></a> because it has a precondition.
@@ -1116,18 +1121,18 @@ Add a new section in 19
 <h4><a name="format.functions">19.�.2 Formatting functions [format.functions]</a></h4>
 
 <dl class="def">
-<dt><code>template&lt;class... Args&gt;
-  string format(string_view fmt, const Args&amp;... args);</code>
+<dt><a name="format-def"><code>template&lt;class... Args&gt;
+  string format(string_view fmt, const Args&amp;... args);</code></a>
 </dt>
 <dd>
-<p><i>Returns:</i> <code>vformat(fmt, make_format_args(args...))</code>.</p>
+<p><i>Effects:</i> Equivalent to: <code>return vformat(fmt, make_format_args(args...));</code></p>
 </dd>
 
 <dt><code>template&lt;class... Args&gt;
   wstring format(wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
-<p><i>Returns:</i> <code>vformat(fmt, make_wformat_args(args...))</code>.</p>
+<p><i>Effects:</i> Equivalent to: <code>return vformat(fmt, make_wformat_args(args...));</code></p>
 </dd>
 
 <dt><code>string vformat(string_view fmt, format_args args);
@@ -1144,31 +1149,18 @@ specifications given in <code>fmt</code>.
 valid format string.</p>
 </dd>
 
-<dt><code>template&lt;class Out, class... Args&gt;
-  Out format_to(Out out, string_view fmt, const Args&amp;... args);</code>
+<dt><a name="format_to-def"><code>template&lt;class Out, class... Args&gt;
+  Out format_to(Out out, string_view fmt, const Args&amp;... args);
+template&lt;class Out, class... Args&gt;
+  Out format_to(Out out, wstring_view fmt, const Args&amp;... args);</code></a>
 </dt>
 <dd>
 <p>
-  <i>Mandates:</i>
-  <code>Out</code> models <code>OutputIterator&lt;const char&amp;&gt;</code>.
-</p>
-<p>
-  <i>Returns:</i>
-  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;Out, char&gt;&gt;(args...)})</code>.
-</p>
-</dd>
-
-<dt><code>template&lt;class Out, class... Args&gt;
-  Out format_to(Out out, wstring_view fmt, const Args&amp;... args);</code>
-</dt>
-<dd>
-<p>
-  <i>Mandates:</i>
-  <code>Out</code> models <code>OutputIterator&lt;const wchar_t&amp;&gt;</code>.
-</p>
-<p>
-  <i>Returns:</i>
-  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;Out, wchar_t&gt;&gt;(args...)})</code>.
+  <i>Effects:</i> Equivalent to:
+  <pre class="codeblock">
+<code>using context = basic_format_context&lt;Out, decltype(fmt)::value_type&gt;;
+return vformat_to(out, fmt, {make_format_args&lt;context&gt;(args...)});</code>
+  </pre>
 </p>
 </dd>
 
