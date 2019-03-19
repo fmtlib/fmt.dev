@@ -153,9 +153,17 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <h3>Changes since R7</h3>
 
 <ul>
-  <li>Remove <code>std</code> qualifications.
-  <li>Remove <code>noexcept</code> from <code>basic_format_arg(const
-      char_type* s)</code> because it has a precondition.</li>
+  <li>Suggest placing 19.� Formatting as a subclause after 19.19 Primitive
+      numeric conversions in the <a href="#utilities.general">"General utilities
+      library summary" table</a>.
+  <li>Replace concept-related annotations with <i>Mandates</i> clauses per
+      <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1369r0.pdf">
+      P1369 Guidelines for Formulating Library Semantics Specifications</a>.
+  <li>Rename <code>O</code> to <code>Out</code> in template parameters to make
+      them more distinguishable from <code>0</code>.
+  <li>Remove unnecessary <code>std</code> qualifications.
+  <li>Remove <code>noexcept</code> from <a href="#basic_format_arg"><code>basic_format_arg(const
+      char_type* s)</code></a> because it has a precondition.
 </ul>
 
 <h3>Changes since R6</h3>
@@ -962,6 +970,7 @@ Add a new entry to the "General utilities library summary" table in
 [utilities.general]</a>:
 </p>
 <blockquote>
+  <a name="utilities.general"></a>
   <table border="1">
     <tr>
       <th align="center">Subclause</th>
@@ -972,12 +981,12 @@ Add a new entry to the "General utilities library summary" table in
       <td>&hellip;</td>
     </tr>
     <tr>
-      <td><ins>19.� Formatting</ins></td>
-      <td><ins>&lt;format&gt;</ins></td>
+      <td>19.19 Primitive numeric conversions</td>
+      <td>&lt;charconv&gt;</td>
     </tr>
     <tr>
-      <td>&hellip;</td>
-      <td>&hellip;</td>
+      <td><ins>19.� Formatting</ins></td>
+      <td><ins>&lt;format&gt;</ins></td>
     </tr>
   </table>
 </blockquote>
@@ -1009,8 +1018,7 @@ Add a new section in 19
        http://eel.is/c++draft/time.duration.literals.
        Example of a class with requires [common.iterator]:
        http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.22.5.4.1 -->
-  template&lt;class O, class charT&gt; requires OutputIterator&lt;O, const charT&amp;&gt;
-    class basic_format_context;
+  template&lt;class Out, class charT&gt; class basic_format_context;
   using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
   using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
 
@@ -1029,8 +1037,8 @@ Add a new section in 19
   using format_args = basic_format_args&lt;format_context&gt;;
   using wformat_args = basic_format_args&lt;wformat_context&gt;;
 
-  template&lt;class O, class charT&gt;
-    using format_args_t = basic_format_args&lt;basic_format_context&lt;O, charT&gt;&gt;;
+  template&lt;class Out, class charT&gt;
+    using format_args_t = basic_format_args&lt;basic_format_context&lt;Out, charT&gt;&gt;;
 
   template&lt;class Context = format_context, class... Args&gt;
     format_arg_store&lt;Context, Args...&gt;
@@ -1048,29 +1056,29 @@ Add a new section in 19
   string vformat(string_view fmt, format_args args);
   wstring vformat(wstring_view fmt, wformat_args args);
 
-  template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
-    O format_to(O out, string_view fmt, const Args&amp;... args);
-  template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
-    O format_to(O out, wstring_view fmt, const Args&amp;... args);
+  template&lt;class Out, class... Args&gt;
+    Out format_to(Out out, string_view fmt, const Args&amp;... args);
+  template&lt;class Out, class... Args&gt;
+    Out format_to(Out out, wstring_view fmt, const Args&amp;... args);
 
-  template&lt;OutputIterator&lt;const char&amp;&gt; O&gt;
-    O vformat_to(O out, string_view fmt, format_args_t&lt;O, char&gt; args);
-  template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O&gt;
-    O vformat_to(O out, wstring_view fmt, format_args_t&lt;O, wchar_t&gt; args);
+  template&lt;class Out&gt;
+    Out vformat_to(Out out, string_view fmt, format_args_t&lt;Out, char&gt; args);
+  template&lt;class Out&gt;
+    Out vformat_to(Out out, wstring_view fmt, format_args_t&lt;Out, wchar_t&gt; args);
 
-  template&lt;class O&gt;
+  template&lt;class Out&gt;
     struct format_to_n_result {
-      O out;
-      iter_difference_t&lt;O&gt; size;
+      Out out;
+      iter_difference_t&lt;Out&gt; size;
     };
   <!-- Formatted similar to std::mismatch: http://eel.is/c++draft/mismatch
        vformat_to_n is not provided but it can be with an iterator adapter. -->
-  template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
-    format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
-                                      string_view fmt, const Args&amp;... args);
-  template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
-    format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
-                                      wstring_view fmt, const Args&amp;... args);
+  template&lt;class Out, class... Args&gt;
+    format_to_n_result&lt;Out&gt; format_to_n(Out out, iter_difference_t&lt;Out&gt; n,
+                                        string_view fmt, const Args&amp;... args);
+  template&lt;class Out, class... Args&gt;
+    format_to_n_result&lt;Out&gt; format_to_n(Out out, iter_difference_t&lt;Out&gt; n,
+                                        wstring_view fmt, const Args&amp;... args);
 
   template&lt;class... Args&gt;
     size_t formatted_size(string_view fmt, const Args&amp;... args);
@@ -1109,33 +1117,45 @@ specifications given in <code>fmt</code>.
 valid format string.</p>
 </dd>
 
-<dt><code>template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
-  O format_to(O out, string_view fmt, const Args&amp;... args);</code>
+<dt><code>template&lt;class Out, class... Args&gt;
+  Out format_to(Out out, string_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
 <p>
+  <i>Mandates</i>:
+  <code>Out</code> models <code>OutputIterator&lt;Out, const char&amp;&gt;</code>.
+</p>
+<p>
   <i>Returns</i>:
-  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;O, char&gt;&gt;(args...)})</code>.
+  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;Out, char&gt;&gt;(args...)})</code>.
 </p>
 </dd>
 
-<dt><code>template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
-  O format_to(O out, wstring_view fmt, const Args&amp;... args);</code>
+<dt><code>template&lt;class Out, class... Args&gt;
+  Out format_to(Out out, wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
 <p>
+  <i>Mandates</i>:
+  <code>Out</code> models <code>OutputIterator&lt;Out, const wchar_t&amp;&gt;</code>.
+</p>
+<p>
   <i>Returns</i>:
-  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;O, wchar_t&gt;&gt;(args...)})</code>.
+  <code>vformat_to(out, fmt, {make_format_args&lt;basic_format_context&lt;Out, wchar_t&gt;&gt;(args...)})</code>.
 </p>
 </dd>
 
-<dt><code>template&lt;OutputIterator&lt;const char&amp;&gt; O&gt;
-  O vformat_to(O out, string_view fmt, format_args_t&lt;O, char&gt; args);
-template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O&gt;
-  O vformat_to(O out, wstring_view fmt, format_args_t&lt;O, wchar_t&gt; args);</code>
+<dt><code>template&lt;class Out&gt;
+  Out vformat_to(Out out, string_view fmt, format_args_t&lt;Out, char&gt; args);
+template&lt;class Out&gt;
+  Out vformat_to(Out out, wstring_view fmt, format_args_t&lt;Out, wchar_t&gt; args);</code>
 </dt>
 <dd>
 
+<p>
+  <i>Mandates</i>:
+  <code>Out</code> models <code>OutputIterator&lt;Out, const decltype(fmt)::value_type&amp;&gt;</code>.
+</p>
 <p>
 <i>Effects</i>:
 Places the character representation of formatting arguments provided by
@@ -1148,15 +1168,19 @@ Places the character representation of formatting arguments provided by
 valid format string.</p>
 </dd>
 
-<dt><code>template&lt;OutputIterator&lt;const char&amp;&gt; O, class... Args&gt;
-  format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
-                                    string_view fmt, const Args&amp;... args);
-template&lt;OutputIterator&lt;const wchar_t&amp;&gt; O, class... Args&gt;
-  format_to_n_result&lt;O&gt; format_to_n(O out, iter_difference_t&lt;O&gt; n,
-                                    wstring_view fmt, const Args&amp;... args);</code>
+<dt><code>template&lt;class Out, class... Args&gt;
+  format_to_n_result&lt;Out&gt; format_to_n(Out out, iter_difference_t&lt;Out&gt; n,
+                                      string_view fmt, const Args&amp;... args);
+template&lt;class Out, class... Args&gt;
+  format_to_n_result&lt;Out&gt; format_to_n(Out out, iter_difference_t&lt;Out&gt; n,
+                                      wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
 
+<p>
+  <i>Mandates</i>:
+  <code>Out</code> models <code>OutputIterator&lt;Out, const decltype(fmt)::value_type&amp;&gt;</code>.
+</p>
 <p>
 Let <code><i>N</i></code> be the formatted output size and <code><i>N</i></code> be
 <code>min(max(n, 0), <i>N</i>)</code>.
@@ -1725,13 +1749,13 @@ A type <code>F</code> meets the <i>Formatter</i> requirements if:
 </ul>
 <p>
 Given character type <code>charT</code>, output iterator type
-<code>O</code>, and formatting argument type <code>T</code>, in
+<code>Out</code>, and formatting argument type <code>T</code>, in
 Table � <code>f</code> is a value of type <code>F</code>, <code>u</code> is an
 lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
 to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
 <code>basic_format_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
 <code>fc</code> is an lvalue of type
-<code>basic_format_context&lt;O, charT&gt;</code> (denoted by
+<code>basic_format_context&lt;Out, charT&gt;</code> (denoted by
 <code>FC</code>). <code>pc.begin()</code> points to the beginning of the
 <code>format-spec</code> (<a href="#format.syntax">[format.syntax]</a>) portion
 of the format string. If <code>format-spec</code> is empty then either
@@ -1882,13 +1906,13 @@ manual argument indexing.</p>
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
 <pre>
 <code>namespace std {
-  template&lt;class O, class charT&gt; requires OutputIterator&lt;O, const charT&amp;&gt;
+  template&lt;class Out, class charT&gt;
   class basic_format_context {
     basic_format_args&lt;basic_format_context&gt; args_; // <i>exposition only</i>
-    O out_;                                        // <i>exposition only</i>
+    Out out_;                                      // <i>exposition only</i>
 
   public:
-    using iterator = O;
+    using iterator = Out;
     using char_type = charT;
     template&lt;class T&gt; using formatter_type = formatter&lt;T&gt;;
 
@@ -1903,6 +1927,11 @@ manual argument indexing.</p>
 <p>
 An instance of <code>basic_format_context</code> holds formatting state
 consisting of the formatting arguments and the output iterator.
+</p>
+
+<p>
+<i>Mandates</i>: <code>Out</code> and <code>charT</code> model
+  <code>OutputIterator&lt;Out, const charT&amp;&gt</code>.
 </p>
 
 <dl>
@@ -2059,7 +2088,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <code>n</code>.</p>
 </dd>
 
-<dt><code>explicit basic_format_arg(const char_type* s);</code></dt>
+<dt><a name="basic_format_arg"><code>explicit basic_format_arg(const char_type* s);</code></a></dt>
 <dd>
   <p><i>Expects</i>: <code>s</code> points to a NTCTS
      (<a href="http://eel.is/c++draft/defns.ntcts">[defns.ntcts]</a>).</p>
