@@ -190,8 +190,14 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
   <li>Merge the two <a href="#format_to-def">
       <code>format_to</code></a> specifications into one.</li>
   <li>Add commas around "formatted according to specifications given in
-      <code>fmt</code>" in the specifications of <a href="#vformat_to-def"><code>vformat_to</code></a> and
-      <a href="#format_to_n-def"><code>format_to_n</code></a>.
+      <code>fmt</code>" in the specifications of <a href="#vformat_to-def">
+      <code>vformat_to</code></a> and <a href="#format_to_n-def">
+      <code>format_to_n</code></a>.
+  <li>Replace "<code><i>N</i></code> is/be the formatted output size" with
+      <code><i>N</i> = formatted_size(fmt, args...)</code>
+      in the specifications of <a href="#vformat_to-def">
+      <code>vformat_to</code></a> and <a href="#format_to_n-def">
+      <code>format_to_n</code></a>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg"><code>basic_format_arg(const
       char_type* s)</code></a> because it has a precondition.
@@ -1160,10 +1166,8 @@ template&lt;class Out, class... Args&gt;
 <dd>
 <p>
   <i>Effects:</i> Equivalent to:
-  <pre class="codeblock">
-<code>using context = basic_format_context&lt;Out, decltype(fmt)::value_type&gt;;
-return vformat_to(out, fmt, {make_format_args&lt;context&gt;(args...)});</code>
-  </pre>
+  <pre class="codeblock"><code>using context = basic_format_context&lt;Out, decltype(fmt)::value_type&gt;;
+return vformat_to(out, fmt, {make_format_args&lt;context&gt;(args...)});</code></pre>
 </p>
 </dd>
 
@@ -1183,7 +1187,7 @@ template&lt;class Out&gt;
 Places the character representation of formatting arguments provided by
 <code>args</code>, formatted according to specifications given in
 <code>fmt</code>, into the range <code>[out, out + <i>N</i>)</code>, where
-<code><i>N</i></code> is the formatted output size.
+<code><i>N</i> = formatted_size(fmt, args...)</code>.
 </p>
 <p><i>Returns:</i> <code>out + <i>N</i></code>.</p>
 <p><i>Throws:</i> <code>format_error</code> if <code>fmt</code> is not a
@@ -1204,7 +1208,7 @@ template&lt;class Out, class... Args&gt;
   <code>Out</code> models <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
 </p>
 <p>
-Let <code><i>N</i></code> be the formatted output size and <code><i>N</i></code> be
+Let <code><i>N</i> = formatted_size(fmt, args...)</code> and <code><i>N</i></code> be
 <code>min(max(n, 0), <i>N</i>)</code>.
 </p>
 <p>
