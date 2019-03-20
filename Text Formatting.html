@@ -188,17 +188,26 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
       <a href="#format-def"><code>format</code></a> and <a href="#format_to-def">
       <code>format_to</code></a> specifications to propagate <i>Throws</i>.
   <li>Merge the two <a href="#format_to-def">
-      <code>format_to</code></a> specifications into one.</li>
+      <code>format_to</code></a> specifications into one.
   <li>Add commas around "formatted according to specifications given in
       <code>fmt</code>" in the specifications of <a href="#vformat_to-def">
       <code>vformat_to</code></a> and <a href="#format_to_n-def">
       <code>format_to_n</code></a>.
   <li>Replace "<code><i>N</i></code> is/be the formatted output size" with
-      <code><i>N</i> = formatted_size(fmt, args...)</code> and denote
-      <code>min(max(n, 0), <i>N</i>)</code> by <code><i>M</i></code>
+      <code><i>N</i> = formatted_size(fmt, args...)</code>
       in the specifications of <a href="#vformat_to-def">
       <code>vformat_to</code></a> and <a href="#format_to_n-def">
       <code>format_to_n</code></a>.
+  <li>Denote <code>min(max(n, 0), <i>N</i>)</code> by <code><i>M</i></code>
+      in the specification of <a href="#format_to_n-def">
+      <code>format_to_n</code></a> since <code><i>N</i></code> is already taken.
+  <li>Mandate that each <code>T</code><sub><i>i</i></sub> in <code>Args</code>
+      satisfies the <i>Formattable</i> requirements in the specifications of
+      <a href="#format_to_n-def"><code>format_to_n</code></a>,
+      <a href="#formatted_size-def"><code>formatted_size</code></a>,
+      <a href="#make_format_args-def"><code>make_format_args</code></a>, and
+      <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>.
+      Other functions get this transitively via <code>make_(w)format_args</code>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg"><code>basic_format_arg(const
       char_type* s)</code></a> because it has a precondition.
@@ -1206,7 +1215,9 @@ template&lt;class Out, class... Args&gt;
 
 <p>
   <i>Mandates:</i>
-  <code>Out</code> models <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
+  <code>Out</code> models <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
+  and each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+    <i>Formattable</i> requirements.</p>
 </p>
 <p>
 Let <code><i>N</i> = formatted_size(fmt, args...)</code> and <code><i>M</i> =
@@ -1223,12 +1234,14 @@ Places the character representation of formatting arguments provided by
 valid format string.</p>
 </dd>
 
-<dt><code>template&lt;class... Args&gt;
+<dt><a name="formatted_size-def"></a><code>template&lt;class... Args&gt;
   size_t formatted_size(string_view fmt, const Args&amp;... args);
 template&lt;class... Args&gt;
   size_t formatted_size(wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
+<p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+  <i>Formattable</i> requirements.</p>
 <p>
 <i>Returns:</i> The number of characters in the character representation of
 formatting arguments <code>args</code> formatted according to specifications
@@ -2289,9 +2302,11 @@ former. <i>— end note</i> ]
 <h5><a name="format.make_args">19.�.4.5 Function template <code>make_format_args</code> [format.make_args]</a></h5>
 
 <dl class="def">
-<dt><code>template&lt;class Context = format_context, class... Args&gt;
+<dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
   format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
 <dd>
+  <p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+    <i>Formattable</i> requirements.</p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
@@ -2299,9 +2314,11 @@ former. <i>— end note</i> ]
 <h5>19.�.4.6 Function template <code>make_wformat_args</code> [format.make_wargs]</h5>
 
 <dl class="def">
-<dt><code>template&lt;class... Args&gt;
+<dt><a name="make_wformat_args-def"></a><code>template&lt;class... Args&gt;
   format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
 <dd>
+  <p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+    <i>Formattable</i> requirements.</p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;wformat_context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
