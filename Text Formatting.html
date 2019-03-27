@@ -220,12 +220,16 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
   <li>Replace "where <i>charT</i> is <code>char</code> or <code>wchar_t</code>"
       with "Let <i>charT</i> be either <code>char</code> or
       <code>wchar_t</code>" in <a href="#format.formatter">[format.formatter]</a>.
-  <li>Reword the definitions of <code>PC</code>, <code>FC</code>,
-      <code>pc</code>, and <code>fc</code> in
-      <a href="#formatter.requirements">[formatter.requirements]</a>.
   <li>Clarify that infinity and NaN are formatted as <code>"inf"</code> and
       <code>"nan"</code> for non-uppercase specifiers in
       <a href="#format.string">[format.string]</a>.
+  <li>Reword the definitions of <code>PC</code>, <code>FC</code>,
+      <code>pc</code>, and <code>fc</code> in
+      <a href="#formatter.requirements">[formatter.requirements]</a>.
+  <li>Remove several occurrences of "shall" in <a href="#requirements-table">
+      Table � — Formatter requirements</a>
+  <li>Replace <i>Returns</i> and <i>Remarks</i> with <i>Effects</i> in
+      <a href="#format.visit">[format.visit]</a>
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg">
       <code>basic_format_arg(const char_type* s)</code></a> because it has a
@@ -2246,17 +2250,14 @@ type.
 </dd>
 </dl>
 
-<h5>19.�.5.2 Argument visitation [format.visit]</h5>
+<h5>19.�.5.2 Argument visitation <a name="format.visit">[format.visit]</a></h5>
 
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl class="def">
 <dt><code>template&lt;class Visitor, class Context&gt;
   <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></dt>
 <dd>
-<p><i>Returns:</i> <code>visit(vis, arg.value)</code>.</p>
-<p><i>Remarks:</i>
-The return type is the type of the expression in the <i>Returns</i> section.
-</p>
+<p><i>Effects:</i> Equivalent to: <code>return visit(vis, arg.value);</code></p>
 </dd>
 </dl>
 
