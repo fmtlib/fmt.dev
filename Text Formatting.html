@@ -220,9 +220,12 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
   <li>Replace "where <i>charT</i> is <code>char</code> or <code>wchar_t</code>"
       with "Let <i>charT</i> be either <code>char</code> or
       <code>wchar_t</code>" in <a href="#format.formatter">[format.formatter]</a>.
-  <li>Reworded the definitions of <code>PC</code>, <code>FC</code>,
+  <li>Reword the definitions of <code>PC</code>, <code>FC</code>,
       <code>pc</code>, and <code>fc</code> in
       <a href="#formatter.requirements">[formatter.requirements]</a>.
+  <li>Clarify that infinity and NaN are formatted as <code>"inf"</code> and
+      <code>"nan"</code> for non-uppercase specifiers in
+      <a href="#format.string">[format.string]</a>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg">
       <code>basic_format_arg(const char_type* s)</code></a> because it has a
@@ -1557,6 +1560,11 @@ using textual representation, either <code>"true"</code> or
 </tbody>
 </table>
 
+<p>
+Infinity and NaN are formatted as <code>"inf"</code> and <code>"nan"</code>
+respectively unless specified otherwise.
+</p>
+
 <p>The available pointer presentation types and their mapping to
 <code>to_chars</code> are:</p>
 
@@ -1832,13 +1840,13 @@ of the format string. If <code>format-spec</code> is empty then either
 <td><code>PC::iterator</code></td>
 <td>
 <!-- The wording suggested by Tomasz Kamiński (with adjustments). -->
-Shall parse the range <code>[pc.begin(), pc.end())</code> until the first
-unmatched character according to the format specifications for type
-<code>T</code>. Shall throw <code>format_error</code> unless the whole range is
-parsed or the unmatched character is <code>'}'</code>. <br>
+Parses the range <code>[pc.begin(), pc.end())</code> until the first unmatched
+character according to the format specifications for type <code>T</code>.
+Throws <code>format_error</code> unless the whole range is parsed or the
+unmatched character is <code>'}'</code>.<br>
 [ <i>Note:</i> This allows formatters to emit meaningful error messages.
 <i>— end note</i> ] <br>
-Shall store the parsed format specifiers in <code>*this</code> and return an
+Stores the parsed format specifiers in <code>*this</code> and returns an
 iterator past the end of the parsed range.
 </td>
 </tr>
@@ -1848,9 +1856,9 @@ iterator past the end of the parsed range.
      iterator type. -->
 <td><code>FC::iterator</code></td>
 <td>
-Shall format <code>t</code> according to the specifiers stored in
-<code>*this</code>, write the output to <code>fc.out()</code> and return an
-iterator past the end of the output range.
+Formats <code>t</code> according to the specifiers stored in <code>*this</code>,
+writes the output to <code>fc.out()</code> and returns an iterator past the end
+of the output range.
 <!-- Determinism: the output should only depend on value, format string and
      locale for formatted_size to work.
      Example: http://eel.is/c++draft/hash.requirements#tab:hash -->
@@ -1862,7 +1870,7 @@ call to <code>f.parse(pc)</code>.
 <tr>
 <td><code>f.format(u,&nbsp;fc)</code></td>
 <td><code>FC::iterator</code></td>
-<td>Shall not modify u.</td>
+<td>Does not modify <code>u</code>.</td>
 </tr>
 </tbody>
 </table>
