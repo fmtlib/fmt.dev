@@ -220,6 +220,9 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
   <li>Replace "where <i>charT</i> is <code>char</code> or <code>wchar_t</code>"
       with "Let <i>charT</i> be either <code>char</code> or
       <code>wchar_t</code>" in <a href="#format.formatter">[format.formatter]</a>.
+  <li>Reworded the definitions of <code>PC</code>, <code>FC</code>,
+      <code>pc</code>, and <code>fc</code> in
+      <a href="#formatter.requirements">[formatter.requirements]</a>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg">
       <code>basic_format_arg(const char_type* s)</code></a> because it has a
@@ -1781,7 +1784,8 @@ the <i>Formatter</i> requirements.
   string s3 = format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
 
-<h5>19.�.4.1 <i>Formatter</i> requirements [formatter.requirements]</h5>
+<h5><a name="formatter.requirements">19.�.4.1 <i>Formatter</i> requirements
+    [formatter.requirements]</a></h5>
 
 <!-- Based on http://eel.is/c++draft/hash.requirements -->
 <p>
@@ -1806,11 +1810,12 @@ Given character type <code>charT</code>, output iterator type
 <code>Out</code>, and formatting argument type <code>T</code>, in
 Table � <code>f</code> is a value of type <code>F</code>, <code>u</code> is an
 lvalue of type <code>T</code>, <code>t</code> is a value of a type convertible
-to (possibly const) <code>T</code>, <code>pc</code> is an lvalue of type
-<code>basic_format_parse_context&lt;charT&gt;</code> (denoted by <code>PC</code>), and
-<code>fc</code> is an lvalue of type
-<code>basic_format_context&lt;Out, charT&gt;</code> (denoted by
-<code>FC</code>). <code>pc.begin()</code> points to the beginning of the
+to (possibly const) <code>T</code>,
+<code>PC</code> is <code>basic_format_parse_context&lt;charT&gt;</code>,
+<code>FC</code> is <code>basic_format_context&lt;Out, charT&gt;</code>,
+<code>pc</code> is an lvalue of type <code>PC</code>, and
+<code>fc</code> is an lvalue of type <code>FC</code>.
+<code>pc.begin()</code> points to the beginning of the
 <code>format-spec</code> (<a href="#format.syntax">[format.syntax]</a>) portion
 of the format string. If <code>format-spec</code> is empty then either
 <code>pc.begin() == pc.end()</code> or <code>*pc.begin() == '}'</code>.
