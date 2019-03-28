@@ -230,8 +230,12 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
       Table � — Formatter requirements</a>.
   <li>Replace <i>Returns</i> and <i>Remarks</i> with <i>Effects</i> in
       <a href="#format.visit">[format.visit]</a>.
-  <li>Add a description of <code>format_arg_store</code> in
-    <a href="#format.arg_store">[format.arg_store]</a>.
+  <li>Use kebab case for exposition-only types renaming
+      <code>format_arg_store</code> to <code><i>format-arg-store</i></code> and
+      <code>basic_format_arg::char_type</code> to
+      <code>basic_format_arg::<i>char-type</i></code>.
+  <li>Add a description of <code><i>format-arg-store</i></code> in
+      <a href="#format.arg_store">[format.arg_store]</a>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg">
       <code>basic_format_arg(const char_type* s)</code></a> because it has a
@@ -1106,7 +1110,7 @@ Add a new section in 19
   template&lt;class Visitor, class Context&gt;
     <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);
 
-  template&lt;class Context, class... Args&gt; struct format_arg_store; // <i>exposition only</i>
+  template&lt;class Context, class... Args&gt; struct <i>format-arg-store</i>; // <i>exposition only</i>
 
   template&lt;class Context&gt; class basic_format_args;
   using format_args = basic_format_args&lt;format_context&gt;;
@@ -1116,10 +1120,10 @@ Add a new section in 19
     using format_args_t = basic_format_args&lt;basic_format_context&lt;Out, charT&gt;&gt;;
 
   template&lt;class Context = format_context, class... Args&gt;
-    format_arg_store&lt;Context, Args...&gt;
+    <i>format-arg-store</i>&lt;Context, Args...&gt;
       make_format_args(const Args&amp;... args);
   template&lt;class... Args&gt;
-    format_arg_store&lt;wformat_context, Args...&gt;
+    <i>format-arg-store</i>&lt;wformat_context, Args...&gt;
       make_wformat_args(const Args&amp;... args);
 
   // <a href="#format.functions">[format.functions]</a>, formatting functions
@@ -2072,12 +2076,12 @@ consisting of the formatting arguments and the output iterator.
   public:
     class handle;
 
-    using char_type = typename Context::char_type;                     <i>// exposition only</i>
+    using <i>char-type</i> = typename Context::char_type;                     <i>// exposition only</i>
 
-    variant&lt;monostate, bool, char_type,
+    variant&lt;monostate, bool, <i>char-type</i>,
             int, unsigned int, long long int, unsigned long long int,
             double, long double,
-            const char_type*, basic_string_view&lt;char_type&gt;,
+            const <i>char-type</i>*, basic_string_view&lt;<i>char-type</i>&gt;,
             const void*, handle&gt; value;                                <i>// exposition only</i>
 
     basic_format_arg() noexcept;
@@ -2086,15 +2090,15 @@ consisting of the formatting arguments and the output iterator.
     explicit basic_format_arg(float n) noexcept;                       <i>// exposition only</i>
     explicit basic_format_arg(double n) noexcept;                      <i>// exposition only</i>
     explicit basic_format_arg(long double n) noexcept;                 <i>// exposition only</i>
-    explicit basic_format_arg(const char_type* s);                     <i>// exposition only</i>
+    explicit basic_format_arg(const <i>char-type</i>* s);                     <i>// exposition only</i>
 
     template&lt;class traits&gt;
       explicit basic_format_arg(
-        basic_string_view&lt;char_type, traits&gt; s) noexcept;              <i>// exposition only</i>
+        basic_string_view&lt;<i>char-type</i>, traits&gt; s) noexcept;              <i>// exposition only</i>
 
     template&lt;class traits, class Allocator&gt;
       explicit basic_format_arg(
-        const basic_string&lt;char_type, traits, Allocator&gt;&amp; s) noexcept; <i>// exposition only</i>
+        const basic_string&lt;<i>char-type</i>, traits, Allocator&gt;&amp; s) noexcept; <i>// exposition only</i>
 
     explicit basic_format_arg(nullptr_t) noexcept;                     <i>// exposition only</i>
     template&lt;class T&gt;
@@ -2122,9 +2126,9 @@ explicit basic_format_arg(I n) noexcept;</code></dt>
 <dd>
 <p><i>Effects:</i></p>
 <ul class="itemize">
-<li>if <code>I</code> is <code>bool</code> or <code>char_type</code>,
+<li>if <code>I</code> is <code>bool</code> or <code><i>char-type</i></code>,
     initializes <code>value</code> with <code>n</code>,
-<li>if <code>I</code> is <code>char</code> and <code>char_type</code> is
+<li>if <code>I</code> is <code>char</code> and <code><i>char-type</i></code> is
     <code>wchar_t</code>, initializes <code>value</code> with
     <code>static_cast&lt;wchar_t&gt;(n)</code>,
 <li>if <code>I</code> is a standard signed integer type or an extended signed
@@ -2160,7 +2164,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <code>n</code>.</p>
 </dd>
 
-<dt><a name="basic_format_arg"><code>explicit basic_format_arg(const char_type* s);</code></a></dt>
+<dt><a name="basic_format_arg"><code>explicit basic_format_arg(const <i>char-type</i>* s);</code></a></dt>
 <dd>
   <p><i>Expects:</i> <code>s</code> points to a NTCTS
      (<a href="http://eel.is/c++draft/defns.ntcts">[defns.ntcts]</a>).</p>
@@ -2169,17 +2173,17 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 </dd>
 
 <dt><code>template&lt;class traits&gt;
-  explicit basic_format_arg(basic_string_view&lt;char_type, traits&gt; s) noexcept;</code></dt>
+  explicit basic_format_arg(basic_string_view&lt;<i>char-type</i>, traits&gt; s) noexcept;</code></dt>
 <dd>
   <p><i>Effects:</i> Initializes <code>value</code> with <code>s</code>.</p>
 </dd>
 
 <dt><code>template&lt;class traits, class Allocator&gt;
   explicit basic_format_arg(
-    const basic_string&lt;char_type, traits, Allocator&gt;&amp; s) noexcept;</code></dt>
+    const basic_string&lt;<i>char-type</i>, traits, Allocator&gt;&amp; s) noexcept;</code></dt>
 <dd>
   <p><i>Effects:</i> Initializes <code>value</code> with
-  <code>basic_string_view&lt;char_type&gt;(s.data(), s.size())</code>.</p>
+  <code>basic_string_view&lt;<i>char-type</i>&gt;(s.data(), s.size())</code>.</p>
 </dd>
 
 <dt><code>explicit basic_format_arg(nullptr_t) noexcept;</code></dt>
@@ -2219,13 +2223,13 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   template&lt;class Context&gt;
   class basic_format_arg&lt;Context&gt;::handle {
     const void* ptr_;                                         // <i>exposition only</i>
-    void (*format_)(basic_format_parse_context&lt;char_type&gt;&amp;,
+    void (*format_)(basic_format_parse_context&lt;<i>char-type</i>&gt;&amp;,
                     Context&amp;, const void*);                   // <i>exposition only</i>
 
   public:
     template&lt;class T&gt; explicit handle(const T&amp; val) noexcept; // <i>exposition only</i>
 
-    void format(basic_format_parse_context&lt;char_type&gt;&amp;, Context&amp; ctx) const;
+    void format(basic_format_parse_context&lt;<i>char-type</i>&gt;&amp;, Context&amp; ctx) const;
   };
 }</code>
 </pre>
@@ -2240,13 +2244,13 @@ type.
 <dd>
   <p><i>Effects:</i> Initializes <code>ptr_</code> with <code>&amp;val</code>
   and <code>format_</code> with</p>
-  <pre><code>[](basic_format_parse_context&lt;char_type&gt;&amp; parse_ctx, Context&amp; format_ctx, const void* ptr) {
+  <pre><code>[](basic_format_parse_context&lt;<i>char-type</i>&gt;&amp; parse_ctx, Context&amp; format_ctx, const void* ptr) {
     typename Context::template formatter_type&lt;T&gt; f;
     parse_ctx.advance_to(f.parse(parse_ctx));
     format_ctx.advance_to(f.format(*static_cast&lt;const T*&gt;(ptr), format_ctx));
   }</code></pre>
 </dd>
-<dt><code>void format(basic_format_parse_context&lt;char_type&gt;&amp; parse_ctx, Context&amp; format_ctx) const;</code></dt>
+<dt><code>void format(basic_format_parse_context&lt;<i>char-type</i>&gt;&amp; parse_ctx, Context&amp; format_ctx) const;</code></dt>
 <dd>
   <p><i>Effects:</i> Equivalent to: <code>format_(parse_ctx, format_ctx, ptr_);</code></p>
 </dd>
@@ -2263,19 +2267,19 @@ type.
 </dd>
 </dl>
 
-<h5>19.�.5.3 Class template <code>format_arg_store</code>
+<h5>19.�.5.3 Class template <code><i>format-arg-store</i></code>
     <a name="format.arg_store">[format.arg_store]</a></h5>
 
 <pre>
 <code>namespace std {
   template&lt;class Context, class... Args&gt;
-  struct format_arg_store { // <i>exposition only</i>
+  struct <i>format-arg-store</i> { // <i>exposition only</i>
     array&lt;basic_format_arg&lt;Context&gt;, sizeof...(Args)&gt; args;
   };
 }</code>
 </pre>
 
-<p>An instance of <code>format_arg_store</code> stores formatting arguments.</p>
+<p>An instance of <code><i>format-arg-store</i></code> stores formatting arguments.</p>
 
 <h5>19.�.5.4 Class template <code>basic_format_args</code> [format.basic_args]</h5>
 
@@ -2290,7 +2294,7 @@ type.
     basic_format_args() noexcept;
 
     template&lt;class... Args&gt;
-      basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;
+      basic_format_args(const <i>format-arg-store</i>&lt;Context, Args...&gt;&amp; store) noexcept;
 
     basic_format_arg&lt;Context&gt; get(size_t i) const noexcept;
   };
@@ -2312,7 +2316,7 @@ arguments.
 
 <dl class="def">
 <dt><code>template&lt;class... Args&gt;
-  basic_format_args(const format_arg_store&lt;Context, Args...&gt;&amp; store) noexcept;</code></dt>
+  basic_format_args(const <i>format-arg-store</i>&lt;Context, Args...&gt;&amp; store) noexcept;</code></dt>
 <dd>
   <p><i>Effects:</i> Initializes <code>size_</code> with
   <code>sizeof...(Args)</code> and <code>data_</code> with <code>store.args.data()</code>.
@@ -2336,7 +2340,7 @@ former. <i>— end note</i> ]
 
 <dl class="def">
 <dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
-  format_arg_store&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
+  <i>format-arg-store</i>&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
 <dd>
   <p><i>Requires:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
     <i>Formattable</i> requirements.</p>
@@ -2348,7 +2352,7 @@ former. <i>— end note</i> ]
 
 <dl class="def">
 <dt><a name="make_wformat_args-def"></a><code>template&lt;class... Args&gt;
-  format_arg_store&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
+  <i>format-arg-store</i>&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
 <dd>
   <p><i>Requires:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
     <i>Formattable</i> requirements.</p>
