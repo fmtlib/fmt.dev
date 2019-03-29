@@ -157,14 +157,15 @@ Document number: D0645R8<br>
 Audience: Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2019-03-09
+2019-03-29
 </address>
 <hr>
 
 <div class="content">
 <h1>Text Formatting</h1>
 
-<input id="onlywording" type="checkbox" onClick="updateTOC()">Show only wording and recent revision history
+<input id="onlywording" type="checkbox" onClick="updateTOC()">Show only wording
+and recent revision history
 
 <div id="toc"></div>
 
@@ -236,6 +237,8 @@ Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
       <code>basic_format_arg::<i>char-type</i></code>.
   <li>Add a description of <code><i>format-arg-store</i></code> in
       <a href="#format.arg_store">[format.arg_store]</a>.
+  <li>Clarify what can be used as an iterator in <code>format_context</code> in
+      <a href="#format.context">[format.context]</a>.
   <li>Remove unnecessary <code>std</code> qualifications.
   <li>Remove <code>noexcept</code> from <a href="#basic_format_arg">
       <code>basic_format_arg(const char_type* s)</code></a> because it has a
@@ -1048,8 +1051,10 @@ Add a new entry to the "General utilities library summary" table in
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#section.19.1">
 [utilities.general]</a>:
 </p>
+
+<p>
+<a name="utilities.general"></a>
 <blockquote>
-  <a name="utilities.general"></a>
   <table border="1">
     <tr>
       <th align="center">Subclause</th>
@@ -1069,6 +1074,7 @@ Add a new entry to the "General utilities library summary" table in
     </tr>
   </table>
 </blockquote>
+</p>
 
 <p>
 Add a new section in 19
@@ -1637,11 +1643,9 @@ template&lt;class Out, class... Args&gt;
   Out format_to(Out out, wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
-<p>
-  <i>Effects:</i> Equivalent to:
+<p><i>Effects:</i> Equivalent to:</p>
   <pre class="codeblock"><code>using context = basic_format_context&lt;Out, decltype(fmt)::value_type&gt;;
 return vformat_to(out, fmt, {make_format_args&lt;context&gt;(args...)});</code></pre>
-</p>
 </dd>
 
 <dt><a name="vformat_to-def"></a><code>template&lt;class Out&gt;
@@ -1680,7 +1684,7 @@ template&lt;class Out, class... Args&gt;
   <i>Requires:</i>
   <code>Out</code> models <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
   and each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
-    <i>Formattable</i> requirements.</p>
+    <i>Formattable</i> requirements.
 </p>
 <p>
 Let <code><i>N</i> = formatted_size(fmt, args...)</code> and <code><i>M</i> =
@@ -2004,6 +2008,20 @@ manual argument indexing.</p>
 <p>
 An instance of <code>basic_format_context</code> holds formatting state
 consisting of the formatting arguments and the output iterator.
+</p>
+
+<p>
+<code>format_context</code> is an alias for the instantiation of
+<code>basic_format_context</code> with an output iterator that appends to
+<code>string</code> such as <code>back_insert_iterato&lt;string&gt;</code>.
+</p>
+
+<p>
+[ <i>Note:</i> Implementations are encouraged to provide a single instantiation
+of <code>basic_format_context</code> for appending to <code>string</code>,
+<code>std::vector&lt;char&gt;</code>, or any other container with contiguous
+storage by wrapping those in temporary objects with uniform interface (like
+<code>span</code>) and polymorphic reallocation. <i>— end note</i> ]
 </p>
 
 <p>
