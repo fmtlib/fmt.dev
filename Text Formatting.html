@@ -183,12 +183,25 @@ and recent revision history
       <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>
       per <a href="http://wg21.link/p1369">p1369</a>.
   <li>Replace "satisfies the <i>X</i> requirements" with "meets the <i>X</i> 
-      requirements" throughout the paper.</li>
+      requirements" throughout the paper.
   <li>Replace "A format string consists" with "A format string is a sequence"
+      in <a href="#format.string">[format.string]</a>.
+  <li>Replace "A format string is invalid if it contains a mix of automatic and
+      manual indexing." with "A format string does not contain a mixture of
+      automatic and manual indexing."
       in <a href="#format.string">[format.string]</a>.
   <li>Replace "Places the character representation" with "Places the first
       <i>M</i> characters of the character representation" in the specifications
       of <a href="#format_to_n-def"><code>format_to_n</code></a>.
+  <li>Add missing <code>std</code> namespace quialifications in the
+      <code>formatter</code> specialization example in
+      <a href="#format.formatter">[format.formatter]</a>.
+  <li>Add a colon after "provides enabled specializations" in
+      <a href="#format.formatter">[format.formatter]</a>.
+  <li>Add a missing <code>charT</code> template argument to
+      <code>formatter</code> in the definition of
+      <code>basic_format_context::formatter_type</code> in
+      <a href="#format.context">[format.context]</a>.
 </ul>
 
 <h3>Changes since R7</h3>
@@ -1224,8 +1237,8 @@ specifies a non-default format for the replacement value.
 <p>
 If the numeric <code>arg-id</code>s in a format string are 0, 1, 2, ... in
 sequence, they can all be omitted (not just some) and the numbers 0, 1, 2, ...
-will be automatically used in that order. A format string is invalid if it
-contains a mix of automatic and manual indexing.
+will be automatically used in that order. A format string does not contain a
+mixture of automatic and manual indexing.
 </p>
 
 [ <i>Example:</i><pre>
@@ -1313,6 +1326,7 @@ The meaning of the various alignment options is as follows:
 </tbody>
 </table>
 
+<p>
 [ <i>Example:</i><pre>
 <code>  char c = 120;
   string s0 = format("{:6}", 42);      // s0 == "    42"
@@ -1326,6 +1340,7 @@ The meaning of the various alignment options is as follows:
   string s8 = format("{:0=#6x}", 0xa); // s8 == "0x000a"
   string s9 = format("{:6}", true);    // s9 == "true  "</code>
 </pre> — <i>end example</i> ]
+</p>
 
 <p>
 Unless a minimum field width is defined, the field width will be determined by
@@ -1771,7 +1786,7 @@ Each specialization of <code>formatter</code> is either enabled or disabled, as
 described below. [&nbsp;<i>Note:</i> Enabled specializations meet the
 <i>Formatter</i> requirements, and disabled specializations do not.
 <i>— end note</i> ] Each header that declares the template <code>formatter</code>
-provides enabled specializations
+provides enabled specializations:
 </p>
 
 <ul>
@@ -1829,7 +1844,7 @@ the <i>Formatter</i> requirements.
 
   const char* color_names[] = { "red", "green", "blue" };
 
-  template&lt;&gt; struct formatter&lt;color&gt; : formatter&lt;const char*&gt; {
+  template&lt;&gt; struct std::formatter&lt;color&gt; : std::formatter&lt;const char*&gt; {
     auto format(color c, format_context&amp; ctx) {
       return formatter&lt;const char*&gt;::format(color_names[c], ctx);
     }
@@ -1837,10 +1852,10 @@ the <i>Formatter</i> requirements.
 
   struct err {};
 
-  string s0 = format("{}", 42);     // OK: library-provided formatter
-  string s1 = format("{}", L"foo"); // Ill-formed: disabled formatter
-  string s2 = format("{}", red);    // OK: user-provided formatter
-  string s3 = format("{}", err{});  // Ill-formed: disabled formatter</code>
+  std::string s0 = std::format("{}", 42);     // OK: library-provided formatter
+  std::string s1 = std::format("{}", L"foo"); // Ill-formed: disabled formatter
+  std::string s2 = std::format("{}", red);    // OK: user-provided formatter
+  std::string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
 
 <h5><a name="formatter.requirements">19.�.4.1 <i>Formatter</i> requirements
@@ -2032,7 +2047,7 @@ manual argument indexing.</p>
   public:
     using iterator = Out;
     using char_type = charT;
-    template&lt;class T&gt; using formatter_type = formatter&lt;T&gt;;
+    template&lt;class T&gt; using formatter_type = formatter&lt;T, charT&gt;;
 
     basic_format_arg&lt;basic_format_context&gt; arg(size_t id) const;
 
