@@ -174,6 +174,16 @@ and recent revision history
 <h3>Changes since R8</h3>
 
 <ul>
+  <li>Replace <i>Requires</i> with <i>Constraints</i>, <i>Mandates</i>, and
+      <i>Expects</i> as appropriate in
+      <a href="#vformat_to-def"><code>vformat_to</code></a>,
+      <a href="#format_to_n-def"><code>format_to_n</code></a>,
+      <a href="#formatted_size-def"><code>formatted_size</code></a>,
+      <a href="#make_format_args-def"><code>make_format_args</code></a>, and
+      <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>
+      per <a href="http://wg21.link/p1369">p1369</a>.
+  <li>Replace "satisfies the <i>X</i> requirements" with "meets the <i>X</i> 
+      requirements" throughout the paper.</li>
   <li>Replace "A format string consists" with "A format string is a sequence"
       in <a href="#format.string">[format.string]</a>.
   <li>Replace "Places the character representation" with "Places the first
@@ -1664,8 +1674,15 @@ template&lt;class Out&gt;
 <dd>
 
 <p>
-  <i>Requires:</i>
-  <code>Out</code> models <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
+  <i>Constraints:</i>
+  <code>Out</code> meets the
+  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
+  requirements.
+</p>
+<p>
+  <i>Expects:</i>
+  <code>Out</code> models
+  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
 </p>
 <p>
 <i>Effects:</i>
@@ -1689,11 +1706,22 @@ template&lt;class Out, class... Args&gt;
 <dd>
 
 <p>
-  <i>Requires:</i>
-  <code>Out</code> models <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
-  and each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+  <i>Constraints:</i>
+  <code>Out</code> meets the
+  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
+  requirements.
+</p>
+<p>
+  <i>Mandates:</i>
+  Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> meets the
     <i>Formattable</i> requirements.
 </p>
+<p>
+  <i>Expects:</i>
+  <code>Out</code> models
+  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
+</p>
+<p>
 <p>
 Let <code><i>N</i> = formatted_size(fmt, args...)</code> and <code><i>M</i> =
 min(max(n, 0), <i>N</i>)</code>.
@@ -1716,8 +1744,8 @@ template&lt;class... Args&gt;
   size_t formatted_size(wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
-<p><i>Requires:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
-  <i>Formattable</i> requirements.</p>
+<p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code>
+   meets the <i>Formattable</i> requirements.</p>
 <p>
 <i>Returns:</i> The number of characters in the character representation of
 formatting arguments <code>args</code> formatted according to specifications
@@ -1791,7 +1819,7 @@ values are <code>false</code>: <code>is_default_constructible_v&lt;F&gt;</code>,
 </p>
 
 <p>
-An enabled specialization <code>formatter&lt;T, charT&gt;</code> will satisfy
+An enabled specialization <code>formatter&lt;T, charT&gt;</code> will meet
 the <i>Formatter</i> requirements.
 </p>
 
@@ -1822,7 +1850,7 @@ the <i>Formatter</i> requirements.
 <p>
 A type <code>F</code> meets the <i>Formatter</i> requirements if:
 <ul class="itemize">
-<li>it satisfies the <i>Cpp17DefaultConstructible</i>
+<li>it meets the <i>Cpp17DefaultConstructible</i>
     (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.1">25</a>),
     <i>Cpp17CopyConstructible</i>
     (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.1">27</a>),
@@ -2369,7 +2397,7 @@ former. <i>— end note</i> ]
 <dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
   <i>format-arg-store</i>&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
 <dd>
-  <p><i>Requires:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+  <p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> meets the
     <i>Formattable</i> requirements.</p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
 </dd>
@@ -2381,7 +2409,7 @@ former. <i>— end note</i> ]
 <dt><a name="make_wformat_args-def"></a><code>template&lt;class... Args&gt;
   <i>format-arg-store</i>&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
 <dd>
-  <p><i>Requires:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> satisfies the
+  <p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> meets the
     <i>Formattable</i> requirements.</p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;wformat_context&gt;(args)...}</code>.</p>
 </dd>
