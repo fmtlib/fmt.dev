@@ -184,6 +184,13 @@ and recent revision history
       per <a href="http://wg21.link/p1369">p1369</a>.
   <li>Replace "satisfies the <i>X</i> requirements" with "meets the <i>X</i> 
       requirements" throughout the paper.
+  <li>Replace the undocumented <code>Formattable</code> requirement with the
+      requirement that <code>formatter&lt;T, charT&gt;</code> is enabled in
+      <a href="#format_to_n-def"><code>format_to_n</code></a>,
+      <a href="#formatted_size-def"><code>formatted_size</code></a>,
+      <a href="#formatted_size-def"><code>formatted_size</code></a>,
+      <a href="#make_format_args-def"><code>make_format_args</code></a>, and
+      <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>.
   <li>Replace "A format string consists" with "A format string is a sequence"
       in <a href="#format.string">[format.string]</a>.
   <li>Replace "A format string is invalid if it contains a mix of automatic and
@@ -1689,15 +1696,17 @@ template&lt;class Out&gt;
 <dd>
 
 <p>
+  Let <code>charT</code> be <code>decltype(fmt)::value_type</code>.
+</p>
+<p>
   <i>Constraints:</i>
   <code>Out</code> meets the
-  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
-  requirements.
+  <code>OutputIterator&lt;const charT&amp;&gt;</code> requirements.
 </p>
 <p>
   <i>Expects:</i>
   <code>Out</code> models
-  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
+  <code>OutputIterator&lt;const charT&amp;&gt;</code>.
 </p>
 <p>
 <i>Effects:</i>
@@ -1721,25 +1730,23 @@ template&lt;class Out, class... Args&gt;
 <dd>
 
 <p>
+  Let <code>charT</code> be <code>decltype(fmt)::value_type</code>,
+  <code><i>N</i> = formatted_size(fmt, args...)</code>, and
+  <code><i>M</i> = min(max(n, 0), <i>N</i>)</code>.
+</p>
+<p>
   <i>Constraints:</i>
-  <code>Out</code> meets the
-  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>
+  <code>Out</code> meets the <code>OutputIterator&lt;const charT&amp;&gt;</code>
   requirements.
 </p>
 <p>
   <i>Mandates:</i>
-  Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> meets the
-    <i>Formattable</i> requirements.
+  <code>formatter&lt;T<sub><i>i</i></sub>, charT&gt;</code> is enabled
+  for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
 </p>
 <p>
   <i>Expects:</i>
-  <code>Out</code> models
-  <code>OutputIterator&lt;const decltype(fmt)::value_type&amp;&gt;</code>.
-</p>
-<p>
-<p>
-Let <code><i>N</i> = formatted_size(fmt, args...)</code> and <code><i>M</i> =
-min(max(n, 0), <i>N</i>)</code>.
+  <code>Out</code> models <code>OutputIterator&lt;const charT&amp;&gt;</code>.
 </p>
 <p>
 <i>Effects:</i>
@@ -1759,8 +1766,9 @@ template&lt;class... Args&gt;
   size_t formatted_size(wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
-<p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code>
-   meets the <i>Formattable</i> requirements.</p>
+<p><i>Mandates:</i>
+  <code>formatter&lt;T<sub><i>i</i></sub>, charT&gt;</code> is enabled
+  for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
 <p>
 <i>Returns:</i> The number of characters in the character representation of
 formatting arguments <code>args</code> formatted according to specifications
@@ -2412,8 +2420,11 @@ former. <i>— end note</i> ]
 <dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
   <i>format-arg-store</i>&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
 <dd>
-  <p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> meets the
-    <i>Formattable</i> requirements.</p>
+  <p>
+    <i>Mandates:</i>
+    <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
+    is enabled for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
+  </p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
@@ -2424,8 +2435,11 @@ former. <i>— end note</i> ]
 <dt><a name="make_wformat_args-def"></a><code>template&lt;class... Args&gt;
   <i>format-arg-store</i>&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
 <dd>
-  <p><i>Mandates:</i> Each <code>T</code><sub><i>i</i></sub> in <code>Args</code> meets the
-    <i>Formattable</i> requirements.</p>
+  <p>
+    <i>Mandates:</i>
+    <code>formatter&lt;T<sub><i>i</i></sub>, wchar_t&gt;</code> is enabled
+    for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
+  </p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;wformat_context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
