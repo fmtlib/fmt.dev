@@ -218,6 +218,10 @@ and recent revision history
   <li>Replace "Does not modify <code>u</code>" with
       "As above but does not modify <code>u</code>" in
       <a href="#requirements-table">Table � — Formatter requirements</a>.
+  <li>Replace "<code>id</code> is a valid argument id" with a more concrete
+      <i>Mandates</i> clause in <a href="#check_arg_id-def">
+      <code>basic_format_parse_context::check_arg_id</code></a> using a new
+      exposition-only <code>num_args_</code> member.
 </ul>
 
 <h3>Changes since R7</h3>
@@ -1978,9 +1982,11 @@ call to <code>f.parse(pc)</code>.
     enum indexing { unknown, manual, automatic }; // <i>exposition only</i>
     indexing indexing_;                           // <i>exposition only</i>
     size_t next_arg_id_;                          // <i>exposition only</i>
+    size_t num_args_;                             // <i>exposition only</i>
 
   public:
-    explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt) noexcept;
+    explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt,
+                                                  size_t num_args = 0) noexcept;
     basic_format_parse_context(const basic_format_parse_context&amp;) = delete;
     basic_format_parse_context&amp; operator=(const basic_format_parse_context&amp;) = delete;
 
@@ -2010,11 +2016,14 @@ argument counter for automatic indexing.
 >[iterator.requirements.general]</a>) whose <code>value_type</code> is the
 template parameter <code>charT</code>.</p>
 </dd-->
-<dt><code>explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt) noexcept;</code></dt>
+<dt><code>explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt,
+                                              size_t num_args) noexcept;</code></dt>
 <dd>
-<p><i>Effects:</i> Initializes <code>begin_</code> with <code>fmt.begin()</code>,
-<code>end_</code> with <code>fmt.end()</code>, <code>indexing_</code> with
-<code>unknown</code>, and <code>next_arg_id_</code> with <code>0</code>.</p>
+<p><i>Effects:</i>
+Initializes <code>begin_</code> with <code>fmt.begin()</code>, <code>end_</code>
+with <code>fmt.end()</code>, <code>indexing_</code> with <code>unknown</code>,
+<code>next_arg_id_</code> with <code>0</code>, and <code>num_args_</code> with
+<code>num_args</code>.</p>
 </dd>
 <dt><code>constexpr const_iterator begin() const noexcept;</code></dt>
 <dd>
@@ -2039,9 +2048,9 @@ template parameter <code>charT</code>.</p>
 <p><i>Throws:</i> <code>format_error</code> if <code>indexing_ == manual</code>
 which indicates mixing of automatic and manual argument indexing.</p>
 </dd>
-<dt><code>constexpr void check_arg_id(size_t id);</code></dt>
+<dt><a name="check_arg_id-def"></a><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
-<p><i>Expects:</i> <code>id</code> is a valid argument id.</p>
+<p><i>Mandates:</i> <code>!is_constant_evaluated() || id &lt; num_args_</code>.</p>
 <p><i>Effects:</i> If <code>indexing_ != automatic</code>, equivalent to:</p>
 <pre><code>  if (indexing_ == unknown)
     indexing_ = manual;</code></pre>
