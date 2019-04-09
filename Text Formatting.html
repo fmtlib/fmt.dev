@@ -234,6 +234,8 @@ and recent revision history
   <li>Change the type of <code>width_arg_id</code> from <code>int</code> to
       <code>size_t</code> in the example in
       <a href="#format.context">[format.context]</a>.
+  <li>Make exposition-only code private and add exposition-only friends in
+      <a href="#format.arg">[format.arg]</a> for the code to remain well-formed.
 </ul>
 
 <h3>Changes since R7</h3>
@@ -2187,6 +2189,7 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
   public:
     class handle;
 
+  private:
     using <i>char-type</i> = typename Context::char_type;                     <i>// exposition only</i>
 
     variant&lt;monostate, bool, <i>char-type</i>,
@@ -2194,8 +2197,6 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
             double, long double,
             const <i>char-type</i>*, basic_string_view&lt;<i>char-type</i>&gt;,
             const void*, handle&gt; value;                                <i>// exposition only</i>
-
-    basic_format_arg() noexcept;
 
     template&lt;Integral I&gt; explicit basic_format_arg(I n) noexcept;      <i>// exposition only</i>
     explicit basic_format_arg(float n) noexcept;                       <i>// exposition only</i>
@@ -2216,6 +2217,17 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
       explicit basic_format_arg(const T* p) noexcept;                  <i>// exposition only</i>
     template&lt;class T&gt;
       explicit basic_format_arg(const T&amp; v) noexcept;                  <i>// exposition only</i>
+
+    template&lt;class Visitor, class Ctx&gt;
+      friend auto visit_format_arg(Visitor&amp;&amp; vis,
+                                   basic_format_arg&lt;Ctx&gt; arg);         <i>// exposition only</i>
+
+    template&lt;class Ctx, class... Args&gt;
+      friend <i>format-arg-store</i>&lt;Ctx, Args...&gt;
+        make_format_args(const Args&amp;... args);                         <i>// exposition only</i>
+
+  public:
+    basic_format_arg() noexcept;
 
     explicit operator bool() const noexcept;
   };
@@ -2337,9 +2349,9 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
     void (*format_)(basic_format_parse_context&lt;<i>char-type</i>&gt;&amp;,
                     Context&amp;, const void*);                   // <i>exposition only</i>
 
-  public:
     template&lt;class T&gt; explicit handle(const T&amp; val) noexcept; // <i>exposition only</i>
 
+  public:
     void format(basic_format_parse_context&lt;<i>char-type</i>&gt;&amp;, Context&amp; ctx) const;
   };
 }</code>
