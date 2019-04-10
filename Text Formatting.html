@@ -182,7 +182,8 @@ and recent revision history
       <a href="#make_format_args-def"><code>make_format_args</code></a>
       per <a href="http://wg21.link/p1369">p1369</a>.
   <li>Replace "satisfies the <i>X</i> requirements" with "meets the <i>X</i> 
-      requirements" throughout the paper.
+      requirements" when referring to old-style requirements throughout the
+      paper.
   <li>Replace the undocumented <code>Formattable</code> requirement with the
       requirement that <code>formatter&lt;T, charT&gt;</code> is enabled in
       <a href="#format_to_n-def"><code>format_to_n</code></a>,
@@ -248,9 +249,9 @@ and recent revision history
       <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
   <li>Add "otherwise" to bullet points in
       <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
-  <li>Replace "the program is ill-formed" with "this constructor does not
-      participate in overload resolution" in
-      <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
+  <li>Replace "the program is ill-formed" bullet point with
+      "<i>Constraints:</i> <code>typename Context::template formatter_type&lt;T&gt;</code>
+      is enabled" in <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
   <li>Move the description of class
       <a href="#handle-def"><code>basic_format_arg::handle</code></a> before the
       definition.
@@ -259,6 +260,9 @@ and recent revision history
       constructor.
   <li>Simplify <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>
       by specifying it in terms of <code>make_format_args</code>.
+  <li>Move sections <a href="#format.make_args">[format.make_args]</a> and
+      <a href="#format.make_wargs">[format.make_wargs]</a> next to section
+      <a href="#format.arg_store">[format.arg_store]</a>.
 </ul>
 
 <h3>Changes since R7</h3>
@@ -1749,7 +1753,7 @@ template&lt;class Out&gt;
 </p>
 <p>
   <i>Constraints:</i>
-  <code>Out</code> meets the
+  <code>Out</code> satisfies the
   <code>OutputIterator&lt;const charT&amp;&gt;</code> requirements.
 </p>
 <p>
@@ -1785,7 +1789,7 @@ template&lt;class Out, class... Args&gt;
 </p>
 <p>
   <i>Constraints:</i>
-  <code>Out</code> meets the <code>OutputIterator&lt;const charT&amp;&gt;</code>
+  <code>Out</code> satisfies the <code>OutputIterator&lt;const charT&amp;&gt;</code>
   requirements.
 </p>
 <p>
@@ -2274,6 +2278,10 @@ The behavior of a program that adds specializations of
 <dt><a name="basic_format_arg-int"></a>
 <code>template&lt;class T&gt; explicit basic_format_arg(const T& v) noexcept;</code></dt>
 <dd>
+<p>
+  <i>Constraints:</i>
+  <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled.
+</p>
 <p><i>Effects:</i></p>
 <ul class="itemize">
 <li>if <code>T</code> is <code>bool</code> or <code><i>char-type</i></code>,
@@ -2298,10 +2306,7 @@ The behavior of a program that adds specializations of
     <code>sizeof(T) &lt;= sizeof(unsigned long long int)</code>, initializes
     <code>value</code> with
     <code>static_cast&lt;unsigned long long int&gt;(v)</code>; otherwise,
-<li>if <code>typename Context::template formatter_type&lt;T&gt;</code> is
-    enabled, initializes <code>value</code> with <code>handle(v)</code>;
-    otherwise,
-<li>this constructor does not participate in overload resolution.
+<li>initializes <code>value</code> with <code>handle(v)</code>.
 </ul>
 </dd>
 
@@ -2348,7 +2353,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 
 <dt><code>template&lt;class T&gt; explicit basic_format_arg(T* p) noexcept;</code></dt>
 <dd>
-<p><i>Constraints:</i> <code>is_void_v&lt;T&gt;</code> is <code>true</code>.</p>
+  <p><i>Constraints:</i> <code>is_void_v&lt;T&gt;</code> is <code>true</code>.</p>
   <p><i>Effects:</i> Initializes <code>value</code> with <code>p</code>.</p>
   <p>
   [ <i>Note:</i> Constructing <code>basic_format_arg</code> from a pointer to a
@@ -2430,7 +2435,35 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 
 <p>An instance of <code><i>format-arg-store</i></code> stores formatting arguments.</p>
 
-<h5>19.�.5.4 Class template <code>basic_format_args</code> [format.basic_args]</h5>
+<h5><a name="format.make_args">19.�.5.4 Function template
+  <code>make_format_args</code> [format.make_args]</a></h5>
+
+<dl class="def">
+<dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
+  <i>format-arg-store</i>&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
+<dd>
+  <p>
+    <i>Mandates:</i>
+    <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
+    is enabled for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
+  </p>
+  <p><i>Returns:</i> <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
+</dd>
+</dl>
+
+<h5><a name="format.make_wargs">19.�.5.5 Function template
+  <code>make_wformat_args</code> [format.make_wargs]</a></h5>
+
+<dl class="def">
+<dt><a name="make_wformat_args-def"></a><code>template&lt;class... Args&gt;
+  <i>format-arg-store</i>&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
+<dd>
+  <p><i>Effects:</i> Equivalent to:
+      <code>return make_format_args&lt;wformat_context&gt;(args...);</code></p>
+</dd>
+</dl>
+
+<h5>19.�.5.6 Class template <code>basic_format_args</code> [format.basic_args]</h5>
 
 <pre>
 <code>namespace std {
@@ -2484,33 +2517,6 @@ arguments.
 <code>basic_format_args</code> for small number of formatting arguments by
 storing indices of type alternatives separately from values and packing the
 former. <i>— end note</i> ]
-
-<h5><a name="format.make_args">19.�.5.5 Function template
-  <code>make_format_args</code> [format.make_args]</a></h5>
-
-<dl class="def">
-<dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
-  <i>format-arg-store</i>&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
-<dd>
-  <p>
-    <i>Mandates:</i>
-    <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
-    is enabled for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
-  </p>
-  <p><i>Returns:</i> <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
-</dd>
-</dl>
-
-<h5>19.�.5.6 Function template <code>make_wformat_args</code> [format.make_wargs]</h5>
-
-<dl class="def">
-<dt><a name="make_wformat_args-def"></a><code>template&lt;class... Args&gt;
-  <i>format-arg-store</i>&lt;wformat_context, Args...&gt; make_wformat_args(const Args&amp;... args);</code></dt>
-<dd>
-  <p><i>Effects:</i> Equivalent to:
-     <code>return make_format_args&lt;wformat_context&gt;(args...);</code></p>
-</dd>
-</dl>
 
 <h4><a name="format.error">19.�.6 Class <code>format_error</code> [format.error]</a></h4>
 
