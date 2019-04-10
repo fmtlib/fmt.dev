@@ -239,6 +239,9 @@ and recent revision history
       constructor.
   <li>Disallow specializations of <code>basic_format_arg</code>
       (<a href="#format.arg">[format.arg]</a>).
+  <li>Replace "a standard (un)signed integer type or an extended (un)signed
+      integer type" with "a(n) (un)signed integer type" in
+      <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
   <li>Simplify <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>
       by specifying it in terms of <code>make_format_args</code>.
 </ul>
@@ -312,7 +315,7 @@ and recent revision history
   <li>Clarify what can be used as an iterator in <code>format_context</code> in
       <a href="#format.context">[format.context]</a>.
   <li>Remove unnecessary <code>std</code> qualifications.
-  <li>Remove <code>noexcept</code> from <a href="#basic_format_arg">
+  <li>Remove <code>noexcept</code> from <a href="#basic_format_arg-cstr">
       <code>basic_format_arg(const char_type* s)</code></a> because it has a
       precondition.
 </ul>
@@ -2255,7 +2258,7 @@ The behavior of a program that adds specializations of
 <dt><code>basic_format_arg() noexcept;</code></dt>
 <dd><p><i>Ensures:</i> <code>!(*this)</code>.</p></dd>
 
-<dt><code>template&lt;Integral I&gt;
+<dt><a name="basic_format_arg-int"></a><code>template&lt;Integral I&gt;
 explicit basic_format_arg(I n) noexcept;</code></dt>
 <dd>
 <p><i>Effects:</i></p>
@@ -2265,19 +2268,17 @@ explicit basic_format_arg(I n) noexcept;</code></dt>
 <li>if <code>I</code> is <code>char</code> and <code><i>char-type</i></code> is
     <code>wchar_t</code>, initializes <code>value</code> with
     <code>static_cast&lt;wchar_t&gt;(n)</code>,
-<li>if <code>I</code> is a standard signed integer type or an extended signed
-    integer type and <code>sizeof(I) &lt;= sizeof(int)</code>, initializes
-    <code>value</code> with <code>static_cast&lt;int&gt;(n)</code>,
-<li>if <code>I</code> is a standard unsigned integer type or an extended
-    unsigned integer type and <code>sizeof(I) &lt;= sizeof(unsigned int)</code>,
-    initializes <code>value</code> with
-    <code>static_cast&lt;unsigned int&gt;(n)</code>,
-<li>if <code>I</code> is a standard signed integer type or an extended signed
-    integer type and <code>sizeof(I) &lt;= sizeof(long long int)</code>,
-    initializes <code>value</code> with
-    <code>static_cast&lt;long long int&gt;(n)</code>,
-<li>if <code>I</code> is a standard unsigned integer type or an extended
-    unsigned integer type and
+<li>if <code>I</code> is a signed integer type
+    (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsection.6.7.1"
+    >[basic.fundamental]</a>) and <code>sizeof(I) &lt;= sizeof(int)</code>,
+    initializes <code>value</code> with <code>static_cast&lt;int&gt;(n)</code>,
+<li>if <code>I</code> is an unsigned integer type and
+    <code>sizeof(I) &lt;= sizeof(unsigned int)</code>, initializes
+    <code>value</code> with <code>static_cast&lt;unsigned int&gt;(n)</code>,
+<li>if <code>I</code> is a signed integer type and
+    <code>sizeof(I) &lt;= sizeof(long long int)</code>, initializes
+    <code>value</code> with <code>static_cast&lt;long long int&gt;(n)</code>,
+<li>if <code>I</code> is an unsigned integer type and
     <code>sizeof(I) &lt;= sizeof(unsigned long long int)</code>, initializes
     <code>value</code> with
     <code>static_cast&lt;unsigned long long int&gt;(n)</code>,
@@ -2298,7 +2299,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
   <code>n</code>.</p>
 </dd>
 
-<dt><a name="basic_format_arg"><code>explicit basic_format_arg(const <i>char-type</i>* s);</code></a></dt>
+<dt><a name="basic_format_arg-cstr"></a><code>explicit basic_format_arg(const <i>char-type</i>* s);</code></dt>
 <dd>
   <p><i>Expects:</i> <code>s</code> points to a NTCTS
      (<a href="http://eel.is/c++draft/defns.ntcts">[defns.ntcts]</a>).</p>
