@@ -242,6 +242,11 @@ and recent revision history
   <li>Replace "a standard (un)signed integer type or an extended (un)signed
       integer type" with "a(n) (un)signed integer type" in
       <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
+  <li>Add "otherwise" to bullet points in
+      <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
+  <li>Replace "the program is ill-formed" with "this constructor does not
+      participate in overload resolution" in
+      <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
   <li>Simplify <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>
       by specifying it in terms of <code>make_format_args</code>.
 </ul>
@@ -2264,25 +2269,28 @@ explicit basic_format_arg(I n) noexcept;</code></dt>
 <p><i>Effects:</i></p>
 <ul class="itemize">
 <li>if <code>I</code> is <code>bool</code> or <code><i>char-type</i></code>,
-    initializes <code>value</code> with <code>n</code>,
+    initializes <code>value</code> with <code>n</code>; otherwise,
 <li>if <code>I</code> is <code>char</code> and <code><i>char-type</i></code> is
     <code>wchar_t</code>, initializes <code>value</code> with
-    <code>static_cast&lt;wchar_t&gt;(n)</code>,
+    <code>static_cast&lt;wchar_t&gt;(n)</code>; otherwise,
 <li>if <code>I</code> is a signed integer type
     (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsection.6.7.1"
     >[basic.fundamental]</a>) and <code>sizeof(I) &lt;= sizeof(int)</code>,
-    initializes <code>value</code> with <code>static_cast&lt;int&gt;(n)</code>,
+    initializes <code>value</code> with <code>static_cast&lt;int&gt;(n)</code>;
+    otherwise,
 <li>if <code>I</code> is an unsigned integer type and
     <code>sizeof(I) &lt;= sizeof(unsigned int)</code>, initializes
-    <code>value</code> with <code>static_cast&lt;unsigned int&gt;(n)</code>,
+    <code>value</code> with <code>static_cast&lt;unsigned int&gt;(n)</code>;
+    otherwise,
 <li>if <code>I</code> is a signed integer type and
     <code>sizeof(I) &lt;= sizeof(long long int)</code>, initializes
-    <code>value</code> with <code>static_cast&lt;long long int&gt;(n)</code>,
+    <code>value</code> with <code>static_cast&lt;long long int&gt;(n)</code>;
+    otherwise,
 <li>if <code>I</code> is an unsigned integer type and
     <code>sizeof(I) &lt;= sizeof(unsigned long long int)</code>, initializes
     <code>value</code> with
-    <code>static_cast&lt;unsigned long long int&gt;(n)</code>,
-<li>otherwise the program is ill-formed.
+    <code>static_cast&lt;unsigned long long int&gt;(n)</code>; otherwise,
+<li>this constructor does not participate in overload resolution.
 </ul>
 </dd>
 
