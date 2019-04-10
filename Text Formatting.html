@@ -1695,8 +1695,8 @@ respectively unless specified otherwise.
 <h4><a name="format.functions">19.�.3 Formatting functions [format.functions]</a></h4>
 
 <dl class="def">
-<dt><a name="format-def"><code>template&lt;class... Args&gt;
-  string format(string_view fmt, const Args&amp;... args);</code></a>
+<dt><a name="format-def"></a><code>template&lt;class... Args&gt;
+  string format(string_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
 <p><i>Effects:</i> Equivalent to: <code>return vformat(fmt, make_format_args(args...));</code></p>
@@ -2162,7 +2162,7 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
     int value;
   };
 
-  template&lt;&gt; struct formatter&lt;S&gt; {
+  template&lt;&gt; struct fmt::formatter&lt;S&gt; {
     size_t width_arg_id = 0;
 
     // Parses a width argument id in the format { &lt;digit&gt; }.
@@ -2232,6 +2232,7 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
         const basic_string&lt;<i>char-type</i>, traits, Allocator&gt;&amp; s) noexcept;   <i>// exposition only</i>
 
     explicit basic_format_arg(nullptr_t) noexcept;                       <i>// exposition only</i>
+
     template&lt;class T&gt;
       explicit basic_format_arg(const T* p) noexcept;                    <i>// exposition only</i>
 
@@ -2375,6 +2376,8 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
                     Context&amp;, const void*);                   // <i>exposition only</i>
 
     template&lt;class T&gt; explicit handle(const T&amp; val) noexcept; // <i>exposition only</i>
+
+    friend class basic_format_arg&lt;Context&gt;;                   // <i>exposition only</i>
 
   public:
     void format(basic_format_parse_context&lt;<i>char-type</i>&gt;&amp;, Context&amp; ctx) const;
