@@ -239,14 +239,18 @@ and recent revision history
       constructor.
   <li>Disallow specializations of <code>basic_format_arg</code>
       (<a href="#format.arg">[format.arg]</a>).
+  <li>Merge integral and unconstrained overloads of the
+      <a href="#basic_format_arg-int"><code>basic_format_arg</code></a>
+      constructor to support specializations of <code>formatter</code>
+      for extended integer types larger than <code>long long int</code>.
   <li>Replace "a standard (un)signed integer type or an extended (un)signed
       integer type" with "a(n) (un)signed integer type" in
-      <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
+      <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
   <li>Add "otherwise" to bullet points in
-      <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
+      <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
   <li>Replace "the program is ill-formed" with "this constructor does not
       participate in overload resolution" in
-      <a href="#basic_format_arg-int"><code>basic_format_arg(I)</code></a>.
+      <a href="#basic_format_arg-int"><code>basic_format_arg(const T&)</code></a>.
   <li>Simplify <a href="#make_wformat_args-def"><code>make_wformat_args</code></a>
       by specifying it in terms of <code>make_format_args</code>.
 </ul>
@@ -2203,41 +2207,39 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
     class handle;
 
   private:
-    using <i>char-type</i> = typename Context::char_type;                     <i>// exposition only</i>
+    using <i>char-type</i> = typename Context::char_type;                       <i>// exposition only</i>
 
     variant&lt;monostate, bool, <i>char-type</i>,
             int, unsigned int, long long int, unsigned long long int,
             double, long double,
             const <i>char-type</i>*, basic_string_view&lt;<i>char-type</i>&gt;,
-            const void*, handle&gt; value;                                <i>// exposition only</i>
+            const void*, handle&gt; value;                                  <i>// exposition only</i>
 
-    template&lt;Integral I&gt; explicit basic_format_arg(I n) noexcept;      <i>// exposition only</i>
-    explicit basic_format_arg(float n) noexcept;                       <i>// exposition only</i>
-    explicit basic_format_arg(double n) noexcept;                      <i>// exposition only</i>
-    explicit basic_format_arg(long double n) noexcept;                 <i>// exposition only</i>
-    explicit basic_format_arg(const <i>char-type</i>* s);                     <i>// exposition only</i>
+    template&lt;typename T&gt; explicit basic_format_arg(const T& v) noexcept; <i>// exposition only</i>
+    explicit basic_format_arg(float n) noexcept;                         <i>// exposition only</i>
+    explicit basic_format_arg(double n) noexcept;                        <i>// exposition only</i>
+    explicit basic_format_arg(long double n) noexcept;                   <i>// exposition only</i>
+    explicit basic_format_arg(const <i>char-type</i>* s);                       <i>// exposition only</i>
 
     template&lt;class traits&gt;
       explicit basic_format_arg(
-        basic_string_view&lt;<i>char-type</i>, traits&gt; s) noexcept;              <i>// exposition only</i>
+        basic_string_view&lt;<i>char-type</i>, traits&gt; s) noexcept;                <i>// exposition only</i>
 
     template&lt;class traits, class Allocator&gt;
       explicit basic_format_arg(
-        const basic_string&lt;<i>char-type</i>, traits, Allocator&gt;&amp; s) noexcept; <i>// exposition only</i>
+        const basic_string&lt;<i>char-type</i>, traits, Allocator&gt;&amp; s) noexcept;   <i>// exposition only</i>
 
-    explicit basic_format_arg(nullptr_t) noexcept;                     <i>// exposition only</i>
+    explicit basic_format_arg(nullptr_t) noexcept;                       <i>// exposition only</i>
     template&lt;class T&gt;
-      explicit basic_format_arg(const T* p) noexcept;                  <i>// exposition only</i>
-    template&lt;class T&gt;
-      explicit basic_format_arg(const T&amp; v) noexcept;                  <i>// exposition only</i>
+      explicit basic_format_arg(const T* p) noexcept;                    <i>// exposition only</i>
 
     template&lt;class Visitor, class Ctx&gt;
       friend auto visit_format_arg(Visitor&amp;&amp; vis,
-                                   basic_format_arg&lt;Ctx&gt; arg);         <i>// exposition only</i>
+                                   basic_format_arg&lt;Ctx&gt; arg);           <i>// exposition only</i>
 
     template&lt;class Ctx, class... Args&gt;
       friend <i>format-arg-store</i>&lt;Ctx, Args...&gt;
-        make_format_args(const Args&amp;... args);                         <i>// exposition only</i>
+        make_format_args(const Args&amp;... args);                           <i>// exposition only</i>
 
   public:
     basic_format_arg() noexcept;
@@ -2263,33 +2265,36 @@ The behavior of a program that adds specializations of
 <dt><code>basic_format_arg() noexcept;</code></dt>
 <dd><p><i>Ensures:</i> <code>!(*this)</code>.</p></dd>
 
-<dt><a name="basic_format_arg-int"></a><code>template&lt;Integral I&gt;
-explicit basic_format_arg(I n) noexcept;</code></dt>
+<dt><a name="basic_format_arg-int"></a>
+<code>template&lt;class T&gt; explicit basic_format_arg(const T& v) noexcept;</code></dt>
 <dd>
 <p><i>Effects:</i></p>
 <ul class="itemize">
-<li>if <code>I</code> is <code>bool</code> or <code><i>char-type</i></code>,
-    initializes <code>value</code> with <code>n</code>; otherwise,
-<li>if <code>I</code> is <code>char</code> and <code><i>char-type</i></code> is
+<li>if <code>T</code> is <code>bool</code> or <code><i>char-type</i></code>,
+    initializes <code>value</code> with <code>v</code>; otherwise,
+<li>if <code>T</code> is <code>char</code> and <code><i>char-type</i></code> is
     <code>wchar_t</code>, initializes <code>value</code> with
-    <code>static_cast&lt;wchar_t&gt;(n)</code>; otherwise,
-<li>if <code>I</code> is a signed integer type
+    <code>static_cast&lt;wchar_t&gt;(v)</code>; otherwise,
+<li>if <code>T</code> is a signed integer type
     (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsection.6.7.1"
-    >[basic.fundamental]</a>) and <code>sizeof(I) &lt;= sizeof(int)</code>,
-    initializes <code>value</code> with <code>static_cast&lt;int&gt;(n)</code>;
+    >[basic.fundamental]</a>) and <code>sizeof(T) &lt;= sizeof(int)</code>,
+    initializes <code>value</code> with <code>static_cast&lt;int&gt;(v)</code>;
     otherwise,
-<li>if <code>I</code> is an unsigned integer type and
-    <code>sizeof(I) &lt;= sizeof(unsigned int)</code>, initializes
-    <code>value</code> with <code>static_cast&lt;unsigned int&gt;(n)</code>;
+<li>if <code>T</code> is an unsigned integer type and
+    <code>sizeof(T) &lt;= sizeof(unsigned int)</code>, initializes
+    <code>value</code> with <code>static_cast&lt;unsigned int&gt;(v)</code>;
     otherwise,
-<li>if <code>I</code> is a signed integer type and
-    <code>sizeof(I) &lt;= sizeof(long long int)</code>, initializes
-    <code>value</code> with <code>static_cast&lt;long long int&gt;(n)</code>;
+<li>if <code>T</code> is a signed integer type and
+    <code>sizeof(T) &lt;= sizeof(long long int)</code>, initializes
+    <code>value</code> with <code>static_cast&lt;long long int&gt;(v)</code>;
     otherwise,
-<li>if <code>I</code> is an unsigned integer type and
-    <code>sizeof(I) &lt;= sizeof(unsigned long long int)</code>, initializes
+<li>if <code>T</code> is an unsigned integer type and
+    <code>sizeof(T) &lt;= sizeof(unsigned long long int)</code>, initializes
     <code>value</code> with
-    <code>static_cast&lt;unsigned long long int&gt;(n)</code>; otherwise,
+    <code>static_cast&lt;unsigned long long int&gt;(v)</code>; otherwise,
+<li>if <code>typename Context::template formatter_type&lt;T&gt;</code> is
+    enabled, initializes <code>value</code> with <code>handle(v)</code>;
+    otherwise,
 <li>this constructor does not participate in overload resolution.
 </ul>
 </dd>
@@ -2339,14 +2344,6 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 <dd>
 <p><i>Constraints:</i> <code>is_void_v&lt;T&gt;</code> is <code>true</code>.</p>
   <p><i>Effects:</i> Initializes <code>value</code> with <code>p</code>.</p>
-</dd>
-
-<dt><code>template&lt;class T&gt; explicit basic_format_arg(const T&amp; v) noexcept;</code></dt>
-<dd>
-  <p><i>Constraints:</i> <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled.</p>
-  <p><i>Effects:</i> Initializes <code>value</code> with
-  <code>handle(v)</code>.</p>
-
   <p>
   [ <i>Note:</i> Constructing <code>basic_format_arg</code> from a pointer to a
   member is ill-formed unless the user provides an enabled specialization of
