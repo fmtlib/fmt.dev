@@ -220,8 +220,8 @@ and recent revision history
   <li>Replace "Does not modify <code>u</code>" with
       "As above but does not modify <code>u</code>" in
       <a href="#requirements-table">Table � — Formatter requirements</a>.
-  <li>Replace "<code>id</code> is a valid argument id" with a more concrete
-      <i>Mandates</i> clause in <a href="#check_arg_id-def">
+  <li>Clarify "<code>id</code> is a valid argument id" in the
+      <i>Expects</i> clause in <a href="#check_arg_id-def">
       <code>basic_format_parse_context::check_arg_id</code></a> using a new
       exposition-only <code>num_args_</code> member.
   <li>Fix a typo: "back_insert_iterato" -> "back_insert_iterator" in
@@ -2090,7 +2090,8 @@ which indicates mixing of automatic and manual argument indexing.</p>
 </dd>
 <dt><a name="check_arg_id-def"></a><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
-<p><i>Mandates:</i> <code>!is_constant_evaluated() || id &lt; num_args_</code>.</p>
+<!-- https://godbolt.org/z/lnha7i -->
+<p><i>Expects:</i> <code>!is_constant_evaluated() || id &lt; num_args_</code>.</p>
 <p><i>Effects:</i> If <code>indexing_ != automatic</code>, equivalent to:</p>
 <pre><code>  if (indexing_ == unknown)
     indexing_ = manual;</code></pre>
