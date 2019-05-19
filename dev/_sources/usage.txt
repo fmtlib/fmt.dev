@@ -8,16 +8,9 @@ from a `release archive <https://github.com/fmtlib/fmt/releases/latest>`_ or
 the `Git repository <https://github.com/fmtlib/fmt>`_ to your project.
 Alternatively, you can :ref:`build the library with CMake <building>`.
 
-If you are using Visual C++ with precompiled headers, you might need to add
-the line ::
-
-   #include "stdafx.h"
-
-before other includes in :file:`format.cc`.
-
 .. _building:
 
-Building the library
+Building the Library
 ====================
 
 The included `CMake build script`__ can be used to build the fmt
@@ -59,8 +52,8 @@ To build a `shared library`__ set the ``BUILD_SHARED_LIBS`` CMake variable to
 
 __ http://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries
 
-Installing the library
-====================
+Installing the Library
+======================
 
 After building the library you can install it on a Unix-like system by running
 :command:`sudo make install`.
@@ -90,7 +83,7 @@ Setting up your target to use a header-only version of ``fmt`` is equaly easy::
 
    target_link_libraries(<your-target> PRIVATE fmt-header-only)
 
-Building the documentation
+Building the Documentation
 ==========================
 
 To build the documentation you need the following software installed on your
