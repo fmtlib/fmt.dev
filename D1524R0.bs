@@ -1,0 +1,77 @@
+<pre class='metadata'>
+Title: Text Parsing
+Shortname: D1524
+Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL: http://wg21.link/D1524R0
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+Abstract:
+  This paper discusses a text parsing facility to complement the text formatting
+  functionality of [[P0645]].
+Date: 2019-05-19
+Markup Shorthands: markdown yes
+</pre>
+
+Overview
+========
+
+[[P0645]] has proposed a text formatting facility that provides a safe and
+extensible alternative to the `printf` family of function. This paper explores
+the possibility of adding a symmetric parsing facility which is based on the
+same design principles and shares many features with [[P0645]].
+
+`sscanf` is less popular
+https://codesearch.isocpp.org/cgi-bin/cgi_ppsearch?q=sscanf&search=search
+but still widely used and arguably even more unsafe than `sprintf`.
+
+389848 - sprintf
+ 87815 - sscanf
+
+TODO: reference to codesearch
+
+TODO: illustrate why scanf is unsafe
+
+Python doesn't have a `scanf` equivalent in the standard library but there is
+a separate parse package: https://pypi.org/project/parse/
+
+Design
+======
+
+It is intended to complement the existing C++ I/O streams library and integrate
+well with the chrono library.
+
+* Format strings (including compile-time processing)
+* Safety
+* Extensibility
+* Locale support
+* Positional arguments
+* Performance
+* Binary footprint
+* Impact on existing code
+
+Examples
+
+TODO: chrono (compare with parse)
+
+auto d = std::chrono::duration();
+std::scan("10:30", "{0:%H:%M}", d);
+
+Questions:
+
+Do we want this?
+
+Existing work:
+
+https://github.com/eliaskosunen/scnlib
+
+<pre class=biblio>
+{
+  "P0645": {
+	  "title": "Text Formatting",
+	  "author": ["Victor Zverovich"],
+	  "href": "https://wg21.link/p0645"
+  }
+}
+</pre>
