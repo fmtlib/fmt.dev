@@ -8,63 +8,112 @@ Group: WG21
 URL: http://wg21.link/D1524R0
 Editor: Victor Zverovich, viz@fmt.dev
 Abstract:
-  This paper discusses a text parsing facility to complement the text formatting
-  functionality of [[P0645]].
+  This paper discusses a new text parsing facility to complement the text
+  formatting functionality of [[P0645]].
 Date: 2019-05-19
 Markup Shorthands: markdown yes
 </pre>
 
-Overview
-========
+Introduction {#introduction}
+============
 
 [[P0645]] has proposed a text formatting facility that provides a safe and
 extensible alternative to the `printf` family of function. This paper explores
 the possibility of adding a symmetric parsing facility which is based on the
 same design principles and shares many features with [[P0645]].
 
-According to the C and C++ codesearch engine based on the ACTCD19 dataset
-([[CODESEARCH]]), there are 389,848 calls to `sprintf` and 87,815 calls to
-`sscanf` at the time of writing. So although formatted input functions are
-less popular than their output counterparts, they are still widely used.
+According to [[CODESEARCH]], a C and C++ codesearch engine based on the ACTCD19
+dataset, there are 389,848 calls to `sprintf` and 87,815 calls to `sscanf` at
+the time of writing. So although formatted input functions are less popular than
+their output counterparts, they are still widely used.
 
-TODO: chrono
+Lack of a general-purpose parsing facility based on format strings has been
+raised in [[P1361]] in the context of formatting and parsing of dates and times.
+
+Although having a symmetric parsing facility seems beneficial, not all languages
+provide it out-of-the-box. For example, Python doesn't have a `scanf` equivalent
+in the standard library but there is a separate `parse` package ([[PARSE]]).
+
+Example:
+
+TODO: Tony table (contrast with before)
+TODO: chrono (compare with std::chrono::parse)
+
+```
+std::chrono::duration d;
+std::scan("10:30", "{0:%H:%M}", d);
+
+int answer;
+std::scan("42", "{}", answer);
+```
+
+Design {#design}
+======
+
+The new parsing facility is intended to complement the existing C++ I/O streams
+library, integrate well with the chrono library, and provide an API similar to
+`std::format`. This section discusses major features of its design.
+
+Format strings {#format-strings}
+--------------
+
+TODO: syntax, compile-time processing
+
+Safety {#safety}
+------
+
+Unlike `scanf`, the proposed parsing facility is fully type safe ... TODO
 
 TODO: illustrate why scanf is unsafe
 
-Python doesn't have a `scanf` equivalent in the standard library but there is
-a separate parse package: https://pypi.org/project/parse/
+Extensibility {#extensibility}
+-------------
 
-TODO: API example
+TODO
 
-Design
-======
+Locales {#locales}
+-------
 
-It is intended to complement the existing C++ I/O streams library and integrate
-well with the chrono library.
+TODO: control over the use of locales
 
-* Format strings (including compile-time processing)
-* Safety
-* Extensibility
-* Locale support
-* Positional arguments
-* Performance
-* Binary footprint
-* Impact on existing code
+Positional arguments {#positional-args}
+--------------------
 
-Examples
+TODO
 
-TODO: chrono (compare with parse)
+Performance {#performance}
+-----------
 
-auto d = std::chrono::duration();
-std::scan("10:30", "{0:%H:%M}", d);
+TODO
 
-Questions:
+Binary footprint {#binary-footprint}
+----------------
+
+TODO
+
+Impact on existing code {#deep-impact}
+-----------------------
+
+The proposed API is defined in a new header and should have no impact on
+existing code. 
+
+Existing work {#existing-work}
+=============
+
+TODO: refer to https://github.com/eliaskosunen/scnlib
+
+Questions {#questions}
+=========
 
 Do we want this?
 
-Existing work:
+API options:
 
-https://github.com/eliaskosunen/scnlib
+```
+auto end = scan("42", "{}", answer);
+auto end = parse("42", "{}", answer);
+??? = scan<int>("42", "{}");
+```
 
 <pre class=biblio>
 {
@@ -77,6 +126,15 @@ https://github.com/eliaskosunen/scnlib
 	  "title": "Code search engine website",
 	  "authors": ["Andrew Tomazos"],
 	  "href": "https://codesearch.isocpp.org"
+  },
+  "P1361": {
+	  "title": "Integration of chrono with text formatting",
+	  "authors": ["Victor Zverovich", "Daniela Engert", "Howard E. Hinnant"],
+	  "href": "https://wg21.link/p1361"
+  },
+  "PARSE": {
+	  "title": "Python `parse` package",
+	  "href": "https://pypi.org/project/parse/"
   }
 }
 </pre>
