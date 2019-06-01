@@ -34,17 +34,33 @@ Although having a symmetric parsing facility seems beneficial, not all languages
 provide it out-of-the-box. For example, Python doesn't have a `scanf` equivalent
 in the standard library but there is a separate `parse` package ([[PARSE]]).
 
-Example:
+**Example**:
 
-TODO: Tony table (contrast with before)
-TODO: chrono (compare with std::chrono::parse)
+```c++
+std::string key;
+int value;
+std::scan("answer: 42", "{}: {}", key, value);
+//        ~~~~~~~~~~~~  ~~~~~~~~  ~~~~~~~~~~
+//           input       format   arguments
+//
+// Result: key == "answer", value == 42
+```
+
+TODO: implement example
+TODO: compare with std::chrono::parse in a separate section
+
+Before:
 
 ```
-std::chrono::duration d;
-std::scan("10:30", "{0:%H:%M}", d);
+std::istringstream is("10:30");
+std::chrono::seconds s;
+is >> std::chrono::parse("%H:%M", s);
+```
 
-int answer;
-std::scan("42", "{}", answer);
+After:
+```
+std::chrono::seconds s;
+std::scan("10:30", "{0:%H:%M}", s);
 ```
 
 Design {#design}
@@ -57,13 +73,39 @@ library, integrate well with the chrono library, and provide an API similar to
 Format strings {#format-strings}
 --------------
 
-TODO: syntax, compile-time processing
+As with `printf`, the `scanf` syntax has the advantage of being familiar to many
+programmers. However, it has similar limitations:
+
+  * Many format specifiers like `hh`, `h`, `l`, `j`, etc. are used only to
+    convey type information. They are redundant in type-safe parsing and would
+    unnecessarily complicate specification and parsing.
+
+  * There is no standard way to extend the syntax for user-defined types.
+
+  * Using `'%'` in a custom format specifier poses difficulties, e.g. for
+    `get_time`-like time parsing.
+
+Therefore we propose a syntax based on [[PARSE]] and [[P0645]]. This syntax
+employs `'{'` and `'}'` as replacement field delimiters instead of `'%'`. It
+will provide the following advantages:
+
+  * An easy to parse mini-language focused on the data format rather than
+    conveying the type information
+  * Extensibility for user-defined types
+  * Positional arguments
+  * Support for both locale-specific and locale-independent parsing (see Locale
+    support)
+  * Consistency with `std::format` proposed by [[P0645]].
+
+At the same time most of the specifiers will remain the same as in `scanf` which
+can simplify, possibly automated, migration.
+
+TODO: formalize syntax, compile-time processing
 
 Safety {#safety}
 ------
 
 Unlike `scanf`, the proposed parsing facility is fully type safe ... TODO
-
 TODO: illustrate why scanf is unsafe
 
 Extensibility {#extensibility}
@@ -105,15 +147,28 @@ TODO: refer to https://github.com/eliaskosunen/scnlib
 Questions {#questions}
 =========
 
-Do we want this?
+**Q1**: Do we want this?
 
-API options:
+**Q2**: API options:
 
-```
-auto end = scan("42", "{}", answer);
-auto end = parse("42", "{}", answer);
-??? = scan<int>("42", "{}");
-```
+  1. Pass arguments by reference and return an iterator:
+     ```
+int answer;
+auto end = std::scan("42", "{}", answer);
+     ```
+
+  2. Return an object with an iterator and parsed values as a tuple:
+     ```
+auto result = std::scan<int>("42", "{}");
+auto end = result.end;
+auto answer = std::get<0>(result.values);
+     ```
+
+**Q3**: naming:
+
+  1. `scan`
+  2. `parse`
+  3. other
 
 <pre class=biblio>
 {
