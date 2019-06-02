@@ -22,6 +22,8 @@ extensible alternative to the `printf` family of function. This paper explores
 the possibility of adding a symmetric parsing facility which is based on the
 same design principles and shares many features with [[P0645]].
 
+TODO: list features with links to sections
+
 According to [[CODESEARCH]], a C and C++ codesearch engine based on the ACTCD19
 dataset, there are 389,848 calls to `sprintf` and 87,815 calls to `sscanf` at
 the time of writing. So although formatted input functions are less popular than
@@ -44,22 +46,6 @@ std::scan("answer = 42", "{} = {}", key, value);
 //            input        format   arguments
 //
 // Result: key == "answer", value == 42
-```
-
-TODO: compare with std::chrono::parse in a separate section
-
-Before:
-
-```
-std::istringstream is("10:30");
-std::chrono::seconds s;
-is >> std::chrono::parse("%H:%M", s);
-```
-
-After:
-```
-std::chrono::seconds s;
-std::scan("10:30", "{0:%H:%M}", s);
 ```
 
 Design {#design}
@@ -104,8 +90,23 @@ TODO: formalize syntax, compile-time processing
 Safety {#safety}
 ------
 
-Unlike `scanf`, the proposed parsing facility is fully type safe ... TODO
-TODO: illustrate why scanf is unsafe
+`scanf` is arguably more unsafe than `printf` because
+`__attribute__((format(scanf, ...)))` ([[ATTR]]) implemented by GCC and Clang
+doesn't catch the whole class of buffer overflow bugs, e.g.
+
+```c++
+char s[10];
+std::sscanf(input, "%s", s); // s may overflow.
+```
+
+Specifying the maximum length in the format string above solves the issue but is
+error-prone especially since one has to account for the terminating null.
+
+Unlike `scanf`, the proposed facility relies on variadic templates instead of
+the mechanism provided by `<cstdarg>`. The type information is captured
+automatically and passed to scanners guaranteeing type safety and making many of
+the `scanf` specifiers redundant (see [[#format-strings]]). Memory management is
+automatic to prevent buffer overflow errors.
 
 Extensibility {#extensibility}
 -------------
@@ -117,11 +118,6 @@ Locales {#locales}
 
 TODO: control over the use of locales
 
-Positional arguments {#positional-args}
---------------------
-
-TODO
-
 Performance {#performance}
 -----------
 
@@ -129,6 +125,30 @@ TODO
 
 Binary footprint {#binary-footprint}
 ----------------
+
+TODO
+
+Integration with chrono {#chrono}
+-----------------------
+
+TODO: compare with std::chrono::parse in a separate section
+
+Before:
+
+```
+std::istringstream is("10:30");
+std::chrono::seconds s;
+is >> std::chrono::parse("%H:%M", s);
+```
+
+After:
+```
+std::chrono::seconds s;
+std::scan("10:30", "{0:%H:%M}", s);
+```
+
+Positional arguments {#positional-args}
+--------------------
 
 TODO
 
@@ -189,6 +209,10 @@ auto answer = std::get<0>(result.values);
   "PARSE": {
 	  "title": "Python `parse` package",
 	  "href": "https://pypi.org/project/parse/"
+  },
+  "ATTR": {
+	  "title": "Common Function Attributes",
+	  "href": "https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"
   }
 }
 </pre>
