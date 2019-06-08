@@ -20,7 +20,11 @@ Introduction {#introduction}
 [[P0645]] has proposed a text formatting facility that provides a safe and
 extensible alternative to the `printf` family of function. This paper explores
 the possibility of adding a symmetric parsing facility which is based on the
-same design principles and shares many features with [[P0645]].
+same design principles and shares many features with [[P0645]], namely
+
+* [[#safety|Safety]]
+* [[#extensibility|Extensibility]]
+* [[#performance|Performance]]
 
 TODO: list features with links to sections
 
@@ -111,7 +115,45 @@ automatic to prevent buffer overflow errors.
 Extensibility {#extensibility}
 -------------
 
-TODO
+We propose an extension API for user-defined types similar to the one of
+[[P0645]]. It separates format string processing and parsing enabling
+compile-time format string checks and allows extending the format specification
+language to user types.
+
+The general syntax of a replacement field in a format string is the same as in
+[[P0645]]:
+
+```
+replacement-field ::= '{' [arg-id] [':' format-spec] '}'
+```
+
+where `format-spec` is predefined for built-in types, but can be customized
+for user-defined types. For example, the syntax can be extended for
+`get_time`-like date and time formatting:
+
+```c++
+auto t = tm();
+scan(input, "Date: {0:%Y-%m-%d}", t);
+```
+
+by providing a specialization of `scanner` for `tm`:
+
+```c++
+template <>
+struct scanner<tm> {
+  constexpr scan_parse_context::iterator parse(scan_parse_context& ctx);
+
+  template <class ScanContext>
+  typename ScanContext::iterator scan(tm& t, ScanContext& ctx);
+};
+```
+
+The `scanner<tm>::parse` function parses the `format-spec` portion of the format
+string corresponding to the current argument and `scanner<tm>::scan` parses the
+input range `[ctx.begin(), ctx.end())` and stores the result in `t`.
+
+An implementation of `scanner<T>::scan` can potentially use ostream extraction
+`operator>>` for user-defined type `T` if available. 
 
 Locales {#locales}
 -------
@@ -121,7 +163,19 @@ TODO: control over the use of locales
 Performance {#performance}
 -----------
 
-TODO
+We can avoid unnecessary copies when parsing string, e.g.
+
+```c++
+std::string_view key;
+int value;
+std::scan("answer = 42", "{} = {}", key, value);
+```
+
+This has lifetime implications similar to those of match objects in [[P1433]].
+
+TODO: investigate disallowing temporaries as input and look what ranges do https://en.cppreference.com/w/cpp/ranges/dangling
+
+TODO: add some benchmark
 
 Binary footprint {#binary-footprint}
 ----------------
@@ -213,6 +267,11 @@ auto answer = std::get<0>(result.values);
   "ATTR": {
 	  "title": "Common Function Attributes",
 	  "href": "https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"
+  },
+  "P1433": {
+	  "title": "Compile Time Regular Expressions",
+	  "authors": ["Hana Dusíková"],
+	  "href": "https://wg21.link/p1433"
   }
 }
 </pre>
