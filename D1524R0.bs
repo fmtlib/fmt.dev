@@ -25,6 +25,7 @@ same design principles and shares many features with [[P0645]], namely
 * [[#safety|Safety]]
 * [[#extensibility|Extensibility]]
 * [[#performance|Performance]]
+* [[#chrono|Integration with chrono]]
 
 TODO: list features with links to sections
 
@@ -129,7 +130,7 @@ replacement-field ::= '{' [arg-id] [':' format-spec] '}'
 
 where `format-spec` is predefined for built-in types, but can be customized
 for user-defined types. For example, the syntax can be extended for
-`get_time`-like date and time formatting:
+`get_time`-like date and time formatting
 
 ```c++
 auto t = tm();
@@ -185,7 +186,7 @@ TODO
 Integration with chrono {#chrono}
 -----------------------
 
-TODO: compare with std::chrono::parse in a separate section
+TODO: compare with std::chrono::parse
 
 Before:
 
@@ -201,11 +202,6 @@ std::chrono::seconds s;
 std::scan("10:30", "{0:%H:%M}", s);
 ```
 
-Positional arguments {#positional-args}
---------------------
-
-TODO
-
 Impact on existing code {#deep-impact}
 -----------------------
 
@@ -215,7 +211,9 @@ existing code.
 Existing work {#existing-work}
 =============
 
-TODO: refer to https://github.com/eliaskosunen/scnlib
+[[SCNLIB]] is a C++ library that, among other things, provides a `scan` function
+similar to the one proposed here. [[FMT]] has a prototype implementation of the
+proposal.
 
 Questions {#questions}
 =========
@@ -272,6 +270,16 @@ auto answer = std::get<0>(result.values);
 	  "title": "Compile Time Regular Expressions",
 	  "authors": ["Hana Dusíková"],
 	  "href": "https://wg21.link/p1433"
+  },
+  "SCNLIB": {
+	  "title": "scnlib: scanf for modern C++",
+	  "authors": ["Elias Kosunen"],
+	  "href": "https://github.com/eliaskosunen/scnlib"
+  },
+  "FMT": {
+	  "title": "The fmt library",
+	  "authors": ["Victor Zverovich et al"],
+	  "href": "https://github.com/fmtlib/fmt"
   }
 }
 </pre>
