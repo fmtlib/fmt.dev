@@ -25,9 +25,9 @@ same design principles and shares many features with [[P0645]], namely
 * [[#safety|Safety]]
 * [[#extensibility|Extensibility]]
 * [[#performance|Performance]]
+* [[#locales|Locale control]]
+* [[#binary-footprint|Small binary footprint]]
 * [[#chrono|Integration with chrono]]
-
-TODO: list features with links to sections
 
 According to [[CODESEARCH]], a C and C++ codesearch engine based on the ACTCD19
 dataset, there are 389,848 calls to `sprintf` and 87,815 calls to `sscanf` at
@@ -48,7 +48,7 @@ std::string key;
 int value;
 std::scan("answer = 42", "{} = {}", key, value);
 //        ~~~~~~~~~~~~~  ~~~~~~~~~  ~~~~~~~~~~
-//            input        format   arguments
+//            input        format    arguments
 //
 // Result: key == "answer", value == 42
 ```
@@ -90,8 +90,6 @@ will provide the following advantages:
 At the same time most of the specifiers will remain the same as in `scanf` which
 can simplify, possibly automated, migration.
 
-TODO: formalize syntax, compile-time processing
-
 Safety {#safety}
 ------
 
@@ -119,7 +117,7 @@ Extensibility {#extensibility}
 We propose an extension API for user-defined types similar to the one of
 [[P0645]]. It separates format string processing and parsing enabling
 compile-time format string checks and allows extending the format specification
-language to user types.
+language for user types.
 
 The general syntax of a replacement field in a format string is the same as in
 [[P0645]]:
@@ -159,12 +157,28 @@ An implementation of `scanner<T>::scan` can potentially use ostream extraction
 Locales {#locales}
 -------
 
-TODO: control over the use of locales
+As pointed out in [[N4412]]:
+
+> There are a number of communications protocol frameworks in use that employ
+> text-based representations of data, for example XML and JSON. The text is
+> machine-generated and machine-read and should not depend on or consider the
+> locales at either end.
+
+To address this [[P0645]] provided control over the use of locales. We propose
+doing the same for the current facility by performing locale-independen parsing
+by default and designating separate format specifiers for locale-specific one.
 
 Performance {#performance}
 -----------
 
-We can avoid unnecessary copies when parsing string, e.g.
+The API allows efficient implementation that minimizes virtual function calls
+and dynamic memory allocations, and avoids unnecessary copies. In particular,
+since it doesn't need to guarantee the lifetime of the input across multiple
+function calls, `scan` can take `string_view` avoiding an extra string copy
+compared to `std::istringstream`.
+
+We can also avoid unnecessary copies required by `scanf` when parsing string,
+e.g.
 
 ```c++
 std::string_view key;
@@ -172,11 +186,9 @@ int value;
 std::scan("answer = 42", "{} = {}", key, value);
 ```
 
-This has lifetime implications similar to those of match objects in [[P1433]].
-
-TODO: investigate disallowing temporaries as input and look what ranges do https://en.cppreference.com/w/cpp/ranges/dangling
-
-TODO: add some benchmark
+This has lifetime implications similar to returning match objects in [[P1433]]
+and iterator or subranges in the ranges library and can be mitigated in the same
+way.
 
 Binary footprint {#binary-footprint}
 ----------------
@@ -241,6 +253,17 @@ auto answer = std::get<0>(result.values);
   2. `parse`
   3. other
 
+TODO: table showing how all other names will look like and correspond to format
+
+```
+format               scan               parse
+formatter            scanner            parser
+formatter::parse     scanner::parse     parser::parse_format?
+formatter::format    scanner::scan      parser::parse
+format_parse_context scan_parse_context parse_parse_context?
+format_context       scan_context       parse_context
+```
+
 <pre class=biblio>
 {
   "P0645": {
@@ -280,6 +303,11 @@ auto answer = std::get<0>(result.values);
 	  "title": "The fmt library",
 	  "authors": ["Victor Zverovich et al"],
 	  "href": "https://github.com/fmtlib/fmt"
+  },
+  "FMT": {
+	  "title": "N4412: Shortcomings of iostreams",
+	  "authors": ["Jens Maurer"],
+	  "href": "http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html"
   }
 }
 </pre>
