@@ -193,7 +193,21 @@ way.
 Binary footprint {#binary-footprint}
 ----------------
 
-TODO
+We propose using a type erasure technique to reduce per-call binary code size.
+The scanning function that uses variadic templates can be implemented as a
+small inline wrapper around its non-variadic counterpart:
+
+```c++
+string_view::iterator vscan(string_view input, string_view fmt, scan_args args);
+
+template <typename... Args>
+inline auto scan(string_view input, string_view fmt, const Args&... args) {
+  return vscan(input, fmt, make_scan_args(args...));
+}
+```
+
+As shown in [[P0645]] this dramatically reduces binary code size which will make
+`scan` comparable to `scanf` on this metric.
 
 Integration with chrono {#chrono}
 -----------------------
@@ -240,6 +254,9 @@ int answer;
 auto end = std::scan("42", "{}", answer);
      ```
 
+     This is similar to what `scanf`, istream `operator>>`, and
+     `std::chrono::parse` do.
+
   2. Return an object with an iterator and parsed values as a tuple:
      ```
 auto result = std::scan<int>("42", "{}");
@@ -253,16 +270,54 @@ auto answer = std::get<0>(result.values);
   2. `parse`
   3. other
 
-TODO: table showing how all other names will look like and correspond to format
+The name "parse" is a bit problematic because of ambiguity between format string
+parsing and input parsing.
 
-```
-format               scan               parse
-formatter            scanner            parser
-formatter::parse     scanner::parse     parser::parse_format?
-formatter::format    scanner::scan      parser::parse
-format_parse_context scan_parse_context parse_parse_context?
-format_context       scan_context       parse_context
-```
+<table>
+<tr>
+  <td>Main API</td>
+  <td>`format`</td>
+  <td>`scan`</td>
+  <td>`parse`</td>
+</tr>
+<tr>
+  <td>Extension point</td>
+  <td>`formatter`</td>
+  <td>`scanner`</td>
+  <td>`parser`</td>
+</tr>
+<tr>
+  <td>Parse format string</td>
+  <td>`formatter::parse`</td>
+  <td>`scanner::parse`</td>
+  <td>`parser::parse_format`?</td>
+</tr>
+<tr>
+  <td>Extension function</td>
+  <td>`formatter::format`</td>
+  <td>`scanner::scan`</td>
+  <td>`parser::parse`</td>
+</tr>
+<tr>
+  <td>Format string parse context</td>
+  <td>`format_parse_context`</td>
+  <td>`scan_parse_context`</td>
+  <td>`parse_parse_context`?</td>
+</tr>
+<tr>
+  <td>Context</td>
+  <td>`format_context`</td>
+  <td>`scan_context`</td>
+  <td>`parse_context`</td>
+</tr>
+</table>
+
+<!--
+An unscientific Twitter poll
+<a href="https://twitter.com/vzverovich/status/1133011774985330694">How should
+fmt-like scanf API replacing `scanf("%d", &i)` be named?"</a> which
+received 188 votes showed slight preference towards `scan` (46% `scan`, 41%
+`parse`). -->
 
 <pre class=biblio>
 {
