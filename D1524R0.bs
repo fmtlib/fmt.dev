@@ -18,7 +18,7 @@ Introduction {#introduction}
 ============
 
 [[P0645]] has proposed a text formatting facility that provides a safe and
-extensible alternative to the `printf` family of function. This paper explores
+extensible alternative to the `printf` family of functions. This paper explores
 the possibility of adding a symmetric parsing facility which is based on the
 same design principles and shares many features with [[P0645]], namely
 
@@ -165,7 +165,7 @@ As pointed out in [[N4412]]:
 > locales at either end.
 
 To address this [[P0645]] provided control over the use of locales. We propose
-doing the same for the current facility by performing locale-independen parsing
+doing the same for the current facility by performing locale-independent parsing
 by default and designating separate format specifiers for locale-specific one.
 
 Performance {#performance}
@@ -212,21 +212,29 @@ As shown in [[P0645]] this dramatically reduces binary code size which will make
 Integration with chrono {#chrono}
 -----------------------
 
-TODO: compare with std::chrono::parse
+The proposed facility can be integrated with `std::chrono::parse` ([[P0355]])
+via the extension mechanism similarly to integration between chrono and text
+formatting proposed in [[P1361]]. This will improve consistency between parsing
+and formatting, make parsing multiple objects easier, and allow avoiding dynamic
+memory allocations without resolving to deprecated `strstream`.
 
 Before:
-
 ```
-std::istringstream is("10:30");
-std::chrono::seconds s;
-is >> std::chrono::parse("%H:%M", s);
+std::istringstream is("start = 10:30");
+std::string key;
+char sep;
+std::chrono::seconds time;
+is >> key >> sep >> std::chrono::parse("%H:%M", time);
 ```
 
 After:
 ```
-std::chrono::seconds s;
-std::scan("10:30", "{0:%H:%M}", s);
+std::string key;
+std::chrono::seconds time;
+std::scan("start = 10:30", "{0} = {1:%H:%M}", key, time);
 ```
+
+Note that the `scan` version additionally validates the separator.
 
 Impact on existing code {#deep-impact}
 -----------------------
@@ -250,19 +258,26 @@ Questions {#questions}
 
   1. Pass arguments by reference and return an iterator:
      ```
-int answer;
-auto end = std::scan("42", "{}", answer);
+std::string key;
+int value;
+auto end = std::scan(input, "{} = {}", key, value);
      ```
 
      This is similar to what `scanf`, istream `operator>>`, and
      `std::chrono::parse` do.
 
-  2. Return an object with an iterator and parsed values as a tuple:
+  2. Return an object wrapping an iterator and parsed values:
      ```
-auto result = std::scan<int>("42", "{}");
+auto result = std::scan<std::string, int>(input, "{} = {}");
 auto end = result.end;
-auto answer = std::get<0>(result.values);
+std::string key = std::get<0>(result.values);
+int value = std::get<1>(result.values);
      ```
+     This option is more cumbersome to use because it requires passing all
+     argument types as template arguments to `scan`. It may also require an
+     extra move or copy to extract the argument's value and impose additional
+     requirements on the argument types (at least default constructibility).
+     Syntactically it can be simplified using structured bindings.
 
 **Q3**: naming:
 
@@ -359,10 +374,15 @@ received 188 votes showed slight preference towards `scan` (46% `scan`, 41%
 	  "authors": ["Victor Zverovich et al"],
 	  "href": "https://github.com/fmtlib/fmt"
   },
-  "FMT": {
+  "N4412": {
 	  "title": "N4412: Shortcomings of iostreams",
 	  "authors": ["Jens Maurer"],
 	  "href": "http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html"
+  },
+  "P0355": {
+	  "title": "Extending <chrono> to Calendars and Time Zones",
+	  "authors": ["Howard E. Hinnant", "Tomasz Kamiński"],
+	  "href": "https://wg21.link/p0355"
   }
 }
 </pre>
