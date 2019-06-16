@@ -174,9 +174,20 @@ and recent revision history
 <h3>Changes since R8</h3>
 
 <ul>
+  <li>Handle the case of undefined <code>uintptr_t</code> in
+      <a href="#format.string">[format.string]</a>.
+  <li>Clarify that digit separator characters include the decimal radix
+      separator in <a href="#format.string">[format.string]</a>.
+  <li>Clarify that a format string is a possibly empty sequence in
+      <a href="#format.string">[format.string]</a>.
+  <li>Add the default value for <code>num_args</code> in
+      <a href="#basic_format_parse_context-def">
+      <code>basic_format_parse_context</code></a> to match the declaration in
+      synopsis.
   <li>Add a <i>Remarks</i> clause to <a href="#check_arg_id-def">
-      <code>basic_format_parse_context::check_arg_id</code></a> clarifying
-      when the program is ill-formed.
+      <code>basic_format_parse_context::check_arg_id</code></a>.
+  <li>Add missing <code>forward</code> in
+      <a href="#format.visit">[format.visit]</a>.
   <li>Fix namespace qualification in example in
     <a href="#format.context">[format.context]</a>.
   <li>Replace <i>Requires</i> with <i>Constraints</i>, <i>Mandates</i>, and
@@ -1272,7 +1283,7 @@ Add a new section in 19
 <h4><a name="format.string">19.�.2 Format string [format.string]</a></h4>
 
 <p>
-A format string is a sequence of zero or more <em>replacement fields</em>,
+A format string is a possibly empty sequence of zero or more <em>replacement fields</em>,
 <em>escape sequences</em>, and other characters. Each character that is not part
 of a replacement field or an escape sequence is copied unchanged to the output.
 An escape sequence is one of <code>{{</code> or <code>}}</code>. It is replaced
@@ -1584,7 +1595,8 @@ value.
 <tr>
 <td><code>'n'</code></td>
 <td>The same as <code>'d'</code>, except that it uses the current global locale
-  to insert the appropriate digit separator characters.</td>
+  to insert the appropriate digit separator characters including the decimal
+  radix separator.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1663,7 +1675,8 @@ using textual representation, either <code>"true"</code> or
 <tr>
 <td><code>'n'</code></td>
 <td>The same as <code>'g'</code>, except that it uses the current global
-    locale to insert the appropriate digit separator characters.</td>
+    locale to insert the appropriate digit separator characters including the
+    decimal radix separator.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1690,7 +1703,8 @@ respectively unless specified otherwise.
 <tr>
 <td><code>'p'</code></td>
 <td><code>to_chars(first, last, reinterpret_cast&lt;uintptr_t&gt;(value), 16)</code>
-    with the prefix <code>"0x"</code> added to the output.</td>
+    with the prefix <code>"0x"</code> added to the output if
+    <code>uintptr_t</code> is defined, implementation-defined otherwise.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -2061,8 +2075,8 @@ argument counter for automatic indexing.
 >[iterator.requirements.general]</a>) whose <code>value_type</code> is the
 template parameter <code>charT</code>.</p>
 </dd-->
-<dt><code>explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt,
-                                              size_t num_args) noexcept;</code></dt>
+<dt><a name="basic_format_parse_context-def"></a><code>explicit constexpr basic_format_parse_context(basic_string_view&lt;charT&gt; fmt,
+                                              size_t num_args = 0) noexcept;</code></dt>
 <dd>
 <p><i>Effects:</i>
 Initializes <code>begin_</code> with <code>fmt.begin()</code>, <code>end_</code>
@@ -2103,8 +2117,10 @@ which indicates mixing of automatic and manual argument indexing.</p>
 <p><i>Throws:</i> <code>format_error</code> if
 <code>indexing_ == automatic</code> which indicates mixing of automatic and
 manual argument indexing.</p>
-<p><i>Remarks</i>: If the precondition in the <i>Expects</i> element is
-violated, the program is ill-formed.
+<p><i>Remarks</i>: Call expressions that violate the precondition in the
+   <i>Expects</i> element are not core constant expressions
+   (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#section.7.7"
+   >[expr.const]</a>).
 </p>
 </dd>
 </dl>
@@ -2426,7 +2442,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 <dt><code>template&lt;class Visitor, class Context&gt;
   <i>see below</i> visit_format_arg(Visitor&amp;&amp; vis, basic_format_arg&lt;Context&gt; arg);</code></dt>
 <dd>
-<p><i>Effects:</i> Equivalent to: <code>return visit(vis, arg.value);</code></p>
+<p><i>Effects:</i> Equivalent to: <code>return visit(forward&lt;Visitor&gt;(vis), arg.value);</code></p>
 </dd>
 </dl>
 
