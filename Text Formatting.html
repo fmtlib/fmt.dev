@@ -196,18 +196,22 @@ and recent revision history
     Specification Style Guidelines</a>.
 <li>Clarify the semantics of operator <code>+</code> in
     <a href="#format.functions">[format.functions]</a>.
-<li>Add a precondition that <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
-    charT&gt;</code> meets the <i>Formatter</i> requirements to the <i>Expects</i>
-    elements in <a href="#format_to_n-def"><code>format_to_n</code></a>,
+<li>Replace <i>Mandates</i> with a precondition that
+    <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
+    charT&gt;</code> meets the <i>Formatter</i> requirements in
+    <a href="#format_to_n-def"><code>format_to_n</code></a>,
     <a href="#formatted_size-def"><code>formatted_size</code></a>, and
     <a href="#make_format_args-def"><code>make_format_args</code></a>. Other
     functions get this precondition transitively via <code>make_format_args</code>.
 <li>Replace "will meet the <i>Formatter</i> requirements" with "meets the
     <i>Formatter</i> requirements" in
     <a href="#format.formatter">[format.formatter]</a>.
-<li>Merge the precondition into <i>Remarks</i> to get rid of the unorthodox use
+<li>Merge the precondition into <i>Remarks</i> getting rid of the unorthodox use
     of <code>is_constant_evaluated</code> in <a href="#check_arg_id-def">
     <code>basic_format_parse_context::check_arg_id</code></a>.
+<li>Clarify how an implementation determines if
+    <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled
+    in <a href="#basic_format_arg-int"><code>basic_format_arg</code></a>.
 </ul>
 
 <h3>Changes since R8</h3>
@@ -1859,11 +1863,6 @@ template&lt;class Out, class... Args&gt;
   <code>Out</code> satisfies <code>OutputIterator&lt;const charT&amp;&gt;</code>.
 </p>
 <p>
-  <i>Mandates:</i>
-  <code>formatter&lt;T<sub><i>i</i></sub>, charT&gt;</code> is enabled
-  for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
-</p>
-<p>
   <i>Expects:</i>
   <code>Out</code> models <code>OutputIterator&lt;const charT&amp;&gt;</code>.
   <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
@@ -1891,10 +1890,6 @@ template&lt;class... Args&gt;
 <p>
   Let <code>charT</code> be <code>decltype(fmt)::value_type</code>.
 </p>
-<p><i>Mandates:</i>
-  <code>formatter&lt;T<sub><i>i</i></sub>, charT&gt;</code> is enabled
-  for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
-<p>
 <p><i>Expects:</i> <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
     charT&gt;</code> meets the <i>Formatter</i> requirements for each
     <code>T</code><sub><i>i</i></sub> in <code>Args</code>.</p>
@@ -2362,6 +2357,13 @@ The behavior of a program that adds specializations of
 <p>
   <i>Constraints:</i>
   <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled.
+<!-- Along the lines of
+     http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsection.27.4.4 -->
+    The extent to which an implementation determines that
+    <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled is
+    unspecified, except that as a minimum the expression
+    <code>typename Context::template formatter_type&lt;T&gt;().format(declval&lt;const T&amp;&gt;(), declval&lt;Context&amp;&gt;())</code>
+    shall be well-formed when treated as an unevaluated operand.
 </p>
 <p><i>Effects:</i></p>
 <ul class="itemize">
@@ -2523,11 +2525,6 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 <dt><a name="make_format_args-def"></a><code>template&lt;class Context = format_context, class... Args&gt;
   <i>format-arg-store</i>&lt;Context, Args...&gt; make_format_args(const Args&amp;... args);</code></dt>
 <dd>
-  <p>
-    <i>Mandates:</i>
-    <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
-    is enabled for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
-  </p>
   <p><i>Expects:</i> <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
       meets the <i>Formatter</i> requirements for each
       <code>T</code><sub><i>i</i></sub> in <code>Args</code>.</p>
