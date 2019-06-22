@@ -205,6 +205,9 @@ and recent revision history
 <li>Replace "will meet the <i>Formatter</i> requirements" with "meets the
     <i>Formatter</i> requirements" in
     <a href="#format.formatter">[format.formatter]</a>.
+<li>Merge the precondition into <i>Remarks</i> to get rid of the unorthodox use
+    of <code>is_constant_evaluated</code> in <a href="#check_arg_id-def">
+    <code>basic_format_parse_context::check_arg_id</code></a>.
 </ul>
 
 <h3>Changes since R8</h3>
@@ -2163,15 +2166,15 @@ which indicates mixing of automatic and manual argument indexing.</p>
 <dt><a name="check_arg_id-def"></a><code>constexpr void check_arg_id(size_t id);</code></dt>
 <dd>
 <!-- https://godbolt.org/z/lnha7i -->
-<p><i>Expects:</i> <code>!is_constant_evaluated() || id &lt; num_args_</code>.</p>
 <p><i>Effects:</i> If <code>indexing_ != automatic</code>, equivalent to:</p>
 <pre><code>  if (indexing_ == unknown)
     indexing_ = manual;</code></pre>
 <p><i>Throws:</i> <code>format_error</code> if
 <code>indexing_ == automatic</code> which indicates mixing of automatic and
 manual argument indexing.</p>
-<p><i>Remarks</i>: Call expressions that violate the precondition in the
-   <i>Expects</i> element are not core constant expressions
+<!-- http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1355r1.html#proposal -->
+<p><i>Remarks</i>: Call expressions where <code>id &lt; num_args_</code> are not
+   core constant expressions
    (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#section.7.7"
    >[expr.const]</a>).
 </p>
