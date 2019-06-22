@@ -153,11 +153,11 @@ dl.def > dt > code {
 <body>
 
 <address style="text-align: right">
-Document number: P0645R9<br>
+Document number: D0645R10<br>
 Audience: Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2019-06-16
+2019-06-22
 </address>
 <hr>
 
@@ -170,6 +170,14 @@ and recent revision history
 <div id="toc"></div>
 
 <h2><a name="History">Revision History</a></h2>
+
+<h3>Changes since R9</h3>
+
+<ul>
+<li>Rebase wording onto the pre-Cologne C++ working draft
+    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf">N4820</a>,
+    in particular updating the section number from 19 to 20.
+</ul>
 
 <h3>Changes since R8</h3>
 
@@ -284,7 +292,7 @@ and recent revision history
 <h3>Changes since R7</h3>
 
 <ul>
-  <li>Suggest placing 19.� Formatting as a subclause after 19.19 Primitive
+  <li>Suggest placing 20.� Formatting as a subclause after 20.19 Primitive
       numeric conversions in the <a href="#utilities.general">"General utilities
       library summary" table</a>.
   <li>Replace concept-related annotations with <i>Requires</i> clauses per
@@ -1100,8 +1108,8 @@ The proposed formatting API is defined in the new header
 <h3><a name="Editing">Editing notes</a></h3>
 <p>
 <!-- Example: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0738r1.html -->
-All wording is relative to the pre-Kona C++ working draft
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf">N4800</a>.
+All wording is relative to the pre-Cologne C++ working draft
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf">N4820</a>.
 </p>
 
 <p>
@@ -1112,13 +1120,13 @@ paragraph number which the editor shall determine.
 
 <p>
 Add the header <code>&lt;format&gt;</code> to the "C++ library headers" table in
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.1.2">
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsubsection.16.5.1.2">
 [headers]</a>, in a place that respects the table’s current alphabetic order.
 </p>
 
 <p>Add an entry for <code>__cpp_lib_format</code> to the "Standard library
 feature-test macros" table in
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsection.16.3.1">
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsection.17.3.1">
 [support.limits.general]</a>, in a place that respects the table’s current alphabetic order:
 </p>
 <blockquote>
@@ -1158,7 +1166,7 @@ feature-test macros" table in
 
 <p>
 Add a new entry to the "General utilities library summary" table in
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#section.19.1">
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#section.20.1">
 [utilities.general]</a>:
 </p>
 
@@ -1174,26 +1182,26 @@ Add a new entry to the "General utilities library summary" table in
       <td>&hellip;</td>
     </tr>
     <tr>
-      <td>19.19 Primitive numeric conversions</td>
+      <td>20.19 Primitive numeric conversions</td>
       <td>&lt;charconv&gt;</td>
     </tr>
     <tr>
-      <td><ins>19.� Formatting</ins></td>
+      <td><ins>20.� Formatting</ins></td>
       <td><ins>&lt;format&gt;</ins></td>
     </tr>
   </table>
 </blockquote>
 
 <p>
-Add a new section in 19
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#chapter.19">[utilities]</a>.
+Add a new section in 20
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#chapter.20">[utilities]</a>.
 </p>
 
-<h3><a name="format">19.� Formatting [format]</a></h3>
+<h3><a name="format">20.� Formatting [format]</a></h3>
 
 <!-- Synopsis example: http://eel.is/c%2B%2Bdraft/time#syn
      Code check: https://godbolt.org/z/-dsVgq -->
-<h4><a name="format.syn">19.�.1 Header <code>&lt;format&gt;</code> synopsis [format.syn]</a></h4>
+<h4><a name="format.syn">20.�.1 Header <code>&lt;format&gt;</code> synopsis [format.syn]</a></h4>
 
 <pre>
 <code>namespace std {
@@ -1208,9 +1216,7 @@ Add a new section in 19
        back_insert_iterator<string> or a similar type, possibly reused between
        containers with contiguous storage by type-erasing reallocation.
        Example of unspecified types as template params:
-       http://eel.is/c++draft/time.duration.literals.
-       Example of a class with requires [common.iterator]:
-       http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.22.5.4.1 -->
+       http://eel.is/c++draft/time.duration.literals. -->
   template&lt;class Out, class charT&gt; class basic_format_context;
   using format_context = basic_format_context&lt;<i>unspecified</i>, char&gt;;
   using wformat_context = basic_format_context&lt;<i>unspecified</i>, wchar_t&gt;;
@@ -1280,7 +1286,7 @@ Add a new section in 19
 }</code>
 </pre>
 
-<h4><a name="format.string">19.�.2 Format string [format.string]</a></h4>
+<h4><a name="format.string">20.�.2 Format string [format.string]</a></h4>
 
 <p>
 A format string is a possibly empty sequence of zero or more <em>replacement fields</em>,
@@ -1718,7 +1724,7 @@ respectively unless specified otherwise.
 <i>— end note</i> ]
 </p>
 
-<h4><a name="format.functions">19.�.3 Formatting functions [format.functions]</a></h4>
+<h4><a name="format.functions">20.�.3 Formatting functions [format.functions]</a></h4>
 
 <dl class="def">
 <dt><a name="format-def"></a><code>template&lt;class... Args&gt;
@@ -1851,7 +1857,7 @@ string.</p>
 </dd>
 </dl>
 
-<h4><a name="format.formatter">19.�.4 Formatter [format.formatter]</a></h4>
+<h4><a name="format.formatter">20.�.4 Formatter [format.formatter]</a></h4>
 
 <!-- Based on http://eel.is/c++draft/unord.hash -->
 <p>
@@ -1938,7 +1944,7 @@ the <i>Formatter</i> requirements.
   std::string s3 = std::format("{}", err{});  // Ill-formed: disabled formatter</code>
 </pre> — <i>end example</i> ]
 
-<h5><a name="formatter.requirements">19.�.4.1 <i>Formatter</i> requirements
+<h5><a name="formatter.requirements">20.�.4.1 <i>Formatter</i> requirements
     [formatter.requirements]</a></h5>
 
 <!-- Based on http://eel.is/c++draft/hash.requirements -->
@@ -1946,15 +1952,15 @@ the <i>Formatter</i> requirements.
 A type <code>F</code> meets the <i>Formatter</i> requirements if:
 <ul class="itemize">
 <li>it meets the <i>Cpp17DefaultConstructible</i>
-    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.1">25</a>),
+    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsubsection.16.5.3.1">25</a>),
     <i>Cpp17CopyConstructible</i>
-    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.1">27</a>),
+    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsubsection.16.5.3.1">27</a>),
     <i>Cpp17CopyAssignable</i>
-    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.1">29</a>), and
+    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsubsection.16.5.3.1">29</a>), and
     <i>Cpp17Destructible</i>
-    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.1">30</a>) requirements,
+    (Table <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsubsection.16.5.3.1">30</a>) requirements,
 <li>it is swappable
-    (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsubsection.15.5.3.2">[swappable.requirements]</a>)
+    (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsubsection.16.5.3.2">[swappable.requirements]</a>)
     for lvalues, and
 <li>the expressions shown in Table � are valid and have the indicated
     semantics.
@@ -2022,7 +2028,7 @@ call to <code>f.parse(pc)</code>.
 </tbody>
 </table>
 
-<h5><a name="format.parse_context">19.�.4.2 Class template <code>basic_format_parse_context</code>
+<h5><a name="format.parse_context">20.�.4.2 Class template <code>basic_format_parse_context</code>
 [format.parse_context]</a></h5>
 
 <!-- Code check: https://godbolt.org/g/ymJijC -->
@@ -2119,13 +2125,13 @@ which indicates mixing of automatic and manual argument indexing.</p>
 manual argument indexing.</p>
 <p><i>Remarks</i>: Call expressions that violate the precondition in the
    <i>Expects</i> element are not core constant expressions
-   (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#section.7.7"
+   (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#section.7.7"
    >[expr.const]</a>).
 </p>
 </dd>
 </dl>
 
-<h5><a name="format.context">19.�.4.3 Class template <code>basic_format_context</code>
+<h5><a name="format.context">20.�.4.3 Class template <code>basic_format_context</code>
 [format.context]</a></h5>
 
 <!-- Code check: https://godbolt.org/g/8xNnUy -->
@@ -2228,8 +2234,8 @@ with uniform interface (like <code>span</code>) and polymorphic reallocation.
 
   std::string s = std::format("{0:{1}}", S{42}, 10); // s == "        42"</code></pre> — <i>end example</i> ]
 
-<h4><a name="format.arguments">19.�.5 Arguments [format.arguments]</a></h4>
-<h5><a name="format.arg">19.�.5.1 Class template <code>basic_format_arg</code> [format.arg]</a></h5>
+<h4><a name="format.arguments">20.�.5 Arguments [format.arguments]</a></h4>
+<h5><a name="format.arg">20.�.5.1 Class template <code>basic_format_arg</code> [format.arg]</a></h5>
 <!-- Argument access API is provided for use cases such as dynamic width:
      https://godbolt.org/g/wNhkk7 -->
 
@@ -2315,7 +2321,7 @@ The behavior of a program that adds specializations of
     <code>wchar_t</code>, initializes <code>value</code> with
     <code>static_cast&lt;wchar_t&gt;(v)</code>; otherwise,
 <li>if <code>T</code> is a signed integer type
-    (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4800.pdf#subsection.6.7.1"
+    (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#subsection.6.7.1"
     >[basic.fundamental]</a>) and <code>sizeof(T) &lt;= sizeof(int)</code>,
     initializes <code>value</code> with <code>static_cast&lt;int&gt;(v)</code>;
     otherwise,
@@ -2435,7 +2441,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 </dd>
 </dl>
 
-<h5>19.�.5.2 Argument visitation <a name="format.visit">[format.visit]</a></h5>
+<h5>20.�.5.2 Argument visitation <a name="format.visit">[format.visit]</a></h5>
 
 <!-- Similar to http://eel.is/c++draft/variant#visit -->
 <dl class="def">
@@ -2446,7 +2452,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 </dd>
 </dl>
 
-<h5>19.�.5.3 Class template <code><i>format-arg-store</i></code>
+<h5>20.�.5.3 Class template <code><i>format-arg-store</i></code>
     <a name="format.arg_store">[format.arg_store]</a></h5>
 
 <pre>
@@ -2460,7 +2466,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 
 <p>An instance of <code><i>format-arg-store</i></code> stores formatting arguments.</p>
 
-<h5><a name="format.make_args">19.�.5.4 Function template
+<h5><a name="format.make_args">20.�.5.4 Function template
   <code>make_format_args</code> [format.make_args]</a></h5>
 
 <dl class="def">
@@ -2476,7 +2482,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 </dd>
 </dl>
 
-<h5><a name="format.make_wargs">19.�.5.5 Function template
+<h5><a name="format.make_wargs">20.�.5.5 Function template
   <code>make_wformat_args</code> [format.make_wargs]</a></h5>
 
 <dl class="def">
@@ -2488,7 +2494,7 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
 </dd>
 </dl>
 
-<h5>19.�.5.6 Class template <code>basic_format_args</code> [format.basic_args]</h5>
+<h5>20.�.5.6 Class template <code>basic_format_args</code> [format.basic_args]</h5>
 
 <pre>
 <code>namespace std {
@@ -2543,7 +2549,7 @@ arguments.
 storing indices of type alternatives separately from values and packing the
 former. <i>— end note</i> ]
 
-<h4><a name="format.error">19.�.6 Class <code>format_error</code> [format.error]</a></h4>
+<h4><a name="format.error">20.�.6 Class <code>format_error</code> [format.error]</a></h4>
 
 <!-- Wording similar to http://eel.is/c++draft/range.error -->
 <pre>
