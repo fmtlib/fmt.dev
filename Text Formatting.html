@@ -196,6 +196,12 @@ and recent revision history
     Specification Style Guidelines</a>.
 <li>Clarify the semantics of operator <code>+</code> in
     <a href="#format.functions">[format.functions]</a>.
+<li>Add a precondition that <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
+    charT&gt;</code> meets the <i>Formatter</i> requirements to the <i>Expects</i>
+    elements in <a href="#format_to_n-def"><code>format_to_n</code></a>,
+    <a href="#formatted_size-def"><code>formatted_size</code></a>, and
+    <a href="#make_format_args-def"><code>make_format_args</code></a>. Other
+    functions get this precondition transitively via <code>make_format_args</code>.
 </ul>
 
 <h3>Changes since R8</h3>
@@ -1756,6 +1762,11 @@ the semantics of <code>a + n</code> are the same as in
   string format(string_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
+<!-- Expects comes from make_format_args.
+     http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf#section.25.2 -->
+<!-- <p><i>Expects:</i> <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
+   char&gt;</code> meets the <i>Formatter</i> requirements for each
+   <code>T</code><sub><i>i</i></sub> in <code>Args</code>.</p> -->
 <p><i>Effects:</i> Equivalent to: <code>return vformat(fmt, make_format_args(args...));</code></p>
 </dd>
 
@@ -1786,6 +1797,7 @@ template&lt;class Out, class... Args&gt;
   Out format_to(Out out, wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
+<!-- Expects comes from make_format_args. -->
 <p><i>Effects:</i> Equivalent to:</p>
   <pre class="codeblock"><code>using context = basic_format_context&lt;Out, decltype(fmt)::value_type&gt;;
 return vformat_to(out, fmt, {make_format_args&lt;context&gt;(args...)});</code></pre>
@@ -1848,6 +1860,9 @@ template&lt;class Out, class... Args&gt;
 <p>
   <i>Expects:</i>
   <code>Out</code> models <code>OutputIterator&lt;const charT&amp;&gt;</code>.
+  <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
+      charT&gt;</code> meets the <i>Formatter</i> requirements for each
+      <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
 </p>
 <p>
 <i>Effects:</i>
@@ -1867,10 +1882,16 @@ template&lt;class... Args&gt;
   size_t formatted_size(wstring_view fmt, const Args&amp;... args);</code>
 </dt>
 <dd>
+<p>
+  Let <code>charT</code> be <code>decltype(fmt)::value_type</code>.
+</p>
 <p><i>Mandates:</i>
   <code>formatter&lt;T<sub><i>i</i></sub>, charT&gt;</code> is enabled
   for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
 <p>
+<p><i>Expects:</i> <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
+    charT&gt;</code> meets the <i>Formatter</i> requirements for each
+    <code>T</code><sub><i>i</i></sub> in <code>Args</code>.</p>
 <i>Returns:</i> The number of characters in the character representation of
 formatting arguments <code>args</code> formatted according to specifications
 given in <code>fmt</code>.
@@ -2501,6 +2522,9 @@ explicit basic_format_arg(long double n) noexcept;</code></dt>
     <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
     is enabled for each <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
   </p>
+  <p><i>Expects:</i> <code>typename Context::template formatter_type&lt;T<sub><i>i</i></sub>&gt;</code>
+      meets the <i>Formatter</i> requirements for each
+      <code>T</code><sub><i>i</i></sub> in <code>Args</code>.</p>
   <p><i>Returns:</i> <code>{basic_format_arg&lt;Context&gt;(args)...}</code>.</p>
 </dd>
 </dl>
