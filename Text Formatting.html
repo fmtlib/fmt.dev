@@ -153,11 +153,11 @@ dl.def > dt > code {
 <body>
 
 <address style="text-align: right">
-Document number: D0645R10<br>
+Document number: P0645R10<br>
 Audience: Library<br>
 Author: <a href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a><br>
 <br>
-2019-06-22
+2019-07-16
 </address>
 <hr>
 
@@ -212,6 +212,27 @@ and recent revision history
 <li>Clarify how an implementation determines if
     <code>typename Context::template formatter_type&lt;T&gt;</code> is enabled
     in <a href="#basic_format_arg-int"><code>basic_format_arg</code></a>.
+<li>Replace "Let <code>charT</code> be <code>decltype(fmt)::value_type</code>."
+    with "Let <code>charT</code> be the character type of the format string."
+    and move it to the first paragraph of
+    <a href="#format.string">[format.string]</a>.
+<li>Change three occurrences of the construct of the form "A if B, C otherwise"
+    with "if B, A; otherwise, C" in the floating-point and pointer presentation
+    tables <a href="#format.string">[format.string]</a> for readability.
+<li>Add "unless specified otherwise" after "Formatting of objects of arithmetic
+    types and <code>const void*</code> is done as if by calling
+    <code>to_chars</code>" in <a href="#format.string">[format.string]</a>
+    because infinity and NaN do not delegate to <code>to_chars</code>.
+<li>Clarify that infinity and NaN are formatted as <code>"inf"</code> and
+    <code>"nan"</code> for lower-case presentation types and <code>"INF"</code>
+    and <code>"NAN"</code> for upper-case ones in
+    <a href="#format.string">[format.string]</a>.
+<li>Replace "<code>Out</code> models
+    <code>OutputIterator&lt;const charT&amp;&gt;</code>. <code>formatter</code>"
+    with "<code>Out</code> models
+    <code>OutputIterator&lt;const charT&amp;&gt;</code>, and <code>formatter</code>"
+    in <a href="#format_to_n-def"><code>format_to_n</code></a> to avoid potential
+    confusion that <code>formatter</code> is a member.
 </ul>
 
 <h3>Changes since R8</h3>
@@ -1325,7 +1346,8 @@ Add a new section in 20
 
 <p>
 A format string is a (possibly empty) sequence of <em>replacement fields</em>,
-<em>escape sequences</em>, and other characters. Each character that is not part
+<em>escape sequences</em>, and other characters. Let <code>charT</code> be the
+character type of the format string. Each character that is not part
 of a replacement field or an escape sequence is copied unchanged to the output.
 An escape sequence is one of <code>{{</code> or <code>}}</code>. It is replaced
 with <code>{</code> or <code>}</code> respectively in the output. The syntax of
@@ -1402,8 +1424,6 @@ second character of <code>std-format-spec</code> is not a valid alignment option
 then it is assumed that both the fill character and the alignment option are
 absent.
 </p>
-
-<p>Let <code>charT</code> be <code>decltype(fmt)::value_type</code>.</p>
 
 <p>
 The meaning of the various alignment options is as follows:
@@ -1584,9 +1604,9 @@ Finally, the <code>type</code> determines how the data should be presented.
 
 <p>
 Formatting of objects of arithmetic types and <code>const void*</code> is done
-as if by calling <code>to_chars</code> and copying the output through the output
-iterator of the format context with additional padding and adjustments as per
-format specifiers.
+as if by calling <code>to_chars</code> unless specified otherwise and copying
+the output through the output iterator of the format context with additional
+padding and adjustments as per format specifiers.
 </p>
 
 <p>
@@ -1661,7 +1681,8 @@ using textual representation, either <code>"true"</code> or
 </pre> — <i>end example</i> ]
 
 <p>The available floating-point presentation types and their mapping to
-<code>to_chars</code> are:</p>
+<code>to_chars</code> (for values other than infinity and NaN) are:
+</p>
 
 <table>
 <thead>
@@ -1670,15 +1691,14 @@ using textual representation, either <code>"true"</code> or
 <tbody>
 <tr>
 <td><code>'a'</code></td>
-<td><code>to_chars(first, last, value, chars_format::hex, precision)</code>
-  if <code>precision</code> is specified,
-  <code>to_chars(first, last, value, chars_format::hex)</code> otherwise.</td>
+<td>If <code>precision</code> is specified,
+    <code>to_chars(first, last, value, chars_format::hex, precision)</code>;
+    otherwise, <code>to_chars(first, last, value, chars_format::hex)</code>.</td>
 </tr>
 <tr>
 <td><code>'A'</code></td>
 <td>The same as <code>'a'</code>, except that it uses uppercase letters for
-  digits above 9, <code>"P"</code> to indicate the exponent, <code>"INF"</code>
-  for infinity, and <code>"NAN"</code> for NaN.</td>
+  digits above 9 and <code>"P"</code> to indicate the exponent.</td>
 </tr>
 <tr>
 <td><code>'e'</code></td>
@@ -1688,8 +1708,7 @@ using textual representation, either <code>"true"</code> or
 <tr>
 <td><code>'E'</code></td>
 <td>The same as <code>'e'</code>, except that it uses <code>"E"</code> to
-  indicate exponent, <code>"INF"</code> for infinity, and <code>"NAN"</code> for
-  NaN.</td>
+  indicate exponent.</td>
 </tr>
 <tr>
 <td><code>'f'</code></td>
@@ -1698,8 +1717,7 @@ using textual representation, either <code>"true"</code> or
 </tr>
 <tr>
 <td><code>'F'</code></td>
-<td>The same as <code>'f'</code>, except that it uses <code>"INF"</code> for
-  infinity, and <code>"NAN"</code> for NaN.</td>
+<td>The same as <code>'f'</code>.</td>
 </tr>
 <tr>
 <td><code>'g'</code></td>
@@ -1709,8 +1727,7 @@ using textual representation, either <code>"true"</code> or
 <tr>
 <td><code>'G'</code></td>
 <td>The same as <code>'g'</code>, except that it uses <code>"E"</code> to
-  indicate exponent, <code>"INF"</code> for infinity, and <code>"NAN"</code> for
-  NaN.</td>
+  indicate exponent.</td>
 </tr>
 <tr>
 <td><code>'n'</code></td>
@@ -1720,16 +1737,18 @@ using textual representation, either <code>"true"</code> or
 </tr>
 <tr>
 <td>none</td>
-<td><code>to_chars(first, last, value, chars_format::general, precision)</code>
-  if <code>precision</code> is specified, <code>to_chars(first, last, value)</code>
-  otherwise.</td>
+<td>If <code>precision</code> is specified,
+    <code>to_chars(first, last, value, chars_format::general, precision)</code>;
+    otherwise, <code>to_chars(first, last, value)</code>.</td>
 </tr>
 </tbody>
 </table>
 
 <p>
-Infinity and NaN are formatted as <code>"inf"</code> and <code>"nan"</code>
-respectively unless specified otherwise.
+For lower-case presentation types, infinity and NaN are formatted as
+<code>"inf"</code> and <code>"nan"</code>, respectively, with sign, if any.
+For upper-case presentation types, infinity and NaN are formatted as
+<code>"INF"</code> and <code>"NAN"</code>, respectively, with sign, if any.
 </p>
 
 <p>The available pointer presentation types and their mapping to
@@ -1742,9 +1761,10 @@ respectively unless specified otherwise.
 <tbody>
 <tr>
 <td><code>'p'</code></td>
-<td><code>to_chars(first, last, reinterpret_cast&lt;uintptr_t&gt;(value), 16)</code>
-    with the prefix <code>"0x"</code> added to the output if
-    <code>uintptr_t</code> is defined, implementation-defined otherwise.</td>
+<td>If <code>uintptr_t</code> is defined,
+    <code>to_chars(first, last, reinterpret_cast&lt;uintptr_t&gt;(value), 16)</code>
+    with the prefix <code>"0x"</code> added to the output;
+    otherwise, implementation-defined.</td>
 </tr>
 <tr>
 <td>none</td>
@@ -1864,7 +1884,7 @@ template&lt;class Out, class... Args&gt;
 </p>
 <p>
   <i>Expects:</i>
-  <code>Out</code> models <code>OutputIterator&lt;const charT&amp;&gt;</code>.
+  <code>Out</code> models <code>OutputIterator&lt;const charT&amp;&gt;</code>, and
   <code>formatter&lt;T</code><sub><i>i</i></sub><code>,
       charT&gt;</code> meets the <i>Formatter</i> requirements for each
       <code>T</code><sub><i>i</i></sub> in <code>Args</code>.
