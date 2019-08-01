@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4c94409a0f8f9bae15b929d2cd1d918c8334e6ff" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="dfadc28ab7ac45cea8b079e2a96429ca9dcc928e" name="document-revision">
+  <meta content="27d5fbf2df9c0d8feba9379dd471f9f67f445a96" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1481,8 +1481,16 @@ pre .property::before, pre .property::after {
       <li><a href="#chrono"><span class="secno">2.7</span> <span class="content">Integration with chrono</span></a>
       <li><a href="#deep-impact"><span class="secno">2.8</span> <span class="content">Impact on existing code</span></a>
      </ol>
-    <li><a href="#existing-work"><span class="secno">3</span> <span class="content">Existing work</span></a>
-    <li><a href="#questions"><span class="secno">4</span> <span class="content">Questions</span></a>
+    <li>
+     <a href="#design-questions"><span class="secno">3</span> <span class="content">Open design questions</span></a>
+     <ol class="toc">
+      <li><a href="#input"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- n>string_view</c-></code> vs. <code class="highlight"><c- n>bidirectional_range</c-></code> as input</span></a>
+      <li><a href="#error-handling"><span class="secno">3.2</span> <span class="content">Error handling and partial successes</span></a>
+      <li><a href="#tuple-out"><span class="secno">3.3</span> <span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span></a>
+      <li><a href="#regex"><span class="secno">3.4</span> <span class="content">Regex support</span></a>
+      <li><a href="#naming"><span class="secno">3.5</span> <span class="content">Naming</span></a>
+     </ol>
+    <li><a href="#existing-work"><span class="secno">4</span> <span class="content">Existing work</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -1629,7 +1637,7 @@ way.</p>
    <p>We propose using a type erasure technique to reduce per-call binary code size.
 The scanning function that uses variadic templates can be implemented as a
 small inline wrapper around its non-variadic counterpart:</p>
-<pre class="language-c++ highlight"><c- n>string_view</c-><c- o>::</c-><c- n>iterator</c-> <c- n>vscan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
+<pre class="language-c++ highlight"><c- n>string_view</c-> <c- nf>vscan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
 
 <c- n>template</c-> <c- o>&lt;</c-><c- kr>typename</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
 <c- kr>inline</c-> <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
@@ -1659,35 +1667,197 @@ memory allocations without resolving to deprecated <code class="highlight"><c- n
    <h3 class="heading settled" data-level="2.8" id="deep-impact"><span class="secno">2.8. </span><span class="content">Impact on existing code</span><a class="self-link" href="#deep-impact"></a></h3>
    <p>The proposed API is defined in a new header and should have no impact on
 existing code.</p>
-   <h2 class="heading settled" data-level="3" id="existing-work"><span class="secno">3. </span><span class="content">Existing work</span><a class="self-link" href="#existing-work"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> is a C++ library that, among other things, provides a <code class="highlight"><c- n>scan</c-></code> function
-similar to the one proposed here. <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> has a prototype implementation of the
-proposal.</p>
-   <h2 class="heading settled" data-level="4" id="questions"><span class="secno">4. </span><span class="content">Questions</span><a class="self-link" href="#questions"></a></h2>
-   <p><strong>Q1</strong>: Do we want this?</p>
-   <p><strong>Q2</strong>: API options:</p>
-   <ol>
-    <li data-md>
-     <p>Pass arguments by reference and return an iterator:</p>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-><c- p>;</c->
-<c- b>int</c-> <c- n>value</c-><c- p>;</c->
-<c- k>auto</c-> <c- n>end</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>value</c-><c- p>);</c->
+   <h2 class="heading settled" data-level="3" id="design-questions"><span class="secno">3. </span><span class="content">Open design questions</span><a class="self-link" href="#design-questions"></a></h2>
+   <h3 class="heading settled" data-level="3.1" id="input"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>string_view</c-></code> vs. <code class="highlight"><c- n>bidirectional_range</c-></code> as input</span><a class="self-link" href="#input"></a></h3>
+   <p>Currently, this paper proposes taking a <code class="highlight"><c- n>string_view</c-></code> (and possibly a <code class="highlight"><c- n>wstring_view</c-></code>) as the first parameter to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>.
+While convenient for the common case of parsing a value from a string,
+it’s less so for a lot of other cases.</p>
+   <p>Consider reading an integer from a file.
+Because this proposed facility doesn’t concern itself with IO,
+it’s not possible without reaching to other standard APIs,
+which are not designed for this purpose.
+There are two conceivable approaches to this:</p>
+   <p><b>Reading the file character-by-character with C stdio:</b></p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>fopen</c-><c- p>(...);</c->
+
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>buf</c-><c- p>{};</c->
+<c- k>while</c-> <c- p>((</c-><c- b>char</c-> <c- n>ch</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>fgetc</c-><c- p>(</c-><c- n>f</c-><c- p>))</c-> <c- o>!=</c-> <c- n>EOF</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>if</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>isspace</c-><c- p>(</c-><c- n>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>ch</c-><c- p>))</c-> <c- o>!=</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c->
+        <c- k>break</c-><c- p>;</c->
+    <c- p>}</c->
+    <c- n>buf</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>ch</c-><c- p>);</c->
+<c- p>}</c->
+
+<c- c1>// buf now contains the input</c->
+<c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+<c- k>auto</c-> <c- n>ret</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>buf</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>i</c-><c- p>);</c->
+
+<c- c1>// Input has some leftovers and wasn’t exhausted</c->
+<c- c1>// Unused parts need to be put back into the file stream</c->
+<c- c1>// This can happen when, for example, the input is "4.2":</c->
+<c- c1>// '4' is read into the integer, ".2" is left over, and must be put back.</c->
+<c- c1>// This is consistent with iostreams and scanf</c->
+<c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>ret</c-><c- p>.</c-><c- n>empty</c-><c- p>())</c-> <c- p>{</c->
+    <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>it</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rbegin</c-><c- p>();</c-> <c- n>it</c-> <c- o>!=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rend</c-><c- p>();</c-> <c- o>++</c-><c- n>it</c-><c- p>)</c-> <c- p>{</c->
+        <c- k>if</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>ungetc</c-><c- p>(</c-><c- o>*</c-><c- n>it</c-><c- p>,</c-> <c- n>f</c-><c- p>)</c-> <c- o>==</c-> <c- n>EOF</c-><c- p>)</c-> <c- p>{</c->
+            <c- c1>// Putback failed; file stream unusable</c->
+            <c- n>throw</c-> <c- p>...;</c->
+        <c- p>}</c->
+    <c- p>}</c->
+<c- p>}</c->
 </pre>
-     <p>This is similar to what <code class="highlight"><c- n>scanf</c-></code>, istream <code class="highlight"><c- k>operator</c-><c- o>>></c-></code>, and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-></code> do.</p>
-    <li data-md>
-     <p>Return an object wrapping an iterator and parsed values:</p>
-<pre class="highlight"><c- k>auto</c-> <c- n>result</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>,</c-> <c- b>int</c-><c- o>></c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>);</c->
-<c- k>auto</c-> <c- n>end</c-> <c- o>=</c-> <c- n>result</c-><c- p>.</c-><c- n>end</c-><c- p>;</c->
-<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>get</c-><c- o>&lt;</c-><c- mi>0</c-><c- o>></c-><c- p>(</c-><c- n>result</c-><c- p>.</c-><c- n>values</c-><c- p>);</c->
-<c- b>int</c-> <c- n>value</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>get</c-><c- o>&lt;</c-><c- mi>1</c-><c- o>></c-><c- p>(</c-><c- n>result</c-><c- p>.</c-><c- n>values</c-><c- p>);</c->
+   <p><b>Reading a "word" from the file with <code class="highlight"><c- n>fstream</c-></code>:</b></p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>fstream</c-><c- p>(...);</c->
+
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>buf</c-><c- p>{};</c->
+<c- n>f</c-> <c- o>>></c-> <c- n>buf</c-><c- p>;</c->
+
+<c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+<c- k>auto</c-> <c- n>ret</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>buf</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>i</c-><c- p>);</c->
+
+<c- c1>// See above for rationale</c->
+<c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>ret</c-><c- p>.</c-><c- n>empty</c-><c- p>())</c-> <c- p>{</c->
+    <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>it</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rbegin</c-><c- p>();</c-> <c- n>it</c-> <c- o>!=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rend</c-><c- p>();</c-> <c- o>++</c-><c- n>it</c-><c- p>)</c-> <c- p>{</c->
+        <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>f</c-><c- p>.</c-><c- n>putback</c-><c- p>(</c-><c- o>*</c-><c- n>it</c-><c- p>))</c-> <c- p>{</c->
+            <c- c1>// Putback failed; file stream unusable</c->
+            <c- n>throw</c-> <c- p>...;</c->
+        <c- p>}</c->
+    <c- p>}</c->
+<c- p>}</c->
 </pre>
-      This option is more cumbersome to use because it requires passing all
- argument types as template arguments to <code class="highlight"><c- n>scan</c-></code>. It may also require an
- extra move or copy to extract the argument’s value and impose additional
- requirements on the argument types (at least default constructibility).
- Syntactically it can be simplified using structured bindings. 
-   </ol>
-   <p><strong>Q3</strong>: naming:</p>
+   <p>Both of these approaches are flawed.
+The first one has a significant amount of bookkeeping that’s required of the user,
+and so does the second one, although not as much.
+Both examples are difficult to use and are easy to get wrong.
+In the second example, it’d probably be better to skip the hassle,
+and just do <code class="highlight"><c- n>f</c-> <c- o>>></c-> <c- n>my_int</c-></code> directly, making this proposal obsolete.</p>
+   <p>One could argue, that solving this problem is out-of-scope for this proposal. <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> doesn’t deal with IO, and maybe this paper shouldn’t either.
+Comparisons to <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> in this case may be unwarranted, however.
+Scanning without IO is significantly less powerful than formatting without IO;
+scanning is, inherently, a different process from formatting.</p>
+   <p>With formatting, you can just dump all your values into a string.
+With scanning, that just isn’t possible, as seen earlier.
+The source has to be read lazily, and might grow mid-call.</p>
+   <p>The solution to this is to make <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> do IO and take a <code class="highlight"><c- n>bidirectional_range</c-></code>.
+Although not a part of this proposal, a range type wrapping a file could be created
+(bidirectional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istreambuf_iterator</c-></code>? range-based IO?),
+making the above use cases trivial.</p>
+<pre class="language-c++ highlight"><c- c1>// Hypothetical</c->
+<c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>bidirectional_range</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>io</c-><c- o>::</c-><c- n>file</c-><c- p>(...);</c->
+
+<c- c1>// All the buffer management is dealt with by the range and std::scan</c->
+<c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+<c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>f</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>i</c-><c- p>);</c->
+</pre>
+   <p>The reason for <code class="highlight"><c- n>bidirectional_range</c-></code> is error recovery.
+In the case that reading an argument fails,
+the range needs to be reset to the state it was in before starting to read that value.
+This behavior is consistent with scanf.</p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>input</c-> <c- o>=</c-> <c- s>"42 foo"</c-><c- n>sv</c-><c- p>;</c->
+<c- b>int</c-> <c- n>i</c-><c- p>,</c-> <c- n>j</c-><c- p>;</c->
+<c- c1>// Reading of j failed: foo is not an integer</c->
+<c- n>input</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- s>"{} {}"</c-><c- p>,</c-> <c- n>i</c-><c- p>,</c-> <c- n>j</c-><c- p>);</c->
+<c- c1>// input == "foo"</c->
+<c- c1>// i == 42</c->
+<c- c1>// j is uninitialized (not written to)</c->
+</pre>
+   <p>See more discussion on error handling in <a href="#error-handling">§3.2 Error handling and partial successes</a>.</p>
+   <p>Parsing operations could be optimized further for more refined range concepts.
+For example, for <code class="highlight"><c- n>contiguous_range</c-></code>s, <code class="highlight"><c- n>string_view</c-></code>s could be read,
+eliminating an extra allocation and a copy into a <code class="highlight"><c- n>string</c-></code>.</p>
+   <p>A problem with taking a range as input would be increase of generated code size:
+the internals would need to be instantiated for every used range type.
+This could be mitigated by:</p>
+   <ul>
+    <li data-md>
+     <p>Generating <code class="highlight"><c- n>vscan</c-></code> overloads for a lot of different range types ->
+dramatical increase of library compile time and size
+(first one a non-issue for stdlib, second one maybe not so much)</p>
+    <li data-md>
+     <p>Type-erasing the range alongside the arguments ->
+virtual function call with every <code class="highlight"><c- o>*</c-><c- n>it</c-></code> and <code class="highlight"><c- o>++</c-><c- n>it</c-></code> (significant performance degradation)</p>
+   </ul>
+   <h3 class="heading settled" data-level="3.2" id="error-handling"><span class="secno">3.2. </span><span class="content">Error handling and partial successes</span><a class="self-link" href="#error-handling"></a></h3>
+   <p>This paper deliberately avoids dealing with errors at this point.
+To be consistent with <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>, exceptions would be the proper way to deal with errors.
+The problem with this approach is partial successes.</p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>input</c-> <c- o>=</c-> <c- s>"42 foo"</c-><c- n>sv</c-><c- p>;</c->
+<c- b>int</c-> <c- n>i</c-><c- p>,</c-> <c- n>j</c-><c- p>;</c->
+<c- n>try</c-> <c- p>{</c->
+    <c- c1>// Will throw:</c->
+    <c- c1>// foo is not an integer</c->
+    <c- n>input</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- s>"{} {}"</c-><c- p>,</c-> <c- n>i</c-><c- p>,</c-> <c- n>j</c-><c- p>);</c->
+
+    <c- c1>// If this was ever reached,</c->
+    <c- c1>// i and j would both be usable here</c->
+<c- p>}</c-> <c- n>catch</c-> <c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>scan_error</c-><c- o>&amp;</c-> <c- n>e</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>input</c-> <c- o>=</c-> <c- n>e</c-><c- p>.</c-><c- n>input</c-><c- p>;</c->
+    <c- k>if</c-> <c- p>(</c-><c- n>e</c-><c- p>.</c-><c- n>read</c-> <c- o>==</c-> <c- mi>1</c-><c- p>)</c-> <c- p>{</c->
+        <c- c1>// 1 value read</c->
+        <c- c1>// Only i usable</c->
+    <c- p>}</c-> <c- k>else</c-> <c- p>{</c->
+        <c- c1>// No values read</c->
+        <c- c1>// Neither i or j usable</c->
+    <c- p>}</c->
+<c- p>}</c->
+</pre>
+   <p>Problems with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> communicating partial successes by throwing:</p>
+   <ul>
+    <li data-md>
+     <p>The read values need to be declared far away from their use site:
+declaration is outside the <code class="highlight"><c- k>try</c-></code>-block,
+while using the value is after the call and in the <code class="highlight"><c- k>catch</c-></code>-block.</p>
+    <li data-md>
+     <p>Possible code duplication:
+Say, for example, that the user wants to do
+something for the value <code class="highlight"><c- n>i</c-></code> in the previous example.
+This code would have to be in two places:
+in the end of the <code class="highlight"><c- k>try</c-></code>-block, and inside the <code class="highlight"><c- k>if</c-></code> in the <code class="highlight"><c- k>catch</c-></code>-block.
+Also, the input needs to be reassigned in two different places:
+in the <code class="highlight"><c- k>try</c-></code>-block in the case of a success, and in the <code class="highlight"><c- k>catch</c-></code> on failure.</p>
+   </ul>
+   <p>An alternative would be to have an <code class="highlight"><c- n>expected</c-></code> return type (<a data-link-type="biblio" href="#biblio-p0323">[P0323]</a>),
+except the success side should always be present, almost like:</p>
+<pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-><c- kr>typename</c-> <c- n>Range</c-><c- o>></c->
+<c- k>struct</c-> <c- n>scan_result</c-> <c- p>{</c->
+    <c- b>int</c-> <c- n>read</c-><c- p>;</c->
+    <c- n>Range</c-> <c- n>input</c-><c- p>;</c->
+    <c- n>optional</c-><c- o>&lt;</c-><c- n>scan_error</c-><c- o>></c-> <c- n>error</c-><c- p>;</c->
+<c- p>};</c->
+<c- p>}</c->
+
+<c- k>auto</c-> <c- n>input</c-> <c- o>=</c-> <c- s>"42 foo"</c-><c- n>sv</c-><c- p>;</c->
+<c- b>int</c-> <c- n>i</c-><c- p>,</c-> <c- n>j</c-><c- p>;</c->
+<c- k>auto</c-> <c- n>ret</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- s>"{} {}"</c-><c- p>,</c-> <c- n>i</c-><c- p>,</c-> <c- n>j</c-><c- p>);</c->
+<c- n>input</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>input</c-><c- p>;</c->
+<c- k>if</c-> <c- p>(</c-><c- n>ret</c-><c- p>.</c-><c- n>read</c-> <c- o>>=</c-> <c- mi>1</c-><c- p>)</c-> <c- p>{</c->
+    <c- c1>// i is usable</c->
+<c- p>}</c-> <c- k>else</c-> <c- p>{</c->
+    <c- c1>// Neither i or j is usable</c->
+<c- p>}</c->
+</pre>
+   <p>This would, of course, be inconsistent with <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>, which might be undesirable.</p>
+   <h3 class="heading settled" data-level="3.3" id="tuple-out"><span class="secno">3.3. </span><span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span><a class="self-link" href="#tuple-out"></a></h3>
+   <p>In Cologne, LEWGI encouraged to explore an alternative API returning a <code class="highlight"><c- n>tuple</c-></code>,
+instead of <code class="highlight"><c- n>scanf</c-></code>-like output parameters.
+We find the <code class="highlight"><c- n>scanf</c-></code> approach to be superior, for the following reasons:</p>
+   <ul>
+    <li data-md>
+     <p>The API would be clunky to allow for partial successes.
+The return type would have to be <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>optional</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>optional</c-><c- o>&lt;</c-><c- n>U</c-><c- o>></c-><c- p>...</c-><c- o>></c-></code>,
+or even <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>optional</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>optional</c-><c- o>&lt;</c-><c- n>U</c-><c- o>></c-><c- p>...</c-><c- o>>></c-></code>.
+Using this is awkward, with all the destructuring the user would have to do.</p>
+    <li data-md>
+     <p>Tuples, in conjunction with optionals,
+have a measurable overhead compared to output parameters, at ~5-10%,
+depending on the use case, according to <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> benchmarks.</p>
+   </ul>
+   <h3 class="heading settled" data-level="3.4" id="regex"><span class="secno">3.4. </span><span class="content">Regex support</span><a class="self-link" href="#regex"></a></h3>
+   <p><strong>TODO</strong></p>
+   <p>Frequently requested</p>
+   <p>@Elias thinks this is a bad idea</p>
+   <h3 class="heading settled" data-level="3.5" id="naming"><span class="secno">3.5. </span><span class="content">Naming</span><a class="self-link" href="#naming"></a></h3>
    <ol>
     <li data-md>
      <p><code class="highlight"><c- n>scan</c-></code></p>
@@ -1698,6 +1868,18 @@ proposal.</p>
    </ol>
    <p>The name "parse" is a bit problematic because of ambiguity between format string
 parsing and input parsing.</p>
+   <p>"scan" as a name collides with new C++17 <code class="highlight"><c- o>&lt;</c-><c- n>numeric</c-><c- o>></c-></code> algorithms</p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>inclusive_scan</c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>exclusive_scan</c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>transform_inclusive_scan</c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>transform_exclusive_scan</c-></code></p>
+   </ul>
+   <p>"scan" is the name used by <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> and <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>, and is the authors' preferred name.</p>
    <table>
     <tbody>
      <tr>
@@ -1731,6 +1913,10 @@ parsing and input parsing.</p>
       <td><code class="highlight"><c- n>scan_context</c-></code>
       <td><code class="highlight"><c- n>parse_context</c-></code>
    </table>
+   <h2 class="heading settled" data-level="4" id="existing-work"><span class="secno">4. </span><span class="content">Existing work</span><a class="self-link" href="#existing-work"></a></h2>
+   <p><a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> is a C++ library that, among other things, provides a <code class="highlight"><c- n>scan</c-></code> function
+similar to the one proposed here. <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> has a prototype implementation of the
+proposal.</p>
   </main>
 <script>
 (function() {
@@ -1872,6 +2058,8 @@ parsing and input parsing.</p>
    <dd>Victor Zverovich et al. <a href="https://github.com/fmtlib/fmt">The fmt library</a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-n4412">[N4412]
    <dd>Jens Maurer. <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">N4412: Shortcomings of iostreams</a>. URL: <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html</a>
+   <dt id="biblio-p0323">[P0323]
+   <dd>JF Bastien; Vicente Botet. <a href="https://wg21.link/p0323">std::expected</a>. URL: <a href="https://wg21.link/p0323">https://wg21.link/p0323</a>
    <dt id="biblio-p0355">[P0355]
    <dd>Howard E. Hinnant; Tomasz Kamiński. <a href="https://wg21.link/p0355">Extending &lt;chrono> to Calendars and Time Zones</a>. URL: <a href="https://wg21.link/p0355">https://wg21.link/p0355</a>
    <dt id="biblio-p0645">[P0645]

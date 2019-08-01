@@ -199,7 +199,7 @@ The scanning function that uses variadic templates can be implemented as a
 small inline wrapper around its non-variadic counterpart:
 
 ```c++
-string_view::iterator vscan(string_view input, string_view fmt, scan_args args);
+string_view vscan(string_view input, string_view fmt, scan_args args);
 
 template <typename... Args>
 inline auto scan(string_view input, string_view fmt, const Args&... args) {
@@ -243,44 +243,237 @@ Impact on existing code {#deep-impact}
 The proposed API is defined in a new header and should have no impact on
 existing code.
 
-Existing work {#existing-work}
-=============
+Open design questions {#design-questions}
+=====================
 
-[[SCNLIB]] is a C++ library that, among other things, provides a `scan` function
-similar to the one proposed here. [[FMT]] has a prototype implementation of the
-proposal.
+<code>string_view</code> vs. <code>bidirectional_range</code> as input {#input}
+----------------------------------------------------------------------
 
-Questions {#questions}
-=========
+Currently, this paper proposes taking a `string_view`
+(and possibly a `wstring_view`) as the first parameter to `std::scan`.
+While convenient for the common case of parsing a value from a string,
+it's less so for a lot of other cases.
 
-**Q1**: Do we want this?
+Consider reading an integer from a file.
+Because this proposed facility doesn't concern itself with IO,
+it's not possible without reaching to other standard APIs,
+which are not designed for this purpose.
+There are two conceivable approaches to this:
 
-**Q2**: API options:
+<b>Reading the file character-by-character with C stdio:</b>
 
-  1. Pass arguments by reference and return an iterator:
-     ```
-std::string key;
-int value;
-auto end = std::scan(input, "{} = {}", key, value);
-     ```
+```c++
+auto f = std::fopen(...);
 
-     This is similar to what `scanf`, istream `operator>>`, and
-     `std::chrono::parse` do.
+std::string buf{};
+while ((char ch = std::fgetc(f)) != EOF) {
+    if (std::isspace(static_cast<unsigned char>(ch)) != 0) {
+        break;
+    }
+    buf.push_back(ch);
+}
 
-  2. Return an object wrapping an iterator and parsed values:
-     ```
-auto result = std::scan<std::string, int>(input, "{} = {}");
-auto end = result.end;
-std::string key = std::get<0>(result.values);
-int value = std::get<1>(result.values);
-     ```
-     This option is more cumbersome to use because it requires passing all
-     argument types as template arguments to `scan`. It may also require an
-     extra move or copy to extract the argument's value and impose additional
-     requirements on the argument types (at least default constructibility).
-     Syntactically it can be simplified using structured bindings.
+// buf now contains the input
+int i{};
+auto ret = std::scan(buf, "{}", i);
 
-**Q3**: naming:
+// Input has some leftovers and wasn't exhausted
+// Unused parts need to be put back into the file stream
+// This can happen when, for example, the input is "4.2":
+// '4' is read into the integer, ".2" is left over, and must be put back.
+// This is consistent with iostreams and scanf
+if (!ret.empty()) {
+    for (auto it = ret.rbegin(); it != ret.rend(); ++it) {
+        if (std::ungetc(*it, f) == EOF) {
+            // Putback failed; file stream unusable
+            throw ...;
+        }
+    }
+}
+```
+
+<b>Reading a "word" from the file with <code>fstream</code>:</b>
+
+```c++
+auto f = std::fstream(...);
+
+std::string buf{};
+f >> buf;
+
+int i{};
+auto ret = std::scan(buf, "{}", i);
+
+// See above for rationale
+if (!ret.empty()) {
+    for (auto it = ret.rbegin(); it != ret.rend(); ++it) {
+        if (!f.putback(*it)) {
+            // Putback failed; file stream unusable
+            throw ...;
+        }
+    }
+}
+```
+
+Both of these approaches are flawed.
+The first one has a significant amount of bookkeeping that's required of the user,
+and so does the second one, although not as much.
+Both examples are difficult to use and are easy to get wrong.
+In the second example, it'd probably be better to skip the hassle,
+and just do `f >> my_int` directly, making this proposal obsolete.
+
+One could argue, that solving this problem is out-of-scope for this proposal.
+[[P0645]] doesn't deal with IO, and maybe this paper shouldn't either.
+Comparisons to [[P0645]] in this case may be unwarranted, however.
+Scanning without IO is significantly less powerful than formatting without IO;
+scanning is, inherently, a different process from formatting.
+
+With formatting, you can just dump all your values into a string.
+With scanning, that just isn't possible, as seen earlier.
+The source has to be read lazily, and might grow mid-call.
+
+The solution to this is to make `std::scan` do IO and take a `bidirectional_range`.
+Although not a part of this proposal, a range type wrapping a file could be created
+(bidirectional `std::istreambuf_iterator`? range-based IO?),
+making the above use cases trivial.
+
+```c++
+// Hypothetical
+std::ranges::bidirectional_range f = std::io::file(...);
+
+// All the buffer management is dealt with by the range and std::scan
+// Range iterator operator++ would read a character,
+// operator* would return the last character read,
+// and operator-- would putback a character
+int i{};
+f = std::scan(f, "{}", i);
+```
+
+The reason for `bidirectional_range` is error recovery.
+In the case that reading an argument fails,
+the range needs to be reset to the state it was in before starting to read that value.
+This behavior is consistent with scanf.
+
+```c++
+auto input = "42 foo"sv;
+int i, j;
+// Reading of j failed: foo is not an integer
+input = std::scan(input, "{} {}", i, j);
+// input == "foo"
+// i == 42
+// j is uninitialized (not written to)
+```
+
+See more discussion on error handling in [[#error-handling]].
+
+Parsing operations could be optimized further for more refined range concepts.
+For example, for `contiguous_range`s, `string_view`s could be read,
+eliminating an extra allocation and a copy into a `string`.
+
+A problem with taking a range as input would be an increase of generated code size,
+as the internals would need to be instantiated for every used range type.
+This could be mitigated by:
+ 
+  * Generating `vscan` overloads for a lot of different range types ->
+    dramatical increase of library compile time and binary size
+    (first one a non-issue for stdlib, second one maybe not so much)
+  * Type-erasing the range alongside the arguments ->
+    virtual function call with every `*it` and `++it`
+    (significant performance degradation)
+
+Error handling and partial successes {#error-handling}
+------------------------------------
+
+This paper deliberately avoids dealing with errors at this point.
+To be consistent with [[P0645]], exceptions would be the proper way to deal with errors.
+The problem with this approach is partial successes.
+
+```c++
+auto input = "42 foo"sv;
+int i, j;
+try {
+    // Will throw:
+    // foo is not an integer
+    input = std::scan(input, "{} {}", i, j);
+
+    // If this was ever reached,
+    // i and j would both be usable here
+} catch (const std::scan_error& e) {
+    input = e.input;
+    if (e.read == 1) {
+        // 1 value read
+        // Only i usable
+    } else {
+        // No values read
+        // Neither i or j usable
+    }
+}
+```
+
+Problems with `std::scan` communicating partial successes by throwing:
+
+  * The read values need to be declared far away from their use site:
+    declaration is outside the `try`-block,
+    while using the value is after the call and in the `catch`-block.
+  * Possible code duplication:
+    Say, for example, that the user wants to do
+    something for the value `i` in the previous example.
+    This code would have to be in two places:
+    in the end of the `try`-block, and inside the `if` in the `catch`-block.
+    Also, the input needs to be reassigned in two different places:
+    in the `try`-block in the case of a success, and in the `catch` on failure.
+   
+An alternative would be to have an `expected` return type ([[P0323]]),
+except the success side should always be present, almost like:
+
+```c++
+namespace std {
+template <typename Range>
+struct scan_result {
+    int read;
+    Range input;
+    optional<scan_error> error;
+};
+}
+
+auto input = "42 foo"sv;
+int i, j;
+auto ret = std::scan(input, "{} {}", i, j);
+input = ret.input;
+if (ret.read >= 1) {
+    // i is usable
+} else {
+    // Neither i or j is usable
+}
+```
+
+This would, of course, be inconsistent with [[P0645]], which might be undesirable.
+
+Returning a <code>tuple</code> vs. output parameters {#tuple-out}
+----------------------------------------------------
+
+In Cologne, LEWGI encouraged to explore an alternative API returning a `tuple`,
+instead of `scanf`-like output parameters.
+We find the `scanf` approach to be superior, for the following reasons:
+
+  * The API would be clunky to allow for partial successes.
+    The return type would have to be `std::tuple<std::optional<T>, std::optional<U>...>`,
+    or even `std::scan_result<std::tuple<std::optional<T>, std::optional<U>...>>`.
+    Using this is awkward, with all the destructuring the user would have to do.
+  * Tuples, in conjunction with optionals,
+    have a measurable overhead compared to output parameters, at ~5-10%,
+    depending on the use case, according to [[SCNLIB]] benchmarks.
+
+Regex support {#regex}
+-------------
+
+**TODO**
+
+Frequently requested
+
+@Elias thinks this is a bad idea
+
+Naming {#naming}
+------
 
   1. `scan`
   2. `parse`
@@ -288,6 +481,15 @@ int value = std::get<1>(result.values);
 
 The name "parse" is a bit problematic because of ambiguity between format string
 parsing and input parsing.
+
+"scan" as a name collides with new C++17 `<numeric>` algorithms
+ 
+ * `std::inclusive_scan`
+ * `std::exclusive_scan`
+ * `std::transform_inclusive_scan`
+ * `std::transform_exclusive_scan`
+
+"scan" is the name used by [[SCNLIB]] and [[FMT]], and is the authors' preferred name.
 
 <table>
 <tr>
@@ -327,6 +529,13 @@ parsing and input parsing.
   <td>`parse_context`</td>
 </tr>
 </table>
+
+Existing work {#existing-work}
+=============
+
+[[SCNLIB]] is a C++ library that, among other things, provides a `scan` function
+similar to the one proposed here. [[FMT]] has a prototype implementation of the
+proposal.
 
 <!--
 An unscientific Twitter poll
@@ -384,6 +593,11 @@ received 188 votes showed slight preference towards `scan` (46% `scan`, 41%
 	  "title": "Extending <chrono> to Calendars and Time Zones",
 	  "authors": ["Howard E. Hinnant", "Tomasz Kamiński"],
 	  "href": "https://wg21.link/p0355"
+  },
+  "P0323": {
+      "title": "std::expected",
+      "authors": ["JF Bastien", "Vicente Botet"],
+      "href": "https://wg21.link/p0323"
   }
 }
 </pre>
