@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D1729R1: Text Parsing</title>
+  <title>P1729R1: Text Parsing</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4c94409a0f8f9bae15b929d2cd1d918c8334e6ff" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="27d5fbf2df9c0d8feba9379dd471f9f67f445a96" name="document-revision">
+  <meta content="be23cac8b2a76f173a3ee81dc84e1cd09a5fb7c0" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1439,8 +1439,8 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D1729R1<br>Text Parsing</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-06-14">2019-06-14</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P1729R1<br>Text Parsing</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2019-06-14">2019-06-14</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1487,8 +1487,7 @@ pre .property::before, pre .property::after {
       <li><a href="#input"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- n>string_view</c-></code> vs. <code class="highlight"><c- n>bidirectional_range</c-></code> as input</span></a>
       <li><a href="#error-handling"><span class="secno">3.2</span> <span class="content">Error handling and partial successes</span></a>
       <li><a href="#tuple-out"><span class="secno">3.3</span> <span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span></a>
-      <li><a href="#regex"><span class="secno">3.4</span> <span class="content">Regex support</span></a>
-      <li><a href="#naming"><span class="secno">3.5</span> <span class="content">Naming</span></a>
+      <li><a href="#naming"><span class="secno">3.4</span> <span class="content">Naming</span></a>
      </ol>
     <li><a href="#existing-work"><span class="secno">4</span> <span class="content">Existing work</span></a>
     <li>
@@ -1746,6 +1745,9 @@ making the above use cases trivial.</p>
 <c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>bidirectional_range</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>io</c-><c- o>::</c-><c- n>file</c-><c- p>(...);</c->
 
 <c- c1>// All the buffer management is dealt with by the range and std::scan</c->
+<c- c1>// Range iterator operator++ would read a character,</c->
+<c- c1>// operator* would return the last character read,</c->
+<c- c1>// and operator-- would putback a character</c->
 <c- b>int</c-> <c- n>i</c-><c- p>{};</c->
 <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>f</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>i</c-><c- p>);</c->
 </pre>
@@ -1765,13 +1767,13 @@ This behavior is consistent with scanf.</p>
    <p>Parsing operations could be optimized further for more refined range concepts.
 For example, for <code class="highlight"><c- n>contiguous_range</c-></code>s, <code class="highlight"><c- n>string_view</c-></code>s could be read,
 eliminating an extra allocation and a copy into a <code class="highlight"><c- n>string</c-></code>.</p>
-   <p>A problem with taking a range as input would be increase of generated code size:
-the internals would need to be instantiated for every used range type.
+   <p>A problem with taking a range as input would be an increase of generated code size,
+as the internals would need to be instantiated for every used range type.
 This could be mitigated by:</p>
    <ul>
     <li data-md>
      <p>Generating <code class="highlight"><c- n>vscan</c-></code> overloads for a lot of different range types ->
-dramatical increase of library compile time and size
+dramatical increase of library compile time and binary size
 (first one a non-issue for stdlib, second one maybe not so much)</p>
     <li data-md>
      <p>Type-erasing the range alongside the arguments ->
@@ -1816,7 +1818,7 @@ in the end of the <code class="highlight"><c- k>try</c-></code>-block, and insid
 Also, the input needs to be reassigned in two different places:
 in the <code class="highlight"><c- k>try</c-></code>-block in the case of a success, and in the <code class="highlight"><c- k>catch</c-></code> on failure.</p>
    </ul>
-   <p>An alternative would be to have an <code class="highlight"><c- n>expected</c-></code> return type (<a data-link-type="biblio" href="#biblio-p0323">[P0323]</a>),
+   <p>An alternative would be to have an <code class="highlight"><c- n>expected</c-></code>-like return type (<a data-link-type="biblio" href="#biblio-p0323">[P0323]</a>),
 except the success side should always be present, almost like:</p>
 <pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-><c- kr>typename</c-> <c- n>Range</c-><c- o>></c->
@@ -1853,11 +1855,7 @@ Using this is awkward, with all the destructuring the user would have to do.</p>
 have a measurable overhead compared to output parameters, at ~5-10%,
 depending on the use case, according to <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> benchmarks.</p>
    </ul>
-   <h3 class="heading settled" data-level="3.4" id="regex"><span class="secno">3.4. </span><span class="content">Regex support</span><a class="self-link" href="#regex"></a></h3>
-   <p><strong>TODO</strong></p>
-   <p>Frequently requested</p>
-   <p>@Elias thinks this is a bad idea</p>
-   <h3 class="heading settled" data-level="3.5" id="naming"><span class="secno">3.5. </span><span class="content">Naming</span><a class="self-link" href="#naming"></a></h3>
+   <h3 class="heading settled" data-level="3.4" id="naming"><span class="secno">3.4. </span><span class="content">Naming</span><a class="self-link" href="#naming"></a></h3>
    <ol>
     <li data-md>
      <p><code class="highlight"><c- n>scan</c-></code></p>
@@ -1868,7 +1866,7 @@ depending on the use case, according to <a data-link-type="biblio" href="#biblio
    </ol>
    <p>The name "parse" is a bit problematic because of ambiguity between format string
 parsing and input parsing.</p>
-   <p>"scan" as a name collides with new C++17 <code class="highlight"><c- o>&lt;</c-><c- n>numeric</c-><c- o>></c-></code> algorithms</p>
+   <p>"scan" as a name collides with some of the new C++17 <code class="highlight"><c- o>&lt;</c-><c- n>numeric</c-><c- o>></c-></code> algorithms:</p>
    <ul>
     <li data-md>
      <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>inclusive_scan</c-></code></p>
@@ -1879,7 +1877,8 @@ parsing and input parsing.</p>
     <li data-md>
      <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>transform_exclusive_scan</c-></code></p>
    </ul>
-   <p>"scan" is the name used by <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> and <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>, and is the authors' preferred name.</p>
+   <p>"scan" is the name used by <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> and <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>, and is the authors' preferred name,
+and would be consistent with existing <code class="highlight"><c- n>scanf</c-></code>.</p>
    <table>
     <tbody>
      <tr>

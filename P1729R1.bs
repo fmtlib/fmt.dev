@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Text Parsing
-Shortname: D1729
+Shortname: P1729
 Revision: 1
 !Audience: LEWGI
-Status: D
+Status: P
 Group: WG21
 URL: http://wg21.link/P1729R1
 Editor: Victor Zverovich, viz@fmt.dev
@@ -422,7 +422,7 @@ Problems with `std::scan` communicating partial successes by throwing:
     Also, the input needs to be reassigned in two different places:
     in the `try`-block in the case of a success, and in the `catch` on failure.
    
-An alternative would be to have an `expected` return type ([[P0323]]),
+An alternative would be to have an `expected`-like return type ([[P0323]]),
 except the success side should always be present, almost like:
 
 ```c++
@@ -463,15 +463,6 @@ We find the `scanf` approach to be superior, for the following reasons:
     have a measurable overhead compared to output parameters, at ~5-10%,
     depending on the use case, according to [[SCNLIB]] benchmarks.
 
-Regex support {#regex}
--------------
-
-**TODO**
-
-Frequently requested
-
-@Elias thinks this is a bad idea
-
 Naming {#naming}
 ------
 
@@ -482,14 +473,15 @@ Naming {#naming}
 The name "parse" is a bit problematic because of ambiguity between format string
 parsing and input parsing.
 
-"scan" as a name collides with new C++17 `<numeric>` algorithms
+"scan" as a name collides with some of the new C++17 `<numeric>` algorithms:
  
  * `std::inclusive_scan`
  * `std::exclusive_scan`
  * `std::transform_inclusive_scan`
  * `std::transform_exclusive_scan`
 
-"scan" is the name used by [[SCNLIB]] and [[FMT]], and is the authors' preferred name.
+"scan" is the name used by [[SCNLIB]] and [[FMT]], and is the authors' preferred name,
+and would be consistent with existing `scanf`.
 
 <table>
 <tr>
