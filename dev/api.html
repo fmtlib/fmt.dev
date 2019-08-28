@@ -854,21 +854,21 @@ which may do allocations.</p>
 <h3>Custom Formatting of Built-in Types<a class="headerlink" href="#custom-formatting-of-built-in-types" title="Permalink to this headline">¶</a></h3>
 <p>It is possible to change the way arguments are formatted by providing a
 custom argument formatter class:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">arg_formatter</span> <span class="o">=</span>
-  <span class="n">fmt</span><span class="o">::</span><span class="n">arg_formatter</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">back_insert_range</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">internal</span><span class="o">::</span><span class="n">buffer</span><span class="o">&gt;&gt;</span><span class="p">;</span>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="n">arg_formatter</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">arg_formatter</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">buffer_range</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">&gt;&gt;</span><span class="p">;</span>
 
 <span class="c1">// A custom argument formatter that formats negative integers as unsigned</span>
 <span class="c1">// with the ``x`` format specifier.</span>
 <span class="k">class</span> <span class="nc">custom_arg_formatter</span> <span class="o">:</span> <span class="k">public</span> <span class="n">arg_formatter</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
-  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">format_context</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">,</span>
-                       <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span> <span class="o">*</span><span class="n">spec</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">)</span>
-    <span class="o">:</span> <span class="n">arg_formatter</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="n">custom_arg_formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">format_context</span><span class="o">&amp;</span> <span class="n">ctx</span><span class="p">,</span>
+                       <span class="n">fmt</span><span class="o">::</span><span class="n">format_parse_context</span><span class="o">*</span> <span class="n">parse_ctx</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">,</span>
+                       <span class="n">fmt</span><span class="o">::</span><span class="n">format_specs</span><span class="o">*</span> <span class="n">spec</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">)</span>
+    <span class="o">:</span> <span class="n">arg_formatter</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">parse_ctx</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span> <span class="p">{}</span>
 
   <span class="k">using</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">();</span>
 
   <span class="k">auto</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">spec</span><span class="p">().</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="sc">&#39;x&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">specs</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">specs</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">type</span> <span class="o">==</span> <span class="sc">&#39;x&#39;</span><span class="p">)</span>
       <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">));</span> <span class="c1">// convert to unsigned and format</span>
     <span class="k">return</span> <span class="n">arg_formatter</span><span class="o">::</span><span class="k">operator</span><span class="p">()(</span><span class="n">value</span><span class="p">);</span>
   <span class="p">}</span>
