@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D1868R0: Clarifying width units in std::format</title>
+  <title>D1868R0: 🦄 width: clarifying units of width and precision in std::format</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmtlib.net/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="59d7366d3c479cb8dd488dc02273d78bcd95966e" name="document-revision">
+  <meta content="d36b3901d573c13be0677b03f33c603bf71a422a" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1439,15 +1439,17 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D1868R0<br>Clarifying width units in std::format</h1>
+   <h1 class="p-name no-ref" id="title">D1868R0<br>🦄 width: clarifying units of width and precision in std::format</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-09-18">2019-09-18</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="http://fmtlib.net/D1868R0.html">http://fmtlib.net/D1868R0.html</a>
-     <dt>Author:
+     <dt>Authors:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
+     <dd>
+      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:whatwasthataddress@gmail.com">Zach Laine</a>
      <dt>Audience:
      <dd>LEWG, SG16
      <dt>Project:
@@ -1465,12 +1467,12 @@ pre .property::before, pre .property::after {
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivating-example"><span class="secno">2</span> <span class="content">Motivating example</span></a>
+    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivating example</span></a>
     <li><a href="#locale"><span class="secno">3</span> <span class="content">Locale</span></a>
     <li><a href="#windows"><span class="secno">4</span> <span class="content">Windows</span></a>
     <li><a href="#precision"><span class="secno">5</span> <span class="content">Precision</span></a>
     <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
-    <li><a href="#why-not-code-units"><span class="secno">7</span> <span class="content">Why not code units?</span></a>
+    <li><a href="#nope"><span class="secno">7</span> <span class="content">Why not code units?</span></a>
     <li><a href="#limitations"><span class="secno">8</span> <span class="content">Limitations</span></a>
     <li><a href="#examples"><span class="secno">9</span> <span class="content">Examples</span></a>
     <li><a href="#implementation"><span class="secno">10</span> <span class="content">Implementation</span></a>
@@ -1490,7 +1492,7 @@ and precision which created an ambiguity for string arguments in variable-width
 encodings. This paper proposes fixing this shortcoming and specifying width and
 precision in a way that addresses the main use case, is locale-independent by
 default, and is consistent with the SG16 long-term direction.</p>
-   <h2 class="heading settled" data-level="2" id="motivating-example"><span class="secno">2. </span><span class="content">Motivating example</span><a class="self-link" href="#motivating-example"></a></h2>
+   <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivating example</span><a class="self-link" href="#motivation"></a></h2>
    <p>The main use case for width is to align text when displayed in a terminal.
 The motivating example is a columnar view in a typical command-line interface:</p>
    <p><img src="https://user-images.githubusercontent.com/576385/65177989-ae491a80-da0c-11e9-9d52-5895866487fc.png" width="100%"></p>
@@ -1537,7 +1539,7 @@ normally defaults to UTF-8.</p>
 argument types, a separate format specifier can be added to opt into
 locale-specific behavior for interoperability with legacy applications.</p>
    <h2 class="heading settled" data-level="4" id="windows"><span class="secno">4. </span><span class="content">Windows</span><a class="self-link" href="#windows"></a></h2>
-   <p>According to the Windows documentation (<a data-link-type="biblio" href="#biblio-wini18n">[WinI18N]</a>):</p>
+   <p>According to the Windows documentation (<a data-link-type="biblio" href="#biblio-wini18n">[WINI18N]</a>):</p>
    <blockquote>
     <p>Most applications written today handle character data primarily as Unicode,
 using the UTF-16 encoding.</p>
@@ -1550,7 +1552,7 @@ varied code pages and for ease of localization.</p>
    <p>Code pages are used primarily by legacy applications or those communicating with
 legacy applications such as older mail servers.</p>
    <p>Moreover, Windows API functions that work with code pages transcode inputs and
-call their Unicode counterparts, for example, <code class="highlight"><c- n>WriteConsoleA</c-></code> transcode the
+call their Unicode counterparts, for example, <code class="highlight"><c- n>WriteConsoleA</c-></code> transcodes the
 text in the passed buffer and calls <code class="highlight"><c- n>WriteConsoleW</c-></code>. This incurs performance
 penalty which we would like to be able to avoid.</p>
    <p>Since <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is a completely new API and therefore can only be used in
@@ -1569,9 +1571,9 @@ instead. The semantics of floating-point precision is also unrelated to storage.
 be measured in the same units.</p>
    <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>To address the main use case, we propose defining width and precision for a
-string as the number of column positions needed to display it in a terminal.
-POSIX defines the <code class="highlight"><c- n>wcswidth</c-></code> function that has the required semantics
-(<a data-link-type="biblio" href="#biblio-wcswidth">[wcswidth]</a>):</p>
+string in terms of the number of column positions needed to display it in a
+terminal. POSIX defines the <code class="highlight"><c- n>wcswidth</c-></code> function that has the required semantics
+(<a data-link-type="biblio" href="#biblio-wcswidth">[WCSWIDTH]</a>):</p>
    <blockquote>
     <p>The <code class="highlight"><c- n>wcswidth</c-><c- p>()</c-></code> function shall determine the number of column positions
 required for <code class="highlight"><c- n>n</c-></code> wide-character codes (or fewer than <code class="highlight"><c- n>n</c-></code> wide-character codes
@@ -1588,7 +1590,7 @@ seamless integration with I/O APIs that support Unicode.</p>
 grapheme clusters because the latter correspond to user-perceived characters
 (<a data-link-type="biblio" href="#biblio-uax29">[UAX29]</a>). Then the width should be adjusted to account for graphemes that
 take two column positions. This can be done by applying the algorithm from the
-Unicode implementation of <code class="highlight"><c- n>wcswidth</c-></code> by Markus Kuhn (<a data-link-type="biblio" href="#biblio-mgk25">[mgk25]</a>). Width
+Unicode implementation of <code class="highlight"><c- n>wcswidth</c-></code> by Markus Kuhn (<a data-link-type="biblio" href="#biblio-mgk25">[MGK25]</a>). Width
 computation can be done efficiently with a single pass over the input and,
 possibly, optimized for the case of no variable-width characters. It has zero
 overhead when no width is specified or when formatting non-string arguments.</p>
@@ -1596,19 +1598,22 @@ overhead when no width is specified or when formatting non-string arguments.</p>
 (<a data-link-type="biblio" href="#biblio-p1238">[P1238]</a>) goal of "Designing for where we want to be and how to get there"
 because it creates a clear path for the future <code class="highlight"><c- n>charN_t</c-></code> overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> to have the desired behavior and be consistent with the C++20
 formatting facility which currently supports <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>. It is based
-on existing APIs, namely <code class="highlight"><c- n>wcswidth</c-></code> which is a part of POSIX and has
+on an existing API, namely <code class="highlight"><c- n>wcswidth</c-></code> which is a part of POSIX, and has
 counterparts in multiple languages:</p>
    <ul>
     <li data-md>
-     <p>C: https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c (<a data-link-type="biblio" href="#biblio-mgk25">[mgk25]</a>)</p>
+     <p>C <code class="highlight"><c- n>wcwidth</c-></code> (<a data-link-type="biblio" href="#biblio-mgk25">[MGK25]</a>)</p>
     <li data-md>
-     <p>Python: https://github.com/jquast/wcwidth used by over 60,000 projects</p>
+     <p>Python <code class="highlight"><c- n>wcwidth</c-></code> (<a data-link-type="biblio" href="#biblio-wcwidth-py">[WCWIDTH-PY]</a>) used by over 60,000 projects on GitHub</p>
     <li data-md>
-     <p>JavaScript: https://github.com/mycoboco/wcwidth.js</p>
+     <p>Ruby <code class="highlight"><c- n>unicode</c-><c- o>-</c-><c- n>display_width</c-></code> (<a data-link-type="biblio" href="#biblio-udw">[UDW]</a>) used by over 170,000 projects on GitHub</p>
     <li data-md>
-     <p>Ruby: https://github.com/janlelis/unicode-display_width</p>
+     <p>JavaScript <code class="highlight"><c- n>wcwidth</c-><c- p>.</c-><c- n>js</c-></code> (<a data-link-type="biblio" href="#biblio-wcwidth-js">[WCWIDTH-JS]</a>)</p>
    </ul>
-   <h2 class="heading settled" data-level="7" id="why-not-code-units"><span class="secno">7. </span><span class="content">Why not code units?</span><a class="self-link" href="#why-not-code-units"></a></h2>
+   <p>Large number of projects using Ruby and Python packages that provide this
+functionality (and not other features) indicate that it is an important use
+case. All of these packages work exclusively with Unicode encodings.</p>
+   <h2 class="heading settled" data-level="7" id="nope"><span class="secno">7. </span><span class="content">Why not code units?</span><a class="self-link" href="#nope"></a></h2>
    <p>It might seem tempting at first to make width be measured in code units because
 it is simple and avoids the encoding question. However, it is not useful in
 addressing practical use cases. Also it is an evolutionary deadend because
@@ -1624,7 +1629,7 @@ malformed output. For example</p>
 <pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:.2}"</c-><c- p>,</c-> <c- s>"</c-><c- se>\x41\xCC\x81</c-><c- s>"</c-><c- p>);</c->
 </pre>
    <p>would result in <code class="highlight"><c- n>s</c-></code> containing <code class="highlight"><c- s>"</c-><c- se>\x41\xCC</c-><c- s>"</c-></code> if precision was to measured in
-code units which is clearly broken. I Python’s <code class="highlight"><c- n>str</c-><c- p>.</c-><c- n>format</c-></code> precision is
+code units which is clearly broken. In Python’s <code class="highlight"><c- n>str</c-><c- p>.</c-><c- n>format</c-></code> precision is
 measured in code points which prevents this issue.</p>
    <h2 class="heading settled" data-level="8" id="limitations"><span class="secno">8. </span><span class="content">Limitations</span><a class="self-link" href="#limitations"></a></h2>
    <p>Unlike terminals, GUI editors often use proportional or monospace fonts that
@@ -1665,6 +1670,7 @@ Possible use cases are aligning numbers, ASCII text, or adding code indentation:
     <c- p>{</c-><c- s>"</c-><c- se>\xe2\x81\xa4</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+2064 { INVISIBLE PLUS }"</c-><c- p>},</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xe7\x95\x8c</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+754C { CJK Unified Ideograph-754C }"</c-><c- p>},</c-> <c- c1>// 界</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xe3\x80\x89</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+3009 { RIGHT-POINTING ANGLE BRACKET }"</c-><c- p>},</c-> <c- c1>// 〉</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xf0\x9f\xa6\x84</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+1F921 { UNICORN FACE }"</c-><c- p>},</c-> <c- c1>// 🦄</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\x91\xa9\xe2\x80\x8d</c-><c- s>"</c->
      <c- s>"</c-><c- se>\xf0\x9f\x91\xa7\xe2\x80\x8d\xf0\x9f\x91\xa6</c-><c- s>"</c-><c- p>,</c->
      <c- s>"U+1F468 U+200D U+1F469 U+200D U+1F467 U+200D U+1F466 "</c->
@@ -1682,10 +1688,20 @@ Possible use cases are aligning numbers, ASCII text, or adding code indentation:
   <c- p>}</c->
 <c- p>}</c->
 </pre>
-   <p>Output on macOS with iTerm2:</p>
-   <p><img src="https://user-images.githubusercontent.com/576385/65178607-f583db00-da0d-11e9-8307-c3393bebcce5.png" width="100%"></p>
+   <p>Output on macOS Terminal:</p>
+   <p>TODO</p>
+   <p><img src="https://user-images.githubusercontent.com/576385/65207193-c4bf9800-da45-11e9-9ba9-f1f58a1794da.png" width="100%"></p>
    <p>Notice that the <code class="highlight"><c- n>printf</c-></code> output is completely misaligned because width is
 measured in code units.</p>
+   <p>Output on Windows with console codepage set to 65001 (UTF-8) and the active code
+page unchanged:</p>
+   <p><img src="https://user-images.githubusercontent.com/576385/65206716-3991d280-da44-11e9-93e2-8510929e2728.png" width="100%"></p>
+   <p>The Windows console doesn’t handle combining accents and complex emoji correctly
+which is unrelated to the question of width. We implemented a workaround for
+this platform although it’s not entirely necessary because if the output is
+meaningless, alignment won’t make it any better. The new Windows Terminal
+reportedly handles emoji correctly. Console bugs aside, <code class="highlight"><c- n>printf</c-></code> has
+the same issues on Windows as on macOS.</p>
    <p>TODO: show examples from different terminals and systems</p>
    <h2 class="heading settled" data-level="10" id="implementation"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
    <p>The proposal has been implemented in the {fmt} library and successfully tested
@@ -1835,8 +1851,14 @@ on a variety of platforms.</p>
    <dd><a href="https://docs.microsoft.com/en-us/windows/console/setconsoleoutputcp">Console Reference, SetConsoleOutputCP function</a>. URL: <a href="https://docs.microsoft.com/en-us/windows/console/setconsoleoutputcp">https://docs.microsoft.com/en-us/windows/console/setconsoleoutputcp</a>
    <dt id="biblio-uax29">[UAX29]
    <dd><a href="https://unicode.org/reports/tr29/">Unicode® Standard Annex #29: Unicode Text Segmentation</a>. URL: <a href="https://unicode.org/reports/tr29/">https://unicode.org/reports/tr29/</a>
+   <dt id="biblio-udw">[UDW]
+   <dd><a href="https://github.com/janlelis/unicode-display_width">unicode-display_width: Monospace Unicode character width in Ruby </a>. URL: <a href="https://github.com/janlelis/unicode-display_width">https://github.com/janlelis/unicode-display_width</a>
    <dt id="biblio-wcswidth">[WCSWIDTH]
    <dd><a href="https://pubs.opengroup.org/onlinepubs/009696799/functions/wcswidth.html">`wcswidth()`, The Open Group Base Specifications Issue 6 IEEE Std 1003.1, 2004 Edition</a>. URL: <a href="https://pubs.opengroup.org/onlinepubs/009696799/functions/wcswidth.html">https://pubs.opengroup.org/onlinepubs/009696799/functions/wcswidth.html</a>
-   <dt id="biblio-wini18n">[WinI18N]
+   <dt id="biblio-wcwidth-js">[WCWIDTH-JS]
+   <dd><a href="https://github.com/mycoboco/wcwidth.js">wcwidth.js: a javascript porting of C's wcwidth()</a>. URL: <a href="https://github.com/mycoboco/wcwidth.js">https://github.com/mycoboco/wcwidth.js</a>
+   <dt id="biblio-wcwidth-py">[WCWIDTH-PY]
+   <dd><a href="https://github.com/jquast/wcwidth">wcwidth: Python library that measures the width of unicode strings rendered to a terminal</a>. URL: <a href="https://github.com/jquast/wcwidth">https://github.com/jquast/wcwidth</a>
+   <dt id="biblio-wini18n">[WINI18N]
    <dd><a href="https://docs.microsoft.com/en-us/windows/win32/intl/code-pages">Windows documentation, Internationalization for Windows Applications, Code Pages</a>. URL: <a href="https://docs.microsoft.com/en-us/windows/win32/intl/code-pages">https://docs.microsoft.com/en-us/windows/win32/intl/code-pages</a>
   </dl>
