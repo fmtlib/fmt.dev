@@ -15,12 +15,17 @@ Date: 2019-09-18
 Markup Shorthands: markdown yes
 </pre>
 
+<p style="text-align: right">
+“We demand rigidly defined areas of doubt and uncertainty!” <br>
+― Douglas Adams
+</p>
+
 Introduction {#intro}
 ============
 
-A new text formatting facility ([[P0645]]) was adopted into the draft
-standard for C++20 in Cologne. Unfortunately it left unspecified units of width
-and precision which created an ambiguity for string arguments in variable-width
+A new text formatting facility ([[P0645]]) was adopted into the draft standard
+for C++20 in Cologne. Unfortunately it left unspecified units of width and
+precision which created an ambiguity for string arguments in variable-width
 encodings. This paper proposes fixing this shortcoming and specifying width and
 precision in a way that addresses the main use case, is locale-independent by
 default, and is consistent with the SG16 long-term direction.
@@ -28,14 +33,15 @@ default, and is consistent with the SG16 long-term direction.
 Motivating example {#motivation}
 ==================
 
-The main use case for width is to align text when displayed in a terminal.
-The motivating example is a columnar view in a typical command-line interface:
+To the best of our knowledge, the main use case for the width and precision
+format specifiers is to align text when displayed in a terminal. The motivating
+example is a columnar view in a typical command-line interface:
 
 <img width="100%"
-     src="https://user-images.githubusercontent.com/576385/65177989-ae491a80-da0c-11e9-9d52-5895866487fc.png" />
+     src="https://user-images.githubusercontent.com/576385/65346190-f7c27280-db90-11e9-9d26-769844de1972.png" />
 
 We would like to be able to produce similar output with the C++ 20 formatting
-facility using the most natural API (dynamic width):
+facility using the most natural API, namely dynamic width:
 
 ```c++
 // Prints names in num_cols columns of col_width width each.
@@ -49,26 +55,27 @@ void print_columns(const std::vector<std::string>& names,
 
 std::vector<std::string> names = {
   "Die Allgemeine Erklärung der Menschenrechte",
-  "Всеобщая декларация прав человека",
+  "『世界人権宣言』",
   "Universal Declaration of Human Rights",
-  "ΟΙΚΟΥΜΕΝΙΚΗ ΔΙΑΚΗΡΥΞΗ ΓΙΑ ΤΑ ΑΝΘΡΩΠΙΝΑ ΔΙΚΑΙΩΜΑΤΑ",
-  "世界人权宣言"
+  "Всеобщая декларация прав человека",
+  "世界人权宣言",
+  "ΟΙΚΟΥΜΕΝΙΚΗ ΔΙΑΚΗΡΥΞΗ ΓΙΑ ΤΑ ΑΝΘΡΩΠΙΝΑ ΔΙΚΑΙΩΜΑΤΑ"
 };
 
-print_columns(names, 2, 50);
+print_columns(names, 2, 60);
 ```
 
-Output:
+Desired output:
 
 <img width="100%"
-     src="https://user-images.githubusercontent.com/576385/65178240-2b748f80-da0d-11e9-9f48-c4e80f6e2a45.png" />
+     src="https://user-images.githubusercontent.com/576385/65346834-84216500-db92-11e9-8ecb-84b54920cfcf.png" />
 
 Locale {#locale}
 ======
 
-One of the main design features of the C++20 formatting facility is
-locale-independence by default with locale-aware formatting available as an
-opt-in via separate format specifiers. This has a important safety property
+One of the major design features of the C++20 formatting facility ([[P0645]]) is
+locale independence by default with locale-aware formatting available as an
+opt-in via separate format specifiers. This has an important safety property
 that the result of `formatted_size` by default does not depend on the global
 locale and a buffer allocated with this size can be passed safely to `format_to`
 even if the locale has been changed in the meantime, possibly from another
@@ -105,16 +112,17 @@ and
 Code pages are used primarily by legacy applications or those communicating with
 legacy applications such as older mail servers.
 
+<!--
 Moreover, Windows API functions that work with code pages transcode inputs and
 call their Unicode counterparts, for example, `WriteConsoleA` transcodes the
-text in the passed buffer and calls `WriteConsoleW`. This incurs performance
-penalty which we would like to be able to avoid.
+text in the passed buffer and calls `WriteConsoleW`. This can result in the loss
+of information when using legacy I/O APIs:
+-->
 
-<!-- TODO: how do we avoid overhead? -->
-
-Since `std::format` is a completely new API and therefore can only be used in
-the new code, we think that it should be consistent with the Windows guidelines
-and use Unicode by default on this platform. Additionally it should provide an
+Since `std::format` is a completely new API which is not a drop-in replacement
+for anything in the standard library today and therefore can only be used in the
+new code, we think that it should be consistent with the Windows guidelines and
+use Unicode by default on this platform. Additionally it should provide an
 opt-in mechanism to communicate with legacy applications.
 
 Precision {#precision}
@@ -122,11 +130,11 @@ Precision {#precision}
 
 Precision, when applied to a string argument, specifies how many characters will
 be used from the string. It can be used to truncate long strings in the columar
-output such as the example from the previous section. Because it works with a
-single argument and only for strings (floating point precision has a
-different semantics) it is not particularly useful for truncating output to
-satisfy storage requirements. `format_to_n` should be used for the latter
-instead. The semantics of floating-point precision is also unrelated to storage.
+output as in the motivating example shown earlier. Because it works with a
+single argument and only for some argument types it is not particularly useful
+for truncating output to satisfy storage requirements. `format_to_n` should be
+used for the latter instead. The semantics of floating-point precision is
+also unrelated to storage.
 
 Since precision and width address the same use case, we think that they should
 be measured in the same units.
@@ -134,17 +142,10 @@ be measured in the same units.
 Proposal {#proposal}
 ========
 
-<!--
-This also works with older systems that use non-Unicode encodings, for example
-on z/OS the native encoding can be EBCDIC. If there is no native encoding for
-some character type then the implementation is free to pick some other encoding,
-preferably the one that can be losslessly transcoded to/from the native one.
--->
-
 To address the main use case, we propose defining width and precision for a
-string in terms of the number of column positions needed to display it in a
-terminal. POSIX defines the `wcswidth` function that has the required semantics
-([[WCSWIDTH]]):
+string as the *display width*, i.e. in terms of the number of column positions
+needed to display it in a terminal. POSIX defines the `wcswidth` function that
+has the required semantics ([[WCSWIDTH]]):
 
 > The `wcswidth()` function shall determine the number of column positions
 > required for `n` wide-character codes (or fewer than `n` wide-character codes
@@ -154,19 +155,36 @@ terminal. POSIX defines the `wcswidth` function that has the required semantics
 To satisfy the locale-independence property we propose that for the purposes
 of width computation the default should be Unicode on system that support
 display of Unicode text in a terminal or implementation-defined otherwise.
-For portability reasons, on Unicode-capable systems both `char` and `wchar_t`
-strings should use Unicode encodings (e.g. UTF-8 and UTF-16 respectively). This
-will enable transcoding at the system API boundaries (Unicode sandwitch) and
-seamless integration with I/O APIs that support Unicode.
+In particular this allows using EBCDIC on z/OS and ASCII on resource-constrained
+embedded systems that may not want to provide even minimal Unicode handling
+capabilities.
+On Unicode-capable systems both `char` and `wchar_t` strings should use Unicode
+encodings (e.g. UTF-8 and UTF-16 respectively) by default. This will enable
+portable code with optional transcoding at the system API boundaries (Unicode
+sandwich) and seamless integration with APIs that support Unicode such as
+`WriteConsoleW` on Windows without data loss.
 
 For Unicode, the first step in computing width is to break the string into
 grapheme clusters because the latter correspond to user-perceived characters
 ([[UAX29]]). Then the width should be adjusted to account for graphemes that
-take two column positions. This can be done by applying the algorithm from the
-Unicode implementation of `wcswidth` by Markus Kuhn ([[MGK25]]). Width
-computation can be done efficiently with a single pass over the input and,
-possibly, optimized for the case of no variable-width characters. It has zero
-overhead when no width is specified or when formatting non-string arguments.
+take two column positions as it is done, for example, in the Unicode
+implementation of `wcswidth` by Markus Kuhn ([[MGK25]]). Non-printable
+characters such as control characters do not contribute to width and it should
+be a user's responsibility to ensure that the input string does not contain
+leading combining characters that may compose during concatenation.
+
+Width computation can be done efficiently with a single pass over the input and
+optimized for the case of no variable-width characters. It has zero overhead
+when no width is specified or when formatting non-string arguments.
+
+We also propose adding a new format specifier in C++23 for computing display
+width of a string argument based on the locale's encoding, for example:
+
+```c++
+std::locale::global(std::locale("ru_RU.KOI8-R"));
+std::string message = std::format("{:6ls}", "\xd4\xc5\xd3\xd4"); // "тест" in KOI8-R
+// message == "\xd4\xc5\xd3\xd4  " ("тест  " in KOI8-R)
+```
 
 We think that the current proposal is in line with SG16: Unicode Direction
 ([[P1238]]) goal of "Designing for where we want to be and how to get there"
@@ -174,16 +192,25 @@ because it creates a clear path for the future `charN_t` overloads of
 `std::format` to have the desired behavior and be consistent with the C++20
 formatting facility which currently supports `char` and `wchar_t`. It is based
 on an existing API, namely `wcswidth` which is a part of POSIX, and has
-counterparts in multiple languages:
+counterparts in multiple languages, for example:
 
 * C `wcwidth` ([[MGK25]])
-* Python `wcwidth` ([[WCWIDTH-PY]]) used by over 60,000 projects on GitHub
-* Ruby `unicode-display_width` ([[UDW]]) used by over 170,000 projects on GitHub
+* Go `go-runewidth` ([[RUNEWIDTH]])
 * JavaScript `wcwidth.js` ([[WCWIDTH-JS]])
+* Julia `Base.UTF8proc.charwidth`, `Base.strwidth` ([[CHARWIDTH]]) - a part of
+    the standard library
+* Perl: `Text::CharWidth` ([[TCW]])
+* Python `wcwidth` ([[WCWIDTH-PY]]) - used by over 60,000 projects according to
+    the GitHub dependency graph
+* Ruby `unicode-display_width` ([[UDW]]) - used by over 170,000 projects
+    according to the GitHub dependency graph
 
-Large number of projects using Ruby and Python packages that provide this
-functionality (and not other features) indicate that it is an important use
-case. All of these packages work exclusively with Unicode encodings.
+GitHub code search returns over 500,000 results for "wcwidth" and 180,000
+results for "wcswidth".
+
+The number of projects providing this facility together with large usage numbers
+indicate that it is an imporant use case. All of the above packages work
+exclusively with Unicode.
 
 Why not code units? {#nope}
 ===================
@@ -197,19 +224,19 @@ confusing difference in behavior.
 One might argue that if we do the latter it may push users to the `charN_t`
 overloads but intentionally designing an inferior API and creating inconvenience
 for users for the goal that may never realise seems wrong.
-Measuring width in code units in {fmt} was surprising to some users
+Measuring width in code units in the fmt library was surprising to some users
 resulting in bug reports and eventually switching to higher-level units.
 
 Code units are even less adequate for precision, because they can result in
-malformed output. For example
+invalid output. For example
 
-```
-auto s = std::format("{:.2}", "\x41\xCC\x81");
+```c++
+std::string s = std::format("{:.2}", "\x41\xCC\x81");
 ```
 
-would result in `s` containing `"\x41\xCC"` if precision was to measured in
-code units which is clearly broken. In Python's `str.format` precision is
-measured in code points which prevents this issue.
+would result in `s` containing `"\x41\xCC"` if precision was measured in code
+units which is clearly broken. In Python's `str.format` precision is measured in
+code points which prevents this issue.
 
 Limitations {#limitations}
 ===========
@@ -217,7 +244,7 @@ Limitations {#limitations}
 Unlike terminals, GUI editors often use proportional or monospace fonts that
 treat some characters such that their width is not an integer multiple of the
 other. Therefore width, regardless of how it is defined, is inherently limited
-there. However, it can still be useful if the argument domains are restricted.
+there. However, it can still be useful if the input domain is restricted.
 Possible use cases are aligning numbers, ASCII text, or adding code indentation:
 
 ```c++
@@ -226,6 +253,8 @@ void print_indented(int indent, std::string_view text) {
   std::cout << fmt::format("{0:>{1}}{2}\n", "", indent, text);
 }
 ```
+
+<!-- TODO: https://github.com/JuliaLang/julia/issues/3721 -->
 
 Examples {#examples}
 ========
@@ -302,14 +331,14 @@ the same issues on Windows as on macOS.
 
 TODO: show examples from different terminals and systems
 
-Implementation {#implementation}
-==============
+Implementation 🕴️{#implementation}
+================
 
-The proposal has been implemented in the {fmt} library and successfully tested
+The proposal has been implemented in the fmt library and successfully tested
 on a variety of platforms.
 
-Wording {#wording}
-=======
+Wording 🐉 {#wording}
+=========
 
 TODO
 
@@ -337,9 +366,21 @@ TODO
     "title": "wcwidth.js: a javascript porting of C's wcwidth()",
     "href": "https://github.com/mycoboco/wcwidth.js"
   },
+  "CHARWIDTH": {
+    "title": "Julia Documentation, Strings, Base.UTF8proc.charwidth",
+    "href": "https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth"
+  },
+  "RUNEWIDTH": {
+    "title": "wcwidth for golang",
+    "href": "https://github.com/mattn/go-runewidth"
+  },
   "UDW": {
     "title": "unicode-display_width: Monospace Unicode character width in Ruby ",
     "href": "https://github.com/janlelis/unicode-display_width"
+  },
+  "TCW": {
+    "title": "Text::CharWidth - Get number of occupied columns of a string on terminal",
+    "href": "https://metacpan.org/pod/Text::CharWidth"
   },
   "UAX29": {
     "title": "Unicode® Standard Annex #29: Unicode Text Segmentation",
