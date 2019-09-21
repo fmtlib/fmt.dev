@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmtlib.net/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="147f0ec35b291ee717f861d8ff9006f0ea216481" name="document-revision">
+  <meta content="6ca76a359fd0f8d922d368191c71ce2e17a8c7e7" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1492,7 +1492,7 @@ for C++20 in Cologne. Unfortunately it left unspecified units of width and
 precision which created an ambiguity for string arguments in variable-width
 encodings. This paper proposes fixing this shortcoming and specifying width and
 precision in a way that addresses the main use case, is locale-independent by
-default, and is consistent with the SG16 long-term direction.</p>
+default, and is consistent with the SG16’s long-term direction.</p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivating example</span><a class="self-link" href="#motivation"></a></h2>
    <p>To the best of our knowledge, the main use case for the width and precision
 format specifiers is to align text when displayed in a terminal. The motivating
@@ -1522,6 +1522,8 @@ facility using the most natural API, namely dynamic width:</p>
 </pre>
    <p>Desired output:</p>
    <p><img src="https://user-images.githubusercontent.com/576385/65346834-84216500-db92-11e9-8ecb-84b54920cfcf.png" width="100%"></p>
+   <p>(Note that the character <code class="highlight"><c- sc>'『'</c-></code> has spacing in front and is aligned correctly
+both in the code and in the output.)</p>
    <h2 class="heading settled" data-level="3" id="locale"><span class="secno">3. </span><span class="content">Locale</span><a class="self-link" href="#locale"></a></h2>
    <p>One of the major design features of the C++20 formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) is
 locale independence by default with locale-aware formatting available as an
@@ -1624,7 +1626,7 @@ counterparts in multiple languages, for example:</p>
      <p>Julia <code class="highlight"><c- n>Base</c-><c- p>.</c-><c- n>UTF8proc</c-><c- p>.</c-><c- n>charwidth</c-></code>, <code class="highlight"><c- n>Base</c-><c- p>.</c-><c- n>strwidth</c-></code> (<a data-link-type="biblio" href="#biblio-charwidth">[CHARWIDTH]</a>) - a part of
 the standard library</p>
     <li data-md>
-     <p>Perl: <code class="highlight"><c- n>Text</c-><c- o>::</c-><c- n>CharWidth</c-></code> (<a data-link-type="biblio" href="#biblio-tcw">[TCW]</a>)</p>
+     <p>Perl <code class="highlight"><c- n>Text</c-><c- o>::</c-><c- n>CharWidth</c-></code> (<a data-link-type="biblio" href="#biblio-tcw">[TCW]</a>)</p>
     <li data-md>
      <p>Python <code class="highlight"><c- n>wcwidth</c-></code> (<a data-link-type="biblio" href="#biblio-wcwidth-py">[WCWIDTH-PY]</a>) - used by over 60,000 projects according to
 the GitHub dependency graph</p>
@@ -1637,6 +1639,17 @@ results for "wcswidth".</p>
    <p>The number of projects providing this facility together with large usage numbers
 indicate that it is an imporant use case. All of the above packages work
 exclusively with Unicode.</p>
+   <p>There is a spectrum of solutions to the problem of estimating display width,
+from always wrong (return 42 times the number of code units) and almost always
+wrong (code units and <code class="highlight"><c- n>printf</c-></code>) to always correct (model the terminal’s logic of
+width computation). We would like to take a pragmatic approach leaning towards
+the correct side of the spectrum but without introducing too much complexity.
+This can be accomplished by defining ranges of characters that are guaranteed to
+be handled correctly with an option of refining the definition as the technology
+matures and Unicode handling bugs observed today are fixed. With our approach
+a program can produce high-quality output which is always correct by escaping
+characters for which width computation is not supported and is readable and
+correct for many common cases.</p>
    <h2 class="heading settled" data-level="7" id="nope"><span class="secno">7. </span><span class="content">Why not code units?</span><a class="self-link" href="#nope"></a></h2>
    <p>It might seem tempting at first to make width be measured in code units because
 it is simple and avoids the encoding question. However, it is not useful in
@@ -1721,11 +1734,14 @@ measured in code units.</p>
 page unchanged:</p>
    <p><img src="https://user-images.githubusercontent.com/576385/65206716-3991d280-da44-11e9-93e2-8510929e2728.png" width="100%"></p>
    <p>The Windows console doesn’t handle combining accents and complex emoji correctly
-which is unrelated to the question of width. We implemented a workaround for
-this platform although it’s not entirely necessary because if the output is
-meaningless, alignment won’t make it any better. The new Windows Terminal
-reportedly handles emoji correctly. Console bugs aside, <code class="highlight"><c- n>printf</c-></code> has
-the same issues on Windows as on macOS.</p>
+which is unrelated to the question of width. Although it is possible to
+implement a workaround for this platform we think that it is unnecessary. If the
+output is incorrect it is reasonable to expect the alignment to be incorrect as
+well. The new Windows Terminal reportedly handles emoji correctly. Console bugs
+aside, <code class="highlight"><c- n>printf</c-></code> has the same issues on Windows as on macOS.</p>
+   <p>Also notice that although Windows Console is unable to display CJK Unified
+Ideograph-754C, the width is still computed correctly and a placeholder
+character is displayed.</p>
    <p>TODO: show examples from different terminals and systems</p>
    <h2 class="heading settled" data-level="10" id="implementation"><span class="secno">10. </span><span class="content">Implementation 🕴️</span><a class="self-link" href="#implementation"></a></h2>
    <p>The proposal has been implemented in the fmt library and successfully tested

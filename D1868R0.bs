@@ -28,7 +28,7 @@ for C++20 in Cologne. Unfortunately it left unspecified units of width and
 precision which created an ambiguity for string arguments in variable-width
 encodings. This paper proposes fixing this shortcoming and specifying width and
 precision in a way that addresses the main use case, is locale-independent by
-default, and is consistent with the SG16 long-term direction.
+default, and is consistent with the SG16's long-term direction.
 
 Motivating example {#motivation}
 ==================
@@ -69,6 +69,9 @@ Desired output:
 
 <img width="100%"
      src="https://user-images.githubusercontent.com/576385/65346834-84216500-db92-11e9-8ecb-84b54920cfcf.png" />
+
+(Note that spacing in front of `'『'` is part of the character and it is aligned
+correctly both in the code and in the output.)
 
 Locale {#locale}
 ======
@@ -199,7 +202,7 @@ counterparts in multiple languages, for example:
 * JavaScript `wcwidth.js` ([[WCWIDTH-JS]])
 * Julia `Base.UTF8proc.charwidth`, `Base.strwidth` ([[CHARWIDTH]]) - a part of
     the standard library
-* Perl: `Text::CharWidth` ([[TCW]])
+* Perl `Text::CharWidth` ([[TCW]])
 * Python `wcwidth` ([[WCWIDTH-PY]]) - used by over 60,000 projects according to
     the GitHub dependency graph
 * Ruby `unicode-display_width` ([[UDW]]) - used by over 170,000 projects
@@ -211,6 +214,18 @@ results for "wcswidth".
 The number of projects providing this facility together with large usage numbers
 indicate that it is an imporant use case. All of the above packages work
 exclusively with Unicode.
+
+There is a spectrum of solutions to the problem of estimating display width,
+from always wrong (return 42 times the number of code units) and almost always
+wrong (code units and `printf`) to always correct (model the terminal's logic of
+width computation). We would like to take a pragmatic approach leaning towards
+the correct side of the spectrum but without introducing too much complexity.
+This can be accomplished by defining ranges of characters that are guaranteed to
+be handled correctly with an option of refining the definition as the technology
+matures and Unicode handling bugs observed today are fixed. With our approach
+a program can produce high-quality output which is always correct by escaping
+characters for which width computation is not supported and is readable and
+correct for many common cases.
 
 Why not code units? {#nope}
 ===================
@@ -323,11 +338,15 @@ page unchanged:
      src="https://user-images.githubusercontent.com/576385/65206716-3991d280-da44-11e9-93e2-8510929e2728.png" />
 
 The Windows console doesn't handle combining accents and complex emoji correctly
-which is unrelated to the question of width. We implemented a workaround for
-this platform although it's not entirely necessary because if the output is
-meaningless, alignment won't make it any better. The new Windows Terminal
-reportedly handles emoji correctly. Console bugs aside, `printf` has
-the same issues on Windows as on macOS.
+which is unrelated to the question of width. Although it is possible to
+implement a workaround for this platform we think that it is unnecessary. If the
+output is incorrect it is reasonable to expect the alignment to be incorrect as
+well. The new Windows Terminal reportedly handles emoji correctly. Console bugs
+aside, `printf` has the same issues on Windows as on macOS.
+
+Also notice that although Windows Console is unable to display CJK Unified
+Ideograph-754C, the width is still computed correctly and a placeholder
+character is displayed.
 
 TODO: show examples from different terminals and systems
 
