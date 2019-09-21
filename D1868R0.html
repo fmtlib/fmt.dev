@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmtlib.net/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6ca76a359fd0f8d922d368191c71ce2e17a8c7e7" name="document-revision">
+  <meta content="8212a4ea55e1ccd2dd6fd041813beddbc61ff5c5" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1522,8 +1522,8 @@ facility using the most natural API, namely dynamic width:</p>
 </pre>
    <p>Desired output:</p>
    <p><img src="https://user-images.githubusercontent.com/576385/65346834-84216500-db92-11e9-8ecb-84b54920cfcf.png" width="100%"></p>
-   <p>(Note that the character <code class="highlight"><c- sc>'『'</c-></code> has spacing in front and is aligned correctly
-both in the code and in the output.)</p>
+   <p>(Note that spacing in front of <code class="highlight"><c- sc>'『'</c-></code> is part of the character and it is aligned
+correctly both in the code and in the output.)</p>
    <h2 class="heading settled" data-level="3" id="locale"><span class="secno">3. </span><span class="content">Locale</span><a class="self-link" href="#locale"></a></h2>
    <p>One of the major design features of the C++20 formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) is
 locale independence by default with locale-aware formatting available as an
@@ -1648,11 +1648,14 @@ This can be accomplished by defining ranges of characters that are guaranteed to
 be handled correctly with an option of refining the definition as the technology
 matures and Unicode handling bugs observed today are fixed. With our approach
 a program can produce high-quality output which is always correct by escaping
-characters for which width computation is not supported and is readable and
-correct for many common cases.</p>
+characters for which width computation is not supported and is readable for
+many common cases.</p>
+   <p>Dangling combining marks, i.e. combining marks (Unicode category Mn or Mc) that
+start a grapheme cluster, are not supported. Each unsupported grapheme cluster
+is counted as one width unit.</p>
    <h2 class="heading settled" data-level="7" id="nope"><span class="secno">7. </span><span class="content">Why not code units?</span><a class="self-link" href="#nope"></a></h2>
    <p>It might seem tempting at first to make width be measured in code units because
-it is simple and avoids the encoding question. However, it is not useful in
+it is simple and avoids the encoding question. However, it is not very useful in
 addressing practical use cases. Also it is an evolutionary deadend because
 standardizing code units for <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> overloads by default would
 create an incentive for doing the same in <code class="highlight"><c- n>charN_t</c-></code> overloads or introduce a
@@ -1668,6 +1671,30 @@ invalid output. For example</p>
    <p>would result in <code class="highlight"><c- n>s</c-></code> containing <code class="highlight"><c- s>"</c-><c- se>\x41\xCC</c-><c- s>"</c-></code> if precision was measured in code
 units which is clearly broken. In Python’s <code class="highlight"><c- n>str</c-><c- p>.</c-><c- n>format</c-></code> precision is measured in
 code points which prevents this issue.</p>
+   <p><code class="highlight"><c- n>printf</c-></code>, which works with code units, can only handle basic Latin in UTF-8, so
+even formatting of common English words containing accents is problematic.
+For example:</p>
+<pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"%10s - %s</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"bistro"</c-><c- p>,</c-> <c- s>"a small or unpretentious restaurant"</c-><c- p>);</c->
+<c- n>printf</c-><c- p>(</c-><c- s>"%10s - %s</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"café"</c-><c- p>,</c->
+       <c- s>"a usually small and informal establishment serving various refreshments"</c-><c- p>);</c->
+</pre>
+   <p>prints</p>
+<pre class="language-text highlight">    bistro - a small or unpretentious restaurant
+     café - a usually small and informal establishment serving various refreshments
+</pre>
+   <p>or</p>
+<pre class="language-text highlight">    bistro - a small or unpretentious restaurant
+    café - a usually small and informal establishment serving various refreshments
+</pre>
+   <p>depending on how é is represented.</p>
+   <p>If we want to truncate the output</p>
+<pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"%.4s...</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"bistro"</c-><c- p>);</c->
+<c- n>printf</c-><c- p>(</c-><c- s>"%.4s...</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"café"</c-><c- p>);</c->
+</pre>
+   <p>it can be even worse:</p>
+<pre class="language-text highlight">bist...
+caf&lt;C3>...
+</pre>
    <h2 class="heading settled" data-level="8" id="limitations"><span class="secno">8. </span><span class="content">Limitations</span><a class="self-link" href="#limitations"></a></h2>
    <p>Unlike terminals, GUI editors often use proportional or monospace fonts that
 treat some characters such that their width is not an integer multiple of the
@@ -1744,8 +1771,95 @@ Ideograph-754C, the width is still computed correctly and a placeholder
 character is displayed.</p>
    <p>TODO: show examples from different terminals and systems</p>
    <h2 class="heading settled" data-level="10" id="implementation"><span class="secno">10. </span><span class="content">Implementation 🕴️</span><a class="self-link" href="#implementation"></a></h2>
-   <p>The proposal has been implemented in the fmt library and successfully tested
-on a variety of platforms.</p>
+   <p>The proposal was implemented in the fmt library and successfully tested on a
+variety of platforms.</p>
+   <p>We tested our implementation on macOS Terminal Version 2.9.5 (421.2),
+Windows Console Version 10.0.17763.737 and verified that the display width is
+consistent for at least the following Unicode blocks according to our definition
+of width:</p>
+   <table>
+    <thead>
+     <tr>
+      <td><strong>Block range</strong>
+      <td><strong>Block name</strong> 
+    <tbody>
+     <tr>
+      <td>U+0000..U+007F
+      <td>Basic Latin 
+     <tr>
+      <td>U+0080..U+00FF
+      <td>Latin-1 Supplement 
+     <tr>
+      <td>U+0100..U+017F
+      <td>Latin Extended-A 
+     <tr>
+      <td>U+0180..U+024F
+      <td>Latin Extended-B 
+     <tr>
+      <td>U+0250..U+02AF
+      <td>IPA Extensions 
+     <tr>
+      <td>U+02B0..U+02FF
+      <td>Spacing Modifier Letters 
+     <tr>
+      <td>U+0300..U+036F
+      <td>Combining Diacritical Marks 
+     <tr>
+      <td>U+0370..U+03FF
+      <td>Greek and Coptic 
+     <tr>
+      <td>U+0400..U+04FF
+      <td>Cyrillic 
+     <tr>
+      <td>U+0500..U+052F
+      <td>Cyrillic Supplement 
+     <tr>
+      <td>U+0530..U+058F
+      <td>Armenian 
+     <tr>
+      <td>U+0590..U+05FF
+      <td>Hebrew 
+     <tr>
+      <td>U+0600..U+06FF
+      <td>Arabic 
+     <tr>
+      <td>U+0700..U+074F
+      <td>Syriac 
+     <tr>
+      <td>U+0750..U+077F
+      <td>Arabic Supplement 
+     <tr>
+      <td>U+0780..U+07BF
+      <td>Thaana 
+     <tr>
+      <td>U+07C0..U+07FF
+      <td>NKo 
+     <tr>
+      <td>U+0800..U+083F
+      <td>Samaritan 
+     <tr>
+      <td>U+0840..U+085F
+      <td>Mandaic 
+     <tr>
+      <td>U+0860..U+086F
+      <td>Syriac Supplement 
+     <tr>
+      <td>U+08A0..U+08FF
+      <td>Arabic Extended-A 
+     <tr>
+      <td>U+0900..U+097F
+      <td>Devanagari 
+     <tr>
+      <td>U+0980..U+09FF
+      <td>Bengali 
+     <tr>
+      <td>U+0A00..U+0A7F
+      <td>Gurmukhi 
+   </table>
+   <p>which includes 5 out of top 10 writing scripts ranked by active usage.
+https://en.wikipedia.org/wiki/List_of_writing_systems#List_of_writing_scripts_by_adoption
+For comparison, <code class="highlight"><c- n>printf</c-></code> only supports a small subset of one writing script,
+Latin.</p>
    <h2 class="heading settled" data-level="11" id="wording"><span class="secno">11. </span><span class="content">Wording 🐉</span><a class="self-link" href="#wording"></a></h2>
    <p>TODO</p>
   </main>

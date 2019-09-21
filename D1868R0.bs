@@ -176,6 +176,8 @@ characters such as control characters do not contribute to width and it should
 be a user's responsibility to ensure that the input string does not contain
 leading combining characters that may compose during concatenation.
 
+<!-- Control (Cc), format (Cf) categories - non printable -->
+
 Width computation can be done efficiently with a single pass over the input and
 optimized for the case of no variable-width characters. It has zero overhead
 when no width is specified or when formatting non-string arguments.
@@ -224,14 +226,18 @@ This can be accomplished by defining ranges of characters that are guaranteed to
 be handled correctly with an option of refining the definition as the technology
 matures and Unicode handling bugs observed today are fixed. With our approach
 a program can produce high-quality output which is always correct by escaping
-characters for which width computation is not supported and is readable and
-correct for many common cases.
+characters for which width computation is not supported and is readable for
+many common cases.
+
+Dangling combining marks, i.e. combining marks (Unicode category Mn or Mc) that
+start a grapheme cluster, are not supported. Each unsupported grapheme cluster
+is counted as one width unit.
 
 Why not code units? {#nope}
 ===================
 
 It might seem tempting at first to make width be measured in code units because
-it is simple and avoids the encoding question. However, it is not useful in
+it is simple and avoids the encoding question. However, it is not very useful in
 addressing practical use cases. Also it is an evolutionary deadend because
 standardizing code units for `char` and `wchar_t` overloads by default would
 create an incentive for doing the same in `charN_t` overloads or introduce a
@@ -252,6 +258,46 @@ std::string s = std::format("{:.2}", "\x41\xCC\x81");
 would result in `s` containing `"\x41\xCC"` if precision was measured in code
 units which is clearly broken. In Python's `str.format` precision is measured in
 code points which prevents this issue.
+
+`printf`, which works with code units, can only handle basic Latin in UTF-8, so
+even formatting of common English words containing accents is problematic.
+For example:
+
+```c++
+printf("%10s - %s\n", "bistro", "a small or unpretentious restaurant");
+printf("%10s - %s\n", "café",
+       "a usually small and informal establishment serving various refreshments");
+```
+
+prints
+
+```text
+    bistro - a small or unpretentious restaurant
+     café - a usually small and informal establishment serving various refreshments
+```
+
+or
+
+```text
+    bistro - a small or unpretentious restaurant
+    café - a usually small and informal establishment serving various refreshments
+```
+
+depending on how é is represented.
+
+If we want to truncate the output
+
+```c++
+printf("%.4s...\n", "bistro");
+printf("%.4s...\n", "café");
+```
+
+it can be even worse:
+
+```text
+bist...
+caf<C3>...
+```
 
 Limitations {#limitations}
 ===========
@@ -353,8 +399,47 @@ TODO: show examples from different terminals and systems
 Implementation 🕴️{#implementation}
 ================
 
-The proposal has been implemented in the fmt library and successfully tested
-on a variety of platforms.
+The proposal was implemented in the fmt library and successfully tested on a
+variety of platforms.
+
+We tested our implementation on macOS Terminal Version 2.9.5 (421.2),
+Windows Console Version 10.0.17763.737 and verified that the display width is
+consistent for at least the following Unicode blocks according to our definition
+of width:
+
+<table>
+<thead><tr><td>**Block range**<td>**Block name**
+</thead>
+<tr><td>U+0000..U+007F<td>Basic Latin
+<tr><td>U+0080..U+00FF<td>Latin-1 Supplement
+<tr><td>U+0100..U+017F<td>Latin Extended-A
+<tr><td>U+0180..U+024F<td>Latin Extended-B
+<tr><td>U+0250..U+02AF<td>IPA Extensions
+<tr><td>U+02B0..U+02FF<td>Spacing Modifier Letters
+<tr><td>U+0300..U+036F<td>Combining Diacritical Marks
+<tr><td>U+0370..U+03FF<td>Greek and Coptic
+<tr><td>U+0400..U+04FF<td>Cyrillic
+<tr><td>U+0500..U+052F<td>Cyrillic Supplement
+<tr><td>U+0530..U+058F<td>Armenian
+<tr><td>U+0590..U+05FF<td>Hebrew
+<tr><td>U+0600..U+06FF<td>Arabic
+<tr><td>U+0700..U+074F<td>Syriac
+<tr><td>U+0750..U+077F<td>Arabic Supplement
+<tr><td>U+0780..U+07BF<td>Thaana
+<tr><td>U+07C0..U+07FF<td>NKo
+<tr><td>U+0800..U+083F<td>Samaritan
+<tr><td>U+0840..U+085F<td>Mandaic
+<tr><td>U+0860..U+086F<td>Syriac Supplement
+<tr><td>U+08A0..U+08FF<td>Arabic Extended-A
+<tr><td>U+0900..U+097F<td>Devanagari
+<tr><td>U+0980..U+09FF<td>Bengali
+<tr><td>U+0A00..U+0A7F<td>Gurmukhi
+</table>
+
+which includes 5 out of top 10 writing scripts ranked by active usage.
+https://en.wikipedia.org/wiki/List_of_writing_systems#List_of_writing_scripts_by_adoption
+For comparison, `printf` only supports a small subset of one writing script,
+Latin.
 
 Wording 🐉 {#wording}
 =========
