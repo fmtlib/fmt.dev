@@ -86,7 +86,7 @@ correctly both in the code and in the output.)
 Prior art {#art}
 =========
 
-Display width is a well-establish concept. In particular, POSIX defines the
+Display width is a well-established concept. In particular, POSIX defines the
 `wcswidth` function ([[WCSWIDTH]]) that has the required semantics:
 
 > The `wcswidth()` function shall determine the number of column positions
@@ -112,7 +112,7 @@ GitHub code search returns over 500,000 results for "wcwidth" and 180,000
 results for "wcswidth".
 
 The number of implementations of this facility together with large usage numbers
-indicate that it is an imporant use case. All of the above implementations work
+indicate that it is an important use case. All of the above implementations work
 exclusively with Unicode.
 
 Locale {#locale}
@@ -219,8 +219,8 @@ Using a fixed system encoding is completely safe because formatting functions
 don't do any transcoding. So the worst thing that can happen is that the display
 width will be estimated incorrectly leading to misaligned text which is what
 already happens when you pass a variable-width string to `printf`. This is also
-not novel, for example `std::filesystem` also acknowledges existence of system
-dependent encodings:
+not novel, for example `std::filesystem` also acknowledges the existence of
+system dependent encodings:
 
 > The native encoding of an ordinary character string is the operating system
 > dependent current encoding for pathnames.
@@ -234,12 +234,6 @@ characters such as control characters do not contribute to width and it should
 be a user's responsibility to ensure that the input string does not contain
 such characters as well as leading combining characters and modifier letters
 that may compose after concatenation.
-
-<!-- Control (Cc), format (Cf) categories - non printable
-    {"\xe2\x80\x8b", "U+200B { ZERO WIDTH SPACE }"},
-    {"\xe2\x81\xa3", "U+2063 { INVISIBLE SEPARATOR }"},
-    {"\xe2\x81\xa4", "U+2064 { INVISIBLE PLUS }"},
--->
 
 Width estimation can be done efficiently with a single pass over the input and
 optimized for the case of no variable-width characters. It has zero overhead
@@ -445,7 +439,7 @@ Implementation {#implementation}
 
 The proposal is implemented in the fmt library, successfully tested on a
 variety of platforms, and will become the default for both `char` and `wchar_t`
-strings since the results showed great improvent in width estimation compared
+strings since the results showed great improvement in width estimation compared
 to using code units and code points. The implementation is very simple and
 required only integration of an existing grapheme cluster break and `wcswidth`
 implementations which was done in less than a day.
@@ -491,11 +485,11 @@ width in `printf` is only able to handle a small subset of one writing script,
 Latin. More importantly, our approach permits refining the definition in the
 future by declaring support for more blocks if there is interest in doing so.
 It will mostly require researching the status of Unicode support on terminals
-and minimial or no changes to the implementation. 
+and minimal or no changes to the implementation. 
 
 Additionally we looked at the Unicode block U+1F300..U+1F5FF Miscellaneous
 Symbols and Pictographs. Support for code points in this block varies, for
-example, in the Windows console none of them were dislayed correctly, with or
+example, in the Windows console none of them were displayed correctly, with or
 without width. In macOS Terminal most of the symbols had width 2 with a few
 exceptions. Therefore we recommend not declaring any support for this block and
 using the default of 2. This will have reasonable behavior on systems that
@@ -533,6 +527,11 @@ Unicode® Standard Annex #29 Unicode Text Segmentation.
 [ *Note:* Display width computation is subject to change. — end note ]
 
 <!-- TODO: more details about Unicode and non-Unicode case, control, combining etc. -->
+<!-- TODO Control (Cc), format (Cf) categories - non printable
+    {"\xe2\x80\x8b", "U+200B { ZERO WIDTH SPACE }"},
+    {"\xe2\x81\xa3", "U+2063 { INVISIBLE SEPARATOR }"},
+    {"\xe2\x81\xa4", "U+2064 { INVISIBLE PLUS }"},
+-->
 
 Optional (possibly in C++23):
 
