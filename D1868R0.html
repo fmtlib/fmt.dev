@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmtlib.net/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8212a4ea55e1ccd2dd6fd041813beddbc61ff5c5" name="document-revision">
+  <meta content="d55fe4afb9074988ee8463ecdfa60b04e73494db" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1468,15 +1468,17 @@ pre .property::before, pre .property::after {
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivating example</span></a>
-    <li><a href="#locale"><span class="secno">3</span> <span class="content">Locale</span></a>
-    <li><a href="#windows"><span class="secno">4</span> <span class="content">Windows</span></a>
-    <li><a href="#precision"><span class="secno">5</span> <span class="content">Precision</span></a>
-    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
-    <li><a href="#nope"><span class="secno">7</span> <span class="content">Why not code units?</span></a>
-    <li><a href="#limitations"><span class="secno">8</span> <span class="content">Limitations</span></a>
-    <li><a href="#examples"><span class="secno">9</span> <span class="content">Examples</span></a>
-    <li><a href="#implementation"><span class="secno">10</span> <span class="content">Implementation 🕴️</span></a>
-    <li><a href="#wording"><span class="secno">11</span> <span class="content">Wording 🐉</span></a>
+    <li><a href="#art"><span class="secno">3</span> <span class="content">Prior art</span></a>
+    <li><a href="#locale"><span class="secno">4</span> <span class="content">Locale</span></a>
+    <li><a href="#windows"><span class="secno">5</span> <span class="content">Windows</span></a>
+    <li><a href="#precision"><span class="secno">6</span> <span class="content">Precision</span></a>
+    <li><a href="#proposal"><span class="secno">7</span> <span class="content">Proposal</span></a>
+    <li><a href="#nope"><span class="secno">8</span> <span class="content">Why not code units?</span></a>
+    <li><a href="#limitations"><span class="secno">9</span> <span class="content">Limitations</span></a>
+    <li><a href="#examples"><span class="secno">10</span> <span class="content">Examples</span></a>
+    <li><a href="#implementation"><span class="secno">11</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">12</span> <span class="content">Wording 🐉</span></a>
+    <li><a href="#ack"><span class="secno">13</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -1491,15 +1493,31 @@ pre .property::before, pre .property::after {
 for C++20 in Cologne. Unfortunately it left unspecified units of width and
 precision which created an ambiguity for string arguments in variable-width
 encodings. This paper proposes fixing this shortcoming and specifying width and
-precision in a way that addresses the main use case, is locale-independent by
-default, and is consistent with the SG16’s long-term direction.</p>
+precision in a way that satisfies the following goals:</p>
+   <ul>
+    <li data-md>
+     <p>addressing the main use case</p>
+    <li data-md>
+     <p>locale-independence by default</p>
+    <li data-md>
+     <p>Unicode support</p>
+    <li data-md>
+     <p>ordinary and wide execution encoding support</p>
+    <li data-md>
+     <p>consistency with the SG16’s long-term direction</p>
+    <li data-md>
+     <p>following existing practice</p>
+    <li data-md>
+     <p>ease of implementation</p>
+   </ul>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivating example</span><a class="self-link" href="#motivation"></a></h2>
-   <p>To the best of our knowledge, the main use case for the width and precision
-format specifiers is to align text when displayed in a terminal. The motivating
-example is a columnar view in a typical command-line interface:</p>
+   <p>To the best of our knowledge, the main use case for the string width and
+precision format specifiers is to align text when displayed in a terminal with
+a monospaced font.
+The motivating example is a columnar view in a typical command-line interface:</p>
    <p><img src="https://user-images.githubusercontent.com/576385/65346190-f7c27280-db90-11e9-9d26-769844de1972.png" width="100%"></p>
-   <p>We would like to be able to produce similar output with the C++ 20 formatting
-facility using the most natural API, namely dynamic width:</p>
+   <p>We would like to be able to produce similar or better output with the C++20
+formatting facility using the most natural API, namely dynamic width:</p>
 <pre class="language-c++ highlight"><c- c1>// Prints names in num_cols columns of col_width width each.</c->
 <c- b>void</c-> <c- nf>print_columns</c-><c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>>&amp;</c-> <c- n>names</c-><c- p>,</c->
                    <c- b>int</c-> <c- n>num_cols</c-><c- p>,</c-> <c- b>int</c-> <c- n>col_width</c-><c- p>)</c-> <c- p>{</c->
@@ -1524,97 +1542,16 @@ facility using the most natural API, namely dynamic width:</p>
    <p><img src="https://user-images.githubusercontent.com/576385/65346834-84216500-db92-11e9-8ecb-84b54920cfcf.png" width="100%"></p>
    <p>(Note that spacing in front of <code class="highlight"><c- sc>'『'</c-></code> is part of the character and it is aligned
 correctly both in the code and in the output.)</p>
-   <h2 class="heading settled" data-level="3" id="locale"><span class="secno">3. </span><span class="content">Locale</span><a class="self-link" href="#locale"></a></h2>
-   <p>One of the major design features of the C++20 formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) is
-locale independence by default with locale-aware formatting available as an
-opt-in via separate format specifiers. This has an important safety property
-that the result of <code class="highlight"><c- n>formatted_size</c-></code> by default does not depend on the global
-locale and a buffer allocated with this size can be passed safely to <code class="highlight"><c- n>format_to</c-></code> even if the locale has been changed in the meantime, possibly from another
-thread. It is desirable to preserve this property for strings for both safety
-and consistency reasons.</p>
-   <p>Another observation is that the terminal’s encoding is independent from the
-execution encoding. For example, on Windows it’s possible to change the
-console’s code page with <code class="highlight"><c- n>chcp</c-></code> and <code class="highlight"><c- n>SetConsoleOutputCP</c-></code> (<a data-link-type="biblio" href="#biblio-scocp">[SCOCP]</a>)
-independently of the active code page or the global locale. It is also possible
-to write Unicode text to a console with <code class="highlight"><c- n>WriteConsoleW</c-></code> regardless of both the
-active code page and the console code page. On macOS and Linux, the terminal’s
-encoding is determined by the settings of the terminal emulator application and
-normally defaults to UTF-8.</p>
-   <p>Therefore, for the purposes of specifying width, the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> shouldn’t dynamically depend on the locale’s encoding by default. As with other
-argument types, a separate format specifier can be added to opt into
-locale-specific behavior for interoperability with legacy applications.</p>
-   <h2 class="heading settled" data-level="4" id="windows"><span class="secno">4. </span><span class="content">Windows</span><a class="self-link" href="#windows"></a></h2>
-   <p>According to the Windows documentation (<a data-link-type="biblio" href="#biblio-wini18n">[WINI18N]</a>):</p>
-   <blockquote>
-    <p>Most applications written today handle character data primarily as Unicode,
-using the UTF-16 encoding.</p>
-   </blockquote>
-   <p>and</p>
-   <blockquote>
-    <p>New Windows applications should use Unicode to avoid the inconsistencies of
-varied code pages and for ease of localization.</p>
-   </blockquote>
-   <p>Code pages are used primarily by legacy applications or those communicating with
-legacy applications such as older mail servers.</p>
-   <p>Since <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is a completely new API which is not a drop-in replacement
-for anything in the standard library today and therefore can only be used in the
-new code, we think that it should be consistent with the Windows guidelines and
-use Unicode by default on this platform. Additionally it should provide an
-opt-in mechanism to communicate with legacy applications.</p>
-   <h2 class="heading settled" data-level="5" id="precision"><span class="secno">5. </span><span class="content">Precision</span><a class="self-link" href="#precision"></a></h2>
-   <p>Precision, when applied to a string argument, specifies how many characters will
-be used from the string. It can be used to truncate long strings in the columar
-output as in the motivating example shown earlier. Because it works with a
-single argument and only for some argument types it is not particularly useful
-for truncating output to satisfy storage requirements. <code class="highlight"><c- n>format_to_n</c-></code> should be
-used for the latter instead. The semantics of floating-point precision is
-also unrelated to storage.</p>
-   <p>Since precision and width address the same use case, we think that they should
-be measured in the same units.</p>
-   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>To address the main use case, we propose defining width and precision for a
-string as the <em>display width</em>, i.e. in terms of the number of column positions
-needed to display it in a terminal. POSIX defines the <code class="highlight"><c- n>wcswidth</c-></code> function that
-has the required semantics (<a data-link-type="biblio" href="#biblio-wcswidth">[WCSWIDTH]</a>):</p>
+   <h2 class="heading settled" data-level="3" id="art"><span class="secno">3. </span><span class="content">Prior art</span><a class="self-link" href="#art"></a></h2>
+   <p>Display width is a well-establish concept. In particular, POSIX defines the <code class="highlight"><c- n>wcswidth</c-></code> function (<a data-link-type="biblio" href="#biblio-wcswidth">[WCSWIDTH]</a>) that has the required semantics:</p>
    <blockquote>
     <p>The <code class="highlight"><c- n>wcswidth</c-><c- p>()</c-></code> function shall determine the number of column positions
 required for <code class="highlight"><c- n>n</c-></code> wide-character codes (or fewer than <code class="highlight"><c- n>n</c-></code> wide-character codes
 if a null wide-character code is encountered before <code class="highlight"><c- n>n</c-></code> wide-character codes
 are exhausted) in the string pointed to by <code class="highlight"><c- n>pwcs</c-></code>.</p>
    </blockquote>
-   <p>To satisfy the locale-independence property we propose that for the purposes
-of width computation the default should be Unicode on system that support
-display of Unicode text in a terminal or implementation-defined otherwise.
-In particular this allows using EBCDIC on z/OS and ASCII on resource-constrained
-embedded systems that may not want to provide even minimal Unicode handling
-capabilities.
-On Unicode-capable systems both <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> strings should use Unicode
-encodings (e.g. UTF-8 and UTF-16 respectively) by default. This will enable
-portable code with optional transcoding at the system API boundaries (Unicode
-sandwich) and seamless integration with APIs that support Unicode such as <code class="highlight"><c- n>WriteConsoleW</c-></code> on Windows without data loss.</p>
-   <p>For Unicode, the first step in computing width is to break the string into
-grapheme clusters because the latter correspond to user-perceived characters
-(<a data-link-type="biblio" href="#biblio-uax29">[UAX29]</a>). Then the width should be adjusted to account for graphemes that
-take two column positions as it is done, for example, in the Unicode
-implementation of <code class="highlight"><c- n>wcswidth</c-></code> by Markus Kuhn (<a data-link-type="biblio" href="#biblio-mgk25">[MGK25]</a>). Non-printable
-characters such as control characters do not contribute to width and it should
-be a user’s responsibility to ensure that the input string does not contain
-leading combining characters that may compose during concatenation.</p>
-   <p>Width computation can be done efficiently with a single pass over the input and
-optimized for the case of no variable-width characters. It has zero overhead
-when no width is specified or when formatting non-string arguments.</p>
-   <p>We also propose adding a new format specifier in C++23 for computing display
-width of a string argument based on the locale’s encoding, for example:</p>
-<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"ru_RU.KOI8-R"</c-><c- p>));</c->
-<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>message</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:6ls}"</c-><c- p>,</c-> <c- s>"</c-><c- se>\xd4\xc5\xd3\xd4</c-><c- s>"</c-><c- p>);</c-> <c- c1>// "тест" in KOI8-R</c->
-<c- c1>// message == "\xd4\xc5\xd3\xd4  " ("тест  " in KOI8-R)</c->
-</pre>
-   <p>We think that the current proposal is in line with SG16: Unicode Direction
-(<a data-link-type="biblio" href="#biblio-p1238">[P1238]</a>) goal of "Designing for where we want to be and how to get there"
-because it creates a clear path for the future <code class="highlight"><c- n>charN_t</c-></code> overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> to have the desired behavior and be consistent with the C++20
-formatting facility which currently supports <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>. It is based
-on an existing API, namely <code class="highlight"><c- n>wcswidth</c-></code> which is a part of POSIX, and has
-counterparts in multiple languages, for example:</p>
+   <p>Many languages have implementations of <code class="highlight"><c- n>wcswidth</c-></code> or similar functionality.
+Here is an incomplete list of them:</p>
    <ul>
     <li data-md>
      <p>C <code class="highlight"><c- n>wcwidth</c-></code> (<a data-link-type="biblio" href="#biblio-mgk25">[MGK25]</a>)</p>
@@ -1636,25 +1573,116 @@ according to the GitHub dependency graph</p>
    </ul>
    <p>GitHub code search returns over 500,000 results for "wcwidth" and 180,000
 results for "wcswidth".</p>
-   <p>The number of projects providing this facility together with large usage numbers
-indicate that it is an imporant use case. All of the above packages work
+   <p>The number of implementations of this facility together with large usage numbers
+indicate that it is an imporant use case. All of the above implementations work
 exclusively with Unicode.</p>
+   <h2 class="heading settled" data-level="4" id="locale"><span class="secno">4. </span><span class="content">Locale</span><a class="self-link" href="#locale"></a></h2>
+   <p>One of the major design features of the C++20 formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) is
+locale independence by default with locale-aware formatting available as an
+opt-in via separate format specifiers. This has an important safety property
+that the result of <code class="highlight"><c- n>formatted_size</c-></code> by default does not depend on the global
+locale and a buffer allocated with this size can be passed safely to <code class="highlight"><c- n>format_to</c-></code> even if the locale has been changed in the meantime, possibly from another
+thread. It is desirable to preserve this property for strings for both safety
+and consistency reasons.</p>
+   <p>Another observation is that the terminal’s encoding is independent from the
+execution encoding. For example, on Windows it’s possible to change the
+console’s code page with <code class="highlight"><c- n>chcp</c-></code> and <code class="highlight"><c- n>SetConsoleOutputCP</c-></code> (<a data-link-type="biblio" href="#biblio-scocp">[SCOCP]</a>)
+independently of the active code page or the global locale. It is also possible
+to write Unicode text to a console with <code class="highlight"><c- n>WriteConsoleW</c-></code> regardless of both the
+active code page and the console code page. On macOS and Linux, the terminal’s
+encoding is determined by the settings of the terminal emulator application and
+normally defaults to UTF-8.</p>
+   <p>Therefore, for the purposes of specifying width, the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> shouldn’t dynamically depend on the locale’s encoding by default. As with other
+argument types, a separate format specifier can be added to opt into
+locale-specific behavior to support execution encodings and legacy code.</p>
+   <h2 class="heading settled" data-level="5" id="windows"><span class="secno">5. </span><span class="content">Windows</span><a class="self-link" href="#windows"></a></h2>
+   <p>According to the Windows documentation (<a data-link-type="biblio" href="#biblio-wini18n">[WINI18N]</a>):</p>
+   <blockquote>
+    <p>Most applications written today handle character data primarily as Unicode,
+using the UTF-16 encoding.</p>
+   </blockquote>
+   <p>and</p>
+   <blockquote>
+    <p>New Windows applications should use Unicode to avoid the inconsistencies of
+varied code pages and for ease of localization.</p>
+   </blockquote>
+   <p>Code pages are used primarily by legacy applications or those communicating with
+legacy applications such as older mail servers.</p>
+   <p>Since <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is a completely new API which is not a drop-in replacement
+for anything in the standard library today and therefore can only be used in the
+new code, we think that it should be consistent with the Windows guidelines and
+use Unicode by default on this platform. Additionally it should provide an
+opt-in mechanism to communicate with legacy applications.</p>
+   <h2 class="heading settled" data-level="6" id="precision"><span class="secno">6. </span><span class="content">Precision</span><a class="self-link" href="#precision"></a></h2>
+   <p>Precision, when applied to a string argument, specifies how many characters will
+be used from the string. It can be used to truncate long strings in the columnar
+output as in the motivating example shown earlier. Because it works with a
+single argument and only for some argument types it is not particularly useful
+for truncating output to satisfy storage requirements. <code class="highlight"><c- n>format_to_n</c-></code> should be
+used for the latter instead. The semantics of floating-point precision is
+also unrelated to storage.</p>
+   <p>Since precision and width address the same use case, we think that they should
+be measured in the same units.</p>
+   <h2 class="heading settled" data-level="7" id="proposal"><span class="secno">7. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p>To address the main use case, we propose using the display width of a string,
+i.e. the number of column positions needed to display the string in a terminal,
+for both width and precision.</p>
    <p>There is a spectrum of solutions to the problem of estimating display width,
 from always wrong (return 42 times the number of code units) and almost always
 wrong (code units and <code class="highlight"><c- n>printf</c-></code>) to always correct (model the terminal’s logic of
 width computation). We would like to take a pragmatic approach leaning towards
 the correct side of the spectrum but without introducing too much complexity.
 This can be accomplished by defining ranges of characters that are guaranteed to
-be handled correctly with an option of refining the definition as the technology
-matures and Unicode handling bugs observed today are fixed. With our approach
-a program can produce high-quality output which is always correct by escaping
-characters for which width computation is not supported and is readable for
-many common cases.</p>
-   <p>Dangling combining marks, i.e. combining marks (Unicode category Mn or Mc) that
-start a grapheme cluster, are not supported. Each unsupported grapheme cluster
-is counted as one width unit.</p>
-   <h2 class="heading settled" data-level="7" id="nope"><span class="secno">7. </span><span class="content">Why not code units?</span><a class="self-link" href="#nope"></a></h2>
-   <p>It might seem tempting at first to make width be measured in code units because
+be handled correctly on a capable terminal with an option of refining the
+definition as technology matures and Unicode handling bugs observed today are
+fixed. With our approach a program can produce high-quality output which is
+always correct by escaping characters for which width computation is not
+supported and is readable in many common cases, greatly improving on <code class="highlight"><c- n>printf</c-></code>.</p>
+   <p>To satisfy the locale-independence property we propose that for the purposes
+of display width computation the default should be Unicode on systems that
+support display of Unicode text in a terminal or fixed implementation-defined
+encodings otherwise. In particular this allows using EBCDIC on z/OS and ASCII on
+resource-constrained embedded systems that may not want to provide even minimal
+Unicode handling capabilities.
+On Unicode-capable systems both <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> strings should use Unicode
+encodings (e.g. UTF-8 and UTF-16 respectively) by default. This will enable
+portable code with optional transcoding at the system API boundaries (see <a data-link-type="biblio" href="#biblio-p1238">[P1238]</a>) and seamless integration with APIs that support Unicode such as <code class="highlight"><c- n>WriteConsoleW</c-></code> on Windows without data loss.</p>
+   <p>Using a fixed system encoding is completely safe because formatting functions
+don’t do any transcoding. So the worst thing that can happen is that the display
+width will be estimated incorrectly leading to misaligned text which is what
+already happens when you pass a variable-width string to <code class="highlight"><c- n>printf</c-></code>. This is also
+not novel, for example <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-></code> also acknowledges existence of system
+dependent encodings:</p>
+   <blockquote>
+    <p>The native encoding of an ordinary character string is the operating system
+dependent current encoding for pathnames.</p>
+   </blockquote>
+   <p>For Unicode, the first step in computing width is to break the string into
+grapheme clusters because the latter correspond to user-perceived characters
+(<a data-link-type="biblio" href="#biblio-uax29">[UAX29]</a>). Then the width should be adjusted to account for graphemes that
+take two column positions as it is done, for example, in the Unicode
+implementation of <code class="highlight"><c- n>wcswidth</c-></code> by Markus Kuhn (<a data-link-type="biblio" href="#biblio-mgk25">[MGK25]</a>). Non-printable
+characters such as control characters do not contribute to width and it should
+be a user’s responsibility to ensure that the input string does not contain
+such characters as well as leading combining characters and modifier letters
+that may compose after concatenation.</p>
+   <p>Width estimation can be done efficiently with a single pass over the input and
+optimized for the case of no variable-width characters. It has zero overhead
+when no width is specified or when formatting non-string arguments.</p>
+   <p>We also propose adding a new format specifier in C++23 for computing display
+width of a string argument based on the locale’s encoding, for example:</p>
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"ru_RU.KOI8-R"</c-><c- p>));</c->
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>message</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:6ls}"</c-><c- p>,</c-> <c- s>"</c-><c- se>\xd4\xc5\xd3\xd4</c-><c- s>"</c-><c- p>);</c-> <c- c1>// "тест" in KOI8-R</c->
+<c- c1>// message == "\xd4\xc5\xd3\xd4  " ("тест  " in KOI8-R)</c->
+</pre>
+   <p>This will support display width estimation for ordinary and wide execution
+encodings.
+We think that the current proposal is in line with SG16: Unicode Direction
+(<a data-link-type="biblio" href="#biblio-p1238">[P1238]</a>) goal of "Designing for where we want to be and how to get there"
+because it creates a clear path for the future <code class="highlight"><c- n>charN_t</c-></code> overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> to have the desired behavior and be consistent with the C++20
+formatting facility which currently supports <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>.</p>
+   <h2 class="heading settled" data-level="8" id="nope"><span class="secno">8. </span><span class="content">Why not code units?</span><a class="self-link" href="#nope"></a></h2>
+   <p>It might seem tempting at first to measure width in code units because
 it is simple and avoids the encoding question. However, it is not very useful in
 addressing practical use cases. Also it is an evolutionary deadend because
 standardizing code units for <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> overloads by default would
@@ -1691,22 +1719,25 @@ For example:</p>
 <pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"%.4s...</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"bistro"</c-><c- p>);</c->
 <c- n>printf</c-><c- p>(</c-><c- s>"%.4s...</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"café"</c-><c- p>);</c->
 </pre>
-   <p>it can be even worse:</p>
+   <p>the result is even worse:</p>
 <pre class="language-text highlight">bist...
 caf&lt;C3>...
 </pre>
-   <h2 class="heading settled" data-level="8" id="limitations"><span class="secno">8. </span><span class="content">Limitations</span><a class="self-link" href="#limitations"></a></h2>
-   <p>Unlike terminals, GUI editors often use proportional or monospace fonts that
-treat some characters such that their width is not an integer multiple of the
-other. Therefore width, regardless of how it is defined, is inherently limited
-there. However, it can still be useful if the input domain is restricted.
-Possible use cases are aligning numbers, ASCII text, or adding code indentation:</p>
+   <h2 class="heading settled" data-level="9" id="limitations"><span class="secno">9. </span><span class="content">Limitations</span><a class="self-link" href="#limitations"></a></h2>
+   <p>Unlike terminals, GUI editors often use proportional fonts or fonts that claim
+to be monospaced but treat some characters such that their width is not an
+integer multiple of the other. Therefore width, regardless of how it is defined,
+is inherently limited there. However, it can still be useful if the input domain
+is restricted. Possible use cases are aligning numbers, text in ASCII or other
+subset of Unicode, or adding code indentation:</p>
 <pre class="language-c++ highlight"><c- c1>// Prints text prefixed with indent spaces.</c->
 <c- b>void</c-> <c- nf>print_indented</c-><c- p>(</c-><c- b>int</c-> <c- n>indent</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>text</c-><c- p>)</c-> <c- p>{</c->
   <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{0:>{1}}{2}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>""</c-><c- p>,</c-> <c- n>indent</c-><c- p>,</c-> <c- n>text</c-><c- p>);</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="9" id="examples"><span class="secno">9. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
+   <p>Our definition of width fully support these use cases and gives better results
+than <code class="highlight"><c- n>printf</c-></code> for Unicode subranges.</p>
+   <h2 class="heading settled" data-level="10" id="examples"><span class="secno">10. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;format>
 <c- cp>#include</c-> &lt;iostream>
 <c- cp>#include</c-> &lt;stdio.h>
@@ -1723,17 +1754,16 @@ Possible use cases are aligning numbers, ASCII text, or adding code indentation:
      <c- s>"------------------------------------------------------------------------"</c->
      <c- s>"--------------"</c-><c- p>},</c->
     <c- p>{</c-><c- s>"</c-><c- se>\x41</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0041 { LATIN CAPITAL LETTER A }"</c-><c- p>},</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xd0\xa9</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0429 { CYRILLIC CAPITAL LETTER SHCHA }"</c-><c- p>},</c-> <c- c1>// Щ</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xce\x94</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0394 { Greek Capital Letter Delta }"</c-><c- p>},</c-> <c- c1>// Δ</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xC3\x81</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+00C1 { LATIN CAPITAL LETTER A WITH ACUTE }"</c-><c- p>},</c->
     <c- p>{</c-><c- s>"</c-><c- se>\x41\xCC\x81</c-><c- s>"</c-><c- p>,</c->
      <c- s>"U+0041 U+0301 { LATIN CAPITAL LETTER A } { COMBINING ACUTE ACCENT }"</c-><c- p>},</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xc4\xb2</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0132 { Latin Capital Ligature Ij }"</c-><c- p>},</c-> <c- c1>// Ĳ</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xe2\x80\x8b</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+200B { ZERO WIDTH SPACE }"</c-><c- p>},</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xe2\x81\xa3</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+2063 { INVISIBLE SEPARATOR }"</c-><c- p>},</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xe2\x81\xa4</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+2064 { INVISIBLE PLUS }"</c-><c- p>},</c->
-    <c- p>{</c-><c- s>"</c-><c- se>\xe7\x95\x8c</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+754C { CJK Unified Ideograph-754C }"</c-><c- p>},</c-> <c- c1>// 界</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xc4\xb2</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0132 { LATIN CAPITAL LIGATURE IJ }"</c-><c- p>},</c-> <c- c1>// Ĳ</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xce\x94</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0394 { GREEK CAPITAL LETTER DELTA }"</c-><c- p>},</c-> <c- c1>// Δ</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xd0\xa9</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0429 { CYRILLIC CAPITAL LETTER SHCHA }"</c-><c- p>},</c-> <c- c1>// Щ</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xd7\x90</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+05D0 { HEBREW LETTER ALEF }"</c-><c- p>},</c-> <c- c1>// א</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xd8\xb4</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+0634 { ARABIC LETTER SHEEN }"</c-><c- p>},</c-> <c- c1>// ش</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xe3\x80\x89</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+3009 { RIGHT-POINTING ANGLE BRACKET }"</c-><c- p>},</c-> <c- c1>// 〉</c->
+    <c- p>{</c-><c- s>"</c-><c- se>\xe7\x95\x8c</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+754C { CJK Unified Ideograph-754C }"</c-><c- p>},</c-> <c- c1>// 界</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xf0\x9f\xa6\x84</c-><c- s>"</c-><c- p>,</c-> <c- s>"U+1F921 { UNICORN FACE }"</c-><c- p>},</c-> <c- c1>// 🦄</c->
     <c- p>{</c-><c- s>"</c-><c- se>\xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\x91\xa9\xe2\x80\x8d</c-><c- s>"</c->
      <c- s>"</c-><c- se>\xf0\x9f\x91\xa7\xe2\x80\x8d\xf0\x9f\x91\xa6</c-><c- s>"</c-><c- p>,</c->
@@ -1753,115 +1783,118 @@ Possible use cases are aligning numbers, ASCII text, or adding code indentation:
 <c- p>}</c->
 </pre>
    <p>Output on macOS Terminal:</p>
-   <p>TODO</p>
-   <p><img src="https://user-images.githubusercontent.com/576385/65207193-c4bf9800-da45-11e9-9ba9-f1f58a1794da.png" width="100%"></p>
-   <p>Notice that the <code class="highlight"><c- n>printf</c-></code> output is completely misaligned because width is
-measured in code units.</p>
+   <p><img src="https://user-images.githubusercontent.com/576385/65390388-06d12e00-dd13-11e9-8665-25fe209e585f.png" width="100%"></p>
+   <p>Notice that the <code class="highlight"><c- n>printf</c-></code> output is completely misaligned except for one case
+because width is measured in code units.</p>
    <p>Output on Windows with console codepage set to 65001 (UTF-8) and the active code
 page unchanged:</p>
-   <p><img src="https://user-images.githubusercontent.com/576385/65206716-3991d280-da44-11e9-93e2-8510929e2728.png" width="100%"></p>
-   <p>The Windows console doesn’t handle combining accents and complex emoji correctly
+   <p><img src="https://user-images.githubusercontent.com/576385/65390437-bb6b4f80-dd13-11e9-9542-3a9ed6649c69.png" width="100%"></p>
+   <p>The Windows console doesn’t handle combining accents and emoji correctly
 which is unrelated to the question of width. Although it is possible to
-implement a workaround for this platform we think that it is unnecessary. If the
+implement a workaround for this platform we advise against it. If the
 output is incorrect it is reasonable to expect the alignment to be incorrect as
 well. The new Windows Terminal reportedly handles emoji correctly. Console bugs
 aside, <code class="highlight"><c- n>printf</c-></code> has the same issues on Windows as on macOS.</p>
-   <p>Also notice that although Windows Console is unable to display CJK Unified
+   <p>Notice that although the Windows console is unable to display CJK Unified
 Ideograph-754C, the width is still computed correctly and a placeholder
-character is displayed.</p>
-   <p>TODO: show examples from different terminals and systems</p>
-   <h2 class="heading settled" data-level="10" id="implementation"><span class="secno">10. </span><span class="content">Implementation 🕴️</span><a class="self-link" href="#implementation"></a></h2>
-   <p>The proposal was implemented in the fmt library and successfully tested on a
-variety of platforms.</p>
-   <p>We tested our implementation on macOS Terminal Version 2.9.5 (421.2),
-Windows Console Version 10.0.17763.737 and verified that the display width is
-consistent for at least the following Unicode blocks according to our definition
-of width:</p>
-   <table>
-    <thead>
-     <tr>
-      <td><strong>Block range</strong>
-      <td><strong>Block name</strong> 
-    <tbody>
-     <tr>
-      <td>U+0000..U+007F
-      <td>Basic Latin 
-     <tr>
-      <td>U+0080..U+00FF
-      <td>Latin-1 Supplement 
-     <tr>
-      <td>U+0100..U+017F
-      <td>Latin Extended-A 
-     <tr>
-      <td>U+0180..U+024F
-      <td>Latin Extended-B 
-     <tr>
-      <td>U+0250..U+02AF
-      <td>IPA Extensions 
-     <tr>
-      <td>U+02B0..U+02FF
-      <td>Spacing Modifier Letters 
-     <tr>
-      <td>U+0300..U+036F
-      <td>Combining Diacritical Marks 
-     <tr>
-      <td>U+0370..U+03FF
-      <td>Greek and Coptic 
-     <tr>
-      <td>U+0400..U+04FF
-      <td>Cyrillic 
-     <tr>
-      <td>U+0500..U+052F
-      <td>Cyrillic Supplement 
-     <tr>
-      <td>U+0530..U+058F
-      <td>Armenian 
-     <tr>
-      <td>U+0590..U+05FF
-      <td>Hebrew 
-     <tr>
-      <td>U+0600..U+06FF
-      <td>Arabic 
-     <tr>
-      <td>U+0700..U+074F
-      <td>Syriac 
-     <tr>
-      <td>U+0750..U+077F
-      <td>Arabic Supplement 
-     <tr>
-      <td>U+0780..U+07BF
-      <td>Thaana 
-     <tr>
-      <td>U+07C0..U+07FF
-      <td>NKo 
-     <tr>
-      <td>U+0800..U+083F
-      <td>Samaritan 
-     <tr>
-      <td>U+0840..U+085F
-      <td>Mandaic 
-     <tr>
-      <td>U+0860..U+086F
-      <td>Syriac Supplement 
-     <tr>
-      <td>U+08A0..U+08FF
-      <td>Arabic Extended-A 
-     <tr>
-      <td>U+0900..U+097F
-      <td>Devanagari 
-     <tr>
-      <td>U+0980..U+09FF
-      <td>Bengali 
-     <tr>
-      <td>U+0A00..U+0A7F
-      <td>Gurmukhi 
-   </table>
-   <p>which includes 5 out of top 10 writing scripts ranked by active usage.
-https://en.wikipedia.org/wiki/List_of_writing_systems#List_of_writing_scripts_by_adoption
-For comparison, <code class="highlight"><c- n>printf</c-></code> only supports a small subset of one writing script,
-Latin.</p>
-   <h2 class="heading settled" data-level="11" id="wording"><span class="secno">11. </span><span class="content">Wording 🐉</span><a class="self-link" href="#wording"></a></h2>
-   <p>TODO</p>
+character is displayed instead. This is a very nice example of a fallback
+behavior, in this case done by the terminal itself.</p>
+   <p>Output on GNOME Terminal 3.32.1 in Linux:</p>
+   <p><img src="https://user-images.githubusercontent.com/576385/65390888-7812e000-dd17-11e9-80fc-f0c319e8798f.png" width="100%"></p>
+   <p>Output on Konsole 18.12.3 in Linux:</p>
+   <p><img src="https://user-images.githubusercontent.com/576385/65390971-3a628700-dd18-11e9-94e3-9779ad01a116.png" width="100%"></p>
+   <p>GNOME Terminal and Konsole which are two major terminal emulators on Linux
+also cannot handle complex emoji yet but otherwise produce similar results.</p>
+   <h2 class="heading settled" data-level="11" id="implementation"><span class="secno">11. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
+   <p>The proposal is implemented in the fmt library, successfully tested on a
+variety of platforms, and will become the default for both <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> strings since the results showed great improvent in width estimation compared
+to using code units and code points. The implementation is very simple and
+required only integration of an existing grapheme cluster break and <code class="highlight"><c- n>wcswidth</c-></code> implementations which was done in less than a day.</p>
+   <p>We tested our implementation on macOS Terminal version 2.9.5 (421.2),
+Windows console on Windows version 10.0.17763.737 and GNOME Terminal 3.32.1
+on Linux verifying that the display width is consistent for at least the
+following Unicode blocks according to our definition of width and produces
+visually aligned results:</p>
+<pre class="language-text highlight">Block range    Block name
+============== ===========================
+U+0000..U+007F Basic Latin
+U+0080..U+00FF Latin-1 Supplement
+U+0100..U+017F Latin Extended-A
+U+0180..U+024F Latin Extended-B
+U+0250..U+02AF IPA Extensions
+U+02B0..U+02FF Spacing Modifier Letters
+U+0300..U+036F Combining Diacritical Marks
+U+0370..U+03FF Greek and Coptic
+U+0400..U+04FF Cyrillic
+U+0500..U+052F Cyrillic Supplement
+U+0530..U+058F Armenian
+U+0590..U+05FF Hebrew
+U+0600..U+06FF Arabic
+U+0700..U+074F Syriac
+U+0750..U+077F Arabic Supplement
+U+0780..U+07BF Thaana
+U+07C0..U+07FF NKo
+U+0800..U+083F Samaritan
+U+0840..U+085F Mandaic
+U+0860..U+086F Syriac Supplement
+U+08A0..U+08FF Arabic Extended-A
+U+0900..U+097F Devanagari
+U+0980..U+09FF Bengali
+U+0A00..U+0A7F Gurmukhi
+</pre>
+   <p>Even this small subset of Unicode includes 5 out of top 10 writing scripts ranked
+by active usage (<a data-link-type="biblio" href="#biblio-scripts">[SCRIPTS]</a>) with billions of active users. For comparison,
+width in <code class="highlight"><c- n>printf</c-></code> is only able to handle a small subset of one writing script,
+Latin. More importantly, our approach permits refining the definition in the
+future by declaring support for more blocks if there is interest in doing so.
+It will mostly require researching the status of Unicode support on terminals
+and minimial or no changes to the implementation.</p>
+   <p>Additionally we looked at the Unicode block U+1F300..U+1F5FF Miscellaneous
+Symbols and Pictographs. Support for code points in this block varies, for
+example, in the Windows console none of them were dislayed correctly, with or
+without width. In macOS Terminal most of the symbols had width 2 with a few
+exceptions. Therefore we recommend not declaring any support for this block and
+using the default of 2. This will have reasonable behavior on systems that
+support emoji and make it clear that these symbols may need escaping or other
+fallback mechanism.</p>
+   <h2 class="heading settled" data-level="12" id="wording"><span class="secno">12. </span><span class="content">Wording 🐉</span><a class="self-link" href="#wording"></a></h2>
+   <p>Modify [format.string.std]/p7 as follows:</p>
+   <blockquote>
+    <p>The positive-integer in width is a decimal integer defining the minimum field
+width. If width is not specified, there is no minimum field width, and the field
+width is determined based on the content of the field.</p>
+   </blockquote>
+   <blockquote>
+    <ins> Width of a string is defined as the estimated number of column position required
+to display it in a terminal.
+[ Note: This is similar to the semantics of the POSIX <code class="highlight"><c- n>wcswidth</c-></code> function.
+-- end note] </ins>
+   </blockquote>
+   <blockquote>
+    <ins> For the purposes of width computation the string is assumed to be in a fixed
+operating system dependent encoding. If the operating system is capable of
+displaying Unicode text in a terminal both ordinary and wide encodings are
+Unicode encodings such as UTF-8 and UTF-16, respectively.
+[ Note: this is the case for Windows-based and many POSIX-based operating
+systems. -- end note ]
+Otherwise, the encodings are implementation-defined. </ins>
+   </blockquote>
+   <blockquote>
+    <ins>Display width of a string in a Unicode encoding is the sum of display
+widths of the first code points in its grapheme clusters as defined by
+Unicode® Standard Annex #29 Unicode Text Segmentation.
+[Note: Display width computation is subject to change. --] </ins>
+   </blockquote>
+   <p>Optional (possibly in C++23):</p>
+   <blockquote>
+    <ins>The <code class="highlight"><c- n>l</c-></code> option causes the locale’s encoding to be used when computing
+display width of a string. </ins>
+   </blockquote>
+   <h2 class="heading settled" data-level="13" id="ack"><span class="secno">13. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>We would like to thank Tom Honermann for bringing the issue of ambiguous width
+to our attention and Henri Sivonen for a very detailed and insightful post on
+various definitions of Unicode string length (<a data-link-type="biblio" href="#biblio-length">[LENGTH]</a>) which helped us in
+researching the topic.</p>
   </main>
 <script>
 (function() {
@@ -1997,6 +2030,8 @@ Latin.</p>
   <dl>
    <dt id="biblio-charwidth">[CHARWIDTH]
    <dd><a href="https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth">Julia Documentation, Strings, Base.UTF8proc.charwidth</a>. URL: <a href="https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth">https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth</a>
+   <dt id="biblio-length">[LENGTH]
+   <dd>Henri Sivonen. <a href="https://hsivonen.fi/string-length/">It’s Not Wrong that "🤦".length == 7 But It’s Better that "🤦".len() == 17 and Rather Useless that len("🤦") == 5</a>. URL: <a href="https://hsivonen.fi/string-length/">https://hsivonen.fi/string-length/</a>
    <dt id="biblio-mgk25">[MGK25]
    <dd>Markus Kuhn. <a href="https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c">An implementation of `wcwidth()` and `wcswidth()` for Unicode</a>. URL: <a href="https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c">https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c</a>
    <dt id="biblio-p0645">[P0645]
@@ -2007,6 +2042,8 @@ Latin.</p>
    <dd><a href="https://github.com/mattn/go-runewidth">wcwidth for golang</a>. URL: <a href="https://github.com/mattn/go-runewidth">https://github.com/mattn/go-runewidth</a>
    <dt id="biblio-scocp">[SCOCP]
    <dd><a href="https://docs.microsoft.com/en-us/windows/console/setconsoleoutputcp">Console Reference, SetConsoleOutputCP function</a>. URL: <a href="https://docs.microsoft.com/en-us/windows/console/setconsoleoutputcp">https://docs.microsoft.com/en-us/windows/console/setconsoleoutputcp</a>
+   <dt id="biblio-scripts">[SCRIPTS]
+   <dd><a href="https://en.wikipedia.org/wiki/List_of_writing_systems#List_of_writing_scripts_by_adoption">List of writing systems, List of writing scripts by adoption</a>. URL: <a href="https://en.wikipedia.org/wiki/List_of_writing_systems#List_of_writing_scripts_by_adoption">https://en.wikipedia.org/wiki/List_of_writing_systems#List_of_writing_scripts_by_adoption</a>
    <dt id="biblio-tcw">[TCW]
    <dd><a href="https://metacpan.org/pod/Text::CharWidth">Text::CharWidth - Get number of occupied columns of a string on terminal</a>. URL: <a href="https://metacpan.org/pod/Text::CharWidth">https://metacpan.org/pod/Text::CharWidth</a>
    <dt id="biblio-uax29">[UAX29]
