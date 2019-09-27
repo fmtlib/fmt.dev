@@ -133,6 +133,8 @@
 facilities and a lightweight subset of formatting functions</li>
 <li><a class="reference internal" href="#format-api"><span class="std std-ref">fmt/format.h</span></a>: the full format API providing compile-time
 format string checks, output iterator and user-defined type support</li>
+<li><a class="reference internal" href="#ranges-api"><span class="std std-ref">fmt/ranges.h</span></a>: additional formatting support for ranges
+and tuples</li>
 <li><a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a>: date and time formatting</li>
 <li><a class="reference internal" href="#ostream-api"><span class="std std-ref">fmt/ostream.h</span></a>: <code class="docutils literal"><span class="pre">std::ostream</span></code> support</li>
 <li><a class="reference internal" href="#printf-api"><span class="std std-ref">fmt/printf.h</span></a>: <code class="docutils literal"><span class="pre">printf</span></code> formatting</li>
@@ -918,6 +920,27 @@ custom argument formatter class:</p>
 </div>
 </dd></dl>
 
+</div>
+</div>
+<div class="section" id="ranges-and-tuple-formatting">
+<span id="ranges-api"></span><h2>Ranges and Tuple Formatting<a class="headerlink" href="#ranges-and-tuple-formatting" title="Permalink to this headline">¶</a></h2>
+<p>The library also supports convenient formatting of ranges and tuples:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/ranges.h&gt;</span><span class="cp"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">float</span><span class="o">&gt;</span> <span class="n">t</span><span class="p">{</span><span class="sc">&#39;a&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">2.0f</span><span class="p">};</span>
+<span class="c1">// Prints &quot;(&#39;a&#39;, 1, 2.0)&quot;</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>NOTE: currently, the overload of <code class="docutils literal"><span class="pre">fmt::join</span></code> for iterables exists in the main
+<code class="docutils literal"><span class="pre">format.h</span></code> header, but expect this to change in the future.</p>
+<p>Using <code class="docutils literal"><span class="pre">fmt::join</span></code>, you can separate tuple elements with a custom separator:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/ranges.h&gt;</span><span class="cp"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">char</span><span class="o">&gt;</span> <span class="n">t</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="sc">&#39;a&#39;</span><span class="p">};</span>
+<span class="c1">// Prints &quot;1, a&quot;</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">join</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&quot;, &quot;</span><span class="p">));</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="date-and-time-formatting">
