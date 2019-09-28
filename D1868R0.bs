@@ -480,9 +480,9 @@ U+0A00..U+0A7F Gurmukhi
 
 Even this small subset of Unicode includes 5 out of top 10 writing scripts ranked
 by active usage ([[SCRIPTS]]) with billions of active users. For comparison,
-width in `printf` is only able to handle a small subset of one writing script,
-Latin. More importantly, our approach permits refining the definition in the
-future by declaring support for more blocks if there is interest in doing so.
+width in `printf` cannot even handle a single writing script. More
+importantly, our approach permits refining the definition in the
+future if there is interest in doing so.
 It will mostly require researching the status of Unicode support on terminals
 and minimal or no changes to the implementation. 
 
@@ -542,10 +542,21 @@ code points is 2:
 > U+1F900 .. U+1F9FF <!-- Supplemental Symbols and Pictographs -->
 > ```
 
-> Estimated width of other code points is 1.
+> <ins>Estimated width of other code points is 1.
 [ *Note:* The method of estimated width computation is subject to change. — end note ]
 
 > <ins>Width of a string in a non-Unicode encoding is implementation-defined.
+
+Modify <a href="http://eel.is/c++draft/format.string.std#9">[format.string.std]/p9</a>
+as follows:
+
+> The nonnegative-integer in precision is a decimal integer defining the
+precision or maximum field size. It can only be used with floating-point and
+string types. For floating-point types this field specifies the formatting
+precision. <del>For string types it specifies how many characters will be used
+from the string.</del> <ins>For string types it specifies the maximum width.
+Trailing grapheme clusters or implementation-defined units of width that exceed
+the given precision are ignored.
 
 <!-- TODO: maybe clarify that it's a user's responsibility to escape
      non-printable characters, e.g. from Control (Cc), format (Cf) categories

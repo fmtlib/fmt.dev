@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmt.dev/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4922093d954729ff4b3de28916bca2e8ab682545" name="document-revision">
+  <meta content="cfcbf8505464631a43c00a467f83764d94cd49d1" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1842,9 +1842,9 @@ U+0A00..U+0A7F Gurmukhi
 </pre>
    <p>Even this small subset of Unicode includes 5 out of top 10 writing scripts ranked
 by active usage (<a data-link-type="biblio" href="#biblio-scripts">[SCRIPTS]</a>) with billions of active users. For comparison,
-width in <code class="highlight"><c- n>printf</c-></code> is only able to handle a small subset of one writing script,
-Latin. More importantly, our approach permits refining the definition in the
-future by declaring support for more blocks if there is interest in doing so.
+width in <code class="highlight"><c- n>printf</c-></code> cannot even handle a single writing script. More
+importantly, our approach permits refining the definition in the
+future if there is interest in doing so.
 It will mostly require researching the status of Unicode support on terminals
 and minimal or no changes to the implementation.</p>
    <p>Additionally we looked at the Unicode block U+1F300..U+1F5FF Miscellaneous
@@ -1902,11 +1902,25 @@ U+1F900 .. U+1F9FF
     </ins>
    </blockquote>
    <blockquote>
-    <p>Estimated width of other code points is 1.
-[ <em>Note:</em> The method of estimated width computation is subject to change. — end note ]</p>
+    <ins>Estimated width of other code points is 1.
+[ <em>Note:</em> The method of estimated width computation is subject to change. — end note ] </ins>
    </blockquote>
    <blockquote>
     <ins>Width of a string in a non-Unicode encoding is implementation-defined. </ins>
+   </blockquote>
+   <p>Modify <a href="http://eel.is/c++draft/format.string.std#9">[format.string.std]/p9</a> as follows:</p>
+   <blockquote>
+    <p>
+     The nonnegative-integer in precision is a decimal integer defining the
+precision or maximum field size. It can only be used with floating-point and
+string types. For floating-point types this field specifies the formatting
+precision. 
+     <del>For string types it specifies how many characters will be used
+from the string.</del>
+     <ins>For string types it specifies the maximum width.
+Trailing grapheme clusters or implementation-defined units of width that exceed
+the given precision are ignored.</ins>
+    </p>
    </blockquote>
    <p>Optional (possibly in C++23):</p>
    <blockquote>
