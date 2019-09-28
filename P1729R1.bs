@@ -262,33 +262,32 @@ There are two conceivable approaches to this:
 
 <b>Reading the file character-by-character with C stdio:</b>
 
+<!-- https://godbolt.org/z/d7ib5q -->
 ```c++
 auto f = std::fopen(...);
 
-std::string buf{};
-while ((char ch = std::fgetc(f)) != EOF) {
-    if (std::isspace(static_cast<unsigned char>(ch)) != 0) {
-        break;
-    }
-    buf.push_back(ch);
+std::string buf;
+for (int ch = 0; (ch = std::fgetc(f)) != EOF;) {
+  if (std::isspace(ch)) break;
+  buf.push_back(ch);
 }
 
 // buf now contains the input
 int i{};
 auto ret = std::scan(buf, "{}", i);
 
-// Input has some leftovers and wasn't exhausted
+// Input has some leftovers and wasn't exhausted.
 // Unused parts need to be put back into the file stream
 // This can happen when, for example, the input is "4.2":
 // '4' is read into the integer, ".2" is left over, and must be put back.
-// This is consistent with iostreams and scanf
+// This is consistent with iostreams and scanf.
 if (!ret.empty()) {
-    for (auto it = ret.rbegin(); it != ret.rend(); ++it) {
-        if (std::ungetc(*it, f) == EOF) {
-            // Putback failed; file stream unusable
-            throw ...;
-        }
+  for (auto it = ret.rbegin(); it != ret.rend(); ++it) {
+    if (std::ungetc(*it, f) == EOF) {
+      // Putback failed; file stream unusable
+      throw ...;
     }
+  }
 }
 ```
 
@@ -305,12 +304,12 @@ auto ret = std::scan(buf, "{}", i);
 
 // See above for rationale
 if (!ret.empty()) {
-    for (auto it = ret.rbegin(); it != ret.rend(); ++it) {
-        if (!f.putback(*it)) {
-            // Putback failed; file stream unusable
-            throw ...;
-        }
+  for (auto it = ret.rbegin(); it != ret.rend(); ++it) {
+    if (!f.putback(*it)) {
+      // Putback failed; file stream unusable
+      throw ...;
     }
+  }
 }
 ```
 
