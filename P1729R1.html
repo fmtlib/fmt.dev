@@ -1227,10 +1227,10 @@ Possible extra rowspan handling
       text-align: center;
     }
   </style>
-  <meta content="Bikeshed version 4c94409a0f8f9bae15b929d2cd1d918c8334e6ff" name="generator">
+  <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="be23cac8b2a76f173a3ee81dc84e1cd09a5fb7c0" name="document-revision">
+  <meta content="c8007936acd8e344f20fc06446440451879a1049" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1475,19 +1475,19 @@ pre .property::before, pre .property::after {
       <li><a href="#format-strings"><span class="secno">2.1</span> <span class="content">Format strings</span></a>
       <li><a href="#safety"><span class="secno">2.2</span> <span class="content">Safety</span></a>
       <li><a href="#extensibility"><span class="secno">2.3</span> <span class="content">Extensibility</span></a>
-      <li><a href="#locales"><span class="secno">2.4</span> <span class="content">Locales</span></a>
-      <li><a href="#performance"><span class="secno">2.5</span> <span class="content">Performance</span></a>
-      <li><a href="#binary-footprint"><span class="secno">2.6</span> <span class="content">Binary footprint</span></a>
-      <li><a href="#chrono"><span class="secno">2.7</span> <span class="content">Integration with chrono</span></a>
-      <li><a href="#deep-impact"><span class="secno">2.8</span> <span class="content">Impact on existing code</span></a>
+      <li><a href="#ranges"><span class="secno">2.4</span> <span class="content">Iterator and range support</span></a>
+      <li><a href="#locales"><span class="secno">2.5</span> <span class="content">Locales</span></a>
+      <li><a href="#performance"><span class="secno">2.6</span> <span class="content">Performance</span></a>
+      <li><a href="#binary-footprint"><span class="secno">2.7</span> <span class="content">Binary footprint</span></a>
+      <li><a href="#chrono"><span class="secno">2.8</span> <span class="content">Integration with chrono</span></a>
+      <li><a href="#deep-impact"><span class="secno">2.9</span> <span class="content">Impact on existing code</span></a>
      </ol>
     <li>
      <a href="#design-questions"><span class="secno">3</span> <span class="content">Open design questions</span></a>
      <ol class="toc">
-      <li><a href="#input"><span class="secno">3.1</span> <span class="content"><code class="highlight"><c- n>string_view</c-></code> vs. <code class="highlight"><c- n>bidirectional_range</c-></code> as input</span></a>
-      <li><a href="#error-handling"><span class="secno">3.2</span> <span class="content">Error handling and partial successes</span></a>
-      <li><a href="#tuple-out"><span class="secno">3.3</span> <span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span></a>
-      <li><a href="#naming"><span class="secno">3.4</span> <span class="content">Naming</span></a>
+      <li><a href="#error-handling"><span class="secno">3.1</span> <span class="content">Error handling and partial successes</span></a>
+      <li><a href="#tuple-out"><span class="secno">3.2</span> <span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span></a>
+      <li><a href="#naming"><span class="secno">3.3</span> <span class="content">Naming</span></a>
      </ol>
     <li><a href="#existing-work"><span class="secno">4</span> <span class="content">Existing work</span></a>
     <li>
@@ -1563,7 +1563,7 @@ conveying the type information</p>
     <li data-md>
      <p>Positional arguments</p>
     <li data-md>
-     <p>Support for both locale-specific and locale-independent parsing (see <a href="#locales">§2.4 Locales</a>)</p>
+     <p>Support for both locale-specific and locale-independent parsing (see <a href="#locales">§2.5 Locales</a>)</p>
     <li data-md>
      <p>Consistency with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> proposed by <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>.</p>
    </ul>
@@ -1607,102 +1607,39 @@ for user-defined types. For example, the syntax can be extended for <code class=
 string corresponding to the current argument and <code class="highlight"><c- n>scanner</c-><c- o>&lt;</c-><c- n>tm</c-><c- o>>::</c-><c- n>scan</c-></code> parses the
 input range <code class="highlight"><c- p>[</c-><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>ctx</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> and stores the result in <code class="highlight"><c- n>t</c-></code>.</p>
    <p>An implementation of <code class="highlight"><c- n>scanner</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>scan</c-></code> can potentially use ostream extraction <code class="highlight"><c- k>operator</c-><c- o>>></c-></code> for user-defined type <code class="highlight"><c- n>T</c-></code> if available.</p>
-   <h3 class="heading settled" data-level="2.4" id="locales"><span class="secno">2.4. </span><span class="content">Locales</span><a class="self-link" href="#locales"></a></h3>
-   <p>As pointed out in <a data-link-type="biblio" href="#biblio-n4412">[N4412]</a>:</p>
-   <blockquote>
-    <p>There are a number of communications protocol frameworks in use that employ
-text-based representations of data, for example XML and JSON. The text is
-machine-generated and machine-read and should not depend on or consider the
-locales at either end.</p>
-   </blockquote>
-   <p>To address this <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> provided control over the use of locales. We propose
-doing the same for the current facility by performing locale-independent parsing
-by default and designating separate format specifiers for locale-specific one.</p>
-   <h3 class="heading settled" data-level="2.5" id="performance"><span class="secno">2.5. </span><span class="content">Performance</span><a class="self-link" href="#performance"></a></h3>
-   <p>The API allows efficient implementation that minimizes virtual function calls
-and dynamic memory allocations, and avoids unnecessary copies. In particular,
-since it doesn’t need to guarantee the lifetime of the input across multiple
-function calls, <code class="highlight"><c- n>scan</c-></code> can take <code class="highlight"><c- n>string_view</c-></code> avoiding an extra string copy
-compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istringstream</c-></code>.</p>
-   <p>We can also avoid unnecessary copies required by <code class="highlight"><c- n>scanf</c-></code> when parsing string,
-e.g.</p>
-<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>key</c-><c- p>;</c->
-<c- b>int</c-> <c- n>value</c-><c- p>;</c->
-<c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- s>"answer = 42"</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>value</c-><c- p>);</c->
-</pre>
-   <p>This has lifetime implications similar to returning match objects in <a data-link-type="biblio" href="#biblio-p1433">[P1433]</a> and iterator or subranges in the ranges library and can be mitigated in the same
-way.</p>
-   <h3 class="heading settled" data-level="2.6" id="binary-footprint"><span class="secno">2.6. </span><span class="content">Binary footprint</span><a class="self-link" href="#binary-footprint"></a></h3>
-   <p>We propose using a type erasure technique to reduce per-call binary code size.
-The scanning function that uses variadic templates can be implemented as a
-small inline wrapper around its non-variadic counterpart:</p>
-<pre class="language-c++ highlight"><c- n>string_view</c-> <c- nf>vscan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
-
-<c- n>template</c-> <c- o>&lt;</c-><c- kr>typename</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-<c- kr>inline</c-> <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
-  <c- k>return</c-> <c- n>vscan</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_scan_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
-<c- p>}</c->
-</pre>
-   <p>As shown in <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> this dramatically reduces binary code size which will make <code class="highlight"><c- n>scan</c-></code> comparable to <code class="highlight"><c- n>scanf</c-></code> on this metric.</p>
-   <h3 class="heading settled" data-level="2.7" id="chrono"><span class="secno">2.7. </span><span class="content">Integration with chrono</span><a class="self-link" href="#chrono"></a></h3>
-   <p>The proposed facility can be integrated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-></code> (<a data-link-type="biblio" href="#biblio-p0355">[P0355]</a>)
-via the extension mechanism similarly to integration between chrono and text
-formatting proposed in <a data-link-type="biblio" href="#biblio-p1361">[P1361]</a>. This will improve consistency between parsing
-and formatting, make parsing multiple objects easier, and allow avoiding dynamic
-memory allocations without resolving to deprecated <code class="highlight"><c- n>strstream</c-></code>.</p>
-   <p>Before:</p>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istringstream</c-> <c- n>is</c-><c- p>(</c-><c- s>"start = 10:30"</c-><c- p>);</c->
-<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-><c- p>;</c->
-<c- b>char</c-> <c- n>sep</c-><c- p>;</c->
-<c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>seconds</c-> <c- n>time</c-><c- p>;</c->
-<c- n>is</c-> <c- o>>></c-> <c- n>key</c-> <c- o>>></c-> <c- n>sep</c-> <c- o>>></c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-><c- p>(</c-><c- s>"%H:%M"</c-><c- p>,</c-> <c- n>time</c-><c- p>);</c->
-</pre>
-   <p>After:</p>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-><c- p>;</c->
-<c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>seconds</c-> <c- n>time</c-><c- p>;</c->
-<c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- s>"start = 10:30"</c-><c- p>,</c-> <c- s>"{0} = {1:%H:%M}"</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>time</c-><c- p>);</c->
-</pre>
-   <p>Note that the <code class="highlight"><c- n>scan</c-></code> version additionally validates the separator.</p>
-   <h3 class="heading settled" data-level="2.8" id="deep-impact"><span class="secno">2.8. </span><span class="content">Impact on existing code</span><a class="self-link" href="#deep-impact"></a></h3>
-   <p>The proposed API is defined in a new header and should have no impact on
-existing code.</p>
-   <h2 class="heading settled" data-level="3" id="design-questions"><span class="secno">3. </span><span class="content">Open design questions</span><a class="self-link" href="#design-questions"></a></h2>
-   <h3 class="heading settled" data-level="3.1" id="input"><span class="secno">3.1. </span><span class="content"><code class="highlight"><c- n>string_view</c-></code> vs. <code class="highlight"><c- n>bidirectional_range</c-></code> as input</span><a class="self-link" href="#input"></a></h3>
-   <p>Currently, this paper proposes taking a <code class="highlight"><c- n>string_view</c-></code> (and possibly a <code class="highlight"><c- n>wstring_view</c-></code>) as the first parameter to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>.
-While convenient for the common case of parsing a value from a string,
-it’s less so for a lot of other cases.</p>
-   <p>Consider reading an integer from a file.
-Because this proposed facility doesn’t concern itself with IO,
-it’s not possible without reaching to other standard APIs,
-which are not designed for this purpose.
-There are two conceivable approaches to this:</p>
+   <h3 class="heading settled" data-level="2.4" id="ranges"><span class="secno">2.4. </span><span class="content">Iterator and range support</span><a class="self-link" href="#ranges"></a></h3>
+   <p>Currently, this paper proposes taking a <code class="highlight"><c- n>string_view</c-></code> (and possibly a <code class="highlight"><c- n>wstring_view</c-></code>) as the first parameter to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>. While convenient for the
+common case of parsing a value from a string, it’s less so for a lot of other
+cases.</p>
+   <p>Consider reading an integer from a file. Because this proposed facility doesn’t
+concern itself with I/O, it’s not possible without reaching to other standard
+APIs, which are not designed for this purpose. There are two conceivable
+approaches to this:</p>
    <p><b>Reading the file character-by-character with C stdio:</b></p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>fopen</c-><c- p>(...);</c->
 
-<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>buf</c-><c- p>{};</c->
-<c- k>while</c-> <c- p>((</c-><c- b>char</c-> <c- n>ch</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>fgetc</c-><c- p>(</c-><c- n>f</c-><c- p>))</c-> <c- o>!=</c-> <c- n>EOF</c-><c- p>)</c-> <c- p>{</c->
-    <c- k>if</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>isspace</c-><c- p>(</c-><c- n>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>ch</c-><c- p>))</c-> <c- o>!=</c-> <c- mi>0</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>break</c-><c- p>;</c->
-    <c- p>}</c->
-    <c- n>buf</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>ch</c-><c- p>);</c->
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>buf</c-><c- p>;</c->
+<c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>ch</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- p>(</c-><c- n>ch</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>fgetc</c-><c- p>(</c-><c- n>f</c-><c- p>))</c-> <c- o>!=</c-> <c- n>EOF</c-><c- p>;)</c-> <c- p>{</c->
+  <c- k>if</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>isspace</c-><c- p>(</c-><c- n>ch</c-><c- p>))</c-> <c- k>break</c-><c- p>;</c->
+  <c- n>buf</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>ch</c-><c- p>);</c->
 <c- p>}</c->
 
 <c- c1>// buf now contains the input</c->
 <c- b>int</c-> <c- n>i</c-><c- p>{};</c->
 <c- k>auto</c-> <c- n>ret</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>buf</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>i</c-><c- p>);</c->
 
-<c- c1>// Input has some leftovers and wasn’t exhausted</c->
+<c- c1>// Input has some leftovers and wasn’t exhausted.</c->
 <c- c1>// Unused parts need to be put back into the file stream</c->
 <c- c1>// This can happen when, for example, the input is "4.2":</c->
 <c- c1>// '4' is read into the integer, ".2" is left over, and must be put back.</c->
-<c- c1>// This is consistent with iostreams and scanf</c->
+<c- c1>// This is consistent with iostreams and scanf.</c->
 <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>ret</c-><c- p>.</c-><c- n>empty</c-><c- p>())</c-> <c- p>{</c->
-    <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>it</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rbegin</c-><c- p>();</c-> <c- n>it</c-> <c- o>!=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rend</c-><c- p>();</c-> <c- o>++</c-><c- n>it</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>if</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>ungetc</c-><c- p>(</c-><c- o>*</c-><c- n>it</c-><c- p>,</c-> <c- n>f</c-><c- p>)</c-> <c- o>==</c-> <c- n>EOF</c-><c- p>)</c-> <c- p>{</c->
-            <c- c1>// Putback failed; file stream unusable</c->
-            <c- n>throw</c-> <c- p>...;</c->
-        <c- p>}</c->
+  <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>it</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rbegin</c-><c- p>();</c-> <c- n>it</c-> <c- o>!=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rend</c-><c- p>();</c-> <c- o>++</c-><c- n>it</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>if</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>ungetc</c-><c- p>(</c-><c- o>*</c-><c- n>it</c-><c- p>,</c-> <c- n>f</c-><c- p>)</c-> <c- o>==</c-> <c- n>EOF</c-><c- p>)</c-> <c- p>{</c->
+      <c- c1>// Putback failed; file stream unusable</c->
+      <c- n>throw</c-> <c- p>...;</c->
     <c- p>}</c->
+  <c- p>}</c->
 <c- p>}</c->
 </pre>
    <p><b>Reading a "word" from the file with <code class="highlight"><c- n>fstream</c-></code>:</b></p>
@@ -1716,12 +1653,12 @@ There are two conceivable approaches to this:</p>
 
 <c- c1>// See above for rationale</c->
 <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>ret</c-><c- p>.</c-><c- n>empty</c-><c- p>())</c-> <c- p>{</c->
-    <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>it</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rbegin</c-><c- p>();</c-> <c- n>it</c-> <c- o>!=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rend</c-><c- p>();</c-> <c- o>++</c-><c- n>it</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>f</c-><c- p>.</c-><c- n>putback</c-><c- p>(</c-><c- o>*</c-><c- n>it</c-><c- p>))</c-> <c- p>{</c->
-            <c- c1>// Putback failed; file stream unusable</c->
-            <c- n>throw</c-> <c- p>...;</c->
-        <c- p>}</c->
+  <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>it</c-> <c- o>=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rbegin</c-><c- p>();</c-> <c- n>it</c-> <c- o>!=</c-> <c- n>ret</c-><c- p>.</c-><c- n>rend</c-><c- p>();</c-> <c- o>++</c-><c- n>it</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>f</c-><c- p>.</c-><c- n>putback</c-><c- p>(</c-><c- o>*</c-><c- n>it</c-><c- p>))</c-> <c- p>{</c->
+      <c- c1>// Putback failed; file stream unusable</c->
+      <c- n>throw</c-> <c- p>...;</c->
     <c- p>}</c->
+  <c- p>}</c->
 <c- p>}</c->
 </pre>
    <p>Both of these approaches are flawed.
@@ -1730,16 +1667,16 @@ and so does the second one, although not as much.
 Both examples are difficult to use and are easy to get wrong.
 In the second example, it’d probably be better to skip the hassle,
 and just do <code class="highlight"><c- n>f</c-> <c- o>>></c-> <c- n>my_int</c-></code> directly, making this proposal obsolete.</p>
-   <p>One could argue, that solving this problem is out-of-scope for this proposal. <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> doesn’t deal with IO, and maybe this paper shouldn’t either.
+   <p>One could argue, that solving this problem is out-of-scope for this proposal. <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> doesn’t deal with I/O, and maybe this paper shouldn’t either.
 Comparisons to <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> in this case may be unwarranted, however.
-Scanning without IO is significantly less powerful than formatting without IO;
+Scanning without I/O is significantly less powerful than formatting without I/O;
 scanning is, inherently, a different process from formatting.</p>
    <p>With formatting, you can just dump all your values into a string.
 With scanning, that just isn’t possible, as seen earlier.
 The source has to be read lazily, and might grow mid-call.</p>
-   <p>The solution to this is to make <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> do IO and take a <code class="highlight"><c- n>bidirectional_range</c-></code>.
+   <p>The solution to this is to make <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> do I/O and take a <code class="highlight"><c- n>bidirectional_range</c-></code>.
 Although not a part of this proposal, a range type wrapping a file could be created
-(bidirectional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istreambuf_iterator</c-></code>? range-based IO?),
+(bidirectional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istreambuf_iterator</c-></code>? range-based I/O?),
 making the above use cases trivial.</p>
 <pre class="language-c++ highlight"><c- c1>// Hypothetical</c->
 <c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>bidirectional_range</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>io</c-><c- o>::</c-><c- n>file</c-><c- p>(...);</c->
@@ -1763,7 +1700,7 @@ This behavior is consistent with scanf.</p>
 <c- c1>// i == 42</c->
 <c- c1>// j is uninitialized (not written to)</c->
 </pre>
-   <p>See more discussion on error handling in <a href="#error-handling">§3.2 Error handling and partial successes</a>.</p>
+   <p>See more discussion on error handling in <a href="#error-handling">§3.1 Error handling and partial successes</a>.</p>
    <p>Parsing operations could be optimized further for more refined range concepts.
 For example, for <code class="highlight"><c- n>contiguous_range</c-></code>s, <code class="highlight"><c- n>string_view</c-></code>s could be read,
 eliminating an extra allocation and a copy into a <code class="highlight"><c- n>string</c-></code>.</p>
@@ -1779,7 +1716,67 @@ dramatical increase of library compile time and binary size
      <p>Type-erasing the range alongside the arguments ->
 virtual function call with every <code class="highlight"><c- o>*</c-><c- n>it</c-></code> and <code class="highlight"><c- o>++</c-><c- n>it</c-></code> (significant performance degradation)</p>
    </ul>
-   <h3 class="heading settled" data-level="3.2" id="error-handling"><span class="secno">3.2. </span><span class="content">Error handling and partial successes</span><a class="self-link" href="#error-handling"></a></h3>
+   <h3 class="heading settled" data-level="2.5" id="locales"><span class="secno">2.5. </span><span class="content">Locales</span><a class="self-link" href="#locales"></a></h3>
+   <p>As pointed out in <a data-link-type="biblio" href="#biblio-n4412">[N4412]</a>:</p>
+   <blockquote>
+    <p>There are a number of communications protocol frameworks in use that employ
+text-based representations of data, for example XML and JSON. The text is
+machine-generated and machine-read and should not depend on or consider the
+locales at either end.</p>
+   </blockquote>
+   <p>To address this <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> provided control over the use of locales. We propose
+doing the same for the current facility by performing locale-independent parsing
+by default and designating separate format specifiers for locale-specific one.</p>
+   <h3 class="heading settled" data-level="2.6" id="performance"><span class="secno">2.6. </span><span class="content">Performance</span><a class="self-link" href="#performance"></a></h3>
+   <p>The API allows efficient implementation that minimizes virtual function calls
+and dynamic memory allocations, and avoids unnecessary copies. In particular,
+since it doesn’t need to guarantee the lifetime of the input across multiple
+function calls, <code class="highlight"><c- n>scan</c-></code> can take <code class="highlight"><c- n>string_view</c-></code> avoiding an extra string copy
+compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istringstream</c-></code>.</p>
+   <p>We can also avoid unnecessary copies required by <code class="highlight"><c- n>scanf</c-></code> when parsing string,
+e.g.</p>
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>key</c-><c- p>;</c->
+<c- b>int</c-> <c- n>value</c-><c- p>;</c->
+<c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- s>"answer = 42"</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>value</c-><c- p>);</c->
+</pre>
+   <p>This has lifetime implications similar to returning match objects in <a data-link-type="biblio" href="#biblio-p1433">[P1433]</a> and iterator or subranges in the ranges library and can be mitigated in the same
+way.</p>
+   <h3 class="heading settled" data-level="2.7" id="binary-footprint"><span class="secno">2.7. </span><span class="content">Binary footprint</span><a class="self-link" href="#binary-footprint"></a></h3>
+   <p>We propose using a type erasure technique to reduce per-call binary code size.
+The scanning function that uses variadic templates can be implemented as a
+small inline wrapper around its non-variadic counterpart:</p>
+<pre class="language-c++ highlight"><c- n>string_view</c-> <c- nf>vscan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
+
+<c- n>template</c-> <c- o>&lt;</c-><c- kr>typename</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+<c- kr>inline</c-> <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>input</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>return</c-> <c- n>vscan</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_scan_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<c- p>}</c->
+</pre>
+   <p>As shown in <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> this dramatically reduces binary code size which will make <code class="highlight"><c- n>scan</c-></code> comparable to <code class="highlight"><c- n>scanf</c-></code> on this metric.</p>
+   <h3 class="heading settled" data-level="2.8" id="chrono"><span class="secno">2.8. </span><span class="content">Integration with chrono</span><a class="self-link" href="#chrono"></a></h3>
+   <p>The proposed facility can be integrated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-></code> (<a data-link-type="biblio" href="#biblio-p0355">[P0355]</a>)
+via the extension mechanism similarly to integration between chrono and text
+formatting proposed in <a data-link-type="biblio" href="#biblio-p1361">[P1361]</a>. This will improve consistency between parsing
+and formatting, make parsing multiple objects easier, and allow avoiding dynamic
+memory allocations without resolving to deprecated <code class="highlight"><c- n>strstream</c-></code>.</p>
+   <p>Before:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istringstream</c-> <c- n>is</c-><c- p>(</c-><c- s>"start = 10:30"</c-><c- p>);</c->
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-><c- p>;</c->
+<c- b>char</c-> <c- n>sep</c-><c- p>;</c->
+<c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>seconds</c-> <c- n>time</c-><c- p>;</c->
+<c- n>is</c-> <c- o>>></c-> <c- n>key</c-> <c- o>>></c-> <c- n>sep</c-> <c- o>>></c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-><c- p>(</c-><c- s>"%H:%M"</c-><c- p>,</c-> <c- n>time</c-><c- p>);</c->
+</pre>
+   <p>After:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-><c- p>;</c->
+<c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>seconds</c-> <c- n>time</c-><c- p>;</c->
+<c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- s>"start = 10:30"</c-><c- p>,</c-> <c- s>"{0} = {1:%H:%M}"</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>time</c-><c- p>);</c->
+</pre>
+   <p>Note that the <code class="highlight"><c- n>scan</c-></code> version additionally validates the separator.</p>
+   <h3 class="heading settled" data-level="2.9" id="deep-impact"><span class="secno">2.9. </span><span class="content">Impact on existing code</span><a class="self-link" href="#deep-impact"></a></h3>
+   <p>The proposed API is defined in a new header and should have no impact on
+existing code.</p>
+   <h2 class="heading settled" data-level="3" id="design-questions"><span class="secno">3. </span><span class="content">Open design questions</span><a class="self-link" href="#design-questions"></a></h2>
+   <h3 class="heading settled" data-level="3.1" id="error-handling"><span class="secno">3.1. </span><span class="content">Error handling and partial successes</span><a class="self-link" href="#error-handling"></a></h3>
    <p>This paper deliberately avoids dealing with errors at this point.
 To be consistent with <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>, exceptions would be the proper way to deal with errors.
 The problem with this approach is partial successes.</p>
@@ -1840,7 +1837,7 @@ except the success side should always be present, almost like:</p>
 <c- p>}</c->
 </pre>
    <p>This would, of course, be inconsistent with <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>, which might be undesirable.</p>
-   <h3 class="heading settled" data-level="3.3" id="tuple-out"><span class="secno">3.3. </span><span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span><a class="self-link" href="#tuple-out"></a></h3>
+   <h3 class="heading settled" data-level="3.2" id="tuple-out"><span class="secno">3.2. </span><span class="content">Returning a <code class="highlight"><c- n>tuple</c-></code> vs. output parameters</span><a class="self-link" href="#tuple-out"></a></h3>
    <p>In Cologne, LEWGI encouraged to explore an alternative API returning a <code class="highlight"><c- n>tuple</c-></code>,
 instead of <code class="highlight"><c- n>scanf</c-></code>-like output parameters.
 We find the <code class="highlight"><c- n>scanf</c-></code> approach to be superior, for the following reasons:</p>
@@ -1855,7 +1852,7 @@ Using this is awkward, with all the destructuring the user would have to do.</p>
 have a measurable overhead compared to output parameters, at ~5-10%,
 depending on the use case, according to <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> benchmarks.</p>
    </ul>
-   <h3 class="heading settled" data-level="3.4" id="naming"><span class="secno">3.4. </span><span class="content">Naming</span><a class="self-link" href="#naming"></a></h3>
+   <h3 class="heading settled" data-level="3.3" id="naming"><span class="secno">3.3. </span><span class="content">Naming</span><a class="self-link" href="#naming"></a></h3>
    <ol>
     <li data-md>
      <p><code class="highlight"><c- n>scan</c-></code></p>
