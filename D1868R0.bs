@@ -6,8 +6,7 @@ Revision: 0
 Audience: LEWG, SG16
 Status: D
 Group: WG21
-URL: http://fmtlib.net/D1868R0.html
-!Source: <a href="https://github.com/fmtlib/blob/master/source/D1868R0.bs">github.com/fmtlib/blob/master/source/D1868R0.bs</a>
+URL: http://fmt.dev/D1868R0.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Zach Laine, whatwasthataddress@gmail.com
 No abstract: true
@@ -496,8 +495,8 @@ using the default of 2. This will have reasonable behavior on systems that
 support emoji and make it clear that these symbols may need escaping or other
 fallback mechanism.
 
-Wording 🐉 {#wording}
-=========
+Wording {#wording}
+=======
 
 Modify <a href="http://eel.is/c++draft/format.string.std#7">[format.string.std]/p7</a>
 as follows:
@@ -521,13 +520,35 @@ Unicode encodings such as UTF-8 and UTF-16, respectively.
 systems. — end note ]
 Otherwise, the encodings are implementation-defined.
 
-> <ins>Display width of a string in a Unicode encoding is the sum of display
-widths of the first code points in its grapheme clusters as defined by
-Unicode® Standard Annex #29 Unicode Text Segmentation.
-[ *Note:* Display width computation is subject to change. — end note ]
+> <ins>Width of a string in a Unicode encoding is the sum of estimated widths of
+the first code points in its extended grapheme clusters as defined by Unicode®
+Standard Annex #29 Unicode Text Segmentation. Estimated width of the following
+code points is 2:
+> ```text
+> U+1100 .. U+115F <!-- Hangul Jamo init. consonants -->
+> U+2329 <!-- LEFT-POINTING ANGLE BRACKET〈 -->
+> U+232A <!-- RIGHT-POINTING ANGLE BRACKET 〉-->
+> U+2E80 .. U+303E <!-- CJK ... Yi except Unicode Character “〿” -->
+> U+3040 .. U+A4CF
+> U+AC00 .. U+D7A3 <!-- Hangul Syllables -->
+> U+F900 .. U+FAFF <!-- CJK Compatibility Ideographs -->
+> U+FE10 .. U+FE19 <!-- Vertical Forms -->
+> U+FE30 .. U+FE6F <!-- CJK Compatibility Forms -->
+> U+FF00 .. U+FF60 <!-- Fullwidth Forms -->
+> U+FFE0 .. U+FFE6 <!-- Fullwidth Forms -->
+> U+20000 .. U+2FFFD <!-- CJK -->
+> U+30000 .. U+3FFFD
+> U+1F300 .. U+1F64F <!-- Miscellaneous Symbols and Pictographs + Emoticons -->
+> U+1F900 .. U+1F9FF <!-- Supplemental Symbols and Pictographs -->
+> ```
 
-<!-- TODO: more details about Unicode and non-Unicode case, control, combining etc. -->
-<!-- TODO Control (Cc), format (Cf) categories - non printable
+> Estimated width of other code points is 1.
+[ *Note:* The method of estimated width computation is subject to change. — end note ]
+
+> <ins>Width of a string in a non-Unicode encoding is implementation-defined.
+
+<!-- TODO: maybe clarify that it's a user's responsibility to escape
+     non-printable characters, e.g. from Control (Cc), format (Cf) categories
     {"\xe2\x80\x8b", "U+200B { ZERO WIDTH SPACE }"},
     {"\xe2\x81\xa3", "U+2063 { INVISIBLE SEPARATOR }"},
     {"\xe2\x81\xa4", "U+2064 { INVISIBLE PLUS }"},

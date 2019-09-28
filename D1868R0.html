@@ -1228,9 +1228,9 @@ Possible extra rowspan handling
     }
   </style>
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
-  <link href="http://fmtlib.net/D1868R0.html" rel="canonical">
+  <link href="http://fmt.dev/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9a0de3967ffbbd0b28875a3fffb471cf76214823" name="document-revision">
+  <meta content="4922093d954729ff4b3de28916bca2e8ab682545" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1444,7 +1444,7 @@ pre .property::before, pre .property::after {
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://fmtlib.net/D1868R0.html">http://fmtlib.net/D1868R0.html</a>
+     <dd><a class="u-url" href="http://fmt.dev/D1868R0.html">http://fmt.dev/D1868R0.html</a>
      <dt>Authors:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
@@ -1456,8 +1456,6 @@ pre .property::before, pre .property::after {
      <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
      <dt>Draft Revision:
      <dd>0
-     <dt>Source:
-     <dd><a href="https://github.com/fmtlib/blob/master/source/D1868R0.bs">github.com/fmtlib/blob/master/source/D1868R0.bs</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -1477,7 +1475,7 @@ pre .property::before, pre .property::after {
     <li><a href="#limitations"><span class="secno">9</span> <span class="content">Limitations</span></a>
     <li><a href="#examples"><span class="secno">10</span> <span class="content">Examples</span></a>
     <li><a href="#implementation"><span class="secno">11</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">12</span> <span class="content">Wording 🐉</span></a>
+    <li><a href="#wording"><span class="secno">12</span> <span class="content">Wording</span></a>
     <li><a href="#ack"><span class="secno">13</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -1543,7 +1541,7 @@ formatting facility using the most natural API, namely dynamic width:</p>
    <p>(Note that spacing in front of <code class="highlight"><c- sc>'『'</c-></code> is part of the character and it is aligned
 correctly both in the code and in the output.)</p>
    <h2 class="heading settled" data-level="3" id="art"><span class="secno">3. </span><span class="content">Prior art</span><a class="self-link" href="#art"></a></h2>
-   <p>Display width is a well-establish concept. In particular, POSIX defines the <code class="highlight"><c- n>wcswidth</c-></code> function (<a data-link-type="biblio" href="#biblio-wcswidth">[WCSWIDTH]</a>) that has the required semantics:</p>
+   <p>Display width is a well-established concept. In particular, POSIX defines the <code class="highlight"><c- n>wcswidth</c-></code> function (<a data-link-type="biblio" href="#biblio-wcswidth">[WCSWIDTH]</a>) that has the required semantics:</p>
    <blockquote>
     <p>The <code class="highlight"><c- n>wcswidth</c-><c- p>()</c-></code> function shall determine the number of column positions
 required for <code class="highlight"><c- n>n</c-></code> wide-character codes (or fewer than <code class="highlight"><c- n>n</c-></code> wide-character codes
@@ -1574,7 +1572,7 @@ according to the GitHub dependency graph</p>
    <p>GitHub code search returns over 500,000 results for "wcwidth" and 180,000
 results for "wcswidth".</p>
    <p>The number of implementations of this facility together with large usage numbers
-indicate that it is an imporant use case. All of the above implementations work
+indicate that it is an important use case. All of the above implementations work
 exclusively with Unicode.</p>
    <h2 class="heading settled" data-level="4" id="locale"><span class="secno">4. </span><span class="content">Locale</span><a class="self-link" href="#locale"></a></h2>
    <p>One of the major design features of the C++20 formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) is
@@ -1651,8 +1649,8 @@ portable code with optional transcoding at the system API boundaries (see <a dat
 don’t do any transcoding. So the worst thing that can happen is that the display
 width will be estimated incorrectly leading to misaligned text which is what
 already happens when you pass a variable-width string to <code class="highlight"><c- n>printf</c-></code>. This is also
-not novel, for example <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-></code> also acknowledges existence of system
-dependent encodings:</p>
+not novel, for example <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-></code> also acknowledges the existence of
+system dependent encodings:</p>
    <blockquote>
     <p>The native encoding of an ordinary character string is the operating system
 dependent current encoding for pathnames.</p>
@@ -1807,7 +1805,7 @@ behavior, in this case done by the terminal itself.</p>
 also cannot handle complex emoji yet but otherwise produce similar results.</p>
    <h2 class="heading settled" data-level="11" id="implementation"><span class="secno">11. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
    <p>The proposal is implemented in the fmt library, successfully tested on a
-variety of platforms, and will become the default for both <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> strings since the results showed great improvent in width estimation compared
+variety of platforms, and will become the default for both <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> strings since the results showed great improvement in width estimation compared
 to using code units and code points. The implementation is very simple and
 required only integration of an existing grapheme cluster break and <code class="highlight"><c- n>wcswidth</c-></code> implementations which was done in less than a day.</p>
    <p>We tested our implementation on macOS Terminal version 2.9.5 (421.2),
@@ -1848,16 +1846,16 @@ width in <code class="highlight"><c- n>printf</c-></code> is only able to handle
 Latin. More importantly, our approach permits refining the definition in the
 future by declaring support for more blocks if there is interest in doing so.
 It will mostly require researching the status of Unicode support on terminals
-and minimial or no changes to the implementation.</p>
+and minimal or no changes to the implementation.</p>
    <p>Additionally we looked at the Unicode block U+1F300..U+1F5FF Miscellaneous
 Symbols and Pictographs. Support for code points in this block varies, for
-example, in the Windows console none of them were dislayed correctly, with or
+example, in the Windows console none of them were displayed correctly, with or
 without width. In macOS Terminal most of the symbols had width 2 with a few
 exceptions. Therefore we recommend not declaring any support for this block and
 using the default of 2. This will have reasonable behavior on systems that
 support emoji and make it clear that these symbols may need escaping or other
 fallback mechanism.</p>
-   <h2 class="heading settled" data-level="12" id="wording"><span class="secno">12. </span><span class="content">Wording 🐉</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="12" id="wording"><span class="secno">12. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify <a href="http://eel.is/c++draft/format.string.std#7">[format.string.std]/p7</a> as follows:</p>
    <blockquote>
     <p>The positive-integer in width is a decimal integer defining the minimum field
@@ -1880,10 +1878,35 @@ systems. — end note ]
 Otherwise, the encodings are implementation-defined. </ins>
    </blockquote>
    <blockquote>
-    <ins>Display width of a string in a Unicode encoding is the sum of display
-widths of the first code points in its grapheme clusters as defined by
-Unicode® Standard Annex #29 Unicode Text Segmentation.
-[ <em>Note:</em> Display width computation is subject to change. — end note ] </ins>
+    <ins>
+     Width of a string in a Unicode encoding is the sum of estimated widths of
+the first code points in its extended grapheme clusters as defined by Unicode®
+Standard Annex #29 Unicode Text Segmentation. Estimated width of the following
+code points is 2: 
+<pre class="language-text highlight">U+1100 .. U+115F
+U+2329
+U+232A
+U+2E80 .. U+303E
+U+3040 .. U+A4CF
+U+AC00 .. U+D7A3
+U+F900 .. U+FAFF
+U+FE10 .. U+FE19
+U+FE30 .. U+FE6F
+U+FF00 .. U+FF60
+U+FFE0 .. U+FFE6
+U+20000 .. U+2FFFD
+U+30000 .. U+3FFFD
+U+1F300 .. U+1F64F
+U+1F900 .. U+1F9FF
+</pre>
+    </ins>
+   </blockquote>
+   <blockquote>
+    <p>Estimated width of other code points is 1.
+[ <em>Note:</em> The method of estimated width computation is subject to change. — end note ]</p>
+   </blockquote>
+   <blockquote>
+    <ins>Width of a string in a non-Unicode encoding is implementation-defined. </ins>
    </blockquote>
    <p>Optional (possibly in C++23):</p>
    <blockquote>
