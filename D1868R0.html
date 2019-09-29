@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmt.dev/D1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="cfcbf8505464631a43c00a467f83764d94cd49d1" name="document-revision">
+  <meta content="9478314d96f8352d6fa341037579f1cfe8390871" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1440,7 +1440,7 @@ pre .property::before, pre .property::after {
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">D1868R0<br>🦄 width: clarifying units of width and precision in std::format</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-09-18">2019-09-18</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2019-09-29">2019-09-29</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1467,7 +1467,7 @@ pre .property::before, pre .property::after {
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivating example</span></a>
     <li><a href="#art"><span class="secno">3</span> <span class="content">Prior art</span></a>
-    <li><a href="#locale"><span class="secno">4</span> <span class="content">Locale</span></a>
+    <li><a href="#locale"><span class="secno">4</span> <span class="content">Locale and execution encodings</span></a>
     <li><a href="#windows"><span class="secno">5</span> <span class="content">Windows</span></a>
     <li><a href="#precision"><span class="secno">6</span> <span class="content">Precision</span></a>
     <li><a href="#proposal"><span class="secno">7</span> <span class="content">Proposal</span></a>
@@ -1490,8 +1490,8 @@ pre .property::before, pre .property::after {
    <p>A new text formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) was adopted into the draft standard
 for C++20 in Cologne. Unfortunately it left unspecified units of width and
 precision which created an ambiguity for string arguments in variable-width
-encodings. This paper proposes fixing this shortcoming and specifying width and
-precision in a way that satisfies the following goals:</p>
+encodings (<a data-link-type="biblio" href="#biblio-lwg3290">[LWG3290]</a>). This paper proposes fixing this shortcoming and
+specifying width and precision in a way that satisfies the following goals:</p>
    <ul>
     <li data-md>
      <p>addressing the main use case</p>
@@ -1574,7 +1574,7 @@ results for "wcswidth".</p>
    <p>The number of implementations of this facility together with large usage numbers
 indicate that it is an important use case. All of the above implementations work
 exclusively with Unicode.</p>
-   <h2 class="heading settled" data-level="4" id="locale"><span class="secno">4. </span><span class="content">Locale</span><a class="self-link" href="#locale"></a></h2>
+   <h2 class="heading settled" data-level="4" id="locale"><span class="secno">4. </span><span class="content">Locale and execution encodings</span><a class="self-link" href="#locale"></a></h2>
    <p>One of the major design features of the C++20 formatting facility (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) is
 locale independence by default with locale-aware formatting available as an
 opt-in via separate format specifiers. This has an important safety property
@@ -1589,7 +1589,27 @@ independently of the active code page or the global locale. It is also possible
 to write Unicode text to a console with <code class="highlight"><c- n>WriteConsoleW</c-></code> regardless of both the
 active code page and the console code page. On macOS and Linux, the terminal’s
 encoding is determined by the settings of the terminal emulator application and
-normally defaults to UTF-8.</p>
+normally defaults to UTF-8. Changing the encoding is possible but has severe
+limitations. For example, if you change the terminal encoding from UTF-8 to
+KOI8-R on macOS <code class="highlight"><c- n>ls</c-></code> can no longer display even Cyrillic paths even though both
+UTF-8 and KOI8-R support Cyrillic. Here’s an example output with the terminal
+encoding set to KOI8-R:</p>
+<pre class="language-text highlight">$ ls
+Die Allgemeine Erklц╓rung der Menschenrechte
+Universal Declaration of Human Rights
+Д╦√Г•▄Д╨╨Ф²┐Е╝ёХ╗─
+н÷н≥н н÷н╔н°н•н²н≥н н≈ н■н≥н▒н н≈н║н╔н·н≈ н⌠н≥н▒ н╓н▒ н▒н²н≤н║н╘н═н≥н²н▒ н■н≥н н▒н≥н╘н°н▒н╓н▒
+п▓я│п╣п╬п╠я┴п╟я▐ п╢п╣п╨п╩п╟я─п╟я├п╦я▐ п©я─п╟п╡ я┤п╣п╩п╬п╡п╣п╨п╟
+ь╖ы└ь╔ь╧ы└ь╖ы├ ь╖ы└ь╧ь╖ы└ы┘ы┼ ы└ь╜ы┌ы┬ы┌ ь╖ы└ь╔ы├ьЁь╖ы├
+
+$ LC_ALL=ru.RU.KOI8-R ls
+Die Allgemeine Erkl??rung der Menschenrechte
+Universal Declaration of Human Rights
+?????????????????????? ?????????????????? ?????? ???? ?????????????????? ????????????????????
+???????????????? ???????????????????? ???????? ????????????????
+?????????????? ?????????????? ?????????? ??????????????
+??????????????????
+</pre>
    <p>Therefore, for the purposes of specifying width, the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> shouldn’t dynamically depend on the locale’s encoding by default. As with other
 argument types, a separate format specifier can be added to opt into
 locale-specific behavior to support execution encodings and legacy code.</p>
@@ -2069,6 +2089,8 @@ researching the topic.</p>
    <dd><a href="https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth">Julia Documentation, Strings, Base.UTF8proc.charwidth</a>. URL: <a href="https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth">https://docs.julialang.org/en/v0.6/stdlib/strings/#Base.UTF8proc.charwidth</a>
    <dt id="biblio-length">[LENGTH]
    <dd>Henri Sivonen. <a href="https://hsivonen.fi/string-length/">It’s Not Wrong that "🤦".length == 7 But It’s Better that "🤦".len() == 17 and Rather Useless that len("🤦") == 5</a>. URL: <a href="https://hsivonen.fi/string-length/">https://hsivonen.fi/string-length/</a>
+   <dt id="biblio-lwg3290">[LWG3290]
+   <dd><a href="https://cplusplus.github.io/LWG/issue3290">LWG Issue 3290: Are std::format field widths code units, code points, or something else?</a>. URL: <a href="https://cplusplus.github.io/LWG/issue3290">https://cplusplus.github.io/LWG/issue3290</a>
    <dt id="biblio-mgk25">[MGK25]
    <dd>Markus Kuhn. <a href="https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c">An implementation of `wcwidth()` and `wcswidth()` for Unicode</a>. URL: <a href="https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c">https://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c</a>
    <dt id="biblio-p0645">[P0645]

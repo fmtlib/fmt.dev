@@ -10,7 +10,7 @@ URL: http://fmt.dev/D1868R0.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Zach Laine, whatwasthataddress@gmail.com
 No abstract: true
-Date: 2019-09-18
+Date: 2019-09-29
 Markup Shorthands: markdown yes
 </pre>
 
@@ -114,8 +114,8 @@ The number of implementations of this facility together with large usage numbers
 indicate that it is an important use case. All of the above implementations work
 exclusively with Unicode.
 
-Locale {#locale}
-======
+Locale and execution encodings {#locale}
+==============================
 
 One of the major design features of the C++20 formatting facility ([[P0645]]) is
 locale independence by default with locale-aware formatting available as an
@@ -133,7 +133,29 @@ independently of the active code page or the global locale. It is also possible
 to write Unicode text to a console with `WriteConsoleW` regardless of both the
 active code page and the console code page. On macOS and Linux, the terminal's
 encoding is determined by the settings of the terminal emulator application and
-normally defaults to UTF-8.
+normally defaults to UTF-8. Changing the encoding is possible but has severe
+limitations. For example, if you change the terminal encoding from UTF-8 to
+KOI8-R on macOS `ls` can no longer display even Cyrillic paths even though both
+UTF-8 and KOI8-R support Cyrillic. Here's an example output with the terminal
+encoding set to KOI8-R:
+
+```text
+$ ls
+Die Allgemeine Erklц╓rung der Menschenrechte
+Universal Declaration of Human Rights
+Д╦√Г•▄Д╨╨Ф²┐Е╝ёХ╗─
+н÷н≥н н÷н╔н°н•н²н≥н н≈ н■н≥н▒н н≈н║н╔н·н≈ н⌠н≥н▒ н╓н▒ н▒н²н≤н║н╘н═н≥н²н▒ н■н≥н н▒н≥н╘н°н▒н╓н▒
+п▓я│п╣п╬п╠я┴п╟я▐ п╢п╣п╨п╩п╟я─п╟я├п╦я▐ п©я─п╟п╡ я┤п╣п╩п╬п╡п╣п╨п╟
+ь╖ы└ь╔ь╧ы└ь╖ы├ ь╖ы└ь╧ь╖ы└ы┘ы┼ ы└ь╜ы┌ы┬ы┌ ь╖ы└ь╔ы├ьЁь╖ы├
+
+$ LC_ALL=ru.RU.KOI8-R ls
+Die Allgemeine Erkl??rung der Menschenrechte
+Universal Declaration of Human Rights
+?????????????????????? ?????????????????? ?????? ???? ?????????????????? ????????????????????
+???????????????? ???????????????????? ???????? ????????????????
+?????????????? ?????????????? ?????????? ??????????????
+??????????????????
+```
 
 Therefore, for the purposes of specifying width, the output of `std::format`
 shouldn't dynamically depend on the locale's encoding by default. As with other
@@ -156,12 +178,11 @@ and
 Code pages are used primarily by legacy applications or those communicating with
 legacy applications such as older mail servers.
 
-<!--
-Moreover, Windows API functions that work with code pages transcode inputs and
-call their Unicode counterparts, for example, `WriteConsoleA` transcodes the
-text in the passed buffer and calls `WriteConsoleW`. This can result in the loss
-of information when using legacy I/O APIs:
--->
+<!-- 
+Windows API functions that work with code pages transcode inputs and call their
+Unicode counterparts, for example, `WriteConsoleA` transcodes the text in the
+passed buffer and calls `WriteConsoleW`. This can result in the loss of
+information when using legacy I/O APIs. -->
 
 Since `std::format` is a completely new API which is not a drop-in replacement
 for anything in the standard library today and therefore can only be used in the
