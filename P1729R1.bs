@@ -249,7 +249,7 @@ template <typename Range>
 concept scan-range =
     std::ranges::bidirectional_range<Range> &&
     std::ranges::view<Range> &&
-    std::ranges::pair-reconstructible_range<Range>;
+    std::ranges::pair-reconstructible-range<Range>;
 ```
 
 Although not a part of this proposal, a range type wrapping a file could be created
@@ -265,7 +265,7 @@ auto f = std::io::ifile(...);
 // operator* would return the last character read,
 // and operator-- would putback a character
 int i{};
-f = std::scan(f, "{}", i);
+f = std::scan(std::io::file_view(f), "{}", i);
 ```
 
 <b>Why `bidirectional_range`?</b>
@@ -291,9 +291,22 @@ See more discussion on error handling in [[#error-handling]].
 
 <b>Why `view`?</b>
 
+It makes ownership semantics clearer, and avoids potentially expensive copying.
+
+```c++
+std::string str = "verylongstring";
+str = std::scan(str, ...);
+// str would have to be reallocated and its contents moved
+```
+
 <b>Why `pair-reconstructible-range`?</b>
 
-Depends on [[P1664]].
+(Depends on [[P1664]].)
+
+Should be pretty obvious. 
+While parsing the input range, `std::scan` advances an iterator into that range.
+Once the parsing is complete, the range needs to be returned starting from the iterator.
+
 
 Parsing operations could be optimized further for more refined range concepts.
 For example, for `contiguous_range`s, `string_view`s could be read,
