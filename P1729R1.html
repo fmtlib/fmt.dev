@@ -1227,10 +1227,10 @@ Possible extra rowspan handling
       text-align: center;
     }
   </style>
-  <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
+  <meta content="Bikeshed version 4c94409a0f8f9bae15b929d2cd1d918c8334e6ff" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c8007936acd8e344f20fc06446440451879a1049" name="document-revision">
+  <meta content="eedf47140e6dbac44ee16d53429a5d61acaa973f" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1674,12 +1674,19 @@ scanning is, inherently, a different process from formatting.</p>
    <p>With formatting, you can just dump all your values into a string.
 With scanning, that just isn’t possible, as seen earlier.
 The source has to be read lazily, and might grow mid-call.</p>
-   <p>The solution to this is to make <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> do I/O and take a <code class="highlight"><c- n>bidirectional_range</c-></code>.
-Although not a part of this proposal, a range type wrapping a file could be created
+   <p>The solution to this is to make <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> do I/O and take a <code class="highlight"><c- n>range</c-></code>:</p>
+<pre class="language-c++ highlight"><c- c1>// exposition only</c->
+<c- n>template</c-> <c- o>&lt;</c-><c- kr>typename</c-> <c- n>Range</c-><c- o>></c->
+<c- n>concept</c-> <c- n>scan</c-><c- o>-</c-><c- n>range</c-> <c- o>=</c->
+    <c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>bidirectional_range</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- o>&amp;&amp;</c->
+    <c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>view</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- o>&amp;&amp;</c->
+    <c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>pair</c-><c- o>-</c-><c- n>reconstructible_range</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>;</c->
+</pre>
+   <p>Although not a part of this proposal, a range type wrapping a file could be created
 (bidirectional <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istreambuf_iterator</c-></code>? range-based I/O?),
 making the above use cases trivial.</p>
 <pre class="language-c++ highlight"><c- c1>// Hypothetical</c->
-<c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>bidirectional_range</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>io</c-><c- o>::</c-><c- n>file</c-><c- p>(...);</c->
+<c- k>auto</c-> <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>io</c-><c- o>::</c-><c- n>ifile</c-><c- p>(...);</c->
 
 <c- c1>// All the buffer management is dealt with by the range and std::scan</c->
 <c- c1>// Range iterator operator++ would read a character,</c->
@@ -1688,7 +1695,8 @@ making the above use cases trivial.</p>
 <c- b>int</c-> <c- n>i</c-><c- p>{};</c->
 <c- n>f</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- p>(</c-><c- n>f</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>i</c-><c- p>);</c->
 </pre>
-   <p>The reason for <code class="highlight"><c- n>bidirectional_range</c-></code> is error recovery.
+   <p><b>Why <code class="highlight"><c- n>bidirectional_range</c-></code>?</b></p>
+   <p>The reason is error recovery.
 In the case that reading an argument fails,
 the range needs to be reset to the state it was in before starting to read that value.
 This behavior is consistent with scanf.</p>
@@ -1700,18 +1708,26 @@ This behavior is consistent with scanf.</p>
 <c- c1>// i == 42</c->
 <c- c1>// j is uninitialized (not written to)</c->
 </pre>
+   <p>In fact, this is main the reason why <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ungetc</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istream</c-><c- o>::</c-><c- n>unget</c-></code> exist.</p>
    <p>See more discussion on error handling in <a href="#error-handling">§3.1 Error handling and partial successes</a>.</p>
+   <p><b>Why <code class="highlight"><c- n>view</c-></code>?</b></p>
+   <p><b>Why <code class="highlight"><c- n>pair</c-><c- o>-</c-><c- n>reconstructible</c-><c- o>-</c-><c- n>range</c-></code>?</b></p>
+   <p>Depends on <a data-link-type="biblio" href="#biblio-p1664">[P1664]</a>.</p>
    <p>Parsing operations could be optimized further for more refined range concepts.
 For example, for <code class="highlight"><c- n>contiguous_range</c-></code>s, <code class="highlight"><c- n>string_view</c-></code>s could be read,
 eliminating an extra allocation and a copy into a <code class="highlight"><c- n>string</c-></code>.</p>
-   <p>A problem with taking a range as input would be an increase of generated code size,
+   <p>A problem with taking a range as input would be a potential increase in generated code size,
 as the internals would need to be instantiated for every used range type.
 This could be mitigated by:</p>
    <ul>
     <li data-md>
-     <p>Generating <code class="highlight"><c- n>vscan</c-></code> overloads for a lot of different range types ->
-dramatical increase of library compile time and binary size
+     <p>Generating non-inline <code class="highlight"><c- n>vscan</c-></code> overloads for different range types ->
+increase of library compile time and binary size
 (first one a non-issue for stdlib, second one maybe not so much)</p>
+     <ul>
+      <li data-md>
+       <p><code class="highlight"><c- n>string_view</c-></code> is a prime candidate for this</p>
+     </ul>
     <li data-md>
      <p>Type-erasing the range alongside the arguments ->
 virtual function call with every <code class="highlight"><c- o>*</c-><c- n>it</c-></code> and <code class="highlight"><c- o>++</c-><c- n>it</c-></code> (significant performance degradation)</p>
@@ -1910,9 +1926,8 @@ and would be consistent with existing <code class="highlight"><c- n>scanf</c-></
       <td><code class="highlight"><c- n>parse_context</c-></code>
    </table>
    <h2 class="heading settled" data-level="4" id="existing-work"><span class="secno">4. </span><span class="content">Existing work</span><a class="self-link" href="#existing-work"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> is a C++ library that, among other things, provides a <code class="highlight"><c- n>scan</c-></code> function
-similar to the one proposed here. <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> has a prototype implementation of the
-proposal.</p>
+   <p><a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> is a C++ library that, among other things,
+provides a range-based <code class="highlight"><c- n>scan</c-></code> interface similar to the one described in this paper. <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> has a prototype implementation of the proposal.</p>
   </main>
 <script>
 (function() {
@@ -2064,6 +2079,8 @@ proposal.</p>
    <dd>Victor Zverovich; Daniela Engert; Howard E. Hinnant. <a href="https://wg21.link/p1361">Integration of chrono with text formatting</a>. URL: <a href="https://wg21.link/p1361">https://wg21.link/p1361</a>
    <dt id="biblio-p1433">[P1433]
    <dd>Hana Dusíková. <a href="https://wg21.link/p1433">Compile Time Regular Expressions</a>. URL: <a href="https://wg21.link/p1433">https://wg21.link/p1433</a>
+   <dt id="biblio-p1664">[P1664]
+   <dd>JeanHeyd Meneide; Hannes Hauswedell. <a href="https://wg21.link/p1664">reconstructible_range - a concept for putting ranges back together</a>. URL: <a href="https://wg21.link/p1664">https://wg21.link/p1664</a>
    <dt id="biblio-parse">[PARSE]
    <dd><a href="https://pypi.org/project/parse/">Python `parse` package</a>. URL: <a href="https://pypi.org/project/parse/">https://pypi.org/project/parse/</a>
    <dt id="biblio-scnlib">[SCNLIB]

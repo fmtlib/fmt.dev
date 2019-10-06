@@ -241,14 +241,24 @@ With formatting, you can just dump all your values into a string.
 With scanning, that just isn't possible, as seen earlier.
 The source has to be read lazily, and might grow mid-call.
 
-The solution to this is to make `std::scan` do I/O and take a `bidirectional_range`.
+The solution to this is to make `std::scan` do I/O and take a `range`:
+
+```c++
+// exposition only
+template <typename Range>
+concept scan-range =
+    std::ranges::bidirectional_range<Range> &&
+    std::ranges::view<Range> &&
+    std::ranges::pair-reconstructible_range<Range>;
+```
+
 Although not a part of this proposal, a range type wrapping a file could be created
 (bidirectional `std::istreambuf_iterator`? range-based I/O?),
 making the above use cases trivial.
 
 ```c++
 // Hypothetical
-std::ranges::bidirectional_range f = std::io::file(...);
+auto f = std::io::ifile(...);
 
 // All the buffer management is dealt with by the range and std::scan
 // Range iterator operator++ would read a character,
@@ -258,7 +268,9 @@ int i{};
 f = std::scan(f, "{}", i);
 ```
 
-The reason for `bidirectional_range` is error recovery.
+<b>Why `bidirectional_range`?</b>
+
+The reason is error recovery.
 In the case that reading an argument fails,
 the range needs to be reset to the state it was in before starting to read that value.
 This behavior is consistent with scanf.
@@ -273,19 +285,28 @@ input = std::scan(input, "{} {}", i, j);
 // j is uninitialized (not written to)
 ```
 
+In fact, this is main the reason why `std::ungetc` and `std::istream::unget` exist.
+
 See more discussion on error handling in [[#error-handling]].
+
+<b>Why `view`?</b>
+
+<b>Why `pair-reconstructible-range`?</b>
+
+Depends on [[P1664]].
 
 Parsing operations could be optimized further for more refined range concepts.
 For example, for `contiguous_range`s, `string_view`s could be read,
 eliminating an extra allocation and a copy into a `string`.
 
-A problem with taking a range as input would be an increase of generated code size,
+A problem with taking a range as input would be a potential increase in generated code size,
 as the internals would need to be instantiated for every used range type.
 This could be mitigated by:
  
-  * Generating `vscan` overloads for a lot of different range types ->
-    dramatical increase of library compile time and binary size
+  * Generating non-inline `vscan` overloads for different range types ->
+    increase of library compile time and binary size
     (first one a non-issue for stdlib, second one maybe not so much)
+      * `string_view` is a prime candidate for this
   * Type-erasing the range alongside the arguments ->
     virtual function call with every `*it` and `++it`
     (significant performance degradation)
@@ -526,9 +547,9 @@ and would be consistent with existing `scanf`.
 Existing work {#existing-work}
 =============
 
-[[SCNLIB]] is a C++ library that, among other things, provides a `scan` function
-similar to the one proposed here. [[FMT]] has a prototype implementation of the
-proposal.
+[[SCNLIB]] is a C++ library that, among other things,
+provides a range-based `scan` interface similar to the one described in this paper.
+[[FMT]] has a prototype implementation of the proposal.
 
 <!--
 An unscientific Twitter poll
@@ -591,6 +612,11 @@ received 188 votes showed slight preference towards `scan` (46% `scan`, 41%
       "title": "std::expected",
       "authors": ["JF Bastien", "Vicente Botet"],
       "href": "https://wg21.link/p0323"
+  },
+  "P1664": {
+      "title": "reconstructible_range - a concept for putting ranges back together",
+      "authors": ["JeanHeyd Meneide", "Hannes Hauswedell"],
+      "href": "https://wg21.link/p1664"
   }
 }
 </pre>
