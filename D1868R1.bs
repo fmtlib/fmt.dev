@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: 🦄 width: clarifying units of width and precision in std::format
-Shortname: P1868
-Revision: 0
+Shortname: D1868
+Revision: 1
 !Draft Revision: 0
-Audience: LEWG, SG16
+Audience: LEWG
 Status: D
 Group: WG21
 URL: http://fmt.dev/P1868R0.html
@@ -35,6 +35,58 @@ specifying width and precision in a way that satisfies the following goals:
 * consistency with the SG16's long-term direction
 * following existing practice
 * ease of implementation
+
+Changes
+=======
+
+Replace
+
+> For the purposes of width computation the string is assumed to be in a fixed
+operating system dependent encoding. If the operating system is capable of
+displaying Unicode text in a terminal both ordinary and wide encodings are
+Unicode encodings such as UTF-8 and UTF-16, respectively.
+[ *Note:* this is the case for Windows-based and many POSIX-based operating
+systems. — end note ]
+Otherwise, the encodings are implementation-defined.
+
+with
+
+> For the purposes of width computation the string is assumed to be in a
+locale-independent implementation-defined encoding.
+[ *Note:* the implementations are encouraged to use Unicode on platforms capable
+of displaying Unicode text in a terminal which is the case for Windows-based and
+many POSIX-based operating systems. — end note ]
+
+in Wording.
+
+Remove the  "Optional (possibly in C++23)" section from Wording.
+
+SG16 poll results
+=================
+
+Do we want to address this problem in C++20
+
+```
+SF   F   N   A   SA
+10   1   2   0   0
+```
+
+Width / precision calculation should be computed in terms of display width?
+
+```
+SF   F   N   A   SA
+9    3   1   0   0
+```
+
+Resolve US228 with P1868R0 modified to specify the encoding used to interpret
+the input text for the purposes of width and precision computation be
+implementation defined, but not locale sensitive, with non-normative guidance to
+use Unicode if possible?
+
+```
+SF   F   N   A   SA
+7    4   1   0   0
+```
 
 Motivating example {#motivation}
 ==================
@@ -545,13 +597,11 @@ to display it in a terminal.
 — end note ]
 
 > <ins>
-For the purposes of width computation the string is assumed to be in a fixed
-operating system dependent encoding. If the operating system is capable of
-displaying Unicode text in a terminal both ordinary and wide encodings are
-Unicode encodings such as UTF-8 and UTF-16, respectively.
-[ *Note:* this is the case for Windows-based and many POSIX-based operating
-systems. — end note ]
-Otherwise, the encodings are implementation-defined.
+For the purposes of width computation the string is assumed to be in a
+locale-independent implementation-defined encoding.
+[ *Note:* the implementations are encouraged to use Unicode on platforms capable
+of displaying Unicode text in a terminal which is the case for Windows-based and
+many POSIX-based operating systems. — end note ]
 
 > <ins>Width of a string in a Unicode encoding is the sum of estimated widths of
 the first code points in its extended grapheme clusters as defined by Unicode®
@@ -589,7 +639,7 @@ string types. For floating-point types this field specifies the formatting
 precision. <del>For string types it specifies how many characters will be used
 from the string.</del> <ins>For string types it specifies the maximum width.
 Trailing grapheme clusters or implementation-defined units of width that exceed
-the given precision are ignored.
+the given precision are ignored.</ins>
 
 <!-- TODO: maybe clarify that it's a user's responsibility to escape
      non-printable characters, e.g. from Control (Cc), format (Cf) categories
@@ -597,11 +647,6 @@ the given precision are ignored.
     {"\xe2\x81\xa3", "U+2063 { INVISIBLE SEPARATOR }"},
     {"\xe2\x81\xa4", "U+2064 { INVISIBLE PLUS }"},
 -->
-
-Optional (possibly in C++23):
-
-> <ins>The `l` option causes the locale's encoding to be used when computing
-display width of a string.
 
 Acknowledgements {#ack}
 ================
