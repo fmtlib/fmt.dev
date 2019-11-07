@@ -39,27 +39,52 @@ specifying width and precision in a way that satisfies the following goals:
 Changes
 =======
 
-Replace
+  * Replace "required to display it in a terminal" with "appropriate to display in
+    a terminal".
 
-> For the purposes of width computation the string is assumed to be in a fixed
-operating system dependent encoding. If the operating system is capable of
-displaying Unicode text in a terminal both ordinary and wide encodings are
-Unicode encodings such as UTF-8 and UTF-16, respectively.
-[ *Note:* this is the case for Windows-based and many POSIX-based operating
-systems. — end note ]
-Otherwise, the encodings are implementation-defined.
+  * Replace
 
-with
+    > [ *Note:* the implementations are encouraged to use Unicode on platforms
+    capable of displaying Unicode text in a terminal which is the case for
+    Windows-based and many POSIX-based operating systems. — end note ]
 
-> For the purposes of width computation the string is assumed to be in a
-locale-independent implementation-defined encoding.
-[ *Note:* the implementations are encouraged to use Unicode on platforms capable
-of displaying Unicode text in a terminal which is the case for Windows-based and
-many POSIX-based operating systems. — end note ]
+    with
 
-in Wording.
+    > Implementations should use Unicode on platforms capable of displaying
+    Unicode text in a terminal. [ *Note:* This is the case for Windows-based and
+    many POSIX-based operating systems. — end note ]
 
-Remove the  "Optional (possibly in C++23)" section from Wording.
+  * Replace "Width of a string in a Unicode encoding is the sum" with
+    "Implementations should estimate the width of a string in a Unicode encoding
+    as the sum".
+
+  * Remove the note saying "The method of estimated width computation is subject
+    to change. — end note".
+
+  * Add "Unicode® Standard Annex #29 Unicode Text Segmentation" to Normative
+    references [intro.refs].
+
+  * Fix minor wording issues.
+
+  * Replace
+
+    > For the purposes of width computation the string is assumed to be in a fixed
+    operating system dependent encoding. If the operating system is capable of
+    displaying Unicode text in a terminal both ordinary and wide encodings are
+    Unicode encodings such as UTF-8 and UTF-16, respectively.
+    [ *Note:* this is the case for Windows-based and many POSIX-based operating
+    systems. — end note ]
+    Otherwise, the encodings are implementation-defined.
+
+    with
+
+    > For the purposes of width computation the string is assumed to be in a
+    locale-independent implementation-defined encoding.
+    [ *Note:* the implementations are encouraged to use Unicode on platforms capable
+    of displaying Unicode text in a terminal which is the case for Windows-based and
+    many POSIX-based operating systems. — end note ]
+
+  * Remove the  "Optional (possibly in C++23)" section.
 
 SG16 poll results
 =================
@@ -591,22 +616,22 @@ width. If width is not specified, there is no minimum field width, and the field
 width is determined based on the content of the field.
 
 > <ins>
-Width of a string is defined as the estimated number of column position required
-to display it in a terminal.
-[ *Note:* This is similar to the semantics of the POSIX `wcswidth` function.
-— end note ]
+Width of a string is defined as the estimated number of column position
+appropriate to display in a terminal.
+[&nbsp;*Note:* This is similar to the semantics of the POSIX `wcswidth` function.
+— end note]
 
 > <ins>
-For the purposes of width computation the string is assumed to be in a
+For the purposes of width computation a string is assumed to be in a
 locale-independent implementation-defined encoding.
-[ *Note:* the implementations are encouraged to use Unicode on platforms capable
-of displaying Unicode text in a terminal which is the case for Windows-based and
-many POSIX-based operating systems. — end note ]
+Implementations should use Unicode on platforms capable of displaying Unicode
+text in a terminal. [ *Note:* This is the case for Windows-based and
+many POSIX-based operating systems. — end note&nbsp;]
 
-> <ins>Width of a string in a Unicode encoding is the sum of estimated widths of
-the first code points in its extended grapheme clusters as defined by Unicode®
-Standard Annex #29 Unicode Text Segmentation. Estimated width of the following
-code points is 2:
+> <ins>Implementations should estimate the width of a string in a Unicode
+encoding as the sum of estimated widths of the first code points in its extended
+grapheme clusters as defined by Unicode® Standard Annex #29 Unicode Text
+Segmentation. The estimated width of the following code points is 2:
 > ```text
 > U+1100 .. U+115F <!-- Hangul Jamo init. consonants -->
 > U+2329 <!-- LEFT-POINTING ANGLE BRACKET〈 -->
@@ -625,10 +650,9 @@ code points is 2:
 > U+1F900 .. U+1F9FF <!-- Supplemental Symbols and Pictographs -->
 > ```
 
-> <ins>Estimated width of other code points is 1.
-[ *Note:* The method of estimated width computation is subject to change. — end note ]
+> <ins>The estimated width of other code points is 1.
 
-> <ins>Width of a string in a non-Unicode encoding is implementation-defined.
+> <ins>The width of a string in a non-Unicode encoding is unspecified.
 
 Modify <a href="http://eel.is/c++draft/format.string.std#9">[format.string.std]/p9</a>
 as follows:
@@ -637,9 +661,9 @@ as follows:
 precision or maximum field size. It can only be used with floating-point and
 string types. For floating-point types this field specifies the formatting
 precision. <del>For string types it specifies how many characters will be used
-from the string.</del> <ins>For string types it specifies the maximum width.
-Trailing grapheme clusters or implementation-defined units of width that exceed
-the given precision are ignored.</ins>
+from the string.</del> <ins>For string types this field specifies the maximum
+width. Trailing grapheme clusters or implementation-defined units of width that
+exceed the given precision are ignored.</ins>
 
 <!-- TODO: maybe clarify that it's a user's responsibility to escape
      non-printable characters, e.g. from Control (Cc), format (Cf) categories
@@ -647,6 +671,11 @@ the given precision are ignored.</ins>
     {"\xe2\x81\xa3", "U+2063 { INVISIBLE SEPARATOR }"},
     {"\xe2\x81\xa4", "U+2064 { INVISIBLE PLUS }"},
 -->
+
+Add to Normative references 
+<a href="http://eel.is/c++draft/intro.refs">[intro.refs]</a>:
+
+>   —  <ins>Unicode® Standard Annex #29 Unicode Text Segmentation</ins>
 
 Acknowledgements {#ack}
 ================
