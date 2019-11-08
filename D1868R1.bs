@@ -39,8 +39,8 @@ specifying width and precision in a way that satisfies the following goals:
 Changes
 =======
 
-  * Replace "required to display it in a terminal" with "appropriate to display in
-    a terminal".
+  * Replace "required to display it in a terminal" with "appropriate for
+    displaying it in a terminal".
 
   * Replace
 
@@ -63,6 +63,19 @@ Changes
 
   * Add "Unicode® Standard Annex #29 Unicode Text Segmentation" to Normative
     references [intro.refs].
+
+  * Replace
+
+    > For string types this field specifies the maximum
+    width. Trailing grapheme clusters or implementation-defined units of width that
+    exceed the given precision are ignored.
+  
+    with
+
+    > For string types, this field is the upper bound on
+    the number of estimated display width units that will be copied to the output.
+    Only characters that fit within the maximum estimated display width are copied
+    to the output.
 
   * Fix minor wording issues.
 
@@ -616,8 +629,8 @@ width. If width is not specified, there is no minimum field width, and the field
 width is determined based on the content of the field.
 
 > <ins>
-Width of a string is defined as the estimated number of column position
-appropriate to display in a terminal.
+The width of a string is defined as the estimated number of column positions
+appropriate for displaying it in a terminal.
 [&nbsp;*Note:* This is similar to the semantics of the POSIX `wcswidth` function.
 — end note]
 
@@ -661,9 +674,10 @@ as follows:
 precision or maximum field size. It can only be used with floating-point and
 string types. For floating-point types this field specifies the formatting
 precision. <del>For string types it specifies how many characters will be used
-from the string.</del> <ins>For string types this field specifies the maximum
-width. Trailing grapheme clusters or implementation-defined units of width that
-exceed the given precision are ignored.</ins>
+from the string.</del> <ins>For string types, this field is the upper bound on
+the number of estimated display width units that will be copied to the output.
+Only characters that fit within the maximum estimated display width are copied
+to the output.</ins>
 
 <!-- TODO: maybe clarify that it's a user's responsibility to escape
      non-printable characters, e.g. from Control (Cc), format (Cf) categories
