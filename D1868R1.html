@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmt.dev/P1868R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="f5579297fc69227dd2a3b1d66c3ed8d7eda4a9f9" name="document-revision">
+  <meta content="ba4c3b345ec7beea02e3c29642345f9fe7c037bf" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1513,8 +1513,8 @@ specifying width and precision in a way that satisfies the following goals:</p>
    <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h2>
    <ul>
     <li data-md>
-     <p>Replace "required to display it in a terminal" with "appropriate to display in
-a terminal".</p>
+     <p>Replace "required to display it in a terminal" with "appropriate for
+displaying it in a terminal".</p>
     <li data-md>
      <p>Replace</p>
      <blockquote>
@@ -1538,6 +1538,20 @@ to change. — end note".</p>
     <li data-md>
      <p>Add "Unicode® Standard Annex #29 Unicode Text Segmentation" to Normative
 references [intro.refs].</p>
+    <li data-md>
+     <p>Replace</p>
+     <blockquote>
+      <p>For string types this field specifies the maximum
+width. Trailing grapheme clusters or implementation-defined units of width that
+exceed the given precision are ignored.</p>
+     </blockquote>
+     <p>with</p>
+     <blockquote>
+      <p>For string types, this field is the upper bound on
+the number of estimated display width units that will be copied to the output.
+Only characters that fit within the maximum estimated display width are copied
+to the output.</p>
+     </blockquote>
     <li data-md>
      <p>Fix minor wording issues.</p>
     <li data-md>
@@ -1953,8 +1967,8 @@ width. If width is not specified, there is no minimum field width, and the field
 width is determined based on the content of the field.</p>
    </blockquote>
    <blockquote>
-    <ins> Width of a string is defined as the estimated number of column position
-appropriate to display in a terminal.
+    <ins> The width of a string is defined as the estimated number of column positions
+appropriate for displaying it in a terminal.
 [ <em>Note:</em> This is similar to the semantics of the POSIX <code class="highlight"><c- n>wcswidth</c-></code> function.
 — end note] </ins>
    </blockquote>
@@ -2004,9 +2018,10 @@ string types. For floating-point types this field specifies the formatting
 precision. 
      <del>For string types it specifies how many characters will be used
 from the string.</del>
-     <ins>For string types this field specifies the maximum
-width. Trailing grapheme clusters or implementation-defined units of width that
-exceed the given precision are ignored.</ins>
+     <ins>For string types, this field is the upper bound on
+the number of estimated display width units that will be copied to the output.
+Only characters that fit within the maximum estimated display width are copied
+to the output.</ins>
     </p>
    </blockquote>
    <p>Add to Normative references <a href="http://eel.is/c++draft/intro.refs">[intro.refs]</a>:</p>
