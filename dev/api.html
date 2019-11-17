@@ -430,11 +430,11 @@ template and implement <code class="docutils literal"><span class="pre">parse</s
     <span class="c1">//   fmt::format(&quot;{:f} - point of interest&quot;, point{1, 2});</span>
     <span class="c1">//</span>
     <span class="c1">// the range will contain &quot;f} - point of interest&quot;. The formatter should</span>
-    <span class="c1">// parse specifiers until &#39;}&#39; or the end of the range. In this example,</span>
+    <span class="c1">// parse specifiers until &#39;}&#39; or the end of the range. In this example</span>
     <span class="c1">// the formatter should parse the &#39;f&#39; specifier and return an iterator</span>
     <span class="c1">// pointing to &#39;}&#39;.</span>
 
-    <span class="c1">// Parse presentation format and store the parse result in the formatter:</span>
+    <span class="c1">// Parse the presentation format and store it in the formatter:</span>
     <span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">end</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">end</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="o">*</span><span class="n">it</span> <span class="o">==</span> <span class="sc">&#39;f&#39;</span> <span class="o">||</span> <span class="o">*</span><span class="n">it</span> <span class="o">==</span> <span class="sc">&#39;e&#39;</span><span class="p">))</span> <span class="n">presentation</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="o">++</span><span class="p">;</span>
 
@@ -446,10 +446,11 @@ template and implement <code class="docutils literal"><span class="pre">parse</s
     <span class="k">return</span> <span class="n">it</span><span class="p">;</span>
   <span class="p">}</span>
 
-  <span class="c1">// Formats the point p using parsed format specification (presentation)</span>
+  <span class="c1">// Formats the point p using the parsed format specification (presentation)</span>
   <span class="c1">// stored in this formatter.</span>
   <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">FormatContext</span><span class="o">&gt;</span>
   <span class="k">auto</span> <span class="n">format</span><span class="p">(</span><span class="k">const</span> <span class="n">point</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">,</span> <span class="n">FormatContext</span><span class="o">&amp;</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// ctx.out() is an output iterator to write to.</span>
     <span class="k">return</span> <span class="n">format_to</span><span class="p">(</span>
         <span class="n">ctx</span><span class="p">.</span><span class="n">out</span><span class="p">(),</span>
         <span class="n">presentation</span> <span class="o">==</span> <span class="sc">&#39;f&#39;</span> <span class="o">?</span> <span class="s">&quot;({:.1f}, {:.1f})&quot;</span> <span class="o">:</span> <span class="s">&quot;({:.1e}, {:.1e})&quot;</span><span class="p">,</span>
