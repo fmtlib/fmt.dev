@@ -422,7 +422,7 @@ template and implement <code class="docutils literal"><span class="pre">parse</s
   <span class="kt">char</span> <span class="n">presentation</span> <span class="o">=</span> <span class="sc">&#39;f&#39;</span><span class="p">;</span>
 
   <span class="c1">// Parses format specifications of the form [&#39;f&#39; | &#39;e&#39;].</span>
-  <span class="k">constexpr</span> <span class="k">auto</span> <span class="nf">parse</span><span class="p">(</span><span class="n">format_parse_context</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">constexpr</span> <span class="k">auto</span> <span class="nf">parse</span><span class="p">(</span><span class="n">format_parse_context</span><span class="o">&amp;</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// [ctx.begin(), ctx.end()) is a character range that contains a part of</span>
     <span class="c1">// the format string starting from the format specifications to be parsed,</span>
     <span class="c1">// e.g. in</span>
@@ -473,7 +473,7 @@ example:</p>
 <span class="k">struct</span> <span class="n">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">color</span><span class="o">&gt;:</span> <span class="n">formatter</span><span class="o">&lt;</span><span class="n">string_view</span><span class="o">&gt;</span> <span class="p">{</span>
   <span class="c1">// parse is inherited from formatter&lt;string_view&gt;.</span>
   <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">FormatContext</span><span class="o">&gt;</span>
-  <span class="k">auto</span> <span class="n">format</span><span class="p">(</span><span class="n">color</span> <span class="n">c</span><span class="p">,</span> <span class="n">FormatContext</span> <span class="o">&amp;</span><span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">format</span><span class="p">(</span><span class="n">color</span> <span class="n">c</span><span class="p">,</span> <span class="n">FormatContext</span><span class="o">&amp;</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">string_view</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;unknown&quot;</span><span class="p">;</span>
     <span class="k">switch</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">case</span> <span class="n">color</span><span class="o">::</span><span class="nl">red</span><span class="p">:</span>   <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;red&quot;</span><span class="p">;</span> <span class="k">break</span><span class="p">;</span>
@@ -932,7 +932,7 @@ allocator:</p>
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
 <span class="kr">inline</span> <span class="n">custom_string</span> <span class="n">format</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span>
                             <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
-                            <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span> <span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span> <span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">vformat</span><span class="p">(</span><span class="n">alloc</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
 <span class="p">}</span>
 </pre></div>
@@ -975,7 +975,7 @@ custom argument formatter class:</p>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
 <span class="kr">inline</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">custom_format</span><span class="p">(</span>
-    <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="n">custom_vformat</span><span class="p">(</span><span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="n">args</span><span class="p">...));</span>
 <span class="p">}</span>
 
@@ -1057,7 +1057,7 @@ user-defined types that have overloaded <code class="docutils literal"><span cla
 <span class="k">public</span><span class="o">:</span>
   <span class="n">date</span><span class="p">(</span><span class="kt">int</span> <span class="n">year</span><span class="p">,</span> <span class="kt">int</span> <span class="n">month</span><span class="p">,</span> <span class="kt">int</span> <span class="n">day</span><span class="p">)</span><span class="o">:</span> <span class="n">year_</span><span class="p">(</span><span class="n">year</span><span class="p">),</span> <span class="n">month_</span><span class="p">(</span><span class="n">month</span><span class="p">),</span> <span class="n">day_</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="p">{}</span>
 
-  <span class="k">friend</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span> <span class="o">&amp;</span><span class="n">os</span><span class="p">,</span> <span class="k">const</span> <span class="n">date</span> <span class="o">&amp;</span><span class="n">d</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">friend</span> <span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span> <span class="n">os</span><span class="p">,</span> <span class="k">const</span> <span class="n">date</span><span class="o">&amp;</span> <span class="n">d</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">os</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">year_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">month_</span> <span class="o">&lt;&lt;</span> <span class="sc">&#39;-&#39;</span> <span class="o">&lt;&lt;</span> <span class="n">d</span><span class="p">.</span><span class="n">day_</span><span class="p">;</span>
   <span class="p">}</span>
 <span class="p">};</span>
