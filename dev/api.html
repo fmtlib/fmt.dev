@@ -267,7 +267,14 @@ such as <a class="reference internal" href="#_CPPv2N3fmt7vformatERK1S17basic_for
 <span class="target" id="formatclassfmt_1_1basic__format__args"></span><em class="property">template </em>&lt;typename <em>Context</em>&gt;</dt>
 <dt id="_CPPv2N3fmt17basic_format_argsE">
 <span id="fmt::basic_format_args"></span><em class="property">class </em><code class="descclassname">fmt::</code><code class="descname">basic_format_args</code><a class="headerlink" href="#_CPPv2N3fmt17basic_format_argsE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Formatting arguments. </p>
+<dd><p><p>A view of a collection of formatting arguments. To avoid lifetime issues it
+should only be used as a parameter type in type-erased functions such as
+<code class="docutils literal"><span class="pre">vformat</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">vlog</span><span class="p">(</span><span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">);</span>  <span class="c1">// OK</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">make_format_args</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>  <span class="c1">// Error: dangling reference</span>
+</pre></div>
+</div>
+ </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
