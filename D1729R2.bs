@@ -1,0 +1,482 @@
+<pre class='metadata'>
+Title: Text Parsing
+Shortname: D1729
+Revision: 2
+!Audience: LEWGI, SG16
+Status: D
+Group: WG21
+URL: http://wg21.link/P1729R1
+Editor: Victor Zverovich, viz@fmt.dev
+Editor: Elias Kosunen, isocpp@eliaskosunen.com
+Abstract:
+  This paper discusses a new text parsing facility to complement the text
+  formatting functionality of [[P0645]].
+Date: 2019-06-14
+Markup Shorthands: markdown yes
+</pre>
+
+<!-- TODO:
+ (from the GitHub issue)
+ - Explore a simplified design that doesn't support partial success.
+ - Prioritize enabling the use of the same format string for input and output.
+ - Explore supporting non-unique positional arguments.
+-->
+
+Revision history {#history}
+================
+<!-- whoops, probably should've had this for R1 -->
+
+R2 {#r2}
+--
+ * Add specification
+ * Propose taking a range instead of a `string_view`
+ * Remove support for partial successes per LEWGI feedback
+
+Introduction {#introduction}
+============
+
+[[P0645]] has proposed a text formatting facility that provides a safe and
+extensible alternative to the `printf` family of functions. This paper explores
+the possibility of adding a symmetric parsing facility which is based on the
+same design principles and shares many features with [[P0645]], namely
+
+* [[#safety|Safety]]
+* [[#extensibility|Extensibility]]
+* [[#performance|Performance]]
+* [[#locales|Locale control]]
+* [[#binary-footprint|Small binary footprint]]
+* [[#chrono|Integration with chrono]]
+
+According to [[CODESEARCH]], a C and C++ codesearch engine based on the ACTCD19
+dataset, there are 389,848 calls to `sprintf` and 87,815 calls to `sscanf` at
+the time of writing. So although formatted input functions are less popular than
+their output counterparts, they are still widely used.
+
+Lack of a general-purpose parsing facility based on format strings has been
+raised in [[P1361]] in the context of formatting and parsing of dates and times.
+
+Although having a symmetric parsing facility seems beneficial, not all languages
+provide it out-of-the-box. For example, Python doesn't have a `scanf` equivalent
+in the standard library but there is a separate `parse` package ([[PARSE]]).
+
+**Example**:
+
+```c++
+std::string key;
+int value;
+std::scan("answer = 42", "{} = {}", key, value);
+//        ~~~~~~~~~~~~~  ~~~~~~~~~  ~~~~~~~~~~
+//            input        format    arguments
+//
+// Result: key == "answer", value == 42
+```
+
+Design {#design}
+======
+
+The new parsing facility is intended to complement the existing C++ I/O streams
+library, integrate well with the chrono library, and provide an API similar to
+`std::format`. This section discusses major features of its design.
+
+Format strings {#format-strings}
+--------------
+
+As with `printf`, the `scanf` syntax has the advantage of being familiar to many
+programmers. However, it has similar limitations:
+
+  * Many format specifiers like `hh`, `h`, `l`, `j`, etc. are used only to
+    convey type information. They are redundant in type-safe parsing and would
+    unnecessarily complicate specification and parsing.
+
+  * There is no standard way to extend the syntax for user-defined types.
+
+  * Using `'%'` in a custom format specifier poses difficulties, e.g. for
+    `get_time`-like time parsing.
+
+Therefore we propose a syntax based on [[PARSE]] and [[P0645]]. This syntax
+employs `'{'` and `'}'` as replacement field delimiters instead of `'%'`. It
+will provide the following advantages:
+
+  * An easy to parse mini-language focused on the data format rather than
+    conveying the type information
+  * Extensibility for user-defined types
+  * Positional arguments
+  * Support for both locale-specific and locale-independent parsing (see
+    [[#locales]])
+  * Consistency with `std::format` proposed by [[P0645]].
+
+At the same time most of the specifiers will remain the same as in `scanf` which
+can simplify, possibly automated, migration.
+
+Safety {#safety}
+------
+
+`scanf` is arguably more unsafe than `printf` because
+`__attribute__((format(scanf, ...)))` ([[ATTR]]) implemented by GCC and Clang
+doesn't catch the whole class of buffer overflow bugs, e.g.
+
+```c++
+char s[10];
+std::sscanf(input, "%s", s); // s may overflow.
+```
+
+Specifying the maximum length in the format string above solves the issue but is
+error-prone especially since one has to account for the terminating null.
+
+Unlike `scanf`, the proposed facility relies on variadic templates instead of
+the mechanism provided by `<cstdarg>`. The type information is captured
+automatically and passed to scanners guaranteeing type safety and making many of
+the `scanf` specifiers redundant (see [[#format-strings]]). Memory management is
+automatic to prevent buffer overflow errors.
+
+Extensibility {#extensibility}
+-------------
+
+We propose an extension API for user-defined types similar to the one of
+[[P0645]]. It separates format string processing and parsing enabling
+compile-time format string checks and allows extending the format specification
+language for user types.
+
+The general syntax of a replacement field in a format string is the same as in
+[[P0645]]:
+
+```
+replacement-field ::= '{' [arg-id] [':' format-spec] '}'
+```
+
+where `format-spec` is predefined for built-in types, but can be customized
+for user-defined types. For example, the syntax can be extended for
+`get_time`-like date and time formatting
+
+```c++
+auto t = tm();
+scan(input, "Date: {0:%Y-%m-%d}", t);
+```
+
+by providing a specialization of `Sscanner` for `tm`:
+
+```c++
+template <>
+struct scanner<tm> {
+  constexpr scan_parse_context::iterator parse(scan_parse_context& ctx);
+
+  template <class ScanContext>
+  typename ScanContext::iterator scan(tm& t, ScanContext& ctx);
+};
+```
+
+The `scanner<tm>::parse` function parses the `format-spec` portion of the format
+string corresponding to the current argument and `scanner<tm>::scan` parses the
+input range `[ctx.begin(), ctx.end())` and stores the result in `t`.
+
+An implementation of `scanner<T>::scan` can potentially use ostream extraction
+`operator>>` for user-defined type `T` if available. 
+
+Iterator and range support {#ranges}
+--------------------------
+
+We propose for `std::scan` to take a `range` as its input.
+This `range` must satisfy the requirements of `forward_range` and `view`.
+
+```c++
+// exposition-only
+// not proposed as-is; will probably be a table of requirements
+template <typename Range>
+concept scannable-range =
+    std::ranges::forward_range<Range> &&
+    std::ranges::view<Range>;
+```
+
+Locales {#locales}
+-------
+
+As pointed out in [[N4412]]:
+
+> There are a number of communications protocol frameworks in use that employ
+> text-based representations of data, for example XML and JSON. The text is
+> machine-generated and machine-read and should not depend on or consider the
+> locales at either end.
+
+To address this [[P0645]] provided control over the use of locales. We propose
+doing the same for the current facility by performing locale-independent parsing
+by default and designating separate format specifiers for locale-specific one.
+
+Performance {#performance}
+-----------
+
+The API allows efficient implementation that minimizes virtual function calls
+and dynamic memory allocations, and avoids unnecessary copies. In particular,
+since it doesn't need to guarantee the lifetime of the input across multiple
+function calls, `scan` can take `string_view` avoiding an extra string copy
+compared to `std::istringstream`.
+
+We can also avoid unnecessary copies required by `scanf` when parsing string,
+e.g.
+
+```c++
+std::string_view key;
+int value;
+std::scan("answer = 42", "{} = {}", key, value);
+```
+
+This has lifetime implications similar to returning match objects in [[P1433]]
+and iterator or subranges in the ranges library and can be mitigated in the same
+way.
+
+Binary footprint {#binary-footprint}
+----------------
+
+We propose using a type erasure technique to reduce per-call binary code size.
+The scanning function that uses variadic templates can be implemented as a
+small inline wrapper around its non-variadic counterpart:
+
+```c++
+string_view vscan(string_view input, string_view fmt, scan_args args);
+
+template <typename Input, typename... Args>
+  requires convertible_to<Input, string_view>
+auto scan(Input input, string_view fmt, const Args&... args) {
+  return vscan(string_view(input.begin(), input.end()), fmt, make_scan_args(args...));
+}
+```
+
+As shown in [[P0645]] this dramatically reduces binary code size which will make
+`scan` comparable to `scanf` on this metric.
+
+Integration with chrono {#chrono}
+-----------------------
+
+The proposed facility can be integrated with `std::chrono::parse` ([[P0355]])
+via the extension mechanism similarly to integration between chrono and text
+formatting proposed in [[P1361]]. This will improve consistency between parsing
+and formatting, make parsing multiple objects easier, and allow avoiding dynamic
+memory allocations without resolving to deprecated `strstream`.
+
+Before:
+```
+std::istringstream is("start = 10:30");
+std::string key;
+char sep;
+std::chrono::seconds time;
+is >> key >> sep >> std::chrono::parse("%H:%M", time);
+```
+
+After:
+```
+std::string key;
+std::chrono::seconds time;
+std::scan("start = 10:30", "{0} = {1:%H:%M}", key, time);
+```
+
+Note that the `scan` version additionally validates the separator.
+
+Impact on existing code {#deep-impact}
+-----------------------
+
+The proposed API is defined in a new header and should have no impact on
+existing code.
+
+Open design questions {#design-questions}
+=====================
+
+Returning a <code>tuple</code> vs. output parameters {#tuple-out}
+----------------------------------------------------
+
+In Cologne, LEWGI encouraged to explore an alternative API returning a `tuple`,
+instead of `scanf`-like output parameters.
+We find the `scanf` approach to be superior.
+A `tuple`-based approach could be implemented on top of an output parameter based API, but not vice versa.
+
+Naming {#naming}
+------
+
+  1. `scan`
+  2. `parse`
+  3. other
+
+The name "parse" is a bit problematic because of ambiguity between format string
+parsing and input parsing.
+
+"scan" as a name collides with some of the new C++17 `<numeric>` algorithms:
+ 
+ * `std::inclusive_scan`
+ * `std::exclusive_scan`
+ * `std::transform_inclusive_scan`
+ * `std::transform_exclusive_scan`
+
+"scan" is the name used by [[SCNLIB]] and [[FMT]], and is the authors' preferred name,
+and would be consistent with existing `scanf`.
+
+Haskell has the same naming collision with using "scan" for both parsing and an algorithm.
+
+<!--
+An unscientific Twitter poll
+<a href="https://twitter.com/vzverovich/status/1133011774985330694">How should
+fmt-like scanf API replacing `scanf("%d", &i)` be named?"</a> which
+received 188 votes showed slight preference towards `scan` (46% `scan`, 41%
+`parse`). -->
+
+<table>
+<tr>
+  <td>Main API</td>
+  <td>`format`</td>
+  <td>`scan`</td>
+  <td>`parse`</td>
+</tr>
+<tr>
+  <td>Extension point</td>
+  <td>`formatter`</td>
+  <td>`scanner`</td>
+  <td>`parser`</td>
+</tr>
+<tr>
+  <td>Parse format string</td>
+  <td>`formatter::parse`</td>
+  <td>`scanner::parse`</td>
+  <td>`parser::parse_format`?</td>
+</tr>
+<tr>
+  <td>Extension function</td>
+  <td>`formatter::format`</td>
+  <td>`scanner::scan`</td>
+  <td>`parser::parse`</td>
+</tr>
+<tr>
+  <td>Format string parse context</td>
+  <td>`format_parse_context`</td>
+  <td>`scan_parse_context`</td>
+  <td>`parse_parse_context`?</td>
+</tr>
+<tr>
+  <td>Context</td>
+  <td>`format_context`</td>
+  <td>`scan_context`</td>
+  <td>`parse_context`</td>
+</tr>
+</table>
+
+Existing work {#existing-work}
+=============
+
+[[SCNLIB]] is a C++ library that, among other things,
+provides a range-based `scan` interface similar to the one described in this paper.
+[[FMT]] has a prototype implementation of the proposal.
+
+Specification {#spec}
+=============
+
+Note the similarity with [[P0645]] in some parts.
+
+Add a new header, `<scan>`
+
+Header `<scan>` synopsis {#header-synopsis}
+------------------------
+
+```cpp
+#include <format>
+
+namespace std {
+    // unspecified, for now
+    class scan_error;
+
+    // parse_context from <format>
+
+    template<class T, class charT = char>
+    struct scanner;
+
+    template<class Context>
+    class basic_scan_arg;
+
+    template<class Visitor, class Context>
+    see-below visit_scan_arg(Visitor&& vis, basic_scan_arg<Context> arg);
+
+    template<class Context, class... Args>
+    struct scan-arg-store; // exposition only
+
+    template<class Context>
+    class basic_scan_args;
+    using scan_args = basic_scan_args<char>;
+    using wscan_args = basic_scan_args<wchar_t>;
+
+    //template<class Out, class charT>
+    //using format_args_t = basic_format_args<basic_format_context<Out, charT>>;
+
+    template<class Context = format_context, class... Args>
+    scan-args-store<Context, Args...> make_scan_args(Args&... args);
+    template<class... Args>
+    scan-args-store<wscan_context, Args...> make_wscan_args(Args&... args);
+
+    template<class Range>
+    concept scannable-range; // exposition only
+
+    template<scannable-range Range>
+    struct scan_result;
+
+    template<scannable-range Range, class charT, class... Args>
+    scan_result<Range> scan(Range in, basic_string_view<charT> fmt, Args&... args);
+
+    template<scannable-range Range, class charT>
+    scan_result<Range> vscan(Range in, basic_string_view<charT> fmt, scan_args args);
+
+    scan_result<string_view> vscan(string_view in, string_view fmt, scan_args args);
+
+    template<scannable-range Range, class... Args>
+    struct scan_tuple_result;
+
+    //template<class... Args, scannable-range Range, class charT>
+    //scan_tuple_result<Range, Args...> scan_tuple(Range in, basic_string_view<charT> fmt);
+}
+```
+
+<pre class=biblio>
+{
+  "P0645": {
+	  "title": "Text Formatting",
+	  "authors": ["Victor Zverovich"],
+	  "href": "https://wg21.link/p0645"
+  },
+  "CODESEARCH": {
+	  "title": "Code search engine website",
+	  "authors": ["Andrew Tomazos"],
+	  "href": "https://codesearch.isocpp.org"
+  },
+  "P1361": {
+	  "title": "Integration of chrono with text formatting",
+	  "authors": ["Victor Zverovich", "Daniela Engert", "Howard E. Hinnant"],
+	  "href": "https://wg21.link/p1361"
+  },
+  "PARSE": {
+	  "title": "Python `parse` package",
+	  "href": "https://pypi.org/project/parse/"
+  },
+  "ATTR": {
+	  "title": "Common Function Attributes",
+	  "href": "https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"
+  },
+  "P1433": {
+	  "title": "Compile Time Regular Expressions",
+	  "authors": ["Hana Dusíková"],
+	  "href": "https://wg21.link/p1433"
+  },
+  "SCNLIB": {
+	  "title": "scnlib: scanf for modern C++",
+	  "authors": ["Elias Kosunen"],
+	  "href": "https://github.com/eliaskosunen/scnlib"
+  },
+  "FMT": {
+	  "title": "The fmt library",
+	  "authors": ["Victor Zverovich et al"],
+	  "href": "https://github.com/fmtlib/fmt"
+  },
+  "N4412": {
+	  "title": "N4412: Shortcomings of iostreams",
+	  "authors": ["Jens Maurer"],
+	  "href": "http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html"
+  },
+  "P0355": {
+	  "title": "Extending <chrono> to Calendars and Time Zones",
+	  "authors": ["Howard E. Hinnant", "Tomasz Kamiński"],
+	  "href": "https://wg21.link/p0355"
+  }
+}
+</pre>
