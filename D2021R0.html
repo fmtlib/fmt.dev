@@ -1230,7 +1230,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
   <link href="http://fmt.dev/P2021R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="51035f9aada307523d3a868145196532508c1c1d" name="document-revision">
+  <meta content="82e17ff88c247d7c278aedf290faf67cb2346ddf" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1608,7 +1608,8 @@ enough evidence to justify more work on this feature at all.</p>
    <p>Unfortunately the example is misleading because the actual output is not <code class="highlight"><c- s>"-0 -0 -0 -0"</c-></code> as the paper claims but <code class="highlight"><c- s>"-0.1 -0.1 -0.1 -0.1"</c-></code> so adding the <code class="highlight"><c- sc>'z'</c-></code> option would have no effect. This issue would be easily caught if the
 proposal was actually implemented or at least the current allegedly problematic
 behavior tested. The reason why the output is <code class="highlight"><c- s>"-0.1"</c-></code> is that the default
-floating-point format is defined as follows <a href="http://eel.is/c++draft/format#tab:format.type.float">tab:format.type.float</a>:</p>
+floating-point format is defined as follows [[tab:format.type.float]](
+http://eel.is/c++draft/format#tab:format.type.float):</p>
    <blockquote>
     <p>If <code class="highlight"><c- n>precision</c-></code> is specified, equivalent to <code class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>general</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c-></code></p>
    </blockquote>
@@ -1690,11 +1691,11 @@ of the fixed format (the range that rounds to -0 is easy to compute).</p>
    <p>Considering that there is almost zero evidence that sign suppression is a
 problem worth solving, motivating examples in P1496 are incorrect and this new
 feature will add significant overhead to calls to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and uses of
-built-in formatter specializations even if not used among other problems and the
-fact that it can be easily implemented by other means, we think that it
+built-in <code class="highlight"><c- n>formatter</c-></code> specializations even if not used among other problems and
+the fact that it can be easily implemented by other means, we think that it
 shouldn’t be standardized. If there is still a strong desire to have this
 feature, it can be added via a separate formatter specialization not penalizing
-other cases.</p>
+other cases.XML</p>
    <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>We would like to thank Peter Brett for bringing to our attention the fact that
 negative zero can never appear as a result of rounding in most formats.</p>
@@ -1846,5 +1847,5 @@ negative zero can never appear as a result of rounding in most formats.</p>
    <dt id="biblio-p1496">[P1496]
    <dd>Alan Talbot; Jorg Brown. <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1496r1.pdf">Formatting of Negative Zero</a>. URL: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1496r1.pdf">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1496r1.pdf</a>
    <dt id="biblio-us227">[US227]
-   <dd><a href="https://github.com/cplusplus/nbballot/issues/224">Add 'z' format modifier to avoid sign for zero-display numbers</a>. URL: <a href="https://github.com/cplusplus/nbballot/issues/224">https://github.com/cplusplus/nbballot/issues/224</a>
+   <dd><a href="https://github.com/cplusplus/nbballot/issues/224">Add "z" format modifier to avoid sign for zero-display numbers</a>. URL: <a href="https://github.com/cplusplus/nbballot/issues/224">https://github.com/cplusplus/nbballot/issues/224</a>
   </dl>
