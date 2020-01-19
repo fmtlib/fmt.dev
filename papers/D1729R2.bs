@@ -172,19 +172,19 @@ input range `[ctx.begin(), ctx.end())` and stores the result in `t`.
 An implementation of `scanner<T>::scan` can potentially use ostream extraction
 `operator>>` for user-defined type `T` if available. 
 
-Iterator and range support {#ranges}
---------------------------
+Iterators and ranges {#ranges}
+--------------------
 
-We propose for `std::scan` to take a range as its input.
-This range must satisfy the requirements of `forward_range` and `view`.
+We propose that `std::scan` takes a range as its input.
+This range should satisfy the requirements of `std::ranges::forward_range`
+(<a href="http://eel.is/c++draft/range.refinements">[range.refinements]</a>) to
+enable lookahead which is necessary for parsing. It should also satisfy the
+requirements of `std::ranges::view`.
 
 ```c++
-// exposition-only
-// not proposed as-is; will probably be a table of requirements
-template <typename Range>
-concept scannable-range =
-    std::ranges::forward_range<Range> &&
-    std::ranges::view<Range>;
+template<class Range>
+  concept scannable-range =
+    ranges::forward_range<Range> && ranges::view<Range>; // exposition-only
 ```
 
 Locales {#locales}
