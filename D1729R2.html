@@ -1167,6 +1167,18 @@ Possible extra rowspan handling
 		margin-left: auto;
 		margin-right: auto;
 	}
+	.overlarge {
+		/* Magic to create good table positioning:
+		   "content column" is 50ems wide at max; less on smaller screens.
+		   Extra space (after ToC + content) is empty on the right.
+
+		   1. When table < content column, centers table in column.
+		   2. When content < table < available, left-aligns.
+		   3. When table > available, fills available + scroll bar.
+		*/ 
+		display: grid;
+		grid-template-columns: minmax(0, 50em);
+	}
 	.overlarge > table {
 		/* limit preferred width of table */
 		max-width: 50em;
@@ -1176,7 +1188,6 @@ Possible extra rowspan handling
 
 	@media (min-width: 55em) {
 		.overlarge {
-			margin-left: calc(13px + 26.5rem - 50vw);
 			margin-right: calc(13px + 26.5rem - 50vw);
 			max-width: none;
 		}
@@ -1184,14 +1195,12 @@ Possible extra rowspan handling
 	@media screen and (min-width: 78em) {
 		body:not(.toc-inline) .overlarge {
 			/* 30.5em body padding 50em content area */
-			margin-left: calc(40em - 50vw) !important;
 			margin-right: calc(40em - 50vw) !important;
 		}
 	}
 	@media screen and (min-width: 90em) {
 		body:not(.toc-inline) .overlarge {
 			/* 4em html margin 30.5em body padding 50em content area */
-			margin-left: 0 !important;
 			margin-right: calc(84.5em - 100vw) !important;
 		}
 	}
@@ -1285,10 +1294,10 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 2dbd5e1f0bb11704a5d90167ddaef9475f9c26b3" name="generator">
+  <meta content="Bikeshed version 811139e88557b020c23cfc4db749a6220e4f7dcb" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e0e2586e1bd9face8f28434f95bfe3c84a4cfad9" name="document-revision">
+  <meta content="33f74b87222cf947f4e423a6cd777fac3e98e50a" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1526,7 +1535,11 @@ pre .property::before, pre .property::after {
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#history"><span class="secno">1</span> <span class="content">Revision history</span></a>
+    <li>
+     <a href="#history"><span class="secno">1</span> <span class="content">Revision history</span></a>
+     <ol class="toc">
+      <li><a href="#changes-since-r1"><span class="secno">1.1</span> <span class="content">Changes since R1</span></a>
+     </ol>
     <li><a href="#introduction"><span class="secno">2</span> <span class="content">Introduction</span></a>
     <li>
      <a href="#design"><span class="secno">3</span> <span class="content">Design</span></a>
@@ -1562,8 +1575,7 @@ pre .property::before, pre .property::after {
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="history"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#history"></a></h2>
-   <p>R2 {#r2}
---</p>
+   <h3 class="heading settled" data-level="1.1" id="changes-since-r1"><span class="secno">1.1. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes-since-r1"></a></h3>
    <ul>
     <li data-md>
      <p>Add specification</p>
