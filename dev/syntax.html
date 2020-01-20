@@ -523,6 +523,33 @@ following examples.</p>
 <span class="c1">// Result: &quot;0x00&quot;</span>
 </pre></div>
 </div>
+<p>Box drawing using Unicode fill:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span>
+  <span class="s">&quot;┌{0:─^{2}}┐</span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="s">&quot;│{1: ^{2}}│</span><span class="se">\n</span><span class="s">&quot;</span>
+  <span class="s">&quot;└{0:─^{2}}┘</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">,</span> <span class="s">&quot;Hello, world!&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>prints:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span>┌────────────────────┐
+│   Hello, world!    │
+└────────────────────┘
+</pre></div>
+</div>
+<p>Using type-specific formatting:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/chrono.h&gt;</span><span class="cp"></span>
+
+<span class="k">auto</span> <span class="n">t</span> <span class="o">=</span> <span class="n">tm</span><span class="p">();</span>
+<span class="n">t</span><span class="p">.</span><span class="n">tm_year</span> <span class="o">=</span> <span class="mi">2010</span> <span class="o">-</span> <span class="mi">1900</span><span class="p">;</span>
+<span class="n">t</span><span class="p">.</span><span class="n">tm_mon</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span>
+<span class="n">t</span><span class="p">.</span><span class="n">tm_mday</span> <span class="o">=</span> <span class="mi">4</span><span class="p">;</span>
+<span class="n">t</span><span class="p">.</span><span class="n">tm_hour</span> <span class="o">=</span> <span class="mi">12</span><span class="p">;</span>
+<span class="n">t</span><span class="p">.</span><span class="n">tm_min</span> <span class="o">=</span> <span class="mi">15</span><span class="p">;</span>
+<span class="n">t</span><span class="p">.</span><span class="n">tm_sec</span> <span class="o">=</span> <span class="mi">58</span><span class="p">;</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{:%Y-%m-%d %H:%M:%S}&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+<span class="c1">// Prints: 2010-08-04 12:15:58</span>
+</pre></div>
+</div>
 </div>
 </div>
 
