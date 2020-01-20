@@ -178,14 +178,7 @@ Iterators and ranges {#ranges}
 We propose that `std::scan` takes a range as its input.
 This range should satisfy the requirements of `std::ranges::forward_range`
 (<a href="http://eel.is/c++draft/range.refinements">[range.refinements]</a>) to
-enable lookahead which is necessary for parsing. It should also satisfy the
-requirements of `std::ranges::view`.
-
-```c++
-template<class Range>
-  concept scannable-range =
-    ranges::forward_range<Range> && ranges::view<Range>; // exposition-only
-```
+enable lookahead which is necessary for parsing.
 
 Locales {#locales}
 -------
@@ -406,24 +399,21 @@ namespace std {
     template<class... Args>
     scan-args-store<wscan_context, Args...> make_wscan_args(Args&... args);
 
-    template<class Range>
-    concept scannable-range; // exposition only
-
-    template<scannable-range Range>
+    template<ranges::forward_range Range>
     struct scan_result;
 
-    template<scannable-range Range, class charT, class... Args>
+    template<ranges::forward_range Range, class charT, class... Args>
     scan_result<Range> scan(Range in, basic_string_view<charT> fmt, Args&... args);
 
-    template<scannable-range Range, class charT>
+    template<ranges::forward_range Range, class charT>
     scan_result<Range> vscan(Range in, basic_string_view<charT> fmt, scan_args args);
 
     scan_result<string_view> vscan(string_view in, string_view fmt, scan_args args);
 
-    template<scannable-range Range, class... Args>
+    template<ranges::forward_range Range, class... Args>
     struct scan_tuple_result;
 
-    //template<class... Args, scannable-range Range, class charT>
+    //template<class... Args, ranges::forward_range Range, class charT>
     //scan_tuple_result<Range, Args...> scan_tuple(Range in, basic_string_view<charT> fmt);
 }
 ```

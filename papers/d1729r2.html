@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 811139e88557b020c23cfc4db749a6220e4f7dcb" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0be3ad284f9d586f37edc6878325ae1ab3d10bd1" name="document-revision">
+  <meta content="122c7b5109289b1ec771673ce0712789920012f3" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1696,12 +1696,7 @@ input range <code class="highlight"><c- p>[</c-><c- n>ctx</c-><c- p>.</c-><c- n>
    <h3 class="heading settled" data-level="3.4" id="ranges"><span class="secno">3.4. </span><span class="content">Iterators and ranges</span><a class="self-link" href="#ranges"></a></h3>
    <p>We propose that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> takes a range as its input.
 This range should satisfy the requirements of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-></code> (<a href="http://eel.is/c++draft/range.refinements">[range.refinements]</a>) to
-enable lookahead which is necessary for parsing. It should also satisfy the
-requirements of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>view</c-></code>.</p>
-<pre class="language-c++ highlight"><c- n>template</c-><c- o>&lt;</c-><c- n>class</c-> <c- n>Range</c-><c- o>></c->
-  <c- n>concept</c-> <c- n>scannable</c-><c- o>-</c-><c- n>range</c-> <c- o>=</c->
-    <c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- o>&amp;&amp;</c-> <c- n>ranges</c-><c- o>::</c-><c- n>view</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>;</c-> <c- o>&lt;</c-><c- n>i</c-><c- o>></c-><c- c1>// exposition-only&lt;/i></c->
-</pre>
+enable lookahead which is necessary for parsing.</p>
    <h3 class="heading settled" data-level="3.5" id="locales"><span class="secno">3.5. </span><span class="content">Locales</span><a class="self-link" href="#locales"></a></h3>
    <p>As pointed out in <a data-link-type="biblio" href="#biblio-n4412">[N4412]</a>:</p>
    <blockquote>
@@ -1866,24 +1861,21 @@ provides a range-based <code class="highlight"><c- n>scan</c-></code> interface 
     <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- n>scan</c-><c- o>-</c-><c- n>args</c-><c- o>-</c-><c- n>store</c-><c- o>&lt;</c-><c- n>wscan_context</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>make_wscan_args</c-><c- p>(</c-><c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
-    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- o>></c->
-    <c- n>concept</c-> <c- n>scannable</c-><c- o>-</c-><c- n>range</c-><c- p>;</c-> <c- c1>// exposition only</c->
-
-    <c- k>template</c-><c- o>&lt;</c-><c- n>scannable</c-><c- o>-</c-><c- n>range</c-> <c- n>Range</c-><c- o>></c->
+    <c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-> <c- n>Range</c-><c- o>></c->
     <c- k>struct</c-> <c- n>scan_result</c-><c- p>;</c->
 
-    <c- k>template</c-><c- o>&lt;</c-><c- n>scannable</c-><c- o>-</c-><c- n>range</c-> <c- n>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-> <c- n>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- n>scan_result</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-> <c- n>in</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
-    <c- k>template</c-><c- o>&lt;</c-><c- n>scannable</c-><c- o>-</c-><c- n>range</c-> <c- n>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
+    <c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-> <c- n>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
     <c- n>scan_result</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-> <c- n>in</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
 
     <c- n>scan_result</c-><c- o>&lt;</c-><c- n>string_view</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>string_view</c-> <c- n>in</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
 
-    <c- k>template</c-><c- o>&lt;</c-><c- n>scannable</c-><c- o>-</c-><c- n>range</c-> <c- n>Range</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-> <c- n>Range</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>struct</c-> <c- n>scan_tuple_result</c-><c- p>;</c->
 
-    <c- c1>//template&lt;class... Args, scannable-range Range, class charT></c->
+    <c- c1>//template&lt;class... Args, ranges::forward_range Range, class charT></c->
     <c- c1>//scan_tuple_result&lt;Range, Args...> scan_tuple(Range in, basic_string_view&lt;charT> fmt);</c->
 <c- p>}</c->
 </pre>
