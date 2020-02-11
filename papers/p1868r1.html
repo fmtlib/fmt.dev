@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P1868R1: 🦄 width: clarifying units of width and precision in std::format</title>
+  <title>P1868R2: 🦄 width: clarifying units of width and precision in std::format</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1029,7 +1029,7 @@ Possible extra rowspan handling
 		}
 	/* } */
 
-	@supports (display:grid) {
+	@supports (display:grid) and (display:contents) {
 		/* Use #toc over .toc to override non-@supports rules. */
 		#toc {
 			display: grid;
@@ -1167,6 +1167,18 @@ Possible extra rowspan handling
 		margin-left: auto;
 		margin-right: auto;
 	}
+	.overlarge {
+		/* Magic to create good table positioning:
+		   "content column" is 50ems wide at max; less on smaller screens.
+		   Extra space (after ToC + content) is empty on the right.
+
+		   1. When table < content column, centers table in column.
+		   2. When content < table < available, left-aligns.
+		   3. When table > available, fills available + scroll bar.
+		*/ 
+		display: grid;
+		grid-template-columns: minmax(0, 50em);
+	}
 	.overlarge > table {
 		/* limit preferred width of table */
 		max-width: 50em;
@@ -1176,7 +1188,6 @@ Possible extra rowspan handling
 
 	@media (min-width: 55em) {
 		.overlarge {
-			margin-left: calc(13px + 26.5rem - 50vw);
 			margin-right: calc(13px + 26.5rem - 50vw);
 			max-width: none;
 		}
@@ -1184,14 +1195,12 @@ Possible extra rowspan handling
 	@media screen and (min-width: 78em) {
 		body:not(.toc-inline) .overlarge {
 			/* 30.5em body padding 50em content area */
-			margin-left: calc(40em - 50vw) !important;
 			margin-right: calc(40em - 50vw) !important;
 		}
 	}
 	@media screen and (min-width: 90em) {
 		body:not(.toc-inline) .overlarge {
 			/* 4em html margin 30.5em body padding 50em content area */
-			margin-left: 0 !important;
 			margin-right: calc(84.5em - 100vw) !important;
 		}
 	}
@@ -1226,11 +1235,69 @@ Possible extra rowspan handling
     th {
       text-align: center;
     }
+
+    del { background: #fcc; color: #000; text-decoration: line-through; }
+    ins { background: #cfc; color: #000; }
+    blockquote .highlight:not(.idl) { background: initial; margin: initial; padding: 0.5em }
+    blockquote ul { background: inherit; }
+    blockquote code.highlight:not(.idl) { padding: initial; }
+    blockquote c-[a] { color: inherit; } /* Keyword.Declaration */
+    blockquote c-[b] { color: inherit; } /* Keyword.Type */
+    blockquote c-[c] { color: inherit; } /* Comment */
+    blockquote c-[d] { color: inherit; } /* Comment.Multiline */
+    blockquote c-[e] { color: inherit; } /* Name.Attribute */
+    blockquote c-[f] { color: inherit; } /* Name.Tag */
+    blockquote c-[g] { color: inherit; } /* Name.Variable */
+    blockquote c-[k] { color: inherit; } /* Keyword */
+    blockquote c-[l] { color: inherit; } /* Literal */
+    blockquote c-[m] { color: inherit; } /* Literal.Number */
+    blockquote c-[n] { color: inherit; } /* Name */
+    blockquote c-[o] { color: inherit; } /* Operator */
+    blockquote c-[p] { color: inherit; } /* Punctuation */
+    blockquote c-[s] { color: inherit; } /* Literal.String */
+    blockquote c-[t] { color: inherit; } /* Literal.String.Single */
+    blockquote c-[u] { color: inherit; } /* Literal.String.Double */
+    blockquote c-[cp] { color: inherit; } /* Comment.Preproc */
+    blockquote c-[c1] { color: inherit; } /* Comment.Single */
+    blockquote c-[cs] { color: inherit; } /* Comment.Special */
+    blockquote c-[kc] { color: inherit; } /* Keyword.Constant */
+    blockquote c-[kn] { color: inherit; } /* Keyword.Namespace */
+    blockquote c-[kp] { color: inherit; } /* Keyword.Pseudo */
+    blockquote c-[kr] { color: inherit; } /* Keyword.Reserved */
+    blockquote c-[ld] { color: inherit; } /* Literal.Date */
+    blockquote c-[nc] { color: inherit; } /* Name.Class */
+    blockquote c-[no] { color: inherit; } /* Name.Constant */
+    blockquote c-[nd] { color: inherit; } /* Name.Decorator */
+    blockquote c-[ni] { color: inherit; } /* Name.Entity */
+    blockquote c-[ne] { color: inherit; } /* Name.Exception */
+    blockquote c-[nf] { color: inherit; } /* Name.Function */
+    blockquote c-[nl] { color: inherit; } /* Name.Label */
+    blockquote c-[nn] { color: inherit; } /* Name.Namespace */
+    blockquote c-[py] { color: inherit; } /* Name.Property */
+    blockquote c-[ow] { color: inherit; } /* Operator.Word */
+    blockquote c-[mb] { color: inherit; } /* Literal.Number.Bin */
+    blockquote c-[mf] { color: inherit; } /* Literal.Number.Float */
+    blockquote c-[mh] { color: inherit; } /* Literal.Number.Hex */
+    blockquote c-[mi] { color: inherit; } /* Literal.Number.Integer */
+    blockquote c-[mo] { color: inherit; } /* Literal.Number.Oct */
+    blockquote c-[sb] { color: inherit; } /* Literal.String.Backtick */
+    blockquote c-[sc] { color: inherit; } /* Literal.String.Char */
+    blockquote c-[sd] { color: inherit; } /* Literal.String.Doc */
+    blockquote c-[se] { color: inherit; } /* Literal.String.Escape */
+    blockquote c-[sh] { color: inherit; } /* Literal.String.Heredoc */
+    blockquote c-[si] { color: inherit; } /* Literal.String.Interpol */
+    blockquote c-[sx] { color: inherit; } /* Literal.String.Other */
+    blockquote c-[sr] { color: inherit; } /* Literal.String.Regex */
+    blockquote c-[ss] { color: inherit; } /* Literal.String.Symbol */
+    blockquote c-[vc] { color: inherit; } /* Name.Variable.Class */
+    blockquote c-[vg] { color: inherit; } /* Name.Variable.Global */
+    blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
+    blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 5b139c639ea0012c5ae911f9675200af42cf05e9" name="generator">
+  <meta content="Bikeshed version 811139e88557b020c23cfc4db749a6220e4f7dcb" name="generator">
   <link href="http://fmt.dev/P1868R1.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2a02fd28c205054cc6cda2034c304be34d6a7a5b" name="document-revision">
+  <meta content="5c1d5c98ee213614c0abae24d53d26a2ece24aa4" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1439,8 +1506,8 @@ pre .property::before, pre .property::after {
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P1868R1<br>🦄 width: clarifying units of width and precision in std::format</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2019-11-16">2019-11-16</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P1868R2<br>🦄 width: clarifying units of width and precision in std::format</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2020-02-11">2020-02-11</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1982,31 +2049,31 @@ appropriate for displaying it in a terminal.
    <blockquote>
     <ins> For the purposes of width computation a string is assumed to be in a
 locale-independent implementation-defined encoding.
-Implementations should use Unicode on platforms capable of displaying Unicode
+Implementations should use a Unicode encoding on platforms capable of displaying Unicode
 text in a terminal. [ <em>Note:</em> This is the case for Windows-based and
 many POSIX-based operating systems. — end note ] </ins>
    </blockquote>
    <blockquote>
     <ins>
-     Implementations should estimate the width of a string in a Unicode
-encoding as the sum of estimated widths of the first code points in its extended
+     For a string in a Unicode encoding, implementations should estimate the
+width of a string as the sum of estimated widths of the first code points in its extended
 grapheme clusters as defined by Unicode® Standard Annex #29 Unicode Text
 Segmentation. The estimated width of the following code points is 2: 
-<pre class="language-text highlight">U+1100 .. U+115F
-U+2329
-U+232A
-U+2E80 .. U+303E
-U+3040 .. U+A4CF
-U+AC00 .. U+D7A3
-U+F900 .. U+FAFF
-U+FE10 .. U+FE19
-U+FE30 .. U+FE6F
-U+FF00 .. U+FF60
-U+FFE0 .. U+FFE6
-U+20000 .. U+2FFFD
-U+30000 .. U+3FFFD
-U+1F300 .. U+1F64F
-U+1F900 .. U+1F9FF
+<pre class="highlight" style="background: #cfc"><c- n>U</c-><c- o>+</c-><c- mi>1100</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- mf>115F</c->
+<c- n>U</c-><c- o>+</c-><c- mi>2329</c->
+<c- n>U</c-><c- o>+</c-><c- mi>232</c-><c- n>A</c->
+<c- n>U</c-><c- o>+</c-><c- mf>2E80</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- mi>303</c-><c- n>E</c->
+<c- n>U</c-><c- o>+</c-><c- mi>3040</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>A4CF</c->
+<c- n>U</c-><c- o>+</c-><c- n>AC00</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>D7A3</c->
+<c- n>U</c-><c- o>+</c-><c- n>F900</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>FAFF</c->
+<c- n>U</c-><c- o>+</c-><c- n>FE10</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>FE19</c->
+<c- n>U</c-><c- o>+</c-><c- n>FE30</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>FE6F</c->
+<c- n>U</c-><c- o>+</c-><c- n>FF00</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>FF60</c->
+<c- n>U</c-><c- o>+</c-><c- n>FFE0</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- n>FFE6</c->
+<c- n>U</c-><c- o>+</c-><c- mi>20000</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- mf>2FF</c-><c- n>FD</c->
+<c- n>U</c-><c- o>+</c-><c- mi>30000</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- mf>3FF</c-><c- n>FD</c->
+<c- n>U</c-><c- o>+</c-><c- mf>1F</c-><c- mi>300</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- mf>1F64F</c->
+<c- n>U</c-><c- o>+</c-><c- mf>1F</c-><c- mi>900</c-> <c- p>..</c-> <c- n>U</c-><c- o>+</c-><c- mf>1F9FF</c->
 </pre>
     </ins>
    </blockquote>
@@ -2014,7 +2081,7 @@ U+1F900 .. U+1F9FF
     <ins>The estimated width of other code points is 1. </ins>
    </blockquote>
    <blockquote>
-    <ins>The width of a string in a non-Unicode encoding is unspecified. </ins>
+    <ins>For a string in a non-Unicode encoding, the width of a string is unspecified. </ins>
    </blockquote>
    <p>Modify <a href="http://eel.is/c++draft/format.string.std#9">[format.string.std]/p9</a> as follows:</p>
    <blockquote>
@@ -2027,9 +2094,9 @@ precision.
 from the string.</del>
      <ins>For string types, this field provides an upper bound
 for the estimated width of the prefix of the input string that is copied into
-the output. For a string assumed to be in a Unicode encoding, the longest prefix
+the output. For a string in a Unicode encoding, the formatter copies to the output the longest prefix
 of whole extended grapheme clusters whose estimated width is no greater than the
-precision is copied to the output.</ins>
+precision.</ins>
     </p>
    </blockquote>
    <p>Add to Normative references <a href="http://eel.is/c++draft/intro.refs">[intro.refs]</a>:</p>
