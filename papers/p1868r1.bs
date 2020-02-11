@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: 🦄 width: clarifying units of width and precision in std::format
 Shortname: P1868
-Revision: 1
+Revision: 2
 <!-- !Draft Revision: 0 -->
 Audience: LWG
 Status: P
@@ -10,7 +10,7 @@ URL: http://fmt.dev/P1868R1.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Zach Laine, whatwasthataddress@gmail.com
 No abstract: true
-Date: 2019-11-16
+Date: 2020-02-11
 Markup Shorthands: markdown yes
 </pre>
 
@@ -650,15 +650,16 @@ appropriate for displaying it in a terminal.
 > <ins>
 For the purposes of width computation a string is assumed to be in a
 locale-independent implementation-defined encoding.
-Implementations should use Unicode on platforms capable of displaying Unicode
+Implementations should use a Unicode encoding on platforms capable of displaying Unicode
 text in a terminal. [ *Note:* This is the case for Windows-based and
 many POSIX-based operating systems. — end note&nbsp;]
 
-> <ins>Implementations should estimate the width of a string in a Unicode
-encoding as the sum of estimated widths of the first code points in its extended
+> <ins>For a string in a Unicode encoding, implementations should estimate the
+width of a string as the sum of estimated widths of the first code points in its extended
 grapheme clusters as defined by Unicode® Standard Annex #29 Unicode Text
 Segmentation. The estimated width of the following code points is 2:
-> ```text
+>
+> <pre style="background: #cfc">
 > U+1100 .. U+115F <!-- Hangul Jamo init. consonants -->
 > U+2329 <!-- LEFT-POINTING ANGLE BRACKET〈 -->
 > U+232A <!-- RIGHT-POINTING ANGLE BRACKET 〉-->
@@ -674,11 +675,11 @@ Segmentation. The estimated width of the following code points is 2:
 > U+30000 .. U+3FFFD
 > U+1F300 .. U+1F64F <!-- Miscellaneous Symbols and Pictographs + Emoticons -->
 > U+1F900 .. U+1F9FF <!-- Supplemental Symbols and Pictographs -->
-> ```
+> </pre>
 
 > <ins>The estimated width of other code points is 1.
 
-> <ins>The width of a string in a non-Unicode encoding is unspecified.
+> <ins>For a string in a non-Unicode encoding, the width of a string is unspecified.
 
 Modify <a href="http://eel.is/c++draft/format.string.std#9">[format.string.std]/p9</a>
 as follows:
@@ -689,9 +690,9 @@ string types. For floating-point types this field specifies the formatting
 precision. <del>For string types it specifies how many characters will be used
 from the string.</del> <ins>For string types, this field provides an upper bound
 for the estimated width of the prefix of the input string that is copied into
-the output. For a string assumed to be in a Unicode encoding, the longest prefix
+the output. For a string in a Unicode encoding, the formatter copies to the output the longest prefix
 of whole extended grapheme clusters whose estimated width is no greater than the
-precision is copied to the output.</ins>
+precision.</ins>
 
 <!-- TODO: maybe clarify that it's a user's responsibility to escape
      non-printable characters, e.g. from Control (Cc), format (Cf) categories
