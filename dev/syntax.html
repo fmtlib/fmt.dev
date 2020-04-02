@@ -186,8 +186,8 @@ although some of the formatting options are only supported by the numeric types.
 <strong id="grammar-token-sign">sign       </strong> ::=  &quot;+&quot; | &quot;-&quot; | &quot; &quot;
 <strong id="grammar-token-width">width      </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | &quot;{&quot; <a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a> &quot;}&quot;
 <strong id="grammar-token-precision">precision  </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | &quot;{&quot; <a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a> &quot;}&quot;
-<strong id="grammar-token-type">type       </strong> ::=  <a class="reference internal" href="#grammar-token-int_type"><code class="xref docutils literal"><span class="pre">int_type</span></code></a> | &quot;a&quot; | &quot;A&quot; | &quot;c&quot; | &quot;e&quot; | &quot;E&quot; | &quot;f&quot; | &quot;F&quot; | &quot;g&quot; | &quot;G&quot; | &quot;p&quot; | &quot;s&quot;
-<strong id="grammar-token-int_type">int_type   </strong> ::=  &quot;b&quot; | &quot;B&quot; | &quot;d&quot; | &quot;n&quot; | &quot;o&quot; | &quot;x&quot; | &quot;X&quot;
+<strong id="grammar-token-type">type       </strong> ::=  <a class="reference internal" href="#grammar-token-int_type"><code class="xref docutils literal"><span class="pre">int_type</span></code></a> | &quot;a&quot; | &quot;A&quot; | &quot;c&quot; | &quot;e&quot; | &quot;E&quot; | &quot;f&quot; | &quot;F&quot; | &quot;g&quot; | &quot;G&quot; | &quot;L&quot; | &quot;p&quot; | &quot;s&quot;
+<strong id="grammar-token-int_type">int_type   </strong> ::=  &quot;b&quot; | &quot;B&quot; | &quot;d&quot; | &quot;o&quot; | &quot;x&quot; | &quot;X&quot;
 </pre>
 <p>The <em>fill</em> character can be any Unicode code point other than <code class="docutils literal"><span class="pre">'{'</span></code> or
 <code class="docutils literal"><span class="pre">'}'</span></code>. The presence of a fill character is signaled by the character following
@@ -361,10 +361,10 @@ upper-case letters for the digits above 9. Using the
 <code class="docutils literal"><span class="pre">'#'</span></code> option with this type adds the prefix <code class="docutils literal"><span class="pre">&quot;0X&quot;</span></code>
 to the output value.</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">'n'</span></code></td>
-<td>Number. This is the same as <code class="docutils literal"><span class="pre">'d'</span></code>, except that it uses
-the current locale setting to insert the appropriate
-number separator characters.</td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">'L'</span></code></td>
+<td>Locale-specific format. This is the same as <code class="docutils literal"><span class="pre">'d'</span></code>,
+except that it uses the current locale setting to insert
+the appropriate number separator characters.</td>
 </tr>
 <tr class="row-odd"><td>none</td>
 <td>The same as <code class="docutils literal"><span class="pre">'d'</span></code>.</td>
@@ -425,10 +425,10 @@ precision of <code class="docutils literal"><span class="pre">1</span></code>.</
 <code class="docutils literal"><span class="pre">'E'</span></code> if the number gets too large. The
 representations of infinity and NaN are uppercased, too.</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">'n'</span></code></td>
-<td>Number. This is the same as <code class="docutils literal"><span class="pre">'g'</span></code>, except that it uses
-the current locale setting to insert the appropriate
-number separator characters.</td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">'L'</span></code></td>
+<td>Locale-specific format. This is the same as <code class="docutils literal"><span class="pre">'g'</span></code>,
+except that it uses the current locale setting to insert
+the appropriate number separator characters.</td>
 </tr>
 <tr class="row-odd"><td>none</td>
 <td>Similar to <code class="docutils literal"><span class="pre">'g'</span></code>, except that fixed-point notation,
@@ -553,7 +553,7 @@ following examples.</p>
 <p>Using the comma as a thousands separator:</p>
 <div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/locale.h&gt;</span><span class="cp"></span>
 
-<span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="p">(</span><span class="s">&quot;en_US.UTF-8&quot;</span><span class="p">),</span> <span class="s">&quot;{:n}&quot;</span><span class="p">,</span> <span class="mi">1234567890</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="p">(</span><span class="s">&quot;en_US.UTF-8&quot;</span><span class="p">),</span> <span class="s">&quot;{:L}&quot;</span><span class="p">,</span> <span class="mi">1234567890</span><span class="p">);</span>
 <span class="c1">// s == &quot;1,234,567,890&quot;</span>
 </pre></div>
 </div>
