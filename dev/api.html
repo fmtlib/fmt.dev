@@ -698,17 +698,18 @@ the iterator past the end of the output range.</p>
  </p>
 </dd></dl>
 
-<dl class="function">
-<dt>
-<em class="property">template </em>&lt;<em class="property">typename</em> OutputIt, <em class="property">typename</em> S, typename... <em>Args</em>&gt;</dt>
-<dt id="_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args">
-<span id="fmt::format_to_n__OutputIt.s.SCR.ArgsCRDp"></span><span class="target" id="formatnamespacefmt_1a5d253f698ffaead42a7cadf5a229b0cb"></span><a class="reference internal" href="#_CPPv2N3fmt18format_to_n_resultE" title="fmt::format_to_n_result">format_to_n_result</a>&lt;OutputIt&gt; <code class="descclassname">fmt::</code><code class="descname">format_to_n</code><span class="sig-paren">(</span>OutputIt <em>out</em>, size_t <em>n</em>, <em class="property">const</em> S &amp;<em>format_str</em>, <em class="property">const</em> Args&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N3fmt11format_to_nE8OutputIt6size_tRK1SDpRK4Args" title="Permalink to this definition">¶</a></dt>
-<dd><p><p>Formats arguments, writes up to <code class="docutils literal"><span class="pre">n</span></code> characters of the result to the output
-iterator <code class="docutils literal"><span class="pre">out</span></code> and returns the total output size and the iterator past the
-end of the output range.</p>
- </p>
-</dd></dl>
-
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve multiple matches for function &#8220;fmt::format_to_n&#8221; with arguments (OutputIt, std::size_t, string_view, Args&amp;&amp;...) in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml.
+Potential matches:
+</p>
+<div class="last highlight-c++"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">OutputIt</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompiledFormat</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*</span><span class="p">,</span> <span class="n">CompiledFormat</span><span class="o">&gt;</span>
+  <span class="o">::</span><span class="n">value</span> <span class="n">format_to_n_result</span><span class="o">&lt;</span><span class="n">OutputIt</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_to_n</span><span class="p">(</span><span class="n">OutputIt</span><span class="p">,</span> <span class="kt">size_t</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompiledFormat</span> <span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span> <span class="o">&amp;</span><span class="p">...)</span>
+<span class="o">-</span> <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">OutputIt</span><span class="p">,</span> <span class="k">typename</span> <span class="n">S</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="o">*</span><span class="n">Args</span><span class="o">*&gt;</span>
+  <span class="n">format_to_n_result</span><span class="o">&lt;</span><span class="n">OutputIt</span><span class="o">&gt;</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format_to_n</span><span class="p">(</span><span class="n">OutputIt</span><span class="p">,</span> <span class="kt">size_t</span><span class="p">,</span> <span class="k">const</span> <span class="n">S</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Args</span><span class="o">&amp;</span><span class="p">...)</span>
+</pre></div>
+</div>
+</div>
 <dl class="class">
 <dt>
 <span class="target" id="formatstructfmt_1_1format__to__n__result"></span><em class="property">template </em>&lt;<em class="property">typename</em> OutputIt&gt;</dt>
@@ -1241,10 +1242,21 @@ as well as user-defined types with <code class="docutils literal"><span class="p
 <code class="docutils literal"><span class="pre">formatter</span></code> specializations. Format string compilation can generate more
 binary code compared to the normal API and is only recommended in places where
 formatting is a performance bottleneck.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygendefine: Cannot find define &#8220;FMT_COMPILE&#8221; in doxygen xml output for project &#8220;format&#8221; from directory: /home/travis/build/fmtlib/fmt/doxyxml</p>
+<dl class="macro">
+<dt id="c.FMT_COMPILE">
+<span class="target" id="formatcompile_8h_1a7186ba53487a4df4602ae1d75658db29"></span><code class="descname">FMT_COMPILE</code><span class="sig-paren">(</span>s<span class="sig-paren">)</span><a class="headerlink" href="#c.FMT_COMPILE" title="Permalink to this definition">¶</a></dt>
+<dd><p><p>Constructs a format string that will be translated into an efficient
+formatting code at compile time from a string literal <em>s</em>. Requires C++17
+<code class="docutils literal"><span class="pre">constexpr</span> <span class="pre">if</span></code>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="c1">// Converts 42 into std::string using the most efficient code and no runtime</span>
+<span class="c1">// format string processing.</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="n">FMT_COMPILE</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">),</span> <span class="mi">42</span><span class="p">);</span>
+</pre></div>
 </div>
+ </p>
+</dd></dl>
+
 </div>
 <div class="section" id="std-ostream-support">
 <span id="ostream-api"></span><h2><code class="docutils literal"><span class="pre">std::ostream</span></code> Support<a class="headerlink" href="#std-ostream-support" title="Permalink to this headline">¶</a></h2>
