@@ -1,10 +1,10 @@
 <pre class='metadata'>
 Title: Negative zero strikes again
 Shortname: P2021
-Revision: 0
+Revision: 1
 <!-- !Draft Revision: 0 -->
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL: http://fmt.dev/P2021R0.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
@@ -47,6 +47,14 @@ of the issue and clarify the following:
     specifier,
 * it can be easily and efficiently implemented via the extension API,
 * as a user-facing feature it should be locale-specific if implemented.
+
+Revision history {#history}
+================
+
+Changes since R0
+----------------
+
+ * Fixed a suppression example
 
 Is negative zero a problem? {#imaginary-problem}
 ===========================
@@ -186,7 +194,7 @@ the input is -0.0 and it can be trivially suppressed:
 
 > ```c++
 > double x = -0.0;
-> auto s = std::format("{}", +x); // s == "0.0"
+> auto s = std::format("{}", x + 0); // s == "0.0"
 > ```
 
 Similarly, the `'z'` option would be useless with the `'e'` and `'a'` specifiers
