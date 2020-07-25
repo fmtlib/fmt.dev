@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 811139e88557b020c23cfc4db749a6220e4f7dcb" name="generator">
   <link href="http://fmt.dev/papers/d2197r0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="df80ff946ba5e9469850898003bfd5775930c68e" name="document-revision">
+  <meta content="a1b9cc3d77b9b782f29f9ef024d0ad07837de9cb" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1538,22 +1538,21 @@ pre .property::before, pre .property::after {
     <li>
      <a href="#design-considerations"><span class="secno">3</span> <span class="content">Design Considerations</span></a>
      <ol class="toc">
-      <li><a href="#numeric-form"><span class="secno">3.1</span> <span class="content">Numeric form</span></a>
-      <li><a href="#imaginary-unit"><span class="secno">3.2</span> <span class="content">Imaginary unit</span></a>
-      <li><a href="#omission-of-a-part"><span class="secno">3.3</span> <span class="content">Omission of a part</span></a>
+      <li><a href="#numeric-form"><span class="secno">3.1</span> <span class="content">Numeric form {#numeric-form}</span></a>
+      <li><a href="#imaginary"><span class="secno">3.2</span> <span class="content">Imaginary unit {#imaginary}</span></a>
+      <li><a href="#omission"><span class="secno">3.3</span> <span class="content">Omission of a part {#omission}</span></a>
      </ol>
     <li><a href="#parentheses"><span class="secno">4</span> <span class="content">Parentheses</span></a>
     <li><a href="#backwards-compat"><span class="secno">5</span> <span class="content">Backwards Compatibility</span></a>
     <li><a href="#parsing"><span class="secno">6</span> <span class="content">Parsing</span></a>
-    <li><a href="#survey-of-other-languages"><span class="secno">7</span> <span class="content">Survey of other languages</span></a>
+    <li><a href="#survey"><span class="secno">7</span> <span class="content">Survey of other languages</span></a>
     <li><a href="#wish-list"><span class="secno">8</span> <span class="content">Wish List</span></a>
     <li><a href="#examples"><span class="secno">9</span> <span class="content">Examples</span></a>
     <li><a href="#proposed-wording"><span class="secno">10</span> <span class="content">Proposed Wording</span></a>
     <li><a href="#questions"><span class="secno">11</span> <span class="content">Questions</span></a>
     <li><a href="#acknowledgements"><span class="secno">12</span> <span class="content">Acknowledgements {#acknowledgements}</span></a>
-    <li><a href="#references"><span class="secno">13</span> <span class="content">References {#references}</span></a>
     <li>
-     <a href="#references①"><span class="secno"></span> <span class="content">References</span></a>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
       <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
@@ -1617,7 +1616,7 @@ the imaginary unit notation, even when an unusual locale is used.</p>
    <h2 class="heading settled" data-level="3" id="design-considerations"><span class="secno">3. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
    <p>With an eye to entirely replacing the functionality of iostreams, the
 following considerations are made:</p>
-   <h3 class="heading settled" data-level="3.1" id="numeric-form"><span class="secno">3.1. </span><span class="content">Numeric form</span><a class="self-link" href="#numeric-form"></a></h3>
+   <h3 class="heading settled" data-level="3.1" id="numeric-form"><span class="secno">3.1. </span><span class="content">Numeric form {#numeric-form}</span><a class="self-link" href="#numeric-form"></a></h3>
    <p>The question of how to represent the numeric type <code class="highlight"><c- n>T</c-></code> of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> is simply delegated to the <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> for that
 type.  Special alignment, fill, and sign rules may apply for <code class="highlight"><c- n>T</c-></code> $<code class="highlight">\<c- n>in</c-></code>$ {<code class="highlight"><c- b>float</c-></code>, <code class="highlight"><c- b>double</c-></code>, <code class="highlight"><c- b>long</c-> <c- b>double</c-></code>}, but other custom value
 types are accomodated.  This is done by optionally forwarding a
@@ -1627,7 +1626,7 @@ uncommon to use a type for <code class="highlight"><c- n>T</c-></code> which pro
 extended precision or automatic differentiation.  The formatting
 specification should therefore be recursive, so that arbitrary
 numerical types for <code class="highlight"><c- n>T</c-></code> are properly formatted.</p>
-   <h3 class="heading settled" data-level="3.2" id="imaginary-unit"><span class="secno">3.2. </span><span class="content">Imaginary unit</span><a class="self-link" href="#imaginary-unit"></a></h3>
+   <h3 class="heading settled" data-level="3.2" id="imaginary"><span class="secno">3.2. </span><span class="content">Imaginary unit {#imaginary}</span><a class="self-link" href="#imaginary"></a></h3>
    <p>As previously mentioned, mathematics notation typically uses <em>i</em> as
 the complex unit vector, however it is very common in electrical
 engineering to use <em>j</em> instead.  Mathematica uses the unicode
@@ -1637,7 +1636,7 @@ rather than after it.  Julia uses the dual-character symbol <code class="highlig
 it it easy to imagine wanting to explicitly specify the
 usually-omitted implied real unit-vector, result in a format like <code class="highlight"><c- mi>3</c-><c- n>re</c-> <c- o>+</c-> <c- mi>4</c-><c- n>im</c-></code>.  Supporting these use cases would be nice, but not with
 significant implementation difficulty.</p>
-   <h3 class="heading settled" data-level="3.3" id="omission-of-a-part"><span class="secno">3.3. </span><span class="content">Omission of a part</span><a class="self-link" href="#omission-of-a-part"></a></h3>
+   <h3 class="heading settled" data-level="3.3" id="omission"><span class="secno">3.3. </span><span class="content">Omission of a part {#omission}</span><a class="self-link" href="#omission"></a></h3>
    <p>Because the complex number is always a pair of real part and imaginary
 part, it is not necessary to print both parts if one of the parts is
 identical to a known quantity: typically (positive!) zero; in this
@@ -1684,7 +1683,7 @@ and default format for <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c
    <h2 class="heading settled" data-level="6" id="parsing"><span class="secno">6. </span><span class="content">Parsing</span><a class="self-link" href="#parsing"></a></h2>
    <p>This paper does not address parsing (scan’ing) for the type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> but does aim to produce formatted output that can be
 unambiguously round-trip formatted and parsed.</p>
-   <h2 class="heading settled" data-level="7" id="survey-of-other-languages"><span class="secno">7. </span><span class="content">Survey of other languages</span><a class="self-link" href="#survey-of-other-languages"></a></h2>
+   <h2 class="heading settled" data-level="7" id="survey"><span class="secno">7. </span><span class="content">Survey of other languages</span><a class="self-link" href="#survey"></a></h2>
    <p>The following programming languages/environments similarly use the
 imaginary-unit notation as their default: python, julia, R, matlab,
 mathematica, go.  IF you know the type of the data, these languages
@@ -1726,7 +1725,7 @@ pertinent information can be lost during formatting.</p>
       <td> <em>i</em> 
       <td> <code class="highlight"><c- mi>0</c-></code> 
      <tr>
-      <td><a href="http://www.r-tutor.com/r-introduction/basic-data-types/complex">\R</a> 
+      <td><a href="http://www.r-tutor.com/r-introduction/basic-data-types/complex">R</a> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>3</c-><c- o>+</c-><c- mi>4</c-><c- n>i</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>0</c-><c- o>+</c-><c- mi>1</c-><c- n>i</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>0</c-><c- o>+</c-><c- mi>0</c-><c- n>i</c-><c- p>)</c-></code> 
@@ -1779,7 +1778,6 @@ peeve when writing math stuff where there is only one zero)</p>
    <p><strong>Q2</strong>: The strategy of this paper is to include a laundry list of
         possibilities, which parts do we want?</p>
    <h2 class="heading settled" data-level="12" id="acknowledgements"><span class="secno">12. </span><span class="content">Acknowledgements {#acknowledgements}</span><a class="self-link" href="#acknowledgements"></a></h2>
-   <h2 class="heading settled" data-level="13" id="references"><span class="secno">13. </span><span class="content">References {#references}</span><a class="self-link" href="#references"></a></h2>
   </main>
 <script>
 (function() {
@@ -1910,7 +1908,7 @@ peeve when writing math stuff where there is only one zero)</p>
 
 })();
 </script>
-  <h2 class="no-num no-ref heading settled" id="references①"><span class="content">References</span><a class="self-link" href="#references①"></a></h2>
+  <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
    <dt id="biblio-n3660">[N3660]
