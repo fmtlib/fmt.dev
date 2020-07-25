@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 811139e88557b020c23cfc4db749a6220e4f7dcb" name="generator">
   <link href="http://fmt.dev/papers/d2197r0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a1b9cc3d77b9b782f29f9ef024d0ad07837de9cb" name="document-revision">
+  <meta content="53d49e3ce3e409430d86cc92aea149f60bea3c6b" name="document-revision">
 <style>/* style-md-lists */
 
 /* This is a weird hack for me not yet following the commonmark spec
@@ -1512,9 +1512,11 @@ pre .property::before, pre .property::after {
     <dl>
      <dt>This version:
      <dd><a class="u-url" href="http://fmt.dev/papers/d2197r0.html">http://fmt.dev/papers/d2197r0.html</a>
-     <dt>Author:
+     <dt>Authors:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:tesch1@gmail.com">Michael Tesch</a>
+     <dd>
+      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
      <dd>LEWG
      <dt>Project:
@@ -1528,29 +1530,28 @@ pre .property::before, pre .property::after {
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
    <p>This paper discusses extending coverage of the formatting
 
-  functionality of <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> to `std::complex`.</p>
+  functionality of <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
+    <li><a href="#examples"><span class="secno">2</span> <span class="content">Examples</span></a>
+    <li><a href="#motivation"><span class="secno">3</span> <span class="content">Motivation</span></a>
     <li>
-     <a href="#design-considerations"><span class="secno">3</span> <span class="content">Design Considerations</span></a>
+     <a href="#design-considerations"><span class="secno">4</span> <span class="content">Design Considerations</span></a>
      <ol class="toc">
-      <li><a href="#numeric-form"><span class="secno">3.1</span> <span class="content">Numeric form {#numeric-form}</span></a>
-      <li><a href="#imaginary"><span class="secno">3.2</span> <span class="content">Imaginary unit {#imaginary}</span></a>
-      <li><a href="#omission"><span class="secno">3.3</span> <span class="content">Omission of a part {#omission}</span></a>
+      <li><a href="#numeric-form"><span class="secno">4.1</span> <span class="content">Numeric form</span></a>
+      <li><a href="#imaginary"><span class="secno">4.2</span> <span class="content">Imaginary unit</span></a>
+      <li><a href="#omission"><span class="secno">4.3</span> <span class="content">Omission of a part</span></a>
      </ol>
-    <li><a href="#parentheses"><span class="secno">4</span> <span class="content">Parentheses</span></a>
-    <li><a href="#backwards-compat"><span class="secno">5</span> <span class="content">Backwards Compatibility</span></a>
-    <li><a href="#parsing"><span class="secno">6</span> <span class="content">Parsing</span></a>
-    <li><a href="#survey"><span class="secno">7</span> <span class="content">Survey of other languages</span></a>
-    <li><a href="#wish-list"><span class="secno">8</span> <span class="content">Wish List</span></a>
-    <li><a href="#examples"><span class="secno">9</span> <span class="content">Examples</span></a>
+    <li><a href="#parentheses"><span class="secno">5</span> <span class="content">Parentheses</span></a>
+    <li><a href="#backwards-compat"><span class="secno">6</span> <span class="content">Backwards Compatibility</span></a>
+    <li><a href="#parsing"><span class="secno">7</span> <span class="content">Parsing</span></a>
+    <li><a href="#survey"><span class="secno">8</span> <span class="content">Survey of other languages</span></a>
+    <li><a href="#wish-list"><span class="secno">9</span> <span class="content">Wish List</span></a>
     <li><a href="#proposed-wording"><span class="secno">10</span> <span class="content">Proposed Wording</span></a>
     <li><a href="#questions"><span class="secno">11</span> <span class="content">Questions</span></a>
-    <li><a href="#acknowledgements"><span class="secno">12</span> <span class="content">Acknowledgements {#acknowledgements}</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -1559,66 +1560,69 @@ pre .property::before, pre .property::after {
    </ol>
   </nav>
   <main>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> has proposed a text formatting facility that provides a safe
 and extensible alternative to the <code class="highlight"><c- n>printf</c-></code> family of functions. This
-paper explores how to format complex numbers from <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.</p>
-   <ul>
-    <li data-md>
-     <p><a href="#motivation">Motivation</a></p>
-    <li data-md>
-     <p><a href="#design-considerations">Design Considerations</a></p>
-    <li data-md>
-     <p><a href="#backwards-compat">Backwards Compatibility</a></p>
-    <li data-md>
-     <p><a href="#questions">Questions</a></p>
-    <li data-md>
-     <p><a href="#acknowledgements">Acknowledgements</a></p>
-    <li data-md>
-     <p><a href="#references">References</a></p>
-   </ul>
-   <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
-   <p>This is a proposal defining formatting for complex nunmbers
-represented by the library type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.  The default notation <code class="highlight"><c- p>(</c-><c- mi>3</c-><c- o>+</c-><c- mi>4</c-><c- n>i</c-><c- p>)</c-></code> is proposed, as it is common in mathematics, the physical
-sciences, and many other popular mathematical software environments.
-This form is also (more) consistent with STL literals for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code> <a data-link-type="biblio" href="#biblio-n3660">[N3660]</a>.  In addition to defining the new format and
-discussing design choices, this proposal attempts to address questions
-arounding introducing a format which differs from the existing <code class="highlight"><c- n>iostream</c-></code> format, and why the aforementioned advantages outweigh the
-disadvantages of introducing a potentially incompatible format.</p>
+paper explores how to format complex numbers represented by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.</p>
+   <h2 class="heading settled" data-level="2" id="examples"><span class="secno">2. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
+   <p>Default format:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- mf>1.0</c-> <c- o>+</c-> <c- mi>2</c-><c- n>i</c-><c- p>);</c-> <c- c1>// s == "(1+2i)"</c->
+</pre>
+   <p>iostreams-compatible format:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:s}"</c-><c- p>,</c-> <c- mf>1.0</c-> <c- o>+</c-> <c- mi>2</c-><c- n>i</c-><c- p>);</c-> <c- c1>// s == "(1,2)"</c->
+</pre>
+   <p>Format specifiers:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:.2f}"</c-><c- p>,</c-> <c- mf>1.0</c-> <c- o>+</c-> <c- mi>2</c-><c- n>i</c-><c- p>);</c-> <c- c1>// s == "1.00+2.00i"</c->
+</pre>
+   <h2 class="heading settled" data-level="3" id="motivation"><span class="secno">3. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
+   <p>This is a proposal defining formatting of complex numbers
+represented by the library type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.  The default notation <code class="language-text highlight">(3+4i)</code> is proposed, as it is common in
+mathematics, the physical sciences, and many other popular mathematical
+software environments. This form is also more consistent with the standard
+library literals for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code> <a data-link-type="biblio" href="#biblio-n3660">[N3660]</a>.  In addition to defining the
+new format and discussing design choices, this proposal attempts to address
+questions around introducing a format which differs from the existing
+iostreams format, and why the aforementioned advantages outweigh the
+disadvantages of introducing a potentially incompatible format.
+An option to produce iostreams-compatible output is also provided.</p>
    <p>The formatting of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code> should be simple, consistent with
 existing conventions of <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, and conveniently support the most
-common use cases of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.  As the first (I believe?) nested
-format specified for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, it can also serve as an example for
-how format nesting can be done.</p>
+common use cases of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-></code>.  As the first nested format specified for <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code>, it can also serve as an example for how format nesting can be done.</p>
    <p>Mathematics generally follows the convention that complex numbers
 consist of a real part and an orthogonal imaginary part which is
-identified by multiplication of the imaginary unit vector \$ i \$.
+identified by multiplication of the imaginary unit vector \( i \).
 Extending the set of unit vectors in this way furthermore implies
 straightforward extensions to other useful algebras such as
-quaternions \$ i, j, k\$, dual numbers \$ \epsilon \$, etc...</p>
+quaternions \( i, j, k \), dual numbers \( \epsilon \), etc.</p>
    <p>For the types <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- p>{</c-><c- b>float</c-><c- p>,</c-><c- b>double</c-><c- p>,</c-><c- b>long</c-> <c- b>double</c-><c- p>}</c-><c- o>></c-></code>, C++14
-introduced string literals to the standard library in the namespace <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>literals</c-><c- o>::</c-><c- n>complex_literals</c-></code>.  These string literals acknowledge
+introduced string literals to the standard library in the namespace <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex_literals</c-></code>.  These string literals acknowledge
 the common use cases of these types and provide a convenient way to
-write complex numbers in code, for example the number \$ 1 + 1i \$
-can be written in code as as <code class="highlight"><c- p>(</c-><c- mi>1</c-><c- o>+</c-><c- mi>1</c-><c- k>if</c-><c- p>)</c-></code>, <code class="highlight"><c- p>(</c-><c- mi>1</c-><c- o>+</c-><c- mi>1</c-><c- n>i</c-><c- p>)</c-></code>, or <code class="highlight"><c- p>(</c-><c- mi>1</c-><c- o>+</c-><c- mi>1</c-><c- n>il</c-><c- p>)</c-></code>,
+write complex numbers in code, for example the number \( 1 + 1i \)
+can be written in code as as <code class="language-text highlight">1.0f + 1if</code>, <code class="language-text highlight">1.0 + 1i</code>, or <code class="language-text highlight">1.0l + 1il</code>,
 depending on the desired underlying type.</p>
-   <p>Sometimes it is possible to omit one part in a sybolic representation
+   <p>Sometimes it is possible to omit one part in a symbolic representation
 yet retain bijectivity in the machine representation to symbolic
-mapping.  For example, the complex number \$ 0 + 0i \$ can be
+mapping.  For example, the complex number \( 0 + 0i \) can be
 unambiguously written as either <code class="highlight"><c- mi>0</c-></code> or <code class="highlight"><c- mi>0</c-><c- n>i</c-></code>.  The convention of
 mathematics is the former, although the latter has the advantage of
 implying the underlying field.</p>
-   <p>As specified \ref?, the existing iostreams formatting of a complex
-number <code class="highlight"><c- n>c</c-></code> is essentially <code class="highlight"><c- n>os</c-> <c- o>&lt;&lt;</c-> <c- sc>'('</c-> <c- o>&lt;&lt;</c-> <c- n>real</c-><c- p>(</c-><c- n>c</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- sc>','</c-> <c- o>&lt;&lt;</c-> <c- n>imag</c-><c- p>(</c-><c- n>c</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- sc>')'</c-><c- p>;</c-></code>.  This embedded comma can cause silent unexpected generation of
-ambiguous output, which can happen in the above, ie, when the locale’s
+   <p>As specified in <a data-link-type="biblio" href="#biblio-n4849">[N4849]</a>, the existing iostreams formatting of a complex
+number <code class="highlight"><c- n>x</c-></code> is essentially</p>
+<pre class="highlight"><c- n>s</c-> <c- o>&lt;&lt;</c-> <c- sc>'('</c-> <c- o>&lt;&lt;</c-> <c- n>x</c-><c- p>.</c-><c- n>real</c-><c- p>()</c-> <c- o>&lt;&lt;</c-> <c- s>","</c-> <c- o>&lt;&lt;</c-> <c- n>x</c-><c- p>.</c-><c- n>imag</c-><c- p>()</c-> <c- o>&lt;&lt;</c-> <c- sc>')'</c-><c- p>;</c->
+</pre>
+   where <code class="highlight"><c- n>s</c-></code> is a stream object. 
+   <p>This embedded comma can cause silent unexpected generation of
+ambiguous output, which can happen e.g. when the locale’s
 decimal separator is set to comma.  This ambiguity does not exist in
 the imaginary unit notation, even when an unusual locale is used.</p>
-   <h2 class="heading settled" data-level="3" id="design-considerations"><span class="secno">3. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
-   <p>With an eye to entirely replacing the functionality of iostreams, the
-following considerations are made:</p>
-   <h3 class="heading settled" data-level="3.1" id="numeric-form"><span class="secno">3.1. </span><span class="content">Numeric form {#numeric-form}</span><a class="self-link" href="#numeric-form"></a></h3>
+   <h2 class="heading settled" data-level="4" id="design-considerations"><span class="secno">4. </span><span class="content">Design Considerations</span><a class="self-link" href="#design-considerations"></a></h2>
+   <p>With an eye to providing a replacement for all the functionality of iostreams,
+the following considerations are made.</p>
+   <h3 class="heading settled" data-level="4.1" id="numeric-form"><span class="secno">4.1. </span><span class="content">Numeric form</span><a class="self-link" href="#numeric-form"></a></h3>
    <p>The question of how to represent the numeric type <code class="highlight"><c- n>T</c-></code> of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> is simply delegated to the <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> for that
-type.  Special alignment, fill, and sign rules may apply for <code class="highlight"><c- n>T</c-></code> $<code class="highlight">\<c- n>in</c-></code>$ {<code class="highlight"><c- b>float</c-></code>, <code class="highlight"><c- b>double</c-></code>, <code class="highlight"><c- b>long</c-> <c- b>double</c-></code>}, but other custom value
+type.  Special alignment, fill, and sign rules may apply when <code class="highlight"><c- n>T</c-></code> is <code class="highlight"><c- b>float</c-></code>, <code class="highlight"><c- b>double</c-></code> or <code class="highlight"><c- b>long</c-> <c- b>double</c-></code>, but other custom value
 types are accomodated.  This is done by optionally forwarding a
 designated portion of the <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-></code> format spec to <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>.</p>
    <p>Although the standard does not specify behavior of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> for types other than <code class="highlight"><c- b>float</c-></code>, <code class="highlight"><c- b>double</c-></code>, <code class="highlight"><c- b>long</c-> <c- b>double</c-></code>, it is not
@@ -1626,20 +1630,20 @@ uncommon to use a type for <code class="highlight"><c- n>T</c-></code> which pro
 extended precision or automatic differentiation.  The formatting
 specification should therefore be recursive, so that arbitrary
 numerical types for <code class="highlight"><c- n>T</c-></code> are properly formatted.</p>
-   <h3 class="heading settled" data-level="3.2" id="imaginary"><span class="secno">3.2. </span><span class="content">Imaginary unit {#imaginary}</span><a class="self-link" href="#imaginary"></a></h3>
-   <p>As previously mentioned, mathematics notation typically uses <em>i</em> as
+   <h3 class="heading settled" data-level="4.2" id="imaginary"><span class="secno">4.2. </span><span class="content">Imaginary unit</span><a class="self-link" href="#imaginary"></a></h3>
+   <p>As previously mentioned, mathematics notation typically uses \( i \) as
 the complex unit vector, however it is very common in electrical
-engineering to use <em>j</em> instead.  Mathematica uses the unicode
-character ? for the imaginary unit.  Another common written form of
+engineering to use \( j \) instead.  Mathematica uses the Unicode
+character ⅈ for the imaginary unit.  Another common written form of
 complex numbers puts the imaginary unit in front of the imaginary part
 rather than after it.  Julia uses the dual-character symbol <code class="highlight"><c- n>im</c-></code>, and
 it it easy to imagine wanting to explicitly specify the
 usually-omitted implied real unit-vector, result in a format like <code class="highlight"><c- mi>3</c-><c- n>re</c-> <c- o>+</c-> <c- mi>4</c-><c- n>im</c-></code>.  Supporting these use cases would be nice, but not with
 significant implementation difficulty.</p>
-   <h3 class="heading settled" data-level="3.3" id="omission"><span class="secno">3.3. </span><span class="content">Omission of a part {#omission}</span><a class="self-link" href="#omission"></a></h3>
+   <h3 class="heading settled" data-level="4.3" id="omission"><span class="secno">4.3. </span><span class="content">Omission of a part</span><a class="self-link" href="#omission"></a></h3>
    <p>Because the complex number is always a pair of real part and imaginary
 part, it is not necessary to print both parts if one of the parts is
-identical to a known quantity: typically (positive!) zero; in this
+identical to a known quantity: typically (nonnegative) zero; in this
 case omission implies the value uniquely.  Either the real or the
 imaginary part can be omitted when this condition is satisfied,
 although clearly not both.</p>
@@ -1660,69 +1664,70 @@ type <code class="highlight"><c- n>T</c-></code> must have both a defined <code 
    <p>This nuance is demonstrated by the result of <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- o>-</c-><c- mf>1.</c-> <c- o>+</c-> <c- mi>0</c-><c- n>i</c-><c- p>)</c-></code> vs <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- o>-</c-><c- mf>1.</c-> <c- o>-</c-> <c- mi>0</c-><c- n>i</c-><c- p>)</c-></code>.</p>
    <p>Which part should be dropped?</p>
    <p>Either part of an imaginary number could be dropped if it is binary
-equal to <code class="highlight"><c- n>T</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code>, but in the special case of \$ 0 + 0i \$ dropping both
+equal to <code class="highlight"><c- n>T</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code>, but in the special case of \( 0 + 0i \) dropping both
 parts would lead to the absurdity of an empty string.  This is an open
 question, but it is the opinion of the author that the real part
 should be dropped, so that the remaining symbolic representation
 retains the imaginary unit vector, indicating use of the complex field
-\$ \frac{C} \$.</p>
-   <h2 class="heading settled" data-level="4" id="parentheses"><span class="secno">4. </span><span class="content">Parentheses</span><a class="self-link" href="#parentheses"></a></h2>
+\( \mathbb{C} \).</p>
+   <h2 class="heading settled" data-level="5" id="parentheses"><span class="secno">5. </span><span class="content">Parentheses</span><a class="self-link" href="#parentheses"></a></h2>
    <p>Should parentheses be mandatory?</p>
    <p>Are parentheses always neccesary to unambiguously specify a complex
 number?</p>
    <p>Do mandatory parentheses significantly improve ease or speed of
 complex number parsing?</p>
    <p>If parentheses are not mandatory, when should they be omitted?</p>
-   <h2 class="heading settled" data-level="5" id="backwards-compat"><span class="secno">5. </span><span class="content">Backwards Compatibility</span><a class="self-link" href="#backwards-compat"></a></h2>
+   <h2 class="heading settled" data-level="6" id="backwards-compat"><span class="secno">6. </span><span class="content">Backwards Compatibility</span><a class="self-link" href="#backwards-compat"></a></h2>
    <p>To maintain backward compatibility we propose an easy-to-use format
 specifier that exactly reproduces the legacy iostreams output format.</p>
    <p>The <code class="highlight"><c- n>ios</c-></code> specifiers that affect complex number output are <code class="highlight"><c- n>precision</c-></code> and <code class="highlight"><c- n>width</c-></code>, these can not be easily guessed, but can be specified
 manually in the nested format specifier.  Otherwise the compatibilty
 format the output will produce roughly the same output (modulo locale
 and default format for <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>) that iostreams produces.</p>
-   <h2 class="heading settled" data-level="6" id="parsing"><span class="secno">6. </span><span class="content">Parsing</span><a class="self-link" href="#parsing"></a></h2>
-   <p>This paper does not address parsing (scan’ing) for the type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> but does aim to produce formatted output that can be
-unambiguously round-trip formatted and parsed.</p>
-   <h2 class="heading settled" data-level="7" id="survey"><span class="secno">7. </span><span class="content">Survey of other languages</span><a class="self-link" href="#survey"></a></h2>
+   <h2 class="heading settled" data-level="7" id="parsing"><span class="secno">7. </span><span class="content">Parsing</span><a class="self-link" href="#parsing"></a></h2>
+   <p>This paper does not address parsing (scan’ing) for the type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> but does aim to produce formatted output that can
+unambiguously round trip formatted and parsed.</p>
+   <h2 class="heading settled" data-level="8" id="survey"><span class="secno">8. </span><span class="content">Survey of other languages</span><a class="self-link" href="#survey"></a></h2>
    <p>The following programming languages/environments similarly use the
-imaginary-unit notation as their default: python, julia, R, matlab,
-mathematica, go.  IF you know the type of the data, these languages
+imaginary-unit notation as their default: Python, Julia, R, MATLAB,
+Mathematica, Go.  If you know the type of the data, these languages
 offer round-trip conversion from complex -> text -> complex, but
 because some of them drop the complex part in their textual output
 when the complex part is zero (or even negative zero!) some arguably
 pertinent information can be lost during formatting.</p>
    <table>
     <tbody>
-     <tr>
-      <td>language 
-      <td> basic format 
-      <td> result of sqrt(-1) 
-      <td> result of sqrt(-1)-sqrt(-1) 
     <thead>
+     <tr>
+      <td>Language
+      <td>Basic Format
+      <td>Result of <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- o>-</c-><c- mi>1</c-><c- p>)</c-></code>
+      <td>Result of <code class="highlight"><c- n>sqrt</c-><c- p>(</c-><c- o>-</c-><c- mi>1</c-><c- p>)</c-> <c- o>-</c-> <c- n>sqrt</c-><c- p>(</c-><c- o>-</c-><c- mi>1</c-><c- p>)</c-></code> 
+    <tbody>
      <tr>
       <td><a href="https://en.cppreference.com/w/cpp/numeric/complex/operator_ltltgtgt">C++ iostreams</a> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>3</c-><c- p>,</c-><c- mi>4</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>0</c-><c- p>,</c-><c- mi>1</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>0</c-><c- p>,</c-><c- mi>0</c-><c- p>)</c-></code> 
      <tr>
-      <td><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.imag.html">numpy</a> 
+      <td><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.imag.html">NumPy</a> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>3</c-><c- o>+</c-><c- mi>4</c-><c- n>j</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- mi>1</c-><c- n>j</c-></code> 
       <td> <code class="highlight"><c- mi>0</c-><c- n>j</c-></code> 
      <tr>
-      <td><a href="https://docs.julialang.org/en/v1/manual/complex-and-rational-numbers/">julia</a> 
+      <td><a href="https://docs.julialang.org/en/v1/manual/complex-and-rational-numbers/">Julia</a> 
       <td> <code class="highlight"><c- mf>3.0</c-> <c- o>+</c-> <c- mf>4.0</c-><c- n>im</c-></code> 
       <td> <code class="highlight"><c- mf>0.0</c-> <c- o>+</c-> <c- mf>1.0</c-><c- n>im</c-></code> 
       <td> <code class="highlight"><c- mf>0.0</c-> <c- o>+</c-> <c- mf>0.0</c-><c- n>im</c-></code> 
      <tr>
-      <td><a href="https://octave.org/doc/v4.4.1/Complex-Arithmetic.html">octave</a> 
+      <td><a href="https://octave.org/doc/v4.4.1/Complex-Arithmetic.html">Octave</a> 
       <td> <code class="highlight"><c- mi>3</c-> <c- o>+</c-> <c- mi>4</c-><c- n>i</c-></code> 
       <td> <code class="highlight"><c- mi>0</c-> <c- o>+</c-> <c- mi>1</c-><c- n>i</c-></code> 
       <td> <code class="highlight"><c- mi>0</c-></code> 
      <tr>
-      <td><a href="https://reference.wolfram.com/language/ref/I.html">mathematica*</a> 
-      <td> <code class="highlight"><c- mi>1</c-><c- o>+</c-></code><em>i</em> 
-      <td> <em>i</em> 
+      <td><a href="https://reference.wolfram.com/language/ref/I.html">Mathematica*</a> 
+      <td> <code class="highlight"><c- mi>1</c-><c- o>+</c->ⅈ</code> 
+      <td> <code class="highlight">ⅈ</code> 
       <td> <code class="highlight"><c- mi>0</c-></code> 
      <tr>
       <td><a href="http://www.r-tutor.com/r-introduction/basic-data-types/complex">R</a> 
@@ -1735,24 +1740,23 @@ pertinent information can be lost during formatting.</p>
       <td> <code class="highlight"><c- mi>1</c-><c- k>if</c-></code> 
       <td> <code class="highlight"><c- mi>0</c-><c- k>if</c-></code> 
      <tr>
-      <td><a href="https://golang.org/pkg/fmt/">go</a> 
+      <td><a href="https://golang.org/pkg/fmt/">Go</a> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>3</c-><c- o>+</c-><c- mi>4</c-><c- n>i</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>0</c-><c- o>+</c-><c- mi>1</c-><c- n>i</c-><c- p>)</c-></code> 
       <td> <code class="highlight"><c- p>(</c-><c- mi>0</c-><c- o>+</c-><c- mi>0</c-><c- n>i</c-><c- p>)</c-></code> 
    </table>
    <p><code class="highlight"><c- o>*</c-></code> - checked via wolframalpha</p>
-   <p>OCaml</p>
-   <p>Haskell <code class="highlight"><c- nl>a</c-> <c- p>:</c-><c- o>+</c-> <c- n>b</c-></code>, this choice does not need much commentary, this much
-is offered: it is quite unique.</p>
-   <p>c# (does not, but the doc page for complex includes (only) example
-code for creating an appropriate fomatter)</p>
-   <h2 class="heading settled" data-level="8" id="wish-list"><span class="secno">8. </span><span class="content">Wish List</span><a class="self-link" href="#wish-list"></a></h2>
+   <p>Haskell provides <code class="highlight"><c- nl>a</c-> <c- p>:</c-><c- o>+</c-> <c- n>b</c-></code> notation - this choice does not need much commentary,
+this much is offered: it is quite unique.</p>
+   <p>C# does not provide this functionality, but the doc page for complex includes an
+example code for creating an appropriate formatter.</p>
+   <h2 class="heading settled" data-level="9" id="wish-list"><span class="secno">9. </span><span class="content">Wish List</span><a class="self-link" href="#wish-list"></a></h2>
    <p>Feature wish list:</p>
    <ul>
     <li data-md>
      <p>nested specification of real and imaginary parts via <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code></p>
     <li data-md>
-     <p>easy substitution of "old style" iostreams format with simply <code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>,}</c-></code></p>
+     <p>easy substitution of "old style" iostreams format with simply <code class="highlight"><c- p>{</c-><c- o>:</c-><c- n>s</c-><c- p>}</c-></code></p>
     <li data-md>
      <p>defineable symbol for imaginary unit (<code class="highlight"><c- n>j</c-></code>, <code class="highlight"><c- n>im</c-></code>)</p>
     <li data-md>
@@ -1764,20 +1768,48 @@ code for creating an appropriate fomatter)</p>
     <li data-md>
      <p>toggle to turn off surrounding parens: <code class="highlight"><c- mi>1</c-><c- o>+</c-><c- mi>1</c-><c- n>i</c-></code></p>
     <li data-md>
-     <p>toggle to turn off outputting <code class="highlight"><c- o>-</c-></code> on negative zero (personal pet
-peeve when writing math stuff where there is only one zero)</p>
+     <p>toggle to turn off outputting <code class="highlight"><c- o>-</c-></code> on negative zero - addressed by P2021</p>
     <li data-md>
      <p>center alignment <code class="highlight"><c- o>^</c-></code> aligns output around the connecting <code class="highlight"><c- o>+/-</c-></code></p>
     <li data-md>
      <p>option for polar formatted output, ie <code class="highlight"><c- p>(</c-><c- mf>1.41421</c-><c- o>*</c-><c- n>exp</c-><c- p>(</c-><c- n>i</c-><c- o>*</c-><c- mf>3.14159</c-><c- p>))</c-></code></p>
    </ul>
-   <h2 class="heading settled" data-level="9" id="examples"><span class="secno">9. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
    <h2 class="heading settled" data-level="10" id="proposed-wording"><span class="secno">10. </span><span class="content">Proposed Wording</span><a class="self-link" href="#proposed-wording"></a></h2>
+   <p>Modify <a href="http://eel.is/c++draft/complex.syn">[complex.syn]</a> as
+follows:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+<c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-><c- p>,</c-> <c- k>const</c-> <c- n>complex</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>&amp;</c-><c- p>);</c->
+<ins>
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- n>complex</c-><c- o>&lt;</c-><c- b>float</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- n>complex</c-><c- o>&lt;</c-><c- b>double</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- n>complex</c-><c- o>&lt;</c-><c- b>long</c-> <c- b>double</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+</ins></pre>
+   <p>TODO: describe the default formatting</p>
+   <p>Each formatter (20.20.4) specialization in the chrono library (27.2) meets the
+Formatter requirements (20.20.4.1). The parse member functions of these
+formatters interpret the format specification as a chrono format-spec according
+to the following syntax:</p>
+   <p>chrono-format-spec :
+fill-and-alignopt widthopt precisionopt chrono-specsopt
+chrono-specs:
+conversion-spec
+chrono-specs conversion-spec
+chrono-specs literal-char
+literal-char:
+any character other than {, }, or %
+conversion-spec :
+% modifieropt type
+modifier: one of
+E O
+type: one of
+a A b B c C d D e F g G h H I j m M n
+p r R S t T u U V w W x X y Y z Z %</p>
+   <p>The productions <code class="highlight"><c- n>fill</c-><c- o>-</c-><c- n>and</c-><c- o>-</c-><c- n>align</c-></code>, <code class="highlight"><c- n>width</c-></code>, and <code class="highlight"><c- n>precision</c-></code> are described in
+20.20.2.</p>
    <h2 class="heading settled" data-level="11" id="questions"><span class="secno">11. </span><span class="content">Questions</span><a class="self-link" href="#questions"></a></h2>
    <p><strong>Q1</strong>: Do we want any of this?</p>
    <p><strong>Q2</strong>: The strategy of this paper is to include a laundry list of
         possibilities, which parts do we want?</p>
-   <h2 class="heading settled" data-level="12" id="acknowledgements"><span class="secno">12. </span><span class="content">Acknowledgements {#acknowledgements}</span><a class="self-link" href="#acknowledgements"></a></h2>
   </main>
 <script>
 (function() {
@@ -1913,6 +1945,8 @@ peeve when writing math stuff where there is only one zero)</p>
   <dl>
    <dt id="biblio-n3660">[N3660]
    <dd>Peter Sommerlad. <a href="https://wg21.link/n3660">User-defined Literals for std::complex, part 2 of UDL for Standard Library Types (version 4)</a>. 19 April 2013. URL: <a href="https://wg21.link/n3660">https://wg21.link/n3660</a>
+   <dt id="biblio-n4849">[N4849]
+   <dd>Richard Smith. <a href="https://wg21.link/n4849">Working Draft, Standard for Programming Language C++</a>. URL: <a href="https://wg21.link/n4849">https://wg21.link/n4849</a>
    <dt id="biblio-p0645">[P0645]
    <dd>Victor Zverovich. <a href="https://wg21.link/p0645">Text Formatting</a>. URL: <a href="https://wg21.link/p0645">https://wg21.link/p0645</a>
   </dl>
