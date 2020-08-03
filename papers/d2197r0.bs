@@ -33,9 +33,9 @@ Default format:
 std::string s = std::format("{}", 1.0 + 2i); // s == "(1+2i)"
 ```
 
-iostreams-compatible format:
+iostreams-compatible format (optional):
 ```
-std::string s = std::format("{:s}", 1.0 + 2i); // s == "(1,2)"
+std::string s = std::format("{:p}", 1.0 + 2i); // s == "(1,2)"
 ```
 
 Format specifiers:
@@ -240,8 +240,8 @@ pertinent information can be lost during formatting.
  <td> `1+ⅈ` <td> `ⅈ` <td> `0`
 <tr><td><a href="http://www.r-tutor.com/r-introduction/basic-data-types/complex">R</a>
  <td> `(3+4i)` <td> `(0+1i)` <td> `(0+0i)`
-<tr><td>[c++14 literals,float](https://en.cppreference.com/w/cpp/numeric/complex/operator%22%22i)
-<td> `3+4if` <td> `1if` <td> `0if`
+<tr><td>[C++14 literals](https://en.cppreference.com/w/cpp/numeric/complex/operator%22%22i)
+<td> `3.0 + 4i` <td> `1i` <td> `0i`
 <tr><td>[Go](https://golang.org/pkg/fmt/)
 <td> `(3+4i)` <td> `(0+1i)` <td> `(0+0i)`
 </table>
@@ -260,7 +260,7 @@ Wish List {#wish-list}
 Feature wish list:
 
 - nested specification of real and imaginary parts via `formatter<T>`
-- easy substitution of "old style" iostreams format with simply `{:s}`
+- easy substitution of "old style" iostreams format with simply `{:p}`
 - defineable symbol for imaginary unit (`j`, `im`)
 - option to prefix the imaginary part with the imaginary unit
 - control over which (real/imag) part omission (`0` or `0j`)
@@ -280,13 +280,63 @@ follows:
 template&lt;class T, class charT, class traits>
 basic_ostream&lt;charT, traits>& operator&lt;&lt;(basic_ostream&lt;charT, traits>&, const complex&lt;T>&);
 <ins>
+// 26.4.?, formatting
 template&lt;class charT> struct formatter&lt;complex&lt;float>, charT>;
 template&lt;class charT> struct formatter&lt;complex&lt;double>, charT>;
 template&lt;class charT> struct formatter&lt;complex&lt;long double>, charT>;
 </ins>
 </pre>
 
-TODO: describe the default formatting (parenthesized) and with specifiers
+Add a new section 26.4.? Formatting [complex.format]:
+
+<ins>
+Each `formatter<complex<T>, charT>` ([format.formatter](
+http://eel.is/c++draft/format.formatter)) specialization in this section meets
+the *Formatter* requirements ([formatter.requirements](
+http://eel.is/c++draft/formatter.requirements)). The `parse` member functions of
+these formatters interpret the format specification as *std-format-spec*
+([format.string.std](http://eel.is/c++draft/format.string.std)) except that the
+`0` option is invalid.
+</ins>
+
+<pre>
+<ins>
+template&lt;class charT> struct formatter&lt;complex&lt;T>, charT> {
+  basic_parse_context&lt;charT>::iterator parse(basic_parse_context&lt;charT>& ctx);
+
+  template&lt;class FormatContext>
+    typename FormatContext::iterator
+      format(const formatter&lt;complex&lt;T>& c, FormatContext& ctx);
+};
+
+template&lt;class FormatContext>
+  typename FormatContext::iterator
+    format(const formatter&lt;complex&lt;T>& c, FormatContext& ctx);
+</ins>
+</pre>
+
+<ins>
+Let `real = format(ctx.locale(), "{:<format-specs>}", c.real())` and
+`imag = format(ctx.locale(), "{:<format-specs>}", c.imag())`,
+where `<format-specs>` is *std-format-spec* with *fill-and-align* and *width*
+removed.
+</ins>
+<p>
+<ins>
+*Effects:* Equivalent to:
+</ins>
+
+<pre>
+<ins>
+ format_to(ctx.out(), "{:&lt;fill-align-width>}",
+           format(c.real() != 0 ? "({0}+{1}i)" : "{1}i", real, imag))
+</ins>
+</pre>
+
+<ins>
+where `<fill-align-width>` is the *fill-and-align* and *width* part of
+*std-format-spec*. If alignment is not specified `>` is used.
+</ins>
 
 Questions {#questions}
 =========
