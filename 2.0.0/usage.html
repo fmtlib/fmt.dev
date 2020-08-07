@@ -21,12 +21,15 @@
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX:  ''
+        SOURCELINK_SUFFIX:  '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="api.html" />
     <link rel="prev" title="Contents" href="contents.html" />
 <meta name="description" content="Small, safe and fast formatting library">
@@ -70,11 +73,11 @@
                 <span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
                 
+                <li><a href="https://fmt.dev/7.0.3">7.0.3</a></li>
+                
+                <li><a href="https://fmt.dev/7.0.2">7.0.2</a></li>
+                
                 <li><a href="https://fmt.dev/7.0.1">7.0.1</a></li>
-                
-                <li><a href="https://fmt.dev/7.0.0">7.0.0</a></li>
-                
-                <li><a href="https://fmt.dev/6.2.1">6.2.1</a></li>
                 
               </ul>
             </li>
@@ -126,16 +129,16 @@
       
   <div class="section" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<p>To use the C++ Format library, add <code class="file docutils literal"><span class="pre">format.h</span></code> and <code class="file docutils literal"><span class="pre">format.cc</span></code> from
+<p>To use the C++ Format library, add <code class="file docutils literal notranslate"><span class="pre">format.h</span></code> and <code class="file docutils literal notranslate"><span class="pre">format.cc</span></code> from
 a <a class="reference external" href="https://github.com/cppformat/cppformat/releases/latest">release archive</a>
 or the <a class="reference external" href="https://github.com/cppformat/cppformat">Git repository</a> to your project.
 Alternatively, you can <a class="reference internal" href="#building"><span class="std std-ref">build the library with CMake</span></a>.</p>
 <p>If you are using Visual C++ with precompiled headers, you might need to add
 the line</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;stdafx.h&quot;</span><span class="cp"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;stdafx.h&quot;</span><span class="cp"></span>
 </pre></div>
 </div>
-<p>before other includes in <code class="file docutils literal"><span class="pre">format.cc</span></code>.</p>
+<p>before other includes in <code class="file docutils literal notranslate"><span class="pre">format.cc</span></code>.</p>
 <div class="section" id="building-the-library">
 <span id="building"></span><h2>Building the library<a class="headerlink" href="#building-the-library" title="Permalink to this headline">¶</a></h2>
 <p>The included <a class="reference external" href="https://github.com/cppformat/cppformat/blob/master/CMakeLists.txt">CMake build script</a> can be used to build the C++ Format
@@ -144,23 +147,23 @@ download from <a class="reference external" href="http://www.cmake.org/download/
 <p>CMake works by generating native makefiles or project files that can
 be used in the compiler environment of your choice. The typical
 workflow starts with:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span>mkdir build                # Create a directory to hold the build output.
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>mkdir build                # Create a directory to hold the build output.
 cd build
 cmake &lt;path/to/cppformat&gt;  # Generate native build scripts.
 </pre></div>
 </div>
-<p>where <code class="file docutils literal"><em><span class="pre">&lt;path/to/cppformat&gt;</span></em></code> is a path to the <code class="docutils literal"><span class="pre">cppformat</span></code> repository.</p>
+<p>where <code class="file docutils literal notranslate"><em><span class="pre">&lt;path/to/cppformat&gt;</span></em></code> is a path to the <code class="docutils literal notranslate"><span class="pre">cppformat</span></code> repository.</p>
 <p>If you are on a *nix system, you should now see a Makefile in the
 current directory. Now you can build C++ Format by running <strong class="command">make</strong>.</p>
 <p>Once the library has been built you can invoke <strong class="command">make test</strong> to run
 the tests.</p>
-<p>If you use Windows and have Visual Studio installed, a <code class="file docutils literal"><span class="pre">FORMAT.sln</span></code>
-file and several <code class="file docutils literal"><span class="pre">.vcproj</span></code> files will be created. You can then build them
+<p>If you use Windows and have Visual Studio installed, a <code class="file docutils literal notranslate"><span class="pre">FORMAT.sln</span></code>
+file and several <code class="file docutils literal notranslate"><span class="pre">.vcproj</span></code> files will be created. You can then build them
 using Visual Studio or msbuild.</p>
-<p>On Mac OS X with Xcode installed, an <code class="file docutils literal"><span class="pre">.xcodeproj</span></code> file will be generated.</p>
-<p>To build a <a class="reference external" href="http://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries">shared library</a> set the <code class="docutils literal"><span class="pre">BUILD_SHARED_LIBS</span></code> CMake variable to
-<code class="docutils literal"><span class="pre">TRUE</span></code>:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">DBUILD_SHARED_LIBS</span><span class="o">=</span><span class="n">TRUE</span> <span class="p">...</span>
+<p>On Mac OS X with Xcode installed, an <code class="file docutils literal notranslate"><span class="pre">.xcodeproj</span></code> file will be generated.</p>
+<p>To build a <a class="reference external" href="http://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries">shared library</a> set the <code class="docutils literal notranslate"><span class="pre">BUILD_SHARED_LIBS</span></code> CMake variable to
+<code class="docutils literal notranslate"><span class="pre">TRUE</span></code>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">DBUILD_SHARED_LIBS</span><span class="o">=</span><span class="n">TRUE</span> <span class="p">...</span>
 </pre></div>
 </div>
 </div>
@@ -174,11 +177,11 @@ system:</p>
 <li><a class="reference external" href="http://lesscss.org/">Less</a> with less-plugin-clean-css</li>
 </ul>
 <p>First generate makefiles or project files using CMake as described in
-the previous section. Then compile the <code class="docutils literal"><span class="pre">doc</span></code> target/project, for example:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">doc</span>
+the previous section. Then compile the <code class="docutils literal notranslate"><span class="pre">doc</span></code> target/project, for example:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">doc</span>
 </pre></div>
 </div>
-<p>This will generate the HTML documenation in <code class="docutils literal"><span class="pre">doc/html</span></code>.</p>
+<p>This will generate the HTML documenation in <code class="docutils literal notranslate"><span class="pre">doc/html</span></code>.</p>
 </div>
 <div class="section" id="android-ndk">
 <h2>Android NDK<a class="headerlink" href="#android-ndk" title="Permalink to this headline">¶</a></h2>
@@ -191,7 +194,7 @@ repository.</p>
 <div class="section" id="homebrew">
 <h2>Homebrew<a class="headerlink" href="#homebrew" title="Permalink to this headline">¶</a></h2>
 <p>C++ Format can be installed on OS X using <a class="reference external" href="http://brew.sh/">Homebrew</a>:</p>
-<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">brew</span> <span class="n">install</span> <span class="n">cppformat</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">brew</span> <span class="n">install</span> <span class="n">cppformat</span>
 </pre></div>
 </div>
 </div>
@@ -206,7 +209,7 @@ repository.</p>
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2012-present, Victor Zverovich.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1+.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
     </div>
 
 <script src="_static/bootstrap.min.js"></script>
