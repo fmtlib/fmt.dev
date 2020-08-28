@@ -189,6 +189,50 @@ your <code class="docutils literal"><span class="pre">CMakeLists.txt</span></cod
 </pre></div>
 </div>
 </div>
+<div class="section" id="usage-with-build2">
+<h2>Usage with build2<a class="headerlink" href="#usage-with-build2" title="Permalink to this headline">¶</a></h2>
+<p>You can use <a class="reference external" href="https://build2.org">build2</a>, a dependency manager and a
+build-system combined, to use <code class="docutils literal"><span class="pre">fmt</span></code>.</p>
+<p>Currently this package is available in these package repositories:</p>
+<ul class="simple">
+<li><strong>https://cppget.org/fmt/</strong> for released and published versions.</li>
+<li><a class="reference external" href="https://github.com/build2-packaging/fmt.git">The git repository with the sources of the build2 package of fmt</a>
+for unreleased or custom revisions of <code class="docutils literal"><span class="pre">fmt</span></code>.</li>
+</ul>
+<p><strong>Usage:</strong></p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">build2</span></code> package name: <code class="docutils literal"><span class="pre">fmt</span></code></li>
+<li>Library target name : <code class="docutils literal"><span class="pre">lib{fmt}</span></code></li>
+</ul>
+<p>For example, to make your <code class="docutils literal"><span class="pre">build2</span></code> project depend on <code class="docutils literal"><span class="pre">fmt</span></code>:</p>
+<ul>
+<li><p class="first">Add one of the repositories to your configurations, or in your
+<code class="docutils literal"><span class="pre">repositories.manifest</span></code>, if not already there:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="o">:</span>
+<span class="nl">role</span><span class="p">:</span> <span class="n">prerequisite</span>
+<span class="nl">location</span><span class="p">:</span> <span class="nl">https</span><span class="p">:</span><span class="c1">//pkg.cppget.org/1/stable</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Add this package as a dependency to your <code class="docutils literal"><span class="pre">./manifest</span></code> file
+(example for <code class="docutils literal"><span class="pre">v7.0.x</span></code>):</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="nl">depends</span><span class="p">:</span> <span class="n">fmt</span> <span class="o">~</span><span class="mf">7.0.0</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Import the target and use it as a prerequisite to your own target
+using <code class="xref cpp cpp-any docutils literal"><span class="pre">fmt</span></code> in the appropriate <code class="docutils literal"><span class="pre">buildfile</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span>import fmt = fmt%lib{fmt}
+lib{mylib} : cxx{**} ... $fmt
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Then build your project as usual with <code class="xref cpp cpp-any docutils literal"><span class="pre">b</span></code> or <code class="xref cpp cpp-any docutils literal"><span class="pre">bdep</span> <span class="pre">update</span></code>.</p>
+<p>For <code class="docutils literal"><span class="pre">build2</span></code> newcomers or to get more details and use cases, you can read the
+<code class="docutils literal"><span class="pre">build2</span></code>
+<a class="reference external" href="https://build2.org/build2-toolchain/doc/build2-toolchain-intro.xhtml">toolchain introduction</a>.</p>
+</div>
 <div class="section" id="building-the-documentation">
 <h2>Building the Documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
 <p>To build the documentation you need the following software installed on your
