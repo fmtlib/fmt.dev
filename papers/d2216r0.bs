@@ -1,0 +1,108 @@
+<pre class='metadata'>
+Title: <code>std::format</code> improvements
+Shortname: D2216
+Revision: 0
+<!-- !Draft Revision: 0 -->
+Audience: LEWG
+Status: D
+Group: WG21
+URL: http://fmt.dev/papers/d2216r0.html
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2020-08-29
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+	ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+</style>
+
+<p style="text-align: right">
+"Safety doesn't happen by accident." <br>
+― unknown
+</p>
+
+Introduction {#intro}
+============
+
+This paper proposes the following improvements to the C++20 formatting facility:
+
+* Improving safety via compile-time format string checks
+* Reducing binary code size when using `format_to` and `format_to_n`
+
+Compile-time checks {#checks}
+===================
+
+Consider the following example:
+
+```c++
+std::string s = std::format("{:d}", "I am not a number");
+```
+
+In C++20 it throws `format_error` because `d` is not a valid format specifier
+for a null-terminated character string.
+
+We propose making it ill-formed so that given a proper language facility
+([[P1045]], [[P1221]] or similar) this results in a compile-time rather than a
+runtime error. This will significantly improve safety of the formatting API and
+bring it on par with other languages such as Rust.
+
+This proposal has been shown to work on a version of clang that implements
+[[P1221]]: [https://godbolt.org/z/hcnxfY](https://godbolt.org/z/hcnxfY).
+
+Without a language or implementation support it's only possible to emulate the
+desired behavior by passing format strings wrapped in a `consteval` function,
+macro or as a template parameter, for example:
+
+```c++
+std::string s = std::format(std::static_string("{:d}"), "I am not a number");
+```
+
+This is clearly not a satisfactory solution because it doesn't improve safety
+of the default API and in the case of template parameters introduces awkward
+and confusing syntax that doesn't work with positional arguments.
+
+From the implementation experience in the {fmt} library we found that users
+expect errors in literal format strings be diagnosed at compile time,
+particularly since this is commonly done in `printf`.
+
+For example
+```c++
+printf("%d", "I am not a number");
+```
+gives a warning both in GCC and clang:
+```
+warning: format specifies type 'int' but the argument has type 'const char *' [-Wformat]
+```
+
+Binary size {#binary}
+===========
+
+TODO
+
+Impact on existing code {#impact}
+=======================
+
+Making invalid format strings ill-formed is a breaking change although at the
+time of writing none of the standard libraries implements the С++20 formatting
+facility and therefore there is no code using it.
+
+<pre class=biblio>
+{
+  "P1045": {
+    "title": "constexpr Function Parameters",
+    "authors": ["David Stone"],
+    "href": "http://wg21.link/p1045"
+  },
+  "P1221": {
+    "title": "Parametric Expressions",
+    "authors": ["Jason Rice"],
+    "href": "http://wg21.link/p1221"
+  }
+}
+</pre>
+
