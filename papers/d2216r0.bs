@@ -1,5 +1,5 @@
 <pre class='metadata'>
-Title: <code>std::format</code> improvements
+Title: std::format improvements
 Shortname: D2216
 Revision: 0
 <!-- !Draft Revision: 0 -->
@@ -32,7 +32,7 @@ Introduction {#intro}
 This paper proposes the following improvements to the C++20 formatting facility:
 
 * Improving safety via compile-time format string checks
-* Reducing binary code size when using `format_to` and `format_to_n`
+* Reducing binary code size of `format_to`
 
 Compile-time checks {#checks}
 ===================
@@ -43,56 +43,239 @@ Consider the following example:
 std::string s = std::format("{:d}", "I am not a number");
 ```
 
-In C++20 it throws `format_error` because `d` is not a valid format specifier
-for a null-terminated character string.
+In C++20 ([[N4861]]) it throws `format_error` because `d` is not a valid format
+specifier for a null-terminated character string.
 
 We propose making it ill-formed so that given a proper language facility
 ([[P1045]], [[P1221]] or similar) this results in a compile-time rather than a
 runtime error. This will significantly improve safety of the formatting API and
-bring it on par with other languages such as Rust.
+bring it on par with other languages such as D ([[D-FORMAT]]) and Rust
+([[RUST-FMT]]).
 
 This proposal has been shown to work on a version of clang that implements
 [[P1221]]: [https://godbolt.org/z/hcnxfY](https://godbolt.org/z/hcnxfY).
+Format string parsing in C++20 has been designed with such checks in mind
+([[P0645]]) and is already `constexpr`.
 
 Without a language or implementation support it's only possible to emulate the
-desired behavior by passing format strings wrapped in a `consteval` function,
-macro or as a template parameter, for example:
+desired behavior by passing format strings wrapped in a `consteval` function, a
+user-defined literal, a macro or as a template parameter, for example:
 
 ```c++
 std::string s = std::format(std::static_string("{:d}"), "I am not a number");
 ```
 
 This is clearly not a satisfactory solution because it doesn't improve safety
-of the default API and in the case of template parameters introduces awkward
-and confusing syntax that doesn't work with positional arguments.
+of the main API. Template parameters additionally introduce confusing API that
+interacts poorly with argument indexing.
 
-From the implementation experience in the {fmt} library we found that users
-expect errors in literal format strings be diagnosed at compile time,
-particularly since this is commonly done in `printf`.
+From the extensive usage experience in the {fmt} library ([[FMT]]) that provides
+compile-time checks as an opt-in we've found that users expect errors in literal
+format strings to be diagnosed at compile time by default. One of the reasons is
+that such diagnostic is commonly done in `printf`, for example:
 
-For example
 ```c++
 printf("%d", "I am not a number");
 ```
+
 gives a warning both in GCC and clang:
+
 ```
 warning: format specifies type 'int' but the argument has type 'const char *' [-Wformat]
 ```
+so users expect the same or better level of diagnostics from a similar C++
+facility.
+
+<!-- Detect if an argument is a compile string:
+https://github.com/gcc-mirror/gcc/blob/5c9b44183a23b1bd4cb93fd82cd9ffa62e88dcf8/libstdc%2B%2B-v3/include/bits/char_traits.h#L229-L242 -->
 
 Binary size {#binary}
 ===========
 
-TODO
+The `vformat_to` functions take format args parameterized on the output
+iterator via the formatting context:
+
+```c++
+template<class Out, class charT>
+    using format_args_t = basic_format_args<basic_format_context<Out, charT>>;
+
+template<class Out>
+  Out vformat_to(Out out, string_view fmt,
+                 format_args_t<type_identity_t<Out>, char> args);
+```
+
+Unfortunately it may result in significant code bloat because formatting code
+will have to be instantiated for every iterator type used with `format_to` or
+`vformat_to`. This happens even for argument types that are not formatted,
+clearly violating "you don’t pay for what you don’t use" principle. Also this is
+unnecessary because the iterator type can be erased via the internal buffer as
+it is done in `format` and `vformat`. Therefore we propose using `format_args`
+and `wformat_args` instead of `format_args_t` in these overloads:
+
+```c++
+template<class Out>
+  Out vformat_to(Out out, string_view fmt, format_args args);
+```
+
+`formatter` specializations will continue to support output iterators so this
+only affects type-erased API and not the one with compiled format strings that
+will be proposed separately. The latter will not be affected by the code bloat
+issue because instantiations will be limited only to used argument types.
+
+This proposal has been successfully implemented in the {fmt} library ([[FMT]]).
 
 Impact on existing code {#impact}
 =======================
 
-Making invalid format strings ill-formed is a breaking change although at the
-time of writing none of the standard libraries implements the С++20 formatting
-facility and therefore there is no code using it.
+Making invalid format strings ill-formed and removing problematic `vformat_to`
+overloads are breaking changes although at the time of writing none of the
+standard libraries implements the С++20 formatting facility and therefore there
+is no code using it.
+
+Wording {#wording}
+=======
+
+TODO: feature test macro and improve wording
+
+In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
+
+Formatting functions throw `format_­error` if an argument `fmt` is passed that is
+not a format string for `args`. They propagate exceptions thrown by operations
+of formatter specializations and iterators. Failure to allocate storage is
+reported by throwing an exception as described in [res.on.exception.handling].
+
+<ins>
+Passing an argument `fmt` that is not a format string for parameter pack `args`
+is ill-formed with no diagnostic required.
+</ins>
+
+In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:
+
+<pre>
+<del>
+  template&lt;class Out, class charT>
+    using format_args_t = basic_format_args&lt;basic_format_context&lt;Out, charT>>;
+</del>
+</pre>
+...
+<pre>
+<del>
+  template&lt;class Out>
+    Out vformat_to(Out out, string_view fmt,
+                   format_args_t&lt;type_identity_t&lt;Out>, char> args);
+  template&lt;class Out>
+    Out vformat_to(Out out, wstring_view fmt,
+                   format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);
+  template&lt;class Out>
+    Out vformat_to(Out out, const locale&amp; loc, string_view fmt,
+                   format_args_t&lt;type_identity_t&lt;Out>, char> args);
+  template&lt;class Out>
+    Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
+                   format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);
+</del>
+</pre>
+
+<pre>
+<ins>
+  template&lt;class Out>
+    Out vformat_to(Out out, string_view fmt, format_args args);
+  template&lt;class Out>
+    Out vformat_to(Out out, wstring_view fmt, wformat_args args);
+  template&lt;class Out>
+    Out vformat_to(Out out, const locale&amp; loc, string_view fmt,
+                   format_args args);
+  template&lt;class Out>
+    Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
+                   wformat_args args);
+</ins>
+</pre>
+
+In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
+
+```
+template<class Out, class... Args>
+  Out format_to(Out out, string_view fmt, const Args&... args);
+template<class Out, class... Args>
+  Out format_to(Out out, wstring_view fmt, const Args&... args);
+```
+
+*Effects:* Equivalent to:
+
+<pre>
+<del>
+using context = basic_format_context&lt;Out, decltype(fmt)::value_type>;
+return vformat_to(out, fmt, make_format_args&lt;context>(args...));
+</del>
+</pre>
+
+<pre>
+<ins>
+return vformat_to(out, fmt, make_format_args(args...));
+</ins>
+</pre>
+
+```
+template<class Out, class... Args>
+  Out format_to(Out out, const locale& loc, string_view fmt, const Args&... args);
+template<class Out, class... Args>
+  Out format_to(Out out, const locale& loc, wstring_view fmt, const Args&... args);
+```
+
+*Effects:* Equivalent to:
+
+<pre>
+<del>
+using context = basic_format_context&lt;Out, decltype(fmt)::value_type>;
+return vformat_to(out, loc, fmt, make_format_args&lt;context>(args...));
+</del>
+</pre>
+
+<pre>
+<ins>
+return vformat_to(out, fmt, make_wformat_args(args...));
+</ins>
+</pre>
+
+<pre>
+<del>
+template&lt;class Out>
+  Out vformat_to(Out out, string_view fmt,
+                 format_args_t&lt;type_identity_t&lt;Out>, char> args);
+template&lt;class Out>
+  Out vformat_to(Out out, wstring_view fmt,
+                 format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);
+template&lt;class Out>
+  Out vformat_to(Out out, const locale&amp; loc, string_view fmt,
+                 format_args_t&lt;type_identity_t&lt;Out>, char> args);
+template&lt;class Out>
+  Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
+                 format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);
+</del>
+</pre>
+
+<pre>
+<ins>
+template&lt;class Out>
+  Out vformat_to(Out out, string_view fmt, format_args args);
+template&lt;class Out>
+  Out vformat_to(Out out, wstring_view fmt, wformat_args args);
+template&lt;class Out>
+  Out vformat_to(Out out, const locale&amp; loc, string_view fmt,
+                 format_args args);
+template&lt;class Out>
+  Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
+                 wformat_args args);
+</ins>
+</pre>
 
 <pre class=biblio>
 {
+  "FMT": {
+    "title": "The {fmt} library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
   "P1045": {
     "title": "constexpr Function Parameters",
     "authors": ["David Stone"],
@@ -102,6 +285,24 @@ facility and therefore there is no code using it.
     "title": "Parametric Expressions",
     "authors": ["Jason Rice"],
     "href": "http://wg21.link/p1221"
+  },
+  "RUST-FMT": {
+    "title": "The Rust Standard Library, Module std::fmt",
+    "href": "https://doc.rust-lang.org/std/fmt/"
+  },
+  "D-FORMAT": {
+    "title": "D Library Reference, std.format",
+    "href": "https://dlang.org/phobos/std_format.html"
+  },
+  "P0645": {
+    "title": "Text Formatting",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p0645"
+  },
+  "N4861": {
+    "title": "Working Draft, Standard for Programming Language C++",
+    "authors": ["Richard Smith", "Thomas Koeppe", "Jens Maurer", "Dawn Perchik"],
+    "href": "http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf"
   }
 }
 </pre>
