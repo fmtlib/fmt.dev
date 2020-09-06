@@ -66,8 +66,8 @@ std::string s = std::format(std::static_string("{:d}"), "I am not a number");
 ```
 
 This is clearly not a satisfactory solution because it doesn't improve safety
-of the main API. Template parameters additionally introduce confusing API that
-interacts poorly with argument indexing.
+of the existing API (another wrong default). Template parameters additionally
+introduce confusing API that interacts poorly with argument indexing.
 
 From the extensive usage experience in the {fmt} library ([[FMT]]) that provides
 compile-time checks as an opt-in we've found that users expect errors in literal
@@ -135,11 +135,14 @@ is no code using it.
 Wording {#wording}
 =======
 
-TODO: feature test macro and improve wording
+All wording is relative to the C++ working draft [[N4861]].
 
-In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
+Update the value of the feature-testing macro `__cpp_lib_format` to the date of
+adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=493">[version.syn]</a>:
 
-Formatting functions throw `format_­error` if an argument `fmt` is passed that is
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
+
+Formatting functions throw `format_error` if an argument `fmt` is passed that is
 not a format string for `args`. They propagate exceptions thrown by operations
 of formatter specializations and iterators. Failure to allocate storage is
 reported by throwing an exception as described in [res.on.exception.handling].
@@ -149,7 +152,7 @@ Passing an argument `fmt` that is not a format string for parameter pack `args`
 is ill-formed with no diagnostic required.
 </ins>
 
-In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:
 
 <pre>
 <del>
@@ -190,13 +193,13 @@ In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#pa
 </ins>
 </pre>
 
-In <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
 
 ```
 template<class Out, class... Args>
-  Out format_to(Out out, string_view fmt, const Args&... args);
+  Out format_to(Out out, string_view fmt, const Args&amp;... args);
 template<class Out, class... Args>
-  Out format_to(Out out, wstring_view fmt, const Args&... args);
+  Out format_to(Out out, wstring_view fmt, const Args&amp;... args);
 ```
 
 *Effects:* Equivalent to:
@@ -267,6 +270,12 @@ template&lt;class Out>
                  wformat_args args);
 </ins>
 </pre>
+
+Acknowledgements {#ack}
+================
+
+Thanks to Hana Dusíková for demonstrating that the optimal formatting API can be
+implemented with P1221.
 
 <pre class=biblio>
 {
