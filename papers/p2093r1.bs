@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093
-Revision: 1
+Revision: 2
 <!-- !Draft Revision: 0 -->
 Audience: LEWG, SG16
-Status: P
+Status: D
 Group: WG21
 URL: http://fmt.dev/papers/p2093.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2020-01-26
+Date: 2020-10-03
 Markup Shorthands: markdown yes
 </pre>
 
@@ -46,6 +46,13 @@ intuitive API achieving the following goals:
 
 Revision history {#hist}
 ================
+
+Changes since R1:
+
+* Added missing `println` overloads that take `FILE*` and `ostream&`.
+* Moved print functions that take `ostream&` to `<ostream>` since `<format>`
+    shouldn't depend on `<ostream>`.
+* Replaced `std::system_error` with `system_error` in wording.
 
 Changes since R0:
 
@@ -615,19 +622,35 @@ template&lt;class... Args&gt;
   void print(string_view fmt, const Args&... args);
 template&lt;class... Args&gt;
   void print(FILE* stream, string_view fmt, const Args&... args);
-template&lt;class... Args&gt;
-  void print(ostream& os, string_view fmt, const Args&... args);
-
-void vprint_unicode(string_view fmt, format_args args);
-void vprint_unicode(FILE* stream, string_view fmt, format_args args);
-void vprint_unicode(ostream& os, string_view fmt, format_args args);
-
-void vprint_nonunicode(string_view fmt, format_args args);
-void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
-void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 
 template&lt;class... Args&gt;
   void println(string_view fmt, const Args&... args);
+template&lt;class... Args&gt;
+  void println(FILE* stream, string_view fmt, const Args&... args);
+
+void vprint_unicode(string_view fmt, format_args args);
+void vprint_unicode(FILE* stream, string_view fmt, format_args args);
+
+void vprint_nonunicode(string_view fmt, format_args args);
+void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
+</ins>
+</pre>
+
+Modify section "Header `<ostream>` synopsis [[ostream.syn](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsection.29.7.2)]":
+
+<pre>
+...
+template&lt;class charT, class traits, class T&gt;
+basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&& os, const T& x);
+<ins>
+template&lt;class... Args&gt;
+  void print(ostream& os, string_view fmt, const Args&... args);
+template&lt;class... Args&gt;
+  void println(ostream& os, string_view fmt, const Args&... args);
+
+void vprint_unicode(ostream& os, string_view fmt, format_args args);
+void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 
@@ -677,19 +700,26 @@ template&lt;class... Args&gt;
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(ostream& os, string_view fmt, const Args&... args);
+  void println(string_view fmt, const Args&... args);
 </ins>
 </pre>
-<ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  vprint_unicode(os, fmt, make_format_args(args...));
+  print("{}\n", format(fmt, args...));
 </ins>
 </pre>
-<ins>Otherwise, equivalent to:</ins>
+
 <pre>
 <ins>
-  vprint_nonunicode(os, fmt, make_format_args(args...));
+template&lt;class... Args&gt;
+  void println(FILE* stream, string_view fmt, const Args&... args);
+</ins>
+</pre>
+<ins>*Effects:* Equivalent to:
+<pre>
+<ins>
+  print(stream, "{}\n", format(fmt, args...));
 </ins>
 </pre>
 
@@ -720,26 +750,7 @@ Otherwise writes `out` to `stream` without transcoding.
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `std::system_error` if
-a call by the implementation to an operating system or other underlying API
-results in an error that prevents the function from meeting its specifications.
-</ins>
-
-<pre>
-<ins>
-void vprint_unicode(ostream& os, string_view fmt, format_args args);
-</ins>
-</pre>
-<ins>
-*Effects:* Let `out = vformat(os.getloc(), fmt, args)`. If `os` is a file stream (its
-associated stream buffer is an instance of `basic_filebuf`) that refers to a
-terminal capable of displaying Unicode, writes `out` transcoded to the native
-system Unicode encoding to the terminal using the native API that preserves the
-encoding. Otherwise writes `out` to `stream` without transcoding.
-</ins>
-<p>
-<ins>
-*Throws:* `format_error` if `fmt` is not a format string, `std::system_error` if
+*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications.
 </ins>
@@ -766,7 +777,49 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `std::system_error` if
+*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
+a call by the implementation to an operating system or other underlying API
+results in an error that prevents the function from meeting its specifications.
+</ins>
+
+Add subsection "Print [ostream.formatted.print]" to
+"Formatted output functions [[ostream.formatted](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsubsection.29.7.5.2)]":
+
+<pre>
+<ins>
+template&lt;class... Args&gt;
+  void print(ostream& os, string_view fmt, const Args&... args);
+</ins>
+</pre>
+<ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<pre>
+<ins>
+  vprint_unicode(os, fmt, make_format_args(args...));
+</ins>
+</pre>
+<ins>Otherwise, equivalent to:</ins>
+<pre>
+<ins>
+  vprint_nonunicode(os, fmt, make_format_args(args...));
+</ins>
+</pre>
+
+<pre>
+<ins>
+void vprint_unicode(ostream& os, string_view fmt, format_args args);
+</ins>
+</pre>
+<ins>
+*Effects:* Let `out = vformat(os.getloc(), fmt, args)`. If `os` is a file stream (its
+associated stream buffer is an instance of `basic_filebuf`) that refers to a
+terminal capable of displaying Unicode, writes `out` transcoded to the native
+system Unicode encoding to the terminal using the native API that preserves the
+encoding. Otherwise writes `out` to `stream` without transcoding.
+</ins>
+<p>
+<ins>
+*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications.
 </ins>
@@ -781,23 +834,10 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `std::system_error` if
+*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications.
 </ins>
-
-<pre>
-<ins>
-template&lt;class... Args&gt;
-  void println(string_view fmt, const Args&... args);
-</ins>
-</pre>
-<ins>*Effects:* Equivalent to:
-<pre>
-<ins>
-  print("{}\n", format(fmt, args...));
-</ins>
-</pre>
 
 Acknowledgements {#ack}
 ================
