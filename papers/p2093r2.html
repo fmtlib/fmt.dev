@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R1: Formatted output</title>
+  <title>D2093R2: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1297,13 +1297,20 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2093.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5d02de127e294696e08479df6abf254d161d2ab1" name="document-revision">
+  <meta content="78d1d221677b633817d0f1b436d4b6cd66473a6f" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
   }
 	ins { text-decoration: none; }
   ins code { background: #cfc !important; }
+  .parnum {
+    display: block;
+    height: 0;
+    position: relative;
+    left: -24px;
+    font-size: small;
+  }
 </style>
 <style>/* style-autolinks */
 
@@ -1513,8 +1520,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R1<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2020-01-26">2020-01-26</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2093R2<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2020-10-03">2020-10-03</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1523,7 +1530,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
-     <dd>LEWG, SG16
+     <dd>LEWG
      <dt>Project:
      <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
     </dl>
@@ -1576,7 +1583,9 @@ intuitive API achieving the following goals:</p>
     <li data-md>
      <p>Moved print functions that take <code class="highlight"><c- n>ostream</c-><c- o>&amp;</c-></code> to <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> since <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> shouldn’t depend on <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code>.</p>
     <li data-md>
-     <p>Replaced <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>system_error</c-></code> with <code class="highlight"><c- n>system_error</c-></code> in wording.</p>
+     <p>Replaced <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>system_error</c-></code> with <code class="highlight"><c- n>system_error</c-></code> in the wording.</p>
+    <li data-md>
+     <p>Added paragraph numbers to the wording.</p>
    </ul>
    <p>Changes since R0:</p>
    <ul>
@@ -2017,103 +2026,118 @@ in a place that respects the table’s current alphabetic order:</p>
   <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    ... 
-   <p><em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string.</p>
+   <p><span class="parnum">25</span> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string.</p>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins>
-    <em>Effects:</em> Equivalent to: 
+   <p>
+    <span class="parnum">26</span> 
+    <ins><em>Effects:</em> Equivalent to:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
+   <p>
+    <span class="parnum">27</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
-    <ins>Otherwise, equivalent to:</ins>
+   <ins>Otherwise, equivalent to:</ins>
 <pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-    <ins>
-     <em>Effects:</em> Equivalent to: 
+   <p>
+    <span class="parnum">28</span> 
+    <ins><em>Effects:</em> Equivalent to:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-     <ins>
-      <em>Effects:</em> Equivalent to: 
+   <p>
+    <span class="parnum">29</span> 
+    <ins><em>Effects:</em> Equivalent to:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
+   <p>
+    <span class="parnum">30</span> 
+    <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>stream</c-></code> refers to a terminal
+   <ins> <span class="parnum">31</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>stream</c-></code> refers to a terminal
 [ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>_isatty</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> return 1 respectively. — end note ] capable of
 displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> transcoded to the native system Unicode
 encoding to the terminal using the native API that preserves the encoding.
 Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> without transcoding. </ins>
-      <p>
-       <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
+   <p>
+    <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications. </ins>
-      </p>
+   </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
+   <p>
+    <span class="parnum">32</span> 
+    <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
-      <p>
-       <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
+   <ins> <span class="parnum">33</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
+   <p>
+    <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications. </ins>
-      </p>
-      <p>Add subsection "Print [ostream.formatted.print]" to
+   </p>
+   <p>Add subsection "Print [ostream.formatted.print]" to
 "Formatted output functions <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsubsection.29.7.5.2">[ostream.formatted</a>]":</p>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
+   <p>
+    <span class="parnum">1</span> 
+    <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
+   </p>
 <pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
-      <ins>Otherwise, equivalent to:</ins>
+   <ins>Otherwise, equivalent to:</ins>
 <pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>os</c-></code> is a file stream (its
+   <ins> <span class="parnum">2</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>os</c-></code> is a file stream (its
 associated stream buffer is an instance of <code class="highlight"><c- n>basic_filebuf</c-></code>) that refers to a
 terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> transcoded to the native
 system Unicode encoding to the terminal using the native API that preserves the
 encoding. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> without transcoding. </ins>
-      <p>
-       <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
+   <p>
+    <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications. </ins>
-      </p>
+   </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-      <ins> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
-      <p>
-       <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
+   <ins> <span class="parnum">3</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
+   <p>
+    <ins> <em>Throws:</em> <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>fmt</c-></code> is not a format string, <code class="highlight"><c- n>system_error</c-></code> if
 a call by the implementation to an operating system or other underlying API
 results in an error that prevents the function from meeting its specifications. </ins>
-      </p>
-      <h2 class="heading settled" data-level="11" id="ack"><span class="secno">11. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
-      <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
-     </ins>
-    </ins>
-   </ins>
+   </p>
+   <h2 class="heading settled" data-level="11" id="ack"><span class="secno">11. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
   </main>
 <script>
 (function() {

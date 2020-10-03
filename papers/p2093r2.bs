@@ -1,10 +1,9 @@
 <pre class='metadata'>
 Title: Formatted output
-Shortname: P2093
+Shortname: D2093 <!-- TODO -->
 Revision: 2
-<!-- !Draft Revision: 0 -->
-Audience: LEWG, SG16
-Status: D
+Audience: LEWG
+Status: D <!-- TODO -->
 Group: WG21
 URL: http://fmt.dev/papers/p2093.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
@@ -19,6 +18,13 @@ Markup Shorthands: markdown yes
   }
 	ins { text-decoration: none; }
   ins code { background: #cfc !important; }
+  .parnum {
+    display: block;
+    height: 0;
+    position: relative;
+    left: -24px;
+    font-size: small;
+  }
 </style>
 
 <!--p style="text-align: right">
@@ -52,7 +58,8 @@ Changes since R1:
 * Added missing `println` overloads that take `FILE*` and `ostream&`.
 * Moved print functions that take `ostream&` to `<ostream>` since `<format>`
     shouldn't depend on `<ostream>`.
-* Replaced `std::system_error` with `system_error` in wording.
+* Replaced `std::system_error` with `system_error` in the wording.
+* Added paragraph numbers to the wording.
 
 Changes since R0:
 
@@ -663,7 +670,7 @@ template<class... Args>
 ```
 ...
 
-*Throws:* `format_error` if `fmt` is not a format string.
+<span class="parnum">25</span> *Throws:* `format_error` if `fmt` is not a format string.
 
 <pre>
 <ins>
@@ -671,7 +678,7 @@ template&lt;class... Args&gt;
   void print(string_view fmt, const Args&... args);
 </ins>
 </pre>
-<ins>*Effects:* Equivalent to:
+<span class="parnum">26</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
   print(stdout, fmt, make_format_args(args...));
@@ -684,7 +691,7 @@ template&lt;class... Args&gt;
   void print(FILE* stream, string_view fmt, const Args&... args);
 </ins>
 </pre>
-<ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<span class="parnum">27</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
   vprint_unicode(stream, fmt, make_format_args(args...));
@@ -703,7 +710,7 @@ template&lt;class... Args&gt;
   void println(string_view fmt, const Args&... args);
 </ins>
 </pre>
-<ins>*Effects:* Equivalent to:
+<span class="parnum">28</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
   print("{}\n", format(fmt, args...));
@@ -716,7 +723,7 @@ template&lt;class... Args&gt;
   void println(FILE* stream, string_view fmt, const Args&... args);
 </ins>
 </pre>
-<ins>*Effects:* Equivalent to:
+<span class="parnum">29</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
   print(stream, "{}\n", format(fmt, args...));
@@ -728,7 +735,7 @@ template&lt;class... Args&gt;
 void vprint_unicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">30</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_unicode(stdout, fmt, args));
@@ -741,7 +748,7 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-*Effects:* Let `out = vformat(fmt, args)`. If `stream` refers to a terminal
+<span class="parnum">31</span> *Effects:* Let `out = vformat(fmt, args)`. If `stream` refers to a terminal
 [ Note: On POSIX and Windows meaning that `isatty(fileno(stream))` and
 `_isatty(_fileno(stream))` return 1 respectively. — end note ] capable of
 displaying Unicode, writes `out` transcoded to the native system Unicode
@@ -760,7 +767,7 @@ results in an error that prevents the function from meeting its specifications.
 void vprint_nonunicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">32</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_nonunicode(stdout, fmt, args));
@@ -773,7 +780,7 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-*Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
+<span class="parnum">33</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
 </ins>
 <p>
 <ins>
@@ -792,7 +799,7 @@ template&lt;class... Args&gt;
   void print(ostream& os, string_view fmt, const Args&... args);
 </ins>
 </pre>
-<ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<span class="parnum">1</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
   vprint_unicode(os, fmt, make_format_args(args...));
@@ -811,7 +818,7 @@ void vprint_unicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-*Effects:* Let `out = vformat(os.getloc(), fmt, args)`. If `os` is a file stream (its
+<span class="parnum">2</span> *Effects:* Let `out = vformat(os.getloc(), fmt, args)`. If `os` is a file stream (its
 associated stream buffer is an instance of `basic_filebuf`) that refers to a
 terminal capable of displaying Unicode, writes `out` transcoded to the native
 system Unicode encoding to the terminal using the native API that preserves the
@@ -830,7 +837,7 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-*Effects:* Writes the result of `vformat(os.getloc(), fmt, args)` to `os`.
+<span class="parnum">3</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)` to `os`.
 </ins>
 <p>
 <ins>
