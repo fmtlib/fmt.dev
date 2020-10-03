@@ -58,6 +58,8 @@ Changes since R1:
 * Added missing `println` overloads that take `FILE*` and `ostream&`.
 * Moved print functions that take `ostream&` to `<ostream>` since `<format>`
     shouldn't depend on `<ostream>`.
+* Rebased the wording onto the latest working draft, N4861, in particular
+    updating the *Throws* clauses to match existing wording.
 * Replaced `std::system_error` with `system_error` in the wording.
 * Added paragraph numbers to the wording.
 
@@ -609,7 +611,7 @@ Wording {#wording}
 
 Add an entry for `__cpp_lib_print` to section "Header `<version>` synopsis
 [[version.syn](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsection.17.3.2)]",
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.3.2)]",
 in a place that respects the table’s current alphabetic order:
 
 <pre>
@@ -617,7 +619,7 @@ in a place that respects the table’s current alphabetic order:
 </pre>
 
 Modify section "Header `<format>` synopsis [[format.syn](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsection.20.20.1)]":
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.1)]":
 
 <pre>
 // 20.20.3, formatting functions
@@ -644,7 +646,7 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </pre>
 
 Modify section "Header `<ostream>` synopsis [[ostream.syn](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsection.29.7.2)]":
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.29.7.2)]":
 
 <pre>
 ...
@@ -662,7 +664,7 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </pre>
 
 Modify section "Formatting functions [[format.functions](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsection.20.20.3)]":
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.4)]":
 
 ```
 template<class... Args>
@@ -670,7 +672,8 @@ template<class... Args>
 ```
 ...
 
-<span class="parnum">25</span> *Throws:* `format_error` if `fmt` is not a format string.
+<span class="parnum">25</span> *Throws:* As specified in [20.20.3](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3).
 
 <pre>
 <ins>
@@ -757,9 +760,11 @@ Otherwise writes `out` to `stream` without transcoding.
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
-a call by the implementation to an operating system or other underlying API
-results in an error that prevents the function from meeting its specifications.
+*Throws:* As specified in [[format.err.report](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
+or `system_error` if a call by the implementation to an operating system or
+other underlying API results in an error that prevents the function from meeting
+its specifications.
 </ins>
 
 <pre>
@@ -784,14 +789,16 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
-a call by the implementation to an operating system or other underlying API
-results in an error that prevents the function from meeting its specifications.
+*Throws:* As specified in [[format.err.report](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
+or `system_error` if a call by the implementation to an operating system or
+other underlying API results in an error that prevents the function from meeting
+its specifications.
 </ins>
 
 Add subsection "Print [ostream.formatted.print]" to
 "Formatted output functions [[ostream.formatted](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4849.pdf#subsubsection.29.7.5.2)]":
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2)]":
 
 <pre>
 <ins>
@@ -826,9 +833,11 @@ encoding. Otherwise writes `out` to `stream` without transcoding.
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
-a call by the implementation to an operating system or other underlying API
-results in an error that prevents the function from meeting its specifications.
+*Throws:* As specified in [[format.err.report](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
+or `system_error` if a call by the implementation to an operating system or
+other underlying API results in an error that prevents the function from meeting
+its specifications.
 </ins>
 
 <pre>
@@ -841,9 +850,11 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 <p>
 <ins>
-*Throws:* `format_error` if `fmt` is not a format string, `system_error` if
-a call by the implementation to an operating system or other underlying API
-results in an error that prevents the function from meeting its specifications.
+*Throws:* As specified in [[format.err.report](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
+or `system_error` if a call by the implementation to an operating system or
+other underlying API results in an error that prevents the function from meeting
+its specifications.
 </ins>
 
 Acknowledgements {#ack}
@@ -868,7 +879,7 @@ Thanks to Corentin Jabot for his work on text encodings in C++ and in particular
     "title":
     "Working Draft, Standard for Programming Language C++, Formatting [format]",
     "authors": ["Richard Smith"],
-    "href": "https://wg21.link/n4849#page=725"
+    "href": "https://wg21.link/n4861#section.20.20"
   },
   "GO-FMT": {
     "title": "Go Package Documentation, Package fmt",
