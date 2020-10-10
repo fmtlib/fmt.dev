@@ -490,7 +490,8 @@ We propose minimizing per-call binary code size by applying the type erasure
 mechanism from [[P0645]]. In this approach all the formatting and printing logic
 is implemented in a non-variadic function `vprint`. Inline variadic `print`
 function only constructs a `format_args` object, representing an array of
-type-erased argument references, and passes it to `vprint`:
+type-erased argument references, and passes it to `vprint*`. Here is a
+simplified example:
 
 ```
 void vprint(string_view fmt, format_args args);
@@ -498,6 +499,21 @@ void vprint(string_view fmt, format_args args);
 template<class... Args>
   inline void print(string_view fmt, const Args&... args) {
     return vprint(fmt, make_format_args(args...));
+  }
+```
+
+We provide `vprint*` overloads so that users can apply the same technique to
+their own code. For example:
+
+```
+void vlog(log_level level, string_view fmt, format_args args) {
+  // Print the log level and use vprint* overloads to format and print the
+  // message.
+}
+
+template<class... Args>
+  inline void log(log_level level, string_view fmt, const Args&... args) {
+    return vlog(level, fmt, make_format_args(args...));
   }
 ```
 
@@ -597,8 +613,8 @@ The following factors contribute to the difference in binary code size between
 Impact on existing code {#impact}
 =======================
 
-The current proposal adds new functions to the header `<format>` and should have
-no impact on existing code.
+The current proposal adds new functions to the headers `<format>` and
+`<ostream>` and should have no impact on existing code.
 
 Implementation {#impl}
 ==============
