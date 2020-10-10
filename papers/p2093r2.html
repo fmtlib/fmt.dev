@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2093.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="cd6c0a90370655971f43233a9544d968448c3d55" name="document-revision">
+  <meta content="799ae1d54ff0bdbc8cf24d5fd156c59c69c828a9" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1582,6 +1582,8 @@ intuitive API achieving the following goals:</p>
      <p>Added missing <code class="highlight"><c- n>println</c-></code> overloads that take <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> and <code class="highlight"><c- n>ostream</c-><c- o>&amp;</c-></code>.</p>
     <li data-md>
      <p>Moved print functions that take <code class="highlight"><c- n>ostream</c-><c- o>&amp;</c-></code> to <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> since <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> shouldn’t depend on <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code>.</p>
+    <li data-md>
+     <p>Clarified why it is useful to provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> functions in <a href="#binary">§ 7 Binary code</a>.</p>
     <li data-md>
      <p>Rebased the wording onto the latest working draft, N4861, in particular
 updating the <em>Throws</em> clauses to match existing wording.</p>
@@ -1891,7 +1893,8 @@ print_cout_sync        615 ns          614 ns      1120000
    <p>We propose minimizing per-call binary code size by applying the type erasure
 mechanism from <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>. In this approach all the formatting and printing logic
 is implemented in a non-variadic function <code class="highlight"><c- n>vprint</c-></code>. Inline variadic <code class="highlight"><c- n>print</c-></code> function only constructs a <code class="highlight"><c- n>format_args</c-></code> object, representing an array of
-type-erased argument references, and passes it to <code class="highlight"><c- n>vprint</c-></code>:</p>
+type-erased argument references, and passes it to <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code>. Here is a
+simplified example:</p>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 
 <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
@@ -1899,6 +1902,22 @@ type-erased argument references, and passes it to <code class="highlight"><c- n>
     <c- k>return</c-> <c- n>vprint</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
   <c- p>}</c->
 </pre>
+   <p>We provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> overloads so that users can apply the same technique to
+their own code. For example:</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>vlog</c-><c- p>(</c-><c- n>log_level</c-> <c- n>level</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+  <c- c1>// Print the log level and use vprint* overloads to format and print the</c->
+  <c- c1>// message.</c->
+<c- p>}</c->
+
+<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- kr>inline</c-> <c- b>void</c-> <c- n>log</c-><c- p>(</c-><c- n>log_level</c-> <c- n>level</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>vlog</c-><c- p>(</c-><c- n>level</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+  <c- p>}</c->
+</pre>
+   <p>Here <code class="highlight"><c- n>vlog</c-></code> that implements the logging logic is not parameterized on formatting
+argument types resulting in less code bloat compared to a naive templated
+version. As a real-world example, this technique has been applied in the Folly
+Logger (<a data-link-type="biblio" href="#biblio-folly">[FOLLY]</a>) bringing ~5x binary size reduction per logging function call.</p>
    <p>Below we compare the reference implementation of <code class="highlight"><c- n>print</c-></code> to standard
 formatting facilities. All the code snippets are compiled with clang (Apple
 clang version 11.0.0 clang-1100.0.33.17) with <code class="highlight">-O3 -DNDEBUG -c -std=c++17 </code> and the resulting binaries are disassembled
@@ -1979,8 +1998,7 @@ handling would make its code size closer to that of <code class="highlight"><c- 
      <p>Preparing the array of formatting arguments.</p>
    </ul>
    <h2 class="heading settled" data-level="8" id="impact"><span class="secno">8. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
-   <p>The current proposal adds new functions to the header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and should have
-no impact on existing code.</p>
+   <p>The current proposal adds new functions to the headers <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> and should have no impact on existing code.</p>
    <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>print</c-></code> function has been implemented in the the open-source fmt
 library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in use for about 6 years.</p>
@@ -2282,6 +2300,8 @@ its specifications. </ins>
    <dd><a href="https://docs.microsoft.com/en-us/dotnet/api/system.console.write">.NET documentation, Console.Write Method</a>. URL: <a href="https://docs.microsoft.com/en-us/dotnet/api/system.console.write">https://docs.microsoft.com/en-us/dotnet/api/system.console.write</a>
    <dt id="biblio-fmt">[FMT]
    <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt">The fmt library</a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dt id="biblio-folly">[FOLLY]
+   <dd><a href="https://github.com/facebook/folly">Folly: Facebook Open-source Library</a>. URL: <a href="https://github.com/facebook/folly">https://github.com/facebook/folly</a>
    <dt id="biblio-format">[FORMAT]
    <dd>Richard Smith. <a href="https://wg21.link/n4861#section.20.20">Working Draft, Standard for Programming Language C++, Formatting [format]</a>. URL: <a href="https://wg21.link/n4861#section.20.20">https://wg21.link/n4861#section.20.20</a>
    <dt id="biblio-go-fmt">[GO-FMT]
