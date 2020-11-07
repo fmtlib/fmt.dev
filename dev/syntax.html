@@ -134,7 +134,7 @@ copied unchanged to the output.  If you need to include a brace character in the
 literal text, it can be escaped by doubling: <code class="docutils literal"><span class="pre">{{</span></code> and <code class="docutils literal"><span class="pre">}}</span></code>.</p>
 <p>The grammar for a replacement field is as follows:</p>
 <pre>
-<strong id="grammar-token-replacement_field">replacement_field</strong> ::=  &quot;{&quot; [<a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a>] [&quot;:&quot; <a class="reference internal" href="#grammar-token-format_spec"><code class="xref docutils literal"><span class="pre">format_spec</span></code></a>] &quot;}&quot;
+<strong id="grammar-token-replacement_field">replacement_field</strong> ::=  &quot;{&quot; [<a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a>] [&quot;:&quot; (<a class="reference internal" href="#grammar-token-format_spec"><code class="xref docutils literal"><span class="pre">format_spec</span></code></a> | <a class="reference internal" href="#grammar-token-chrono_format_spec"><code class="xref docutils literal"><span class="pre">chrono_format_spec</span></code></a>)] &quot;}&quot;
 <strong id="grammar-token-arg_id">arg_id           </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | <a class="reference internal" href="#grammar-token-identifier"><code class="xref docutils literal"><span class="pre">identifier</span></code></a>
 <strong id="grammar-token-integer">integer          </strong> ::=  <a class="reference internal" href="#grammar-token-digit"><code class="xref docutils literal"><span class="pre">digit</span></code></a>+
 <strong id="grammar-token-digit">digit            </strong> ::=  &quot;0&quot;...&quot;9&quot;
@@ -145,8 +145,8 @@ literal text, it can be escaped by doubling: <code class="docutils literal"><spa
 <p>In less formal terms, the replacement field can start with an <em>arg_id</em>
 that specifies the argument whose value is to be formatted and inserted into
 the output instead of the replacement field.
-The <em>arg_id</em> is optionally followed by a <em>format_spec</em>, which is preceded
-by a colon <code class="docutils literal"><span class="pre">':'</span></code>.  These specify a non-default format for the replacement value.</p>
+The <em>arg_id</em> is optionally followed by a <em>format_spec</em>, which is preceded by a
+colon <code class="docutils literal"><span class="pre">':'</span></code>.  These specify a non-default format for the replacement value.</p>
 <p>See also the <a class="reference internal" href="#formatspec"><span class="std std-ref">Format Specification Mini-Language</span></a> section.</p>
 <p>If the numerical arg_ids in a format string are 0, 1, 2, ... in sequence,
 they can all be omitted (not just some) and the numbers 0, 1, 2, ... will be
@@ -185,8 +185,8 @@ although some of the formatting options are only supported by the numeric types.
 <strong id="grammar-token-sign">sign       </strong> ::=  &quot;+&quot; | &quot;-&quot; | &quot; &quot;
 <strong id="grammar-token-width">width      </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | &quot;{&quot; [<a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a>] &quot;}&quot;
 <strong id="grammar-token-precision">precision  </strong> ::=  <a class="reference internal" href="#grammar-token-integer"><code class="xref docutils literal"><span class="pre">integer</span></code></a> | &quot;{&quot; [<a class="reference internal" href="#grammar-token-arg_id"><code class="xref docutils literal"><span class="pre">arg_id</span></code></a>] &quot;}&quot;
-<strong id="grammar-token-type">type       </strong> ::=  <a class="reference internal" href="#grammar-token-int_type"><code class="xref docutils literal"><span class="pre">int_type</span></code></a> | &quot;a&quot; | &quot;A&quot; | &quot;c&quot; | &quot;e&quot; | &quot;E&quot; | &quot;f&quot; | &quot;F&quot; | &quot;g&quot; | &quot;G&quot; | &quot;L&quot; | &quot;p&quot; | &quot;s&quot;
-<strong id="grammar-token-int_type">int_type   </strong> ::=  &quot;b&quot; | &quot;B&quot; | &quot;d&quot; | &quot;o&quot; | &quot;x&quot; | &quot;X&quot;
+<strong id="grammar-token-type">type       </strong> ::=  &quot;a&quot; | &quot;A&quot; | &quot;b&quot; | &quot;B&quot; | &quot;c&quot; | &quot;d&quot; | &quot;e&quot; | &quot;E&quot; | &quot;f&quot; | &quot;F&quot; | &quot;g&quot; | &quot;G&quot; |
+                 &quot;L&quot; | &quot;o&quot; | &quot;p&quot; | &quot;s&quot; | &quot;x&quot; | &quot;X&quot;
 </pre>
 <p>The <em>fill</em> character can be any Unicode code point other than <code class="docutils literal"><span class="pre">'{'</span></code> or
 <code class="docutils literal"><span class="pre">'}'</span></code>. The presence of a fill character is signaled by the character following
@@ -469,6 +469,9 @@ pointers and may be omitted.</td>
 <strong id="grammar-token-literal_char">literal_char      </strong> ::=  &lt;a character other than '{', '}' or '%'&gt;
 <strong id="grammar-token-modifier">modifier          </strong> ::=  &quot;E&quot; | &quot;O&quot;
 <strong id="grammar-token-chrono_type">chrono_type       </strong> ::=  &quot;a&quot; | &quot;A&quot; | &quot;b&quot; | &quot;B&quot; | &quot;c&quot; | &quot;C&quot; | &quot;d&quot; | &quot;D&quot; | &quot;e&quot; | &quot;F&quot; |
+                        &quot;g&quot; | &quot;G&quot; | &quot;h&quot; | &quot;H&quot; | &quot;I&quot; | &quot;j&quot; | &quot;m&quot; | &quot;M&quot; | &quot;n&quot; | &quot;p&quot; |
+                        &quot;q&quot; | &quot;Q&quot; | &quot;r&quot; | &quot;R&quot; | &quot;S&quot; | &quot;t&quot; | &quot;T&quot; | &quot;u&quot; | &quot;U&quot; | &quot;V&quot; |
+                        &quot;w&quot; | &quot;W&quot; | &quot;x&quot; | &quot;X&quot; | &quot;y&quot; | &quot;Y&quot; | &quot;z&quot; | &quot;Z&quot; | &quot;%&quot; |
 </pre>
 </div>
 <div class="section" id="format-examples">
