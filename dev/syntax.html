@@ -475,11 +475,46 @@ pointers and may be omitted.</td>
 </pre>
 <p>Literal chars are copied unchanged to the output. Precision is valid only for
 <code class="docutils literal"><span class="pre">std::chrono::duration</span></code> types with a floating-point representation type.</p>
-<p><em>conversion_spec</em> are conversion specifiers documented in <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a> for <code class="docutils literal"><span class="pre">std::tm</span></code> and
-in <a class="reference external" href="https://eel.is/c++draft/time.format">Meaning of conversion specifiers</a>
-for chrono durations and time points. Specifiers that have a calendaric
-component such as <code class="xref cpp cpp-any docutils literal"><span class="pre">'d'</span></code> (the day of month) are valid only for <code class="docutils literal"><span class="pre">std::tm</span></code> and
-not durations or time points.</p>
+<p>The available presentation types (<em>chrono_type</em>) for chrono durations and time
+points are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="88%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Type</th>
+<th class="head">Meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">'H'</span></code></td>
+<td>The hour (24-hour clock) as a decimal number. If the result is a
+single digit, it is prefixed with 0. The modified command <code class="docutils literal"><span class="pre">%OH</span></code>
+produces the locale&#8217;s alternative representation.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">'M'</span></code></td>
+<td>The minute as a decimal number. If the result is a single digit,
+it is prefixed with 0. The modified command <code class="docutils literal"><span class="pre">%OM</span></code> produces the
+locale&#8217;s alternative representation.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">'S'</span></code></td>
+<td>Seconds as a decimal number. If the number of seconds is less than
+10, the result is prefixed with 0. If the precision of the input
+cannot be exactly represented with seconds, then the format is a
+decimal floating-point number with a fixed format and a precision
+matching that of the precision of the input (or to a microseconds
+precision if the conversion to floating-point decimal seconds
+cannot be made within 18 fractional digits). The character for the
+decimal point is localized according to the locale. The modified
+command <code class="docutils literal"><span class="pre">%OS</span></code> produces the locale&#8217;s alternative representation.</td>
+</tr>
+</tbody>
+</table>
+<p>Specifiers that have a calendaric component such as <code class="xref cpp cpp-any docutils literal"><span class="pre">'d'</span></code> (the day of month)
+are valid only for <code class="docutils literal"><span class="pre">std::tm</span></code> and not durations or time points.</p>
+<p><code class="docutils literal"><span class="pre">std::tm</span></code> uses the system&#8217;s <a class="reference external" href="http://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a> so refer to its
+documentation for details on supported conversion specifiers.</p>
 </div>
 <div class="section" id="format-examples">
 <span id="formatexamples"></span><h2>Format Examples<a class="headerlink" href="#format-examples" title="Permalink to this headline">¶</a></h2>
