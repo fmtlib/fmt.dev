@@ -326,84 +326,8 @@ such as <a class="reference internal" href="#_CPPv4I00EN3fmt7vformatENSt12basic_
 
 <dl class="cpp class">
 <dt id="_CPPv4I0EN3fmt24dynamic_format_arg_storeE">
-<span id="_CPPv3I0EN3fmt24dynamic_format_arg_storeE"></span><span id="_CPPv2I0EN3fmt24dynamic_format_arg_storeE"></span>template&lt;typename <code class="sig-name descname">Context</code>&gt;<br /><span class="target" id="classfmt_1_1dynamic__format__arg__store"></span><em class="property">class </em><code class="sig-prename descclassname">fmt<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">dynamic_format_arg_store</code><a class="headerlink" href="#_CPPv4I0EN3fmt24dynamic_format_arg_storeE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p><p><p>A dynamic version of <a class="reference internal" href="#_CPPv4I0DpEN3fmt16format_arg_storeE" title="fmt::format_arg_store"><code class="xref cpp cpp-any docutils literal notranslate"><span class="pre">fmt::format_arg_store</span></code></a>.
-It’s equipped with a storage to potentially temporary objects which lifetimes
-could be shorter than the format arguments object.</p>
-<p>It can be implicitly converted into <a class="reference internal" href="#_CPPv4I0EN3fmt17basic_format_argsE" title="fmt::basic_format_args"><code class="xref cpp cpp-any docutils literal notranslate"><span class="pre">basic_format_args</span></code></a> for passing
-into type-erased formatting functions such as <a class="reference internal" href="#_CPPv4I00EN3fmt7vformatENSt12basic_stringI4CharEERK1S17basic_format_argsI14buffer_contextI15type_identity_tI4CharEEE" title="fmt::vformat"><code class="xref cpp cpp-any docutils literal notranslate"><span class="pre">vformat()</span></code></a>.</p>
-</p>
- </p>
-<div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Public Functions</p>
-<dl class="cpp function">
-<dt id="_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvRK1T">
-<span id="_CPPv3I0EN3fmt24dynamic_format_arg_store9push_backERK1T"></span><span id="_CPPv2I0EN3fmt24dynamic_format_arg_store9push_backERK1T"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br /><span class="target" id="classfmt_1_1dynamic__format__arg__store_1af3020ec9bf9450a1d6020be9a19f70d3"></span>void <code class="sig-name descname">push_back</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvRK1T" title="fmt::dynamic_format_arg_store::push_back::T">T</a> &amp;<em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvRK1T" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p><p><p>Adds an argument into the dynamic store for later passing to a formatting
-function.</p>
-<p>Note that custom types and string types (but not string views) are copied
-into the store dynamically allocating memory if necessary.</p>
-<p><strong>Example</strong>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">dynamic_format_arg_store</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">format_context</span><span class="o">&gt;</span> <span class="n">store</span><span class="p">;</span>
-<span class="n">store</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
-<span class="n">store</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">);</span>
-<span class="n">store</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mf">1.5f</span><span class="p">);</span>
-<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">result</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">vformat</span><span class="p">(</span><span class="s">&quot;{} and {} and {}&quot;</span><span class="p">,</span> <span class="n">store</span><span class="p">);</span>
-</pre></div>
-</div>
-</p>
- </p>
-</dd></dl>
-
-<dl class="cpp function">
-<dt id="_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvNSt17reference_wrapperI1TEE">
-<span id="_CPPv3I0EN3fmt24dynamic_format_arg_store9push_backENSt17reference_wrapperI1TEE"></span><span id="_CPPv2I0EN3fmt24dynamic_format_arg_store9push_backENSt17reference_wrapperI1TEE"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br /><span class="target" id="classfmt_1_1dynamic__format__arg__store_1a858e191df4feee6a7796744a6d8182f5"></span>void <code class="sig-name descname">push_back</code><span class="sig-paren">(</span>std::reference_wrapper&lt;<a class="reference internal" href="#_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvNSt17reference_wrapperI1TEE" title="fmt::dynamic_format_arg_store::push_back::T">T</a>&gt; <em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvNSt17reference_wrapperI1TEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p><p><p>Adds a reference to the argument into the dynamic store for later passing to
-a formatting function. Supports named arguments wrapped in
-<code class="docutils literal notranslate"><span class="pre">std::reference_wrapper</span></code> via <code class="docutils literal notranslate"><span class="pre">std::ref()</span></code>/<code class="docutils literal notranslate"><span class="pre">std::cref()</span></code>.</p>
-<p><strong>Example</strong>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">dynamic_format_arg_store</span><span class="o">&lt;</span><span class="n">fmt</span><span class="o">::</span><span class="n">format_context</span><span class="o">&gt;</span> <span class="n">store</span><span class="p">;</span>
-<span class="kt">char</span> <span class="n">str</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;1234567890&quot;</span><span class="p">;</span>
-<span class="n">store</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">cref</span><span class="p">(</span><span class="n">str</span><span class="p">));</span>
-<span class="kt">int</span> <span class="n">a1_val</span><span class="p">{</span><span class="mi">42</span><span class="p">};</span>
-<span class="k">auto</span> <span class="n">a1</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;a1_&quot;</span><span class="p">,</span> <span class="n">a1_val</span><span class="p">);</span>
-<span class="n">store</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">cref</span><span class="p">(</span><span class="n">a1</span><span class="p">));</span>
-
-<span class="c1">// Changing str affects the output but only for string and custom types.</span>
-<span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="sc">&#39;X&#39;</span><span class="p">;</span>
-
-<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">result</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">vformat</span><span class="p">(</span><span class="s">&quot;{} and {a1_}&quot;</span><span class="p">);</span>
-<span class="n">assert</span><span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="s">&quot;X234567890 and 42&quot;</span><span class="p">);</span>
-</pre></div>
-</div>
-</p>
- </p>
-</dd></dl>
-
-<dl class="cpp function">
-<dt id="_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvRKN6detail9named_argI9char_type1TEE">
-<span id="_CPPv3I0EN3fmt24dynamic_format_arg_store9push_backERKN6detail9named_argI9char_type1TEE"></span><span id="_CPPv2I0EN3fmt24dynamic_format_arg_store9push_backERKN6detail9named_argI9char_type1TEE"></span>template&lt;typename <code class="sig-name descname">T</code>&gt;<br /><span class="target" id="classfmt_1_1dynamic__format__arg__store_1a55ca65d17f91face9f22e1d23097f94f"></span>void <code class="sig-name descname">push_back</code><span class="sig-paren">(</span><em class="property">const</em> detail::named_arg&lt;char_type, <a class="reference internal" href="#_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvRKN6detail9named_argI9char_type1TEE" title="fmt::dynamic_format_arg_store::push_back::T">T</a>&gt; &amp;<em>arg</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN3fmt24dynamic_format_arg_store9push_backEvRKN6detail9named_argI9char_type1TEE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Adds named argument into the dynamic store for later passing to a formatting function. </p>
-<p><code class="docutils literal notranslate"><span class="pre">std::reference_wrapper</span></code> is supported to avoid copying of the argument. </p>
-</dd></dl>
-
-<dl class="cpp function">
-<dt id="_CPPv4N3fmt24dynamic_format_arg_store5clearEv">
-<span id="_CPPv3N3fmt24dynamic_format_arg_store5clearEv"></span><span id="_CPPv2N3fmt24dynamic_format_arg_store5clearEv"></span><span id="fmt::dynamic_format_arg_store::clear"></span><span class="target" id="classfmt_1_1dynamic__format__arg__store_1ab675b3a51c36b3c07b7f3acb68693dff"></span>void <code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3fmt24dynamic_format_arg_store5clearEv" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p>Erase all elements from the store. </p>
-</dd></dl>
-
-<dl class="cpp function">
-<dt id="_CPPv4N3fmt24dynamic_format_arg_store7reserveE6size_t6size_t">
-<span id="_CPPv3N3fmt24dynamic_format_arg_store7reserveE6size_t6size_t"></span><span id="_CPPv2N3fmt24dynamic_format_arg_store7reserveE6size_t6size_t"></span><span id="fmt::dynamic_format_arg_store::reserve__s.s"></span><span class="target" id="classfmt_1_1dynamic__format__arg__store_1a86fb8989b4b8a225db5ec1037f534128"></span>void <code class="sig-name descname">reserve</code><span class="sig-paren">(</span>size_t <em>new_cap</em>, size_t <em>new_cap_named</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3fmt24dynamic_format_arg_store7reserveE6size_t6size_t" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p><p><p>Reserves space to store at least <em>new_cap</em> arguments including
-<em>new_cap_named</em> named arguments.</p>
-</p>
- </p>
-</dd></dl>
-
-</div>
-</dd></dl>
+<span id="_CPPv3I0EN3fmt24dynamic_format_arg_storeE"></span><span id="_CPPv2I0EN3fmt24dynamic_format_arg_storeE"></span>template&lt;typename <code class="sig-name descname">Context</code>&gt;<br /><span class="target" id="classfmt_1_1dynamic__format__arg__store"></span><em class="property">class </em><code class="sig-name descname">dynamic_format_arg_store</code><a class="headerlink" href="#_CPPv4I0EN3fmt24dynamic_format_arg_storeE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
 
 <dl class="cpp class">
 <dt id="_CPPv4I0EN3fmt17basic_format_argsE">
