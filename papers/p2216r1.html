@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2216r0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9d5c1d6647e053f93b9ad2c0bd07330c77e4dd3e" name="document-revision">
+  <meta content="6339e228250def5e0267ff20a8a58b99b330c8ec" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1631,10 +1631,10 @@ is no code using it.</p>
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=493">[version.syn]</a>:</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
-<ins>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Char</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
-    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>Char</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
+<ins>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
+    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
 
-    <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>consteval</c-> <c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>Char</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c->
+    <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>consteval</c-> <c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>charT</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c->
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
   <c- p>};</c->
 
@@ -1644,131 +1644,106 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n48
     <c- k>using</c-> <c- n>wformat</c-><c- o>-</c-><c- n>string</c-> <c- o>=</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>;</c->  <i><c- c1>// exposition only</c-></i></ins>
 
   <c- c1>// 20.20.4, formatting functions</c->
-<del>  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- n>string</c-> <c- n>format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- n>wstring</c-> <c- n>format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- n>string</c-> <c- n>format</c-><c- p>(</c-><del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- n>string</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- n>wstring</c-> <c- n>format</c-><c- p>(</c-><del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- n>wstring</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></del>
-<ins>  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>string</c-> <c- n>format</c-><c- p>(</c-><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- n>string</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
+                  <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>wstring</c-> <c- n>format</c-><c- p>(</c-><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>string</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>wstring</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-><i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></i></i></ins><i><i>
+    <c- n>wstring</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
+                   <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
   <c- p>...</c->
 
-<del>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></del>
-<ins>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
+                  <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></ins>
+    <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
+                  <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
-<del>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
     <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c->
-                   <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
+                   <del><c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></del><ins><c- n>format_args</c-></ins> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
     <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
-                   <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
+                   <del><c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-></del><ins><c- n>wformat_args</c-></ins> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
     <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c->
-                   <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
+                   <del><c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></del><ins><c- n>format_args</c-></ins> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
     <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
-                   <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-> <c- n>args</c-><c- p>);</c-></del>
-<ins>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>wformat_args</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
-    <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>wformat_args</c-> <c- n>args</c-><c- p>);</c-></ins>
+                   <del><c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-></del><ins><c- n>wformat_args</c-></ins> <c- n>args</c-><c- p>);</c->
 
   <c- p>...</c->
 
-<del>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+                                        <del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c->
+                                        <del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
+                                        <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
                                         <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
-                                        <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></del>
-<ins>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c->
+                                        <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
                                         <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- n>format_to_n_result</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>format_to_n</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>iter_difference_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-> <c- n>n</c-><c- p>,</c->
-                                        <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c->
-                                        <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></ins>
 
-<del>  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></del>
-<ins>  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
+                          <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c-></ins>
+    <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <del><c- n>wstring_view</c-></del><ins><i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c->
+                          <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
   <c- p>...</c->
 
 <del>  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
     <c- k>using</c-> <c- n>format_args_t</c-> <c- o>=</c-> <c- n>basic_format_args</c-><c- o>&lt;</c-><c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- n>charT</c-><c- o>>></c-><c- p>;</c-></del>
-</i></i></pre>
-   <i><i> <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:</p> <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- n>amp</c-><c- p>;...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- n>string</c-> <c- n>format</c-><c- p>(</c-><del><c- n>string_view</c-></del><ins><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></ins> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects:</em> Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- nf>vformat</c-><c- p>(</c-><c- n>fmt</c-><ins><c- p>.</c-><c- n>str</c-></ins><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+</pre>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- n>amp</c-><c- p>;...</c-> <c- n>args</c-><c- p>);</c->
-</pre> <p><em>Effects:</em> Equivalent to:</p> <pre class="highlight"><del><c- k>using</c-> <c- n>context</c-> <c- o>=</c-> <c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- k>decltype</c-><c- p>(</c-><c- n>fmt</c-><c- p>)</c-><c- o>::</c-><c- n>value_type</c-><c- o>></c-><c- p>;</c->
+  <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects:</em> Equivalent to:</p>
+<pre class="highlight"><del><c- k>using</c-> <c- n>context</c-> <c- o>=</c-> <c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- k>decltype</c-><c- p>(</c-><c- n>fmt</c-><c- p>)</c-><c- o>::</c-><c- n>value_type</c-><c- o>></c-><c- p>;</c->
 <c- k>return</c-> <c- nf>vformat_to</c-><c- p>(</c-><c- n>out</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- o>&lt;</c-><c- n>context</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
-</del></pre> <pre class="highlight"><ins><c- k>return</c-> <c- nf>vformat_to</c-><c- p>(</c-><c- n>out</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
-</ins></pre> <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+</del></pre>
+<pre class="highlight"><ins><c- k>return</c-> <c- nf>vformat_to</c-><c- p>(</c-><c- n>out</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+</ins></pre>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>Out</c-> <c- n>format_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-</pre> <p><em>Effects:</em> Equivalent to:</p> <pre class="highlight"><del><c- k>using</c-> <c- n>context</c-> <c- o>=</c-> <c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- k>decltype</c-><c- p>(</c-><c- n>fmt</c-><c- p>)</c-><c- o>::</c-><c- n>value_type</c-><c- o>></c-><c- p>;</c->
+</pre>
+   <p><em>Effects:</em> Equivalent to:</p>
+<pre class="highlight"><del><c- k>using</c-> <c- n>context</c-> <c- o>=</c-> <c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- k>decltype</c-><c- p>(</c-><c- n>fmt</c-><c- p>)</c-><c- o>::</c-><c- n>value_type</c-><c- o>></c-><c- p>;</c->
 <c- k>return</c-> <c- nf>vformat_to</c-><c- p>(</c-><c- n>out</c-><c- p>,</c-> <c- n>loc</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- o>&lt;</c-><c- n>context</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
-</del></pre> <pre class="highlight"><ins><c- k>return</c-> <c- nf>vformat_to</c-><c- p>(</c-><c- n>out</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_wformat_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
-</ins></pre> <pre class="highlight"><del><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
+</del></pre>
+<pre class="highlight"><ins><c- k>return</c-> <c- nf>vformat_to</c-><c- p>(</c-><c- n>out</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_wformat_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+</ins></pre>
+<pre class="highlight"><del><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c->
                  <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
@@ -1780,7 +1755,8 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n48
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
                  <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
-</del></pre> <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
+</del></pre>
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>wformat_args</c-> <c- n>args</c-><c- p>);</c->
@@ -1790,10 +1766,12 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n48
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
                  <c- n>wformat_args</c-> <c- n>args</c-><c- p>);</c->
-</ins></pre> <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2> <p>Thanks to Hana Dusíková for demonstrating that the optimal formatting API can be
-implemented with P1221.</p> </i></i>
+</ins></pre>
+   <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Hana Dusíková for demonstrating that the optimal formatting API can be
+implemented with P1221.</p>
   </main>
-  <i><i> <script>
+<script>
 (function() {
   "use strict";
   var collapseSidebarText = '<span aria-hidden="true">←</span> '
@@ -1921,7 +1899,7 @@ implemented with P1221.</p> </i></i>
   }
 
 })();
-</script> </i></i>
+</script>
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>

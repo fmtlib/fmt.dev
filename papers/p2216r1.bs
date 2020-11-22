@@ -152,10 +152,10 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 
 <pre>
 namespace std {
-<ins>  template&lt;class Char, class... Args> struct basic-format-string {  <i>// exposition only</i>
-    basic_string_view&lt;Char> str;
+<ins>  template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
+    basic_string_view&lt;charT> str;
 
-    template&lt;size_t N> consteval format-string(const Char (&s)\[N]);
+    template&lt;size_t N> consteval format-string(const charT (&s)\[N]);
     template&lt;class T> format-string(const T& s);
   };
 
@@ -165,110 +165,70 @@ namespace std {
     using wformat-string = basic-format-string&lt;wchar_t, Args...>;  <i>// exposition only</i></ins>
 
   // 20.20.4, formatting functions
-<del>  template&lt;class... Args>
-  string format(string_view fmt, const Args&... args);
   template&lt;class... Args>
-  wstring format(wstring_view fmt, const Args&... args);
+    string format(<del>string_view</del><ins><i>format-string</i></ins> fmt, const Args&... args);
   template&lt;class... Args>
-  string format(const locale& loc, string_view fmt, const Args&... args);
+    wstring format(<del>wstring_view</del><ins><i>wformat-string</i></ins> fmt, const Args&... args);
   template&lt;class... Args>
-  wstring format(const locale& loc, wstring_view fmt, const Args&... args);</del>
-<ins>  template&lt;class... Args>
-    string format(<i>format-string</i> fmt, const Args&... args);
+    string format(const locale& loc, <del>string_view</del><ins><i>format-string</i></ins> fmt,
+                  const Args&... args);
   template&lt;class... Args>
-    wstring format(<i>wformat-string</i> fmt, const Args&... args);
-  template&lt;class... Args>
-    string format(const locale& loc, <i>format-string</i> fmt, const Args&... args);
-  template&lt;class... Args>
-    wstring format(const locale& loc, <i>wformat-string<i> fmt, const Args&... args);</ins>
+    wstring format(const locale& loc, <del>wstring_view</del><ins><i>wformat-string</i></ins> fmt,
+                   const Args&... args);
 
   ...
 
-<del>  template&lt;class Out, class... Args>
-    Out format_to(Out out, string_view fmt, const Args&... args);
   template&lt;class Out, class... Args>
-    Out format_to(Out out, wstring_view fmt, const Args&... args);
+    Out format_to(Out out, <del>string_view</del><ins><i>format-string</i></ins> fmt, const Args&... args);
   template&lt;class Out, class... Args>
-    Out format_to(Out out, const locale& loc, string_view fmt, const Args&... args);
+    Out format_to(Out out, <del>wstring_view</del><ins><i>wformat-string</i></ins> fmt, const Args&... args);
   template&lt;class Out, class... Args>
-    Out format_to(Out out, const locale& loc, wstring_view fmt, const Args&... args);</del>
-<ins>  template&lt;class Out, class... Args>
-    Out format_to(Out out, <i>format-string</i> fmt, const Args&... args);
+    Out format_to(Out out, const locale& loc, <del>string_view</del><ins><i>format-string</i></ins> fmt,
+                  const Args&... args);
   template&lt;class Out, class... Args>
-    Out format_to(Out out, <i>wformat-string</i> fmt, const Args&... args);
-  template&lt;class Out, class... Args>
-    Out format_to(Out out, const locale& loc, <i>format-string</i> fmt, const Args&... args);
-  template&lt;class Out, class... Args>
-    Out format_to(Out out, const locale& loc, <i>wformat-string</i> fmt, const Args&... args);</ins>
+    Out format_to(Out out, const locale& loc, <del>wstring_view</del><ins><i>wformat-string</i></ins> fmt,
+                  const Args&... args);
 
-<del>  template&lt;class Out>
+  template&lt;class Out>
     Out vformat_to(Out out, string_view fmt,
-                   format_args_t&lt;type_identity_t&lt;Out>, char> args);
+                   <del>format_args_t&lt;type_identity_t&lt;Out>, char></del><ins>format_args</ins> args);
   template&lt;class Out>
     Out vformat_to(Out out, wstring_view fmt,
-                   format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);
+                   <del>format_args_t&lt;type_identity_t&lt;Out>, wchar_t></del><ins>wformat_args</ins> args);
   template&lt;class Out>
     Out vformat_to(Out out, const locale&amp; loc, string_view fmt,
-                   format_args_t&lt;type_identity_t&lt;Out>, char> args);
+                   <del>format_args_t&lt;type_identity_t&lt;Out>, char></del><ins>format_args</ins> args);
   template&lt;class Out>
     Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
-                   format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);</del>
-<ins>  template&lt;class Out>
-    Out vformat_to(Out out, string_view fmt, format_args args);
-  template&lt;class Out>
-    Out vformat_to(Out out, wstring_view fmt, wformat_args args);
-  template&lt;class Out>
-    Out vformat_to(Out out, const locale&amp; loc, string_view fmt, format_args args);
-  template&lt;class Out>
-    Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt, wformat_args args);</ins>
+                   <del>format_args_t&lt;type_identity_t&lt;Out>, wchar_t></del><ins>wformat_args</ins> args);
 
   ...
 
-<del>  template&lt;class Out, class... Args>
-    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        string_view fmt, const Args&... args);
   template&lt;class Out, class... Args>
     format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        wstring_view fmt, const Args&... args);
+                                        <del>string_view</del><ins><i>format-string</i></ins> fmt, const Args&... args);
   template&lt;class Out, class... Args>
     format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        const locale& loc, string_view fmt,
+                                        <del>wstring_view</del><ins><i>wformat-string</i></ins> fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc, <del>string_view</del><ins><i>format-string</i></ins> fmt,
                                         const Args&... args);
   template&lt;class Out, class... Args>
     format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        const locale& loc, wstring_view fmt,
-                                        const Args&... args);</del>
-<ins>  template&lt;class Out, class... Args>
-    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        <i>format-string</i> fmt, const Args&... args);
-  template&lt;class Out, class... Args>
-    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        <i>wformat-string</i> fmt, const Args&... args);
-  template&lt;class Out, class... Args>
-    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        const locale& loc, <i>format-string</i> fmt,
+                                        const locale& loc, <del>wstring_view</del><ins><i>wformat-string</i></ins> fmt,
                                         const Args&... args);
-  template&lt;class Out, class... Args>
-    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
-                                        const locale& loc, <i>wformat-string</i> fmt,
-                                        const Args&... args);</ins>
 
-<del>  template&lt;class... Args>
-    size_t formatted_size(string_view fmt, const Args&... args);
   template&lt;class... Args>
-    size_t formatted_size(wstring_view fmt, const Args&... args);
+    size_t formatted_size(<del>string_view</del><ins><i>format-string</i></ins> fmt, const Args&... args);
   template&lt;class... Args>
-    size_t formatted_size(const locale& loc, string_view fmt, const Args&... args);
+    size_t formatted_size(<del>wstring_view</del><ins><i>wformat-string</i></ins> fmt, const Args&... args);
   template&lt;class... Args>
-    size_t formatted_size(const locale& loc, wstring_view fmt, const Args&... args);</del>
-<ins>  template&lt;class... Args>
-    size_t formatted_size(<i>format-string</i> fmt, const Args&... args);
+    size_t formatted_size(const locale& loc, <del>string_view</del><ins><i>format-string</i></ins> fmt,
+                          const Args&... args);
   template&lt;class... Args>
-    size_t formatted_size(<i>wformat-string</i> fmt, const Args&... args);
-  template&lt;class... Args>
-    size_t formatted_size(const locale& loc, <i>format-string</i> fmt, const Args&... args);
-  template&lt;class... Args>
-    size_t formatted_size(const locale& loc, <i>wformat-string</i> fmt, const Args&... args);</ins>
+    size_t formatted_size(const locale& loc, <del>wstring_view</del><ins><i>wformat-string</i></ins> fmt,
+                          const Args&... args);
 
   ...
 
@@ -278,11 +238,22 @@ namespace std {
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
 
+<pre>
+template&lt;class... Args>
+  string format(<del>string_view</del><ins><i>format-string</i></ins> fmt, const Args&... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat(fmt<ins>.str</ins>, make_format_args(args...));
+</pre>
+
 ```
 template<class Out, class... Args>
-  Out format_to(Out out, string_view fmt, const Args&amp;... args);
+  Out format_to(Out out, string_view fmt, const Args&... args);
 template<class Out, class... Args>
-  Out format_to(Out out, wstring_view fmt, const Args&amp;... args);
+  Out format_to(Out out, wstring_view fmt, const Args&... args);
 ```
 
 *Effects:* Equivalent to:
