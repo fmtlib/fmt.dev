@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: std::format improvements
 Shortname: P2216
-Revision: 0
+Revision: 1
 <!-- !Draft Revision: 0 -->
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL: http://fmt.dev/papers/p2216r0.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2020-09-06
+Date: 2020-11-22
 Markup Shorthands: markdown yes
 </pre>
 
@@ -33,6 +33,14 @@ This paper proposes the following improvements to the C++20 formatting facility:
 
 * Improving safety via compile-time format string checks
 * Reducing binary code size of `format_to`
+
+Revision history {#hist}
+================
+
+Changes since R0:
+
+* Implemented compile-time checks using only C++20 facilities and an
+    exposition-only <i>`basic-format-string`</i> type.
 
 Compile-time checks {#checks}
 ===================
@@ -96,10 +104,10 @@ The `vformat_to` functions take format args parameterized on the output
 iterator via the formatting context:
 
 ```c++
-template<class Out, class charT>
+template&lt;class Out, class charT>
     using format_args_t = basic_format_args<basic_format_context<Out, charT>>;
 
-template<class Out>
+template&lt;class Out>
   Out vformat_to(Out out, string_view fmt,
                  format_args_t<type_identity_t<Out>, char> args);
 ```
@@ -113,7 +121,7 @@ it is done in `format` and `vformat`. Therefore we propose using `format_args`
 and `wformat_args` instead of `format_args_t` in these overloads:
 
 ```c++
-template<class Out>
+template&lt;class Out>
   Out vformat_to(Out out, string_view fmt, format_args args);
 ```
 
@@ -140,30 +148,60 @@ All wording is relative to the C++ working draft [[N4861]].
 Update the value of the feature-testing macro `__cpp_lib_format` to the date of
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=493">[version.syn]</a>:
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
-
-Formatting functions throw `format_error` if an argument `fmt` is passed that is
-not a format string for `args`. They propagate exceptions thrown by operations
-of formatter specializations and iterators. Failure to allocate storage is
-reported by throwing an exception as described in [res.on.exception.handling].
-
-<ins>
-Passing an argument `fmt` that is not a format string for parameter pack `args`
-is ill-formed with no diagnostic required.
-</ins>
-
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:
 
 <pre>
-<del>
-  template&lt;class Out, class charT>
-    using format_args_t = basic_format_args&lt;basic_format_context&lt;Out, charT>>;
-</del>
-</pre>
-...
-<pre>
-<del>
-  template&lt;class Out>
+namespace std {
+<ins>  template&lt;class Char, class... Args> struct basic-format-string {  <i>// exposition only</i>
+    basic_string_view&lt;Char> str;
+
+    template&lt;size_t N> consteval format-string(const Char (&s)\[N]);
+    template&lt;class T> format-string(const T& s);
+  };
+
+  template&lt;class... Args>
+    using format-string = basic-format-string&lt;char, Args...>;  <i>// exposition only</i>
+  template&lt;class... Args>
+    using wformat-string = basic-format-string&lt;wchar_t, Args...>;  <i>// exposition only</i></ins>
+
+  // 20.20.4, formatting functions
+<del>  template&lt;class... Args>
+  string format(string_view fmt, const Args&... args);
+  template&lt;class... Args>
+  wstring format(wstring_view fmt, const Args&... args);
+  template&lt;class... Args>
+  string format(const locale& loc, string_view fmt, const Args&... args);
+  template&lt;class... Args>
+  wstring format(const locale& loc, wstring_view fmt, const Args&... args);</del>
+<ins>  template&lt;class... Args>
+    string format(<i>format-string</i> fmt, const Args&... args);
+  template&lt;class... Args>
+    wstring format(<i>wformat-string</i> fmt, const Args&... args);
+  template&lt;class... Args>
+    string format(const locale& loc, <i>format-string</i> fmt, const Args&... args);
+  template&lt;class... Args>
+    wstring format(const locale& loc, <i>wformat-string<i> fmt, const Args&... args);</ins>
+
+  ...
+
+<del>  template&lt;class Out, class... Args>
+    Out format_to(Out out, string_view fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, wstring_view fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, const locale& loc, string_view fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, const locale& loc, wstring_view fmt, const Args&... args);</del>
+<ins>  template&lt;class Out, class... Args>
+    Out format_to(Out out, <i>format-string</i> fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, <i>wformat-string</i> fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, const locale& loc, <i>format-string</i> fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, const locale& loc, <i>wformat-string</i> fmt, const Args&... args);</ins>
+
+<del>  template&lt;class Out>
     Out vformat_to(Out out, string_view fmt,
                    format_args_t&lt;type_identity_t&lt;Out>, char> args);
   template&lt;class Out>
@@ -174,23 +212,68 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
                    format_args_t&lt;type_identity_t&lt;Out>, char> args);
   template&lt;class Out>
     Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
-                   format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);
-</del>
-</pre>
-
-<pre>
-<ins>
-  template&lt;class Out>
+                   format_args_t&lt;type_identity_t&lt;Out>, wchar_t> args);</del>
+<ins>  template&lt;class Out>
     Out vformat_to(Out out, string_view fmt, format_args args);
   template&lt;class Out>
     Out vformat_to(Out out, wstring_view fmt, wformat_args args);
   template&lt;class Out>
-    Out vformat_to(Out out, const locale&amp; loc, string_view fmt,
-                   format_args args);
+    Out vformat_to(Out out, const locale&amp; loc, string_view fmt, format_args args);
   template&lt;class Out>
-    Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt,
-                   wformat_args args);
-</ins>
+    Out vformat_to(Out out, const locale&amp; loc, wstring_view fmt, wformat_args args);</ins>
+
+  ...
+
+<del>  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        string_view fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        wstring_view fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc, string_view fmt,
+                                        const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc, wstring_view fmt,
+                                        const Args&... args);</del>
+<ins>  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        <i>format-string</i> fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        <i>wformat-string</i> fmt, const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc, <i>format-string</i> fmt,
+                                        const Args&... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc, <i>wformat-string</i> fmt,
+                                        const Args&... args);</ins>
+
+<del>  template&lt;class... Args>
+    size_t formatted_size(string_view fmt, const Args&... args);
+  template&lt;class... Args>
+    size_t formatted_size(wstring_view fmt, const Args&... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, string_view fmt, const Args&... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, wstring_view fmt, const Args&... args);</del>
+<ins>  template&lt;class... Args>
+    size_t formatted_size(<i>format-string</i> fmt, const Args&... args);
+  template&lt;class... Args>
+    size_t formatted_size(<i>wformat-string</i> fmt, const Args&... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, <i>format-string</i> fmt, const Args&... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, <i>wformat-string</i> fmt, const Args&... args);</ins>
+
+  ...
+
+<del>  template&lt;class Out, class charT>
+    using format_args_t = basic_format_args&lt;basic_format_context&lt;Out, charT>>;</del>
 </pre>
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
