@@ -51,6 +51,8 @@ Changes since R0:
     <i>`basic-format-string`</i> type for guaranteed diagnostic and no reliance
     on compiler extensions per LEWG feedback.
 
+* Added a sketch of the implementation to [[#checks]].
+
 LEWG polls (R0) {#polls}
 ===============
 
@@ -186,9 +188,9 @@ bring it on par with other languages such as D ([[D-FORMAT]]) and Rust
 
 This proposal has been successfully implemented in the open-source {fmt} library
 ([[FMT]]) using only C++20 facilities and tested on Clang 11 and GCC 10. It will
-become the default in the next major release. The implementation is very simple
-and straightforward because format string parsing in C++20 has been designed
-with such checks in mind ([[P0645]]) and is already `constexpr`.
+become the default in the next major release of the library. The implementation
+is very simple and straightforward because format string parsing in C++20 has
+been designed with such checks in mind ([[P0645]]) and is already `constexpr`.
 
 Here is a sketch of the implementation:
 
@@ -197,7 +199,8 @@ Here is a sketch of the implementation:
 template<class charT, class... Args> struct basic_format_string {
   basic_string_view<charT> str;
 
-  template<size_t N> consteval basic_format_string(const charT (&s)\[N]) : str(s) {
+  template<size_t N>
+  consteval basic_format_string(const charT (&s)\[N]) : str(s) {
     // Report a compile-time error if s is not a format string for Args.
   }
 

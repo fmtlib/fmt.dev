@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2216r0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="aeff24d2cf5454d96fbea84909d8cebf9831d980" name="document-revision">
+  <meta content="a0aa1dd5e44d6d9c9146e6c0c8db26bfd2cbf127" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1573,6 +1573,8 @@ pack <code class="highlight"><c- n>args</c-></code> is ill-formed with no diagno
     <li data-md>
      <p>Changed the wording to use C++20 facilities and an exposition-only <i><code class="highlight"><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></code></i> type for guaranteed diagnostic and no reliance
 on compiler extensions per LEWG feedback.</p>
+    <li data-md>
+     <p>Added a sketch of the implementation to <a href="#checks">§ 4 Compile-time checks</a>.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG polls (R0)</span><a class="self-link" href="#polls"></a></h2>
    <p>We should promise more committee time to pursuing the compile time checking
@@ -1680,14 +1682,15 @@ bring it on par with other languages such as D (<a data-link-type="biblio" href=
 (<a data-link-type="biblio" href="#biblio-rust-fmt">[RUST-FMT]</a>).</p>
    <p>This proposal has been successfully implemented in the open-source {fmt} library
 (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) using only C++20 facilities and tested on Clang 11 and GCC 10. It will
-become the default in the next major release. The implementation is very simple
-and straightforward because format string parsing in C++20 has been designed
-with such checks in mind (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) and is already <code class="highlight"><c- k>constexpr</c-></code>.</p>
+become the default in the next major release of the library. The implementation
+is very simple and straightforward because format string parsing in C++20 has
+been designed with such checks in mind (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) and is already <code class="highlight"><c- k>constexpr</c-></code>.</p>
    <p>Here is a sketch of the implementation:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic_format_string</c-> <c- p>{</c->
   <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
 
-  <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic_format_string</c-><c- p>(</c-><c- k>const</c-> <c- n>charT</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>])</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c->
+  <c- k>consteval</c-> <c- n>basic_format_string</c-><c- p>(</c-><c- k>const</c-> <c- n>charT</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>])</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>)</c-> <c- p>{</c->
     <c- c1>// Report a compile-time error if s is not a format string for Args.</c->
   <c- p>}</c->
 
