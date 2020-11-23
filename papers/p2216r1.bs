@@ -19,6 +19,11 @@ Markup Shorthands: markdown yes
   }
 	ins { text-decoration: none; }
   ins code { background: #cfc !important; }
+
+  th, td {
+		text-align: right;
+    width: 20%;
+	}
 </style>
 
 <p style="text-align: right">
@@ -43,7 +48,124 @@ Changes since R0:
     pack `args` is ill-formed with no diagnostic required." per LEWG feedback.
 
 * Changed the wording to use C++20 facilities and an exposition-only
-    <i>`basic-format-string`</i> type for compile-time checks.
+    <i>`basic-format-string`</i> type for guaranteed diagnostic and no reliance
+    on compiler extensions per LEWG feedback.
+
+LEWG polls (R0) {#polls}
+===============
+
+We should promise more committee time to pursuing the compile time checking
+aspects of P2216R0, knowing that our time is scarce and this will leave less
+time for other work.
+
+<table>
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>6
+  <td>6
+  <td>3
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus to pursue
+
+We should promise more committee time to pursuing the code bloat aspects of
+P2216R0, knowing that our time is scarce and this will leave less time for other
+work.
+
+<table>
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>3
+  <td>8
+  <td>6
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus to pursue
+
+We are comfortable having `std::format` compile time check failures cause the
+program to be ill-formed, no diagnostic required (IFNDR).
+
+<table>
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>1
+  <td>2
+  <td>4
+  <td>8
+</tr>
+</table>
+
+LEWG is not comfortable with IFNDR
+
+LEWG would prefer `std::format` compile time check failures to cause the program
+to be ill-formed (diagnostic required).
+
+<table>
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>5
+  <td>7
+  <td>1
+  <td>0
+  <td>0
+</tr>
+</table>
+
+LEWG prefers ill-formed
+
+We are comfortable having `std::format` compile time checks rely on compiler
+extensions to be implementable.
+
+<table>
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>3
+  <td>3
+  <td>4
+  <td>4
+  <td>0
+</tr>
+</table>
+
+LEWG is somewhat is uncomfortable with relying on compiler extensions for this
+facility
 
 Compile-time checks {#checks}
 ===================
@@ -57,9 +179,9 @@ std::string s = std::format("{:d}", "I am not a number");
 In C++20 ([[N4861]]) it throws `format_error` because `d` is not a valid format
 specifier for a null-terminated character string.
 
-We propose making it ill-formed so that this results in a compile-time rather
-than a runtime error. This will significantly improve safety of the formatting
-API and bring it on par with other languages such as D ([[D-FORMAT]]) and Rust
+We propose making it ill-formed resulting in a compile-time rather than a
+runtime error. This will significantly improve safety of the formatting API and
+bring it on par with other languages such as D ([[D-FORMAT]]) and Rust
 ([[RUST-FMT]]).
 
 TODO: link to [[P1045]], [[P1221]]
@@ -139,10 +261,10 @@ This proposal has been successfully implemented in the {fmt} library ([[FMT]]).
 Impact on existing code {#impact}
 =======================
 
-Making invalid format strings ill-formed and removing problematic `vformat_to`
-overloads are breaking changes although at the time of writing none of the
-standard libraries implements the С++20 formatting facility and therefore there
-is no code using it.
+Making invalid format strings ill-formed and restricting problematic
+`vformat_to` overloads are breaking changes although at the time of writing none
+of the standard libraries implements the С++20 formatting facility and therefore
+there is no code using it.
 
 Wording {#wording}
 =======
