@@ -20,7 +20,7 @@ Markup Shorthands: markdown yes
 	ins { text-decoration: none; }
   ins code { background: #cfc !important; }
 
-  th, td {
+  .poll th, .poll td {
 		text-align: right;
     width: 20%;
 	}
@@ -51,7 +51,7 @@ Changes since R0:
     <i>`basic-format-string`</i> type for guaranteed diagnostic and no reliance
     on compiler extensions per LEWG feedback.
 
-* Added a sketch of the implementation to [[#checks]].
+* Added an implementation sketch to [[#checks]].
 
 LEWG polls (R0) {#polls}
 ===============
@@ -60,7 +60,7 @@ We should promise more committee time to pursuing the compile time checking
 aspects of P2216R0, knowing that our time is scarce and this will leave less
 time for other work.
 
-<table>
+<table class="poll">
 <tr>
   <th>SF
   <th>F
@@ -83,7 +83,7 @@ We should promise more committee time to pursuing the code bloat aspects of
 P2216R0, knowing that our time is scarce and this will leave less time for other
 work.
 
-<table>
+<table class="poll">
 <tr>
   <th>SF
   <th>F
@@ -105,7 +105,7 @@ Consensus to pursue
 We are comfortable having `std::format` compile time check failures cause the
 program to be ill-formed, no diagnostic required (IFNDR).
 
-<table>
+<table class="poll">
 <tr>
   <th>SF
   <th>F
@@ -127,7 +127,7 @@ LEWG is not comfortable with IFNDR
 LEWG would prefer `std::format` compile time check failures to cause the program
 to be ill-formed (diagnostic required).
 
-<table>
+<table class="poll">
 <tr>
   <th>SF
   <th>F
@@ -149,7 +149,7 @@ LEWG prefers ill-formed
 We are comfortable having `std::format` compile time checks rely on compiler
 extensions to be implementable.
 
-<table>
+<table class="poll">
 <tr>
   <th>SF
   <th>F
@@ -192,10 +192,31 @@ become the default in the next major release of the library. The implementation
 is very simple and straightforward because format string parsing in C++20 has
 been designed with such checks in mind ([[P0645]]) and is already `constexpr`.
 
+There are two options:
+
+1. Provide compile-time checks for all format strings known at compile time.
+2. Limit checks for string literals only.
+
 Here is a sketch of the implementation:
 
-<!-- https://godbolt.org/z/ee5hnx -->
+<!-- https://godbolt.org/z/6sKx5P -->
 ```
+#ifdef OPTION_1
+
+// Option 1:
+template<class charT, class... Args> struct basic_format_string {
+  basic_string_view<charT> str;
+
+  template<class T, enable_if_t<
+    is_convertible_v<const T&, basic_string_view<charT>>, int> = 0>
+  consteval basic_format_string(const T& s) : str(s) {
+    // Report a compile-time error if s is not a format string for Args.
+  }
+};
+
+#else
+
+// Option 2:
 template<class charT, class... Args> struct basic_format_string {
   basic_string_view<charT> str;
 
@@ -205,10 +226,13 @@ template<class charT, class... Args> struct basic_format_string {
   }
 
   template<class T, enable_if_t<
-    is_constructible_v<basic_string_view<charT>, const T&>, int> = 0>
+    is_convertible_v<const T&, basic_string_view<charT>>, int> = 0>
   basic_format_string(const T& s) : str(s) {}
 };
 
+#endif
+
+// Same for Option 1 & Option 2:
 template<class... Args>
   using format_string =
     basic_format_string<char, type_identity_t<Args>...>;
@@ -231,7 +255,102 @@ Compiling our example produces the following diagnostic on Clang:
 ...
 ```
 
-TODO: runtime format string
+Comparison of different options:
+
+<table>
+<tr>
+  <th>Code
+  <th>C++20
+  <th>Option 1
+  <th>Option 2
+</th>
+<tr>
+  <td>
+  ```
+  auto s = format("{:d}", 42);
+  ```
+  <td>OK
+  <td>OK
+  <td>OK
+</tr>
+<tr>
+  <td>
+  ```
+  auto s = format("{:s}", 42);
+  ```
+  <td>throws
+  <td>ill-formed
+  <td>ill-formed
+</tr>
+<tr>
+  <td>
+  ```
+  constexpr const char fmt[] = "{:d}";
+  auto s = format(fmt, 42);
+  ```
+  <td>OK
+  <td>OK
+  <td>OK
+</tr>
+<tr>
+  <td>
+  ```
+  const char fmt[] = "{:d}";
+  auto s = format(fmt, 42);
+  ```
+  <td>throws
+  <td>ill-formed
+  <td>ill-formed
+</tr>
+<tr>
+  <td>
+  ```
+  constexpr const char* fmt = "{:s}";
+  auto s = format(fmt, 42);
+  ```
+  <td>throws
+  <td>ill-formed
+  <td>throws
+</tr>
+<tr>
+  <td>
+  ```
+  const char* fmt = "{:d}";
+  auto s = format(fmt, 42);
+  ```
+  <td>OK
+  <td>ill-formed
+  <td>OK
+</tr>
+</table>
+
+Option 1 is safer but has the same limitation as Rust's `format!` of only
+accepting format strings known at compile time. However, it is still possible to
+pass a runtime string via `vformat`:
+
+```
+const char* fmt = "{:d}";
+auto s = vformat(fmt, make_format_args(42));
+```
+
+Additionally we can provide a convenience wrapper for passing runtime strings:
+
+```
+const char* fmt = "{:d}";
+auto s = format(runtime_format(fmt), 42);
+```
+
+Note that in the vast majority of cases format string is a literal. For example,
+analyzing a sample of 100 `printf` calls from [[CODESEARCH]] showed that 98 of
+them are string literals and 2 are string literals wrapped in the `_` gettext
+macro:
+
+```
+printf (_("call to tc_aout_fix_to_chars \n"));
+```
+
+In this case translation and runtime format markers can be combined without any
+impact on usability.
 
 We propose making `basic_format_string` exposition-only because it is an
 implementation detail and in the future the same functionality can be
@@ -265,10 +384,10 @@ The `vformat_to` functions take format args parameterized on the output
 iterator via the formatting context:
 
 ```c++
-template&lt;class Out, class charT>
+template<class Out, class charT>
     using format_args_t = basic_format_args<basic_format_context<Out, charT>>;
 
-template&lt;class Out>
+template<class Out>
   Out vformat_to(Out out, string_view fmt,
                  format_args_t<type_identity_t<Out>, char> args);
 ```
@@ -282,7 +401,7 @@ it is done in `format` and `vformat`. Therefore we propose using `format_args`
 and `wformat_args` instead of `format_args_t` in these overloads:
 
 ```c++
-template&lt;class Out>
+template<class Out>
   Out vformat_to(Out out, string_view fmt, format_args args);
 ```
 
@@ -313,6 +432,15 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 
 <pre>
 namespace std {
+  // Option 1:
+<ins>  // 20.20.3, error reporting
+  template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
+    basic_string_view&lt;charT> str;
+
+    template&lt;class T> consteval basic-format-string(const T& s);
+  };</ins>
+
+  // Option 2:
 <ins>  // 20.20.3, error reporting
   template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
     basic_string_view&lt;charT> str;
@@ -424,7 +552,35 @@ string s3 = format("{} to {1}", "a", "b");  // not a format string (mixing autom
 </pre>
 — *end example*]
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
+Option 1: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
+
+... Failure to allocate storage is reported by throwing an exception as described in
+16.5.5.13.
+
+<pre>
+<ins>template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
+  basic_string_view&lt;charT> str;
+
+  template&lt;class T> consteval basic-format-string(const T& s);
+};</ins>
+</pre>
+
+<pre>
+<ins>template&lt;class T> basic-format-string(const T& s);</ins>
+</pre>
+<ins>
+*Constraints:* `is_convertible_v<const T&, basic_string_view<charT>>` is `true`.
+</ins>
+<p>
+<ins>
+*Mandates:* `s` is a format string for `Args`.
+</ins>
+<p>
+<ins>
+*Effects:* initializes `str` with `s`.
+</ins>
+
+Option 2: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
 
 ... Failure to allocate storage is reported by throwing an exception as described in
 16.5.5.13.
@@ -453,7 +609,7 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 <ins>template&lt;class T> basic-format-string(const T& s);</ins>
 </pre>
 <ins>
-*Constraints:* `is_constructible_v<basic_string_view<charT>, const T&>` is `true`.
+*Constraints:* `is_convertible_v<const T&, basic_string_view<charT>>` is `true`.
 </ins>
 <p>
 <ins>
@@ -629,6 +785,11 @@ implemented with P1221.
 
 <pre class=biblio>
 {
+  "CODESEARCH": {
+	  "title": "Code search engine website",
+	  "authors": ["Andrew Tomazos"],
+	  "href": "https://codesearch.isocpp.org"
+  },
   "FMT": {
     "title": "The {fmt} library",
     "authors": ["Victor Zverovich"],
@@ -665,4 +826,3 @@ implemented with P1221.
   }
 }
 </pre>
-
