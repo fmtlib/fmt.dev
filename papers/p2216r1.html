@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2216r0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="f7b59a2e811b2c980eeec906ad8f234229fd2fad" name="document-revision">
+  <meta content="919e80c103aabea0f473403d2fef92fb63f11ab9" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1575,6 +1575,9 @@ pack <code class="highlight"><c- n>args</c-></code> is ill-formed with no diagno
 on compiler extensions per LEWG feedback.</p>
     <li data-md>
      <p>Added an implementation sketch to <a href="#checks">§ 4 Compile-time checks</a>.</p>
+    <li data-md>
+     <p>Clarified why code bloat cannot be addressed just as a quality of
+implementation issue in <a href="#binary">§ 5 Binary size</a>.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG polls (R0)</span><a class="self-link" href="#polls"></a></h2>
    <p>We should promise more committee time to pursuing the compile time checking
@@ -1778,7 +1781,7 @@ been designed with such checks in mind (<a data-link-type="biblio" href="#biblio
 <pre class="highlight">  <c- k>const</c-> <c- b>char</c-> <c- n>fmt</c-><c- p>[]</c-> <c- o>=</c-> <c- s>"{:d}"</c-><c- p>;</c->
   <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
 </pre>
-      <td>throws 
+      <td>OK 
       <td>ill-formed 
       <td>ill-formed 
      <tr>
@@ -1852,6 +1855,8 @@ it is done in <code class="highlight"><c- n>format</c-></code> and <code class="
 only affects type-erased API and not the one with compiled format strings that
 will be proposed separately. The latter will not be affected by the code bloat
 issue because instantiations will be limited only to used argument types.</p>
+   <p>The code bloat cannot be addressed just as a quality of implementation issue
+because the iterator type is observable through the formatter API.</p>
    <p>This proposal has been successfully implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
    <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Making invalid format strings ill-formed and restricting problematic <code class="highlight"><c- n>vformat_to</c-></code> overloads are breaking changes although at the time of writing none
@@ -1863,21 +1868,11 @@ there is no code using it.</p>
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=493">[version.syn]</a>:</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
-  <c- c1>// Option 1:</c->
 <ins>  <c- c1>// 20.20.3, error reporting</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
     <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
 
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
-  <c- p>};</c-></ins>
-
-  <c- c1>// Option 2:</c->
-<ins>  <c- c1>// 20.20.3, error reporting</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
-    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
-
-    <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>charT</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c->
-    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
   <c- p>};</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
@@ -1977,7 +1972,7 @@ indexing. — end note] [<em>Example</em>:</p>
                                             <c- c1>// </c-><del><c- c1>throws format_error</c-></del><ins><c- c1>ill-formed</c-></ins>
 </pre>
    <p>— <em>end example</em>]</p>
-   <p>Option 1: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:</p>
    <p>... Failure to allocate storage is reported by throwing an exception as described in
 16.5.5.13.</p>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
@@ -1992,28 +1987,6 @@ indexing. — end note] [<em>Example</em>:</p>
    <p>
     <ins> <em>Mandates:</em> <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>Args</c-></code>. </ins>
    </p>
-   <p>
-    <ins> <em>Effects:</em> initializes <code class="highlight"><c- n>str</c-></code> with <code class="highlight"><c- n>s</c-></code>. </ins>
-   </p>
-   <p>Option 2: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:</p>
-   <p>... Failure to allocate storage is reported by throwing an exception as described in
-16.5.5.13.</p>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
-  <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
-
-  <c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>charT</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
-<c- p>};</c-></ins>
-</pre>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- b>size_t</c-> <c- n>N</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>charT</c-> <c- p>(</c-><c- o>&amp;</c-><c- n>s</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c-></ins>
-</pre>
-   <ins> <em>Mandates:</em> <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>Args</c-></code>. </ins>
-   <p>
-    <ins> <em>Effects:</em> initializes <code class="highlight"><c- n>str</c-></code> with <code class="highlight"><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- n>N</c-><c- p>)</c-></code>. </ins>
-   </p>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c-></ins>
-</pre>
-   <ins> <em>Constraints:</em> <code class="highlight"><c- n>is_convertible_v</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>></c-></code> is <code class="highlight">true</code>. </ins>
    <p>
     <ins> <em>Effects:</em> initializes <code class="highlight"><c- n>str</c-></code> with <code class="highlight"><c- n>s</c-></code>. </ins>
    </p>

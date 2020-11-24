@@ -53,6 +53,9 @@ Changes since R0:
 
 * Added an implementation sketch to [[#checks]].
 
+* Clarified why code bloat cannot be addressed just as a quality of
+    implementation issue in [[#binary]].
+
 LEWG polls (R0) {#polls}
 ===============
 
@@ -298,7 +301,7 @@ Comparison of different options:
   const char fmt[] = "{:d}";
   auto s = format(fmt, 42);
   ```
-  <td>throws
+  <td>OK
   <td>ill-formed
   <td>ill-formed
 </tr>
@@ -410,6 +413,9 @@ only affects type-erased API and not the one with compiled format strings that
 will be proposed separately. The latter will not be affected by the code bloat
 issue because instantiations will be limited only to used argument types.
 
+The code bloat cannot be addressed just as a quality of implementation issue
+because the iterator type is observable through the `formatter` API.
+
 This proposal has been successfully implemented in the {fmt} library ([[FMT]]).
 
 Impact on existing code {#impact}
@@ -432,21 +438,11 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 
 <pre>
 namespace std {
-  // Option 1:
 <ins>  // 20.20.3, error reporting
   template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
     basic_string_view&lt;charT> str;
 
     template&lt;class T> consteval basic-format-string(const T& s);
-  };</ins>
-
-  // Option 2:
-<ins>  // 20.20.3, error reporting
-  template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
-    basic_string_view&lt;charT> str;
-
-    template&lt;size_t N> consteval basic-format-string(const charT (&s)\[N]);
-    template&lt;class T> basic-format-string(const T& s);
   };
 
   template&lt;class... Args>
@@ -552,7 +548,7 @@ string s3 = format("{} to {1}", "a", "b");  // not a format string (mixing autom
 </pre>
 — *end example*]
 
-Option 1: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
 
 ... Failure to allocate storage is reported by throwing an exception as described in
 16.5.5.13.
@@ -574,42 +570,6 @@ Option 1: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/
 <p>
 <ins>
 *Mandates:* `s` is a format string for `Args`.
-</ins>
-<p>
-<ins>
-*Effects:* initializes `str` with `s`.
-</ins>
-
-Option 2: change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:
-
-... Failure to allocate storage is reported by throwing an exception as described in
-16.5.5.13.
-
-<pre>
-<ins>template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
-  basic_string_view&lt;charT> str;
-
-  template&lt;size_t N> consteval basic-format-string(const charT (&s)\[N]);
-  template&lt;class T> basic-format-string(const T& s);
-};</ins>
-</pre>
-
-<pre>
-<ins>template&lt;size_t N> consteval basic-format-string(const charT (&s)\[N]);</ins>
-</pre>
-<ins>
-*Mandates:* `s` is a format string for `Args`.
-</ins>
-<p>
-<ins>
-*Effects:* initializes `str` with `basic_string_view<charT>(s, N)`.
-</ins>
-
-<pre>
-<ins>template&lt;class T> basic-format-string(const T& s);</ins>
-</pre>
-<ins>
-*Constraints:* `is_convertible_v<const T&, basic_string_view<charT>>` is `true`.
 </ins>
 <p>
 <ins>
