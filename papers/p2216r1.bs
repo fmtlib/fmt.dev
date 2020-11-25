@@ -207,7 +207,7 @@ Here is a sketch of the implementation:
 
 <!-- https://godbolt.org/z/6sKx5P -->
 ```
-#ifdef OPTION_1
+#ifdef OPTION_1 // exposition only
 
 // Option 1:
 template<class charT, class... Args> struct basic_format_string {
@@ -346,10 +346,10 @@ const char* fmt = "{:d}";
 auto s = format(runtime_format(fmt), 42);
 ```
 
-Note that in the vast majority of cases format string is a literal. For example,
-analyzing a sample of 100 `printf` calls from [[CODESEARCH]] showed that 98 of
-them are string literals and 2 are string literals wrapped in the `_` gettext
-macro:
+Note that in the vast majority of cases format strings are literals.
+For example, analyzing a sample of 100 `printf` calls from [[CODESEARCH]] showed
+that 98 of them are string literals and 2 are string literals wrapped in the `_`
+gettext macro:
 
 ```
 printf (_("call to tc_aout_fix_to_chars \n"));
@@ -386,7 +386,7 @@ https://github.com/gcc-mirror/gcc/blob/5c9b44183a23b1bd4cb93fd82cd9ffa62e88dcf8/
 Binary size {#binary}
 ===========
 
-The `vformat_to` functions take format args parameterized on the output
+The `vformat_to` functions take format arguments parameterized on the output
 iterator via the formatting context:
 
 ```c++
@@ -439,7 +439,7 @@ This proposal has been successfully implemented in the {fmt} library ([[FMT]]).
 Impact on existing code {#impact}
 =======================
 
-Making invalid format strings ill-formed and restricting problematic
+Making invalid format strings ill-formed and modifying the problematic
 `vformat_to` overloads are breaking changes although at the time of writing none
 of the standard libraries implements the С++20 formatting facility and therefore
 there is no code using it.
