@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2216r0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="919e80c103aabea0f473403d2fef92fb63f11ab9" name="document-revision">
+  <meta content="0df3176a5455c3385d8bd9f846cc4bc2483891e5" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1693,7 +1693,7 @@ been designed with such checks in mind (<a data-link-type="biblio" href="#biblio
     <li data-md>
      <p>Provide compile-time checks for all format strings known at compile time.</p>
     <li data-md>
-     <p>Limit checks for string literals only.</p>
+     <p>Limit checks to string literals only.</p>
    </ol>
    <p>Here is a sketch of the implementation:</p>
 <pre class="highlight"><c- cp>#ifdef OPTION_1</c->
@@ -1844,10 +1844,20 @@ iterator via the formatting context:</p>
                  <c- n>format_args_t</c-><c- o>&lt;</c-><c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Out</c-><c- o>></c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p>Unfortunately it may result in significant code bloat because formatting code
-will have to be instantiated for every iterator type used with <code class="highlight"><c- n>format_to</c-></code> or <code class="highlight"><c- n>vformat_to</c-></code>. This happens even for argument types that are not formatted,
+will have to be instantiated for every iterator type used with <code class="highlight"><c- n>format_to</c-></code> or <code class="highlight"><c- n>vformat_to</c-></code>, for example:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>v</c-><c- p>;</c->
+<c- n>std</c-><c- o>::</c-><c- n>format_to</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>back_inserter</c-><c- p>(</c-><c- n>v</c-><c- p>),</c-> <c- s>"{}"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
+<c- c1>// Formatting functions are instantiated for std::back_insert_iterator&lt;std::vector&lt;char>>.</c->
+
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-><c- p>;</c->
+<c- n>std</c-><c- o>::</c-><c- n>format_to</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>back_inserter</c-><c- p>(</c-><c- n>s</c-><c- p>),</c-> <c- s>"{}"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
+<c- c1>// Formatting functions are instantiated for std::back_insert_iterator&lt;std::string>.</c->
+</pre>
+   <p>This happens even for argument types that are not formatted,
 clearly violating "you don’t pay for what you don’t use" principle. Also this is
 unnecessary because the iterator type can be erased via the internal buffer as
-it is done in <code class="highlight"><c- n>format</c-></code> and <code class="highlight"><c- n>vformat</c-></code>. Therefore we propose using <code class="highlight"><c- n>format_args</c-></code> and <code class="highlight"><c- n>wformat_args</c-></code> instead of <code class="highlight"><c- n>format_args_t</c-></code> in these overloads:</p>
+it is done in <code class="highlight"><c- n>format</c-></code> and <code class="highlight"><c- n>vformat</c-></code> without affecting performance for the
+common case of containers with contiguous storage. Therefore we propose using <code class="highlight"><c- n>format_args</c-></code> and <code class="highlight"><c- n>wformat_args</c-></code> instead of <code class="highlight"><c- n>format_args_t</c-></code> in these overloads:</p>
 <pre class="language-c++ highlight"><c- n>template</c-><c- o>&lt;</c-><c- n>class</c-> <c- n>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>vformat_to</c-><c- p>(</c-><c- n>Out</c-> <c- n>out</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </pre>
@@ -1855,8 +1865,9 @@ it is done in <code class="highlight"><c- n>format</c-></code> and <code class="
 only affects type-erased API and not the one with compiled format strings that
 will be proposed separately. The latter will not be affected by the code bloat
 issue because instantiations will be limited only to used argument types.</p>
-   <p>The code bloat cannot be addressed just as a quality of implementation issue
-because the iterator type is observable through the formatter API.</p>
+   <p>In addition to reducing the code bloat this will simplify the API.</p>
+   <p>The code bloat problem cannot be solved just as a quality of implementation
+issue because the iterator type is observable through the <code class="highlight"><c- n>formatter</c-></code> API.</p>
    <p>This proposal has been successfully implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
    <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Making invalid format strings ill-formed and restricting problematic <code class="highlight"><c- n>vformat_to</c-></code> overloads are breaking changes although at the time of writing none

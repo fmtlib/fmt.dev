@@ -198,7 +198,7 @@ been designed with such checks in mind ([[P0645]]) and is already `constexpr`.
 There are two options:
 
 1. Provide compile-time checks for all format strings known at compile time.
-2. Limit checks for string literals only.
+2. Limit checks to string literals only.
 
 Here is a sketch of the implementation:
 
@@ -397,11 +397,24 @@ template<class Out>
 
 Unfortunately it may result in significant code bloat because formatting code
 will have to be instantiated for every iterator type used with `format_to` or
-`vformat_to`. This happens even for argument types that are not formatted,
+`vformat_to`, for example:
+
+```
+std::vector<char> v;
+std::format_to(std::back_inserter(v), "{}", 42);
+// Formatting functions are instantiated for std::back_insert_iterator<std::vector<char>>.
+
+std::string s;
+std::format_to(std::back_inserter(s), "{}", 42);
+// Formatting functions are instantiated for std::back_insert_iterator<std::string>.
+```
+
+This happens even for argument types that are not formatted,
 clearly violating "you don’t pay for what you don’t use" principle. Also this is
 unnecessary because the iterator type can be erased via the internal buffer as
-it is done in `format` and `vformat`. Therefore we propose using `format_args`
-and `wformat_args` instead of `format_args_t` in these overloads:
+it is done in `format` and `vformat` without affecting performance for the
+common case of containers with contiguous storage. Therefore we propose using
+`format_args` and `wformat_args` instead of `format_args_t` in these overloads:
 
 ```c++
 template<class Out>
@@ -413,8 +426,10 @@ only affects type-erased API and not the one with compiled format strings that
 will be proposed separately. The latter will not be affected by the code bloat
 issue because instantiations will be limited only to used argument types.
 
-The code bloat cannot be addressed just as a quality of implementation issue
-because the iterator type is observable through the `formatter` API.
+In addition to reducing the code bloat this will simplify the API.
+
+The code bloat problem cannot be solved just as a quality of implementation
+issue because the iterator type is observable through the `formatter` API.
 
 This proposal has been successfully implemented in the {fmt} library ([[FMT]]).
 
