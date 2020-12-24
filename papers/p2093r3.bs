@@ -53,6 +53,22 @@ intuitive API achieving the following goals:
 Revision history {#hist}
 ================
 
+Changes since R2:
+
+* Added better compatibility with other formatted I/O facilities as another
+    advantage of using `stdout` in [[#api]] per SG16 feedback.
+
+* Clarified that [[P1885]] can be used for literal encoding detection per SG16
+    feedback.
+
+* Removed incorrect "exposition-only" in [[#unicode]].
+
+* Replaced "both source and literal encodings are UTF-8, which is enabled by the
+    <code highlight="text">/utf-8</code> compiler flag" with "the literal
+    (execution) encoding is UTF-8, which is enabled by the
+    <code highlight="text">/execution-charset:utf-8</code> compiler flag" since
+    the source encoding is irrelevant there.
+
 Changes since R1:
 
 * Added missing `println` overloads that take `FILE*` and `ostream&`.
@@ -290,9 +306,19 @@ function-like macro.
 We propose adding a free function called `print` with overloads for writing to
 the standard output (the default) and an explicitly passed output stream object.
 The default output stream can be either `stdout` or `std::cout`. We propose
-using `stdout` because it is considerably faster on at least two major
-implementations (see [[#perf]]) and because `print` won't use any formatted
-output functionality of `ostream`. Since `stdout` doesn't have an associated
+using `stdout` for the following reasons:
+
+* `stdout` is considerably faster on at least two major implementations
+    (see [[#perf]]).
+
+* Better compatibilty with other formatted I/O facilities compared to
+    `std::cout` and its associated `std::streambuf` that suffer from private
+    buffering, localization and conversion services that must be synchronized at
+    a lower level.
+
+* `print` won't use any formatted output functionality of `ostream`.
+
+Since `stdout` doesn't have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with `format`. With `cout` or another explicitly passed
 stream, the stream's locale will be used. In all cases the defalt formatting is
@@ -362,7 +388,7 @@ void print(string_view fmt, const Args&... args) {
     vprint_nonunicode(fmt, make_format_args(args...));
 }
 ```
-where the exposition-only `vprint_unicode` function formats and prints text in
+where the `vprint_unicode` function formats and prints text in
 the UTF-8 encoding using the native system API that supports Unicode and
 `vprint_nonunicode` does the same for other encodings. The latter
 ensures that interoperability with code using legacy encodings is preserved even
@@ -370,10 +396,10 @@ though `print` is a new API and it is not strictly necessary.
 
 <!-- Check encoding term with Corentin. Probably literal encoding per
      https://twitter.com/vzverovich/status/1241752737831718912 -->
-In Visual C++ `is_utf8` will return `true` if both source and literal encodings
-are UTF-8, which is enabled by the <code highlight="text">/utf-8</code> compiler
-flag or other means, and `false` otherwise. It can be implemented in a more
-elegant way using the encoding detection mechanism proposed by [[P1885]].
+In Visual C++ `is_utf8` will return `true` if the literal (execution) encoding
+is UTF-8, which is enabled by the <code highlight="text">/execution-charset:utf-8</code>
+compiler flags or other means, and `false` otherwise. Literal encoding detection
+can be implemented in a more elegant way using [[P1885]].
 
 This approach has been implemented in the fmt library ([[FMT]]) and successfully
 tested on a variety of platforms.
@@ -410,6 +436,245 @@ int main() {
 }
 ```
 -->
+
+The following table summarizes the behavior of formatted output facilities in
+different programming languages:
+
+<table width="100%">
+<tr>
+  <th>
+  <th colspan="2">Linux</th>
+  <th colspan="2">macOS</th>
+  <th colspan="2">Windows</th>
+</tr>
+<tr>
+  <th style="text-align: left">Language</th>
+  <th style="text-align: left">Terminal</th>
+  <th style="text-align: left">Redirect</th>
+  <th style="text-align: left">Terminal</th>
+  <th style="text-align: left">Redirect</th>
+  <th style="text-align: left">Terminal</th>
+  <th style="text-align: left">Redirect</th>
+</tr>
+<tr>
+  <td>C</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+  <td>Wrong</td>
+  <td>UTF-8</td>
+</tr>
+<tr>
+  <td>Java</td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+  <td>Wrong</td>
+  <td>Wrong (partial CP1251)</td>
+</tr>
+<tr>
+  <td>JavaScript</td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+</tr>
+<tr>
+  <td>Python</td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+  <td>Correct</td>
+  <td>UTF-8<sup>*</sup></td>
+  <td>Correct</td>
+  <td>Error</td>
+</tr>
+<tr>
+  <td>Rust</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+</tr>
+</table>
+
+<sup>*</sup> - the output is transcoded from a different UTF representation.
+
+The full listings of test programs are given below. The code contains additional
+sanity checks to ensure that the strings are encoded in some form of UTF as
+opposed to a legacy encoding.
+
+C (`test.c`):
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+  const char* message = "Привет, κόσμος!\n";
+  if ((unsigned char)message[0] != 0xD0 && (unsigned char)message[1] != 0x9F)
+    abort();
+  printf(message);
+}
+```
+
+Java (`Test.java`):
+
+```java
+class Test {
+  public static void main(String[] args) {
+    String message = "Привет, κόσμος!\n";
+    if (message.charAt(0) != 0x41F) throw new RuntimeException();
+    System.out.print(message);
+  }
+}
+```
+
+JavaScript / Node.js (`test.js`):
+
+```js
+message = "Привет, κόσμος!";
+if (message.charCodeAt(0) != 0x41F) throw "wrong encoding";
+console.log(message);
+```
+
+Python (`test.py`):
+
+```python
+message = "Привет, κόσμος!"
+if ord(message[0]) != 0x41F:
+    raise Exception()
+print(message)
+```
+
+Rust (`test.rs`):
+
+```rust
+fn main() {
+  if "Привет, κόσμος!".chars().nth(0).unwrap() as u32 != 0x41F {
+    panic!();
+  }
+  println!("Привет, κόσμος!");
+}
+```
+
+macOS:
+
+```
+% cc test.c -o c-test
+% ./c-test
+Привет, κόσμος!
+% ./c-test > out-c-macos.txt
+
+% java Test
+Привет, κόσμος!
+% java Test > out-java-macos.txt
+
+% node test.js
+Привет, κόσμος!
+% node test.js > out-js-macos.txt
+
+% python3 test.py
+Привет, κόσμος!
+% python3 test.py > out-py-macos.txt
+
+% rustc test.rs -o rust-test
+% ./rust-test
+Привет, κόσμος!
+% ./rust-test > out-rust-macos.txt
+```
+
+All output files are in UTF-8:
+* [out-c-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt)
+* [out-java-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt)
+* [out-js-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt)
+* [out-py-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt)
+* [out-rust-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt)
+
+macOS configuration:
+
+* macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
+    Russian
+* cc: Apple clang version 12.0.0 (clang-1200.0.32.27)
+* javac: openjdk 14.0.1 2020-04-14
+* node: v14.5.0
+* python3: 3.7.5
+* rustc: 1.47.0
+
+Windows:
+
+```
+>cl /Fe:c-test.exe test.c
+...
+>c-test
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+>c-test > out-c-windows.txt
+>c-test | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+
+>java Test
+Привет, ??????!'
+>java Test > out-java-windows.txt
+>java Test | findstr ,
+╧ЁштхЄ, ??????!
+
+>node test.js
+Привет, κόσμος!
+>node test.js > out-js-windows.txt
+>node test.js | findstr Привет
+>node test.js | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+
+>python test.py
+Привет, κόσμος!
+>python test.py > out-py-windows.txt
+Traceback (most recent call last):
+  File "C:\Users\User\unicode-test\test.py", line 4, in <module>
+    print(message)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
+>python test.py | findstr ,
+Traceback (most recent call last):
+  File "C:\Users\User\unicode-test\test.py", line 4, in <module>
+    print(message)
+  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
+
+>rustc test.rs -o rust-test.exe
+>rust-test
+Привет, κόσμος!
+>rust-test > out-rust-windows.txt
+>rust-test | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+```
+
+Note that none of the tested language facilities was able to produce readable
+output when piped through `findstr`. However, C, JavaScript (node.js) and Rust
+produced valid UTF-8 that was readable if the output of `findstr` was redirected
+to a file.
+
+All output files are in UTF-8:
+* [out-c-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt)
+* [out-java-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt)
+* [out-js-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt)
+* [out-py-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt)
+* [out-rust-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt)
+
+Windows configuration:
+
+* Windows 10 10.0.19041 with Russian Region and Language settings
+* cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335 for x64
+* java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)
+* node: v14.15.3
+* python: 3.9.1
+* rustc: v14.15.3
 
 Performance {#perf}
 ===========
@@ -917,6 +1182,9 @@ Acknowledgements {#ack}
 
 Thanks to Corentin Jabot for his work on text encodings in C++ and in particular
 [[P1885]] that will simplify implementation of the current proposal.
+
+Thanks to Roger Orr, the BSI C++ panel and Tom Honermann for their feedback,
+support, constructive criticism and contributions to the proposal.
 
 <pre class=biblio>
 {

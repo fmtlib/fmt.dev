@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2093.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ce34b6febabed32c672577315dba20e731f697da" name="document-revision">
+  <meta content="7d71b71ad200e8ef099e6e31ca592639bc218219" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1577,6 +1577,21 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R2:</p>
+   <ul>
+    <li data-md>
+     <p>Added better compatibility with other formatted I/O facilities as another
+advantage of using <code class="highlight"><c- n>stdout</c-></code> in <a href="#api">§ 5 API and naming</a> per SG16 feedback.</p>
+    <li data-md>
+     <p>Clarified that <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> can be used for literal encoding detection per SG16
+feedback.</p>
+    <li data-md>
+     <p>Removed incorrect "exposition-only" in <a href="#unicode">§ 6 Unicode</a>.</p>
+    <li data-md>
+     <p>Replaced "both source and literal encodings are UTF-8, which is enabled by the <code class="highlight">/utf-8</code> compiler flag" with "the literal
+(execution) encoding is UTF-8, which is enabled by the <code class="highlight">/execution-charset:utf-8</code> compiler flag" since
+the source encoding is irrelevant there.</p>
+   </ul>
    <p>Changes since R1:</p>
    <ul>
     <li data-md>
@@ -1750,9 +1765,19 @@ function-like macro.</p>
    <p>We propose adding a free function called <code class="highlight"><c- n>print</c-></code> with overloads for writing to
 the standard output (the default) and an explicitly passed output stream object.
 The default output stream can be either <code class="highlight"><c- n>stdout</c-></code> or <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code>. We propose
-using <code class="highlight"><c- n>stdout</c-></code> because it is considerably faster on at least two major
-implementations (see <a href="#perf">§ 7 Performance</a>) and because <code class="highlight"><c- n>print</c-></code> won’t use any formatted
-output functionality of <code class="highlight"><c- n>ostream</c-></code>. Since <code class="highlight"><c- n>stdout</c-></code> doesn’t have an associated
+using <code class="highlight"><c- n>stdout</c-></code> for the following reasons:</p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- n>stdout</c-></code> is considerably faster on at least two major implementations
+(see <a href="#perf">§ 7 Performance</a>).</p>
+    <li data-md>
+     <p>Better compatibilty with other formatted I/O facilities compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> and its associated <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>streambuf</c-></code> that suffer from private
+buffering, localization and conversion services that must be synchronized at
+a lower level.</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>print</c-></code> won’t use any formatted output functionality of <code class="highlight"><c- n>ostream</c-></code>.</p>
+   </ul>
+   <p>Since <code class="highlight"><c- n>stdout</c-></code> doesn’t have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with <code class="highlight"><c- n>format</c-></code>. With <code class="highlight"><c- n>cout</c-></code> or another explicitly passed
 stream, the stream’s locale will be used. In all cases the defalt formatting is
@@ -1802,14 +1827,13 @@ handles Unicode, for example:</p>
     <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 <c- p>}</c->
 </pre>
-   where the exposition-only <code class="highlight"><c- n>vprint_unicode</c-></code> function formats and prints text in
+   where the <code class="highlight"><c- n>vprint_unicode</c-></code> function formats and prints text in
 the UTF-8 encoding using the native system API that supports Unicode and <code class="highlight"><c- n>vprint_nonunicode</c-></code> does the same for other encodings. The latter
 ensures that interoperability with code using legacy encodings is preserved even
 though <code class="highlight"><c- n>print</c-></code> is a new API and it is not strictly necessary. 
-   <p>In Visual C++ <code class="highlight"><c- n>is_utf8</c-></code> will return <code class="highlight">true</code> if both source and literal encodings
-are UTF-8, which is enabled by the <code class="highlight">/utf-8</code> compiler
-flag or other means, and <code class="highlight">false</code> otherwise. It can be implemented in a more
-elegant way using the encoding detection mechanism proposed by <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a>.</p>
+   <p>In Visual C++ <code class="highlight"><c- n>is_utf8</c-></code> will return <code class="highlight">true</code> if the literal (execution) encoding
+is UTF-8, which is enabled by the <code class="highlight">/execution-charset:utf-8</code> compiler flags or other means, and <code class="highlight">false</code> otherwise. Literal encoding detection
+can be implemented in a more elegant way using <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a>.</p>
    <p>This approach has been implemented in the fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) and successfully
 tested on a variety of platforms.</p>
    <p>Here’s an example output on Windows:</p>
@@ -1818,6 +1842,233 @@ tested on a variety of platforms.</p>
 encoding is not UTF-8. In particular, in case of EBCDIC, Shift JIS or a
 non-Unicode Windows code page, <code class="highlight"><c- n>print</c-></code> will perform no transcoding and the text
 will be printed as is.</p>
+   <p>The following tables summarize the behavior of formatted output facilities in
+different programming languages.</p>
+   <table width="100%">
+    <tbody>
+     <tr>
+      <th>
+      <th colspan="2">Linux
+      <th colspan="2">macOS
+      <th colspan="2">Windows
+     <tr>
+      <th style="text-align: left">Language
+      <th style="text-align: left">Terminal
+      <th style="text-align: left">Redirect
+      <th style="text-align: left">Terminal
+      <th style="text-align: left">Redirect
+      <th style="text-align: left">Terminal
+      <th style="text-align: left">Redirect
+     <tr>
+      <td>C
+      <td>Correct
+      <td>UTF-8
+      <td>Correct
+      <td>UTF-8
+      <td>Wrong
+      <td>UTF-8
+     <tr>
+      <td>Java
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+      <td>Wrong
+      <td>Wrong (partial CP1251)
+     <tr>
+      <td>JavaScript
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+     <tr>
+      <td>Python
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+      <td>Correct
+      <td>UTF-8<sup>*</sup>
+      <td>Correct
+      <td>Error
+     <tr>
+      <td>Rust
+      <td>Correct
+      <td>UTF-8
+      <td>Correct
+      <td>UTF-8
+      <td>Correct
+      <td>UTF-8
+   </table>
+   <p><sup>*</sup> - the output is transcoded from a different UTF representation.</p>
+   <p>The full listings of test programs are given below. The code contains additional
+sanity checks to ensure that the strings are encoded in some form of UTF as
+opposed to a legacy encoding.</p>
+   <p>C (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>c</c-></code>):</p>
+<pre class="language-c highlight"><c- cp>#include</c-> &lt;stdio.h>
+<c- cp>#include</c-> &lt;stdlib.h>
+
+<c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
+  <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
+  <c- k>if</c-> <c- p>((</c-><c- b>unsigned</c-> <c- b>char</c-><c- p>)</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>!=</c-> <c- mh>0xD0</c-> <c- o>&amp;&amp;</c-> <c- p>(</c-><c- b>unsigned</c-> <c- b>char</c-><c- p>)</c-><c- n>message</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>!=</c-> <c- mh>0x9F</c-><c- p>)</c->
+    <c- n>abort</c-><c- p>();</c->
+  <c- n>printf</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
+<c- p>}</c->
+</pre>
+   <p>Java (<code class="highlight"><c- n>Test</c-><c- p>.</c-><c- n>java</c-></code>):</p>
+<pre class="language-java highlight"><c- a>class</c-> <c- nc>Test</c-> <c- p>{</c->
+  <c- a>public</c-> <c- a>static</c-> <c- b>void</c-> <c- nf>main</c-><c- p>(</c-><c- n>String</c-><c- o>[]</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>String</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!\n"</c-><c- p>;</c->
+    <c- k>if</c-> <c- p>(</c-><c- n>message</c-><c- p>.</c-><c- e>charAt</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- k>new</c-> <c- n>RuntimeException</c-><c- p>();</c->
+    <c- n>System</c-><c- p>.</c-><c- e>out</c-><c- p>.</c-><c- e>print</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>}</c->
+</pre>
+   <p>JavaScript / Node.js (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>js</c-></code>):</p>
+<pre class="language-js highlight">message <c- o>=</c-> <c- u>"Привет, κόσμος!"</c-><c- p>;</c->
+<c- k>if</c-> <c- p>(</c->message<c- p>.</c->charCodeAt<c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- u>"wrong encoding"</c-><c- p>;</c->
+console<c- p>.</c->log<c- p>(</c->message<c- p>);</c->
+</pre>
+   <p>Python (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>py</c-></code>):</p>
+<pre class="language-python highlight"><c- n>message</c-> <c- o>=</c-> <c- u>"Привет, κόσμος!"</c->
+<c- k>if</c-> ord<c- p>(</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>])</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>:</c->
+    <c- k>raise</c-> <c- ne>Exception</c-><c- p>()</c->
+print<c- p>(</c-><c- n>message</c-><c- p>)</c->
+</pre>
+   <p>Rust (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>rs</c-></code>):</p>
+<pre class="language-rust highlight"><c- k>fn</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
+  <c- k>if</c-> <c- s>"Привет, κόσμος!"</c-><c- p>.</c-><c- n>chars</c-><c- p>().</c-><c- n>nth</c-><c- p>(</c-><c- mi>0</c-><c- p>).</c-><c- n>unwrap</c-><c- p>()</c-> <c- k>as</c-> <c- b>u32</c-> <c- o>!=</c-> <c- mh>0x41F</c-> <c- p>{</c->
+    <c- n>panic</c-><c- o>!</c-><c- p>();</c->
+  <c- p>}</c->
+  <c- n>println</c-><c- o>!</c-><c- p>(</c-><c- s>"Привет, κόσμος!"</c-><c- p>);</c->
+<c- p>}</c->
+</pre>
+   <p>macOS:</p>
+<pre class="highlight"><c- o>%</c-> <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>java</c-> <c- n>Test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+</pre>
+   <p>All output files are in UTF-8:</p>
+   <ul>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt">out-c-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt">out-java-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt">out-js-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt">out-py-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt">out-rust-macos.txt</a></p>
+   </ul>
+   <p>macOS configuration:</p>
+   <ul>
+    <li data-md>
+     <p>macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
+Russian</p>
+    <li data-md>
+     <p>cc: Apple clang version 12.0.0 (clang-1200.0.32.27)</p>
+    <li data-md>
+     <p>javac: openjdk 14.0.1 2020-04-14</p>
+    <li data-md>
+     <p>node: v14.5.0</p>
+    <li data-md>
+     <p>python3: 3.7.5</p>
+    <li data-md>
+     <p>rustc: 1.47.0</p>
+   </ul>
+   <p>Windows:</p>
+<pre class="highlight"><c- o>></c-><c- n>cl</c-> <c- o>/</c-><c- nl>Fe</c-><c- p>:</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c->
+<c- p>...</c->
+<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+
+<c- o>></c-><c- n>java</c-> <c- n>Test</c->
+Привет<c- p>,</c-> <c- o>??????!</c->'
+<c- o>></c-><c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>java</c-> <c- n>Test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>|</c-> <c- n>findstr</c-> Привет
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+
+<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
+  <c- n>File</c-> <c- s>"C:\Users\User\unicode-test</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
+    <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
+  <c- n>File</c-> <c- s>"C:\Users\User\AppData\Local\Programs\Python\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
+    <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
+<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
+<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+<c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
+  <c- n>File</c-> <c- s>"C:\Users\User\unicode-test</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
+    <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
+  <c- n>File</c-> <c- s>"C:\Users\User\AppData\Local\Programs\Python\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
+    <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
+<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
+
+<c- o>></c-><c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c->
+<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+</pre>
+   <p>All output files are in UTF-8:</p>
+   <ul>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt">out-c-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt">out-java-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt">out-js-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt">out-py-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt">out-rust-macos.txt</a></p>
+   </ul>
+   <p>macOS configuration:</p>
+   <ul>
+    <li data-md>
+     <p>macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
+Russian</p>
+    <li data-md>
+     <p>cc: Apple clang version 12.0.0 (clang-1200.0.32.27)</p>
+    <li data-md>
+     <p>javac: openjdk 14.0.1 2020-04-14</p>
+    <li data-md>
+     <p>node: v14.5.0</p>
+    <li data-md>
+     <p>python3: 3.7.5</p>
+    <li data-md>
+     <p>rustc: 1.47.0</p>
+   </ul>
    <h2 class="heading settled" data-level="7" id="perf"><span class="secno">7. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>All the performance benefits of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (<a data-link-type="biblio" href="#biblio-format">[FORMAT]</a>) automatically carry
 over to this proposal. In particular, locale-independence by default reduces
@@ -2182,6 +2433,8 @@ its specifications. </ins>
    </p>
    <h2 class="heading settled" data-level="12" id="ack"><span class="secno">12. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
+   <p>Thanks to Roger Orr, the BSI C++ panel and Tom Honermann for their feedback,
+support, constructive criticism and contributions to the proposal.</p>
   </main>
 <script>
 (function() {
