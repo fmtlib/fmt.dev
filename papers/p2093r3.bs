@@ -472,7 +472,7 @@ different programming languages:
   <td>Correct</td>
   <td>UTF-8<sup>*</sup></td>
   <td>Wrong</td>
-  <td>Wrong (partial CP1251)</td>
+  <td>CP1251 / lossy</td>
 </tr>
 <tr>
   <td>JavaScript</td>
@@ -618,7 +618,7 @@ Windows:
 ╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
 
 >java Test
-Привет, ??????!'
+Привет, ??????!
 >java Test > out-java-windows.txt
 >java Test | findstr ,
 ╧ЁштхЄ, ??????!
@@ -626,7 +626,6 @@ Windows:
 >node test.js
 Привет, κόσμος!
 >node test.js > out-js-windows.txt
->node test.js | findstr Привет
 >node test.js | findstr ,
 ╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
 
@@ -634,16 +633,16 @@ Windows:
 Привет, κόσμος!
 >python test.py > out-py-windows.txt
 Traceback (most recent call last):
-  File "C:\Users\User\unicode-test\test.py", line 4, in <module>
+  File "...\test.py", line 4, in <module>
     print(message)
-  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\encodings\cp1251.py", line 19, in encode
+  File "...\Python39\lib\encodings\cp1251.py", line 19, in encode
     return codecs.charmap_encode(input,self.errors,encoding_table)[0]
 UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
 >python test.py | findstr ,
 Traceback (most recent call last):
-  File "C:\Users\User\unicode-test\test.py", line 4, in <module>
+  File "...\test.py", line 4, in <module>
     print(message)
-  File "C:\Users\User\AppData\Local\Programs\Python\Python39\lib\encodings\cp1251.py", line 19, in encode
+  File "...\Python39\lib\encodings\cp1251.py", line 19, in encode
     return codecs.charmap_encode(input,self.errors,encoding_table)[0]
 UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
 
@@ -655,12 +654,13 @@ UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: ch
 ╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
 ```
 
-Note that none of the tested language facilities was able to produce readable
-output when piped through `findstr`. However, C, JavaScript (node.js) and Rust
-produced valid UTF-8 that was readable if the output of `findstr` was redirected
-to a file.
+Note that none of the tested language facilities were able to produce readable
+output when piped through `findstr`.
 
-All output files are in UTF-8:
+C, JavaScript (node.js) and Rust produced valid UTF-8 when the output was
+redirected to files. Java produced a file in CP1251 encoding with `?` for
+non-representable code points. Python failed on transcoding to CP1251.
+Output files:
 * [out-c-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt)
 * [out-java-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt)
 * [out-js-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt)
@@ -670,7 +670,7 @@ All output files are in UTF-8:
 Windows configuration:
 
 * Windows 10 10.0.19041 with Russian Region and Language settings
-* cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335 for x64
+* cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335
 * java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)
 * node: v14.15.3
 * python: 3.9.1
