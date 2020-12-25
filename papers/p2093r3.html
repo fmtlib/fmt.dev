@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2093.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ea7e64c14a1f83d41db472df069ba5398a5b68a2" name="document-revision">
+  <meta content="4265f887d5477a2c4bc36f3af6d95c4e024bb1fb" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1552,6 +1552,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#impact"><span class="secno">9</span> <span class="content">Impact on existing code</span></a>
     <li><a href="#impl"><span class="secno">10</span> <span class="content">Implementation</span></a>
     <li><a href="#wording"><span class="secno">11</span> <span class="content">Wording</span></a>
+    <li><a href="#lst"><span class="secno"></span> <span class="content">Appendix A: Unicode tests</span></a>
     <li><a href="#ack"><span class="secno">12</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -1874,7 +1875,7 @@ different programming languages:</p>
       <td>Correct
       <td>UTF-8<sup>*</sup>
       <td>Wrong
-      <td>CP1251 / lossy
+      <td>CP1251 (lossy)
      <tr>
       <td>JavaScript
       <td>Correct
@@ -1901,178 +1902,12 @@ different programming languages:</p>
       <td>UTF-8
    </table>
    <p><sup>*</sup> - the output is transcoded from a different UTF representation.</p>
-   <p>The full listings of test programs are given below. The code contains additional
-sanity checks to ensure that the strings are encoded in some form of UTF as
-opposed to a legacy encoding.</p>
-   <p>C (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>c</c-></code>):</p>
-<pre class="language-c highlight"><c- cp>#include</c-> &lt;stdio.h>
-<c- cp>#include</c-> &lt;stdlib.h>
-
-<c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
-  <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
-  <c- k>if</c-> <c- p>((</c-><c- b>unsigned</c-> <c- b>char</c-><c- p>)</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>!=</c-> <c- mh>0xD0</c-> <c- o>&amp;&amp;</c-> <c- p>(</c-><c- b>unsigned</c-> <c- b>char</c-><c- p>)</c-><c- n>message</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>!=</c-> <c- mh>0x9F</c-><c- p>)</c->
-    <c- n>abort</c-><c- p>();</c->
-  <c- n>printf</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
-<c- p>}</c->
-</pre>
-   <p>Java (<code class="highlight"><c- n>Test</c-><c- p>.</c-><c- n>java</c-></code>):</p>
-<pre class="language-java highlight"><c- a>class</c-> <c- nc>Test</c-> <c- p>{</c->
-  <c- a>public</c-> <c- a>static</c-> <c- b>void</c-> <c- nf>main</c-><c- p>(</c-><c- n>String</c-><c- o>[]</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
-    <c- n>String</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!\n"</c-><c- p>;</c->
-    <c- k>if</c-> <c- p>(</c-><c- n>message</c-><c- p>.</c-><c- e>charAt</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- k>new</c-> <c- n>RuntimeException</c-><c- p>();</c->
-    <c- n>System</c-><c- p>.</c-><c- e>out</c-><c- p>.</c-><c- e>print</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
-  <c- p>}</c->
-<c- p>}</c->
-</pre>
-   <p>JavaScript / Node.js (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>js</c-></code>):</p>
-<pre class="language-js highlight">message <c- o>=</c-> <c- u>"Привет, κόσμος!"</c-><c- p>;</c->
-<c- k>if</c-> <c- p>(</c->message<c- p>.</c->charCodeAt<c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- u>"wrong encoding"</c-><c- p>;</c->
-console<c- p>.</c->log<c- p>(</c->message<c- p>);</c->
-</pre>
-   <p>Python (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>py</c-></code>):</p>
-<pre class="language-python highlight"><c- n>message</c-> <c- o>=</c-> <c- u>"Привет, κόσμος!"</c->
-<c- k>if</c-> ord<c- p>(</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>])</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>:</c->
-    <c- k>raise</c-> <c- ne>Exception</c-><c- p>()</c->
-print<c- p>(</c-><c- n>message</c-><c- p>)</c->
-</pre>
-   <p>Rust (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>rs</c-></code>):</p>
-<pre class="language-rust highlight"><c- k>fn</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
-  <c- k>if</c-> <c- s>"Привет, κόσμος!"</c-><c- p>.</c-><c- n>chars</c-><c- p>().</c-><c- n>nth</c-><c- p>(</c-><c- mi>0</c-><c- p>).</c-><c- n>unwrap</c-><c- p>()</c-> <c- k>as</c-> <c- b>u32</c-> <c- o>!=</c-> <c- mh>0x41F</c-> <c- p>{</c->
-    <c- n>panic</c-><c- o>!</c-><c- p>();</c->
-  <c- p>}</c->
-  <c- n>println</c-><c- o>!</c-><c- p>(</c-><c- s>"Привет, κόσμος!"</c-><c- p>);</c->
-<c- p>}</c->
-</pre>
-   <p>macOS:</p>
-<pre class="highlight"><c- o>%</c-> <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
-<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
-
-<c- o>%</c-> <c- n>java</c-> <c- n>Test</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>%</c-> <c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
-
-<c- o>%</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>%</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
-
-<c- o>%</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>%</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
-
-<c- o>%</c-> <c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c->
-<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
-</pre>
-   <p>All output files are in UTF-8:</p>
-   <ul>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt">out-c-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt">out-java-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt">out-js-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt">out-py-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt">out-rust-macos.txt</a></p>
-   </ul>
-   <p>macOS configuration:</p>
-   <ul>
-    <li data-md>
-     <p>macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
-Russian</p>
-    <li data-md>
-     <p>cc: Apple clang version 12.0.0 (clang-1200.0.32.27)</p>
-    <li data-md>
-     <p>javac: openjdk 14.0.1 2020-04-14</p>
-    <li data-md>
-     <p>node: v14.5.0</p>
-    <li data-md>
-     <p>python3: 3.7.5</p>
-    <li data-md>
-     <p>rustc: 1.47.0</p>
-   </ul>
-   <p>Windows:</p>
-<pre class="highlight"><c- o>></c-><c- n>cl</c-> <c- o>/</c-><c- nl>Fe</c-><c- p>:</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c->
-<c- p>...</c->
-<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
-╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
-<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
-<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
-╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
-
-<c- o>></c-><c- n>java</c-> <c- n>Test</c->
-Привет<c- p>,</c-> <c- o>??????!</c->
-<c- o>></c-><c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
-<c- o>></c-><c- n>java</c-> <c- n>Test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
-╧ЁштхЄ<c- p>,</c-> <c- o>??????!</c->
-
-<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
-<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
-╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
-
-<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
-<c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
-  <c- n>File</c-> <c- s>"...</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
-    <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
-  <c- n>File</c-> <c- s>"...\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
-    <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
-<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
-<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
-<c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
-  <c- n>File</c-> <c- s>"...</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
-    <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
-  <c- n>File</c-> <c- s>"...\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
-    <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
-<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
-
-<c- o>></c-><c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c->
-<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
-Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
-<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
-╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
-</pre>
-   <p>Note that none of the tested language facilities were able to produce readable
-output when piped through <code class="highlight"><c- n>findstr</c-></code>.</p>
-   <p>C, JavaScript (node.js) and Rust produced valid UTF-8 when the output was
-redirected to files. Java produced a file in CP1251 encoding with <code class="highlight"><c- o>?</c-></code> for
-non-representable code points. Python failed on transcoding to CP1251.
-Output files:</p>
-   <ul>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt">out-c-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt">out-java-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt">out-js-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt">out-py-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt">out-rust-windows.txt</a></p>
-   </ul>
-   <p>Windows configuration:</p>
-   <ul>
-    <li data-md>
-     <p>Windows 10 10.0.19041 with Russian Region and Language settings</p>
-    <li data-md>
-     <p>cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335</p>
-    <li data-md>
-     <p>java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)</p>
-    <li data-md>
-     <p>node: v14.15.3</p>
-    <li data-md>
-     <p>python: 3.9.1</p>
-    <li data-md>
-     <p>rustc: v14.15.3</p>
-   </ul>
+   <p>Correct means that the test message "Привет, κόσμος!" was fully readable in the
+terminal output. None of the tested language facilities were able to produce
+readable output when piped through the standard <code class="highlight"><c- n>findstr</c-></code> command on Windows.
+Java gave the worst results producing both mojibake and replacement characters
+in this case: "╧ЁштхЄ, ??????!".</p>
+   <p>The full listings of test programs are given in <a href="#lst">Appendix A: Unicode tests</a>.</p>
    <h2 class="heading settled" data-level="7" id="perf"><span class="secno">7. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>All the performance benefits of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (<a data-link-type="biblio" href="#biblio-format">[FORMAT]</a>) automatically carry
 over to this proposal. In particular, locale-independence by default reduces
@@ -2435,6 +2270,178 @@ or <code class="highlight"><c- n>system_error</c-></code> if a call by the imple
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
+   <h2 class="heading settled" id="lst"><span class="content">Appendix A: Unicode tests</span><a class="self-link" href="#lst"></a></h2>
+   <p>This appendix gives full listings of programs for testing Unicode handling in
+various formatting facilities as well as test commands and their output on
+different platforms. The code contains additional sanity checks to ensure that
+the strings are encoded in some form of UTF as opposed to a legacy encoding.</p>
+   <p>C (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>c</c-></code>):</p>
+<pre class="language-c highlight"><c- cp>#include</c-> &lt;stdio.h>
+<c- cp>#include</c-> &lt;stdlib.h>
+
+<c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
+  <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
+  <c- k>if</c-> <c- p>((</c-><c- b>unsigned</c-> <c- b>char</c-><c- p>)</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>!=</c-> <c- mh>0xD0</c-> <c- o>&amp;&amp;</c-> <c- p>(</c-><c- b>unsigned</c-> <c- b>char</c-><c- p>)</c-><c- n>message</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>!=</c-> <c- mh>0x9F</c-><c- p>)</c->
+    <c- n>abort</c-><c- p>();</c->
+  <c- n>printf</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
+<c- p>}</c->
+</pre>
+   <p>Java (<code class="highlight"><c- n>Test</c-><c- p>.</c-><c- n>java</c-></code>):</p>
+<pre class="language-java highlight"><c- a>class</c-> <c- nc>Test</c-> <c- p>{</c->
+  <c- a>public</c-> <c- a>static</c-> <c- b>void</c-> <c- nf>main</c-><c- p>(</c-><c- n>String</c-><c- o>[]</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>String</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!\n"</c-><c- p>;</c->
+    <c- k>if</c-> <c- p>(</c-><c- n>message</c-><c- p>.</c-><c- e>charAt</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- k>new</c-> <c- n>RuntimeException</c-><c- p>();</c->
+    <c- n>System</c-><c- p>.</c-><c- e>out</c-><c- p>.</c-><c- e>print</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>}</c->
+</pre>
+   <p>JavaScript / Node.js (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>js</c-></code>):</p>
+<pre class="language-js highlight">message <c- o>=</c-> <c- u>"Привет, κόσμος!"</c-><c- p>;</c->
+<c- k>if</c-> <c- p>(</c->message<c- p>.</c->charCodeAt<c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- u>"wrong encoding"</c-><c- p>;</c->
+console<c- p>.</c->log<c- p>(</c->message<c- p>);</c->
+</pre>
+   <p>Python (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>py</c-></code>):</p>
+<pre class="language-python highlight"><c- n>message</c-> <c- o>=</c-> <c- u>"Привет, κόσμος!"</c->
+<c- k>if</c-> ord<c- p>(</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>])</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>:</c->
+    <c- k>raise</c-> <c- ne>Exception</c-><c- p>()</c->
+print<c- p>(</c-><c- n>message</c-><c- p>)</c->
+</pre>
+   <p>Rust (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>rs</c-></code>):</p>
+<pre class="language-rust highlight"><c- k>fn</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
+  <c- k>if</c-> <c- s>"Привет, κόσμος!"</c-><c- p>.</c-><c- n>chars</c-><c- p>().</c-><c- n>nth</c-><c- p>(</c-><c- mi>0</c-><c- p>).</c-><c- n>unwrap</c-><c- p>()</c-> <c- k>as</c-> <c- b>u32</c-> <c- o>!=</c-> <c- mh>0x41F</c-> <c- p>{</c->
+    <c- n>panic</c-><c- o>!</c-><c- p>();</c->
+  <c- p>}</c->
+  <c- n>println</c-><c- o>!</c-><c- p>(</c-><c- s>"Привет, κόσμος!"</c-><c- p>);</c->
+<c- p>}</c->
+</pre>
+   <p>macOS:</p>
+<pre class="highlight"><c- o>%</c-> <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>java</c-> <c- n>Test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+
+<c- o>%</c-> <c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
+</pre>
+   <p>All output files are in UTF-8:</p>
+   <ul>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt">out-c-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt">out-java-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt">out-js-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt">out-py-macos.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt">out-rust-macos.txt</a></p>
+   </ul>
+   <p>macOS configuration:</p>
+   <ul>
+    <li data-md>
+     <p>macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
+Russian</p>
+    <li data-md>
+     <p>cc: Apple clang version 12.0.0 (clang-1200.0.32.27)</p>
+    <li data-md>
+     <p>javac: openjdk 14.0.1 2020-04-14</p>
+    <li data-md>
+     <p>node: v14.5.0</p>
+    <li data-md>
+     <p>python3: 3.7.5</p>
+    <li data-md>
+     <p>rustc: 1.47.0</p>
+   </ul>
+   <p>Windows:</p>
+<pre class="highlight"><c- o>></c-><c- n>cl</c-> <c- o>/</c-><c- nl>Fe</c-><c- p>:</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c->
+<c- p>...</c->
+<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+
+<c- o>></c-><c- n>java</c-> <c- n>Test</c->
+Привет<c- p>,</c-> <c- o>??????!</c->
+<c- o>></c-><c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>java</c-> <c- n>Test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╧ЁштхЄ<c- p>,</c-> <c- o>??????!</c->
+
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+
+<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
+  <c- n>File</c-> <c- s>"...</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
+    <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
+  <c- n>File</c-> <c- s>"...\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
+    <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
+<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
+<c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+<c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
+  <c- n>File</c-> <c- s>"...</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
+    <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
+  <c- n>File</c-> <c- s>"...\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
+    <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
+<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
+
+<c- o>></c-><c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c->
+<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
+Привет<c- p>,</c-> κόσμος<c- o>!</c->
+<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>windows</c-><c- p>.</c-><c- n>txt</c->
+<c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
+╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
+</pre>
+   <p>C, JavaScript (node.js) and Rust produced valid UTF-8 when the output was
+redirected to files. Java produced a file in CP1251 encoding with <code class="highlight"><c- o>?</c-></code> for
+non-representable code points. Python failed on transcoding to CP1251.
+Output files:</p>
+   <ul>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt">out-c-windows.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt">out-java-windows.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt">out-js-windows.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt">out-py-windows.txt</a></p>
+    <li data-md>
+     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt">out-rust-windows.txt</a></p>
+   </ul>
+   <p>Windows configuration:</p>
+   <ul>
+    <li data-md>
+     <p>Windows 10 10.0.19041 with Russian Region and Language settings</p>
+    <li data-md>
+     <p>cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335</p>
+    <li data-md>
+     <p>java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)</p>
+    <li data-md>
+     <p>node: v14.15.3</p>
+    <li data-md>
+     <p>python: 3.9.1</p>
+    <li data-md>
+     <p>rustc: v14.15.3</p>
+   </ul>
    <h2 class="heading settled" data-level="12" id="ack"><span class="secno">12. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
    <p>Thanks to Roger Orr, the BSI C++ panel and Tom Honermann for their feedback,

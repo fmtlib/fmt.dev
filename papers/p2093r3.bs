@@ -472,7 +472,7 @@ different programming languages:
   <td>Correct</td>
   <td>UTF-8<sup>*</sup></td>
   <td>Wrong</td>
-  <td>CP1251 / lossy</td>
+  <td>CP1251 (lossy)</td>
 </tr>
 <tr>
   <td>JavaScript</td>
@@ -505,176 +505,13 @@ different programming languages:
 
 <sup>*</sup> - the output is transcoded from a different UTF representation.
 
-The full listings of test programs are given below. The code contains additional
-sanity checks to ensure that the strings are encoded in some form of UTF as
-opposed to a legacy encoding.
+Correct means that the test message "Привет, κόσμος!" was fully readable in the
+terminal output. None of the tested language facilities were able to produce
+readable output when piped through the standard `findstr` command on Windows.
+Java gave the worst results producing both mojibake and replacement characters
+in this case: "╧ЁштхЄ, ??????!".
 
-C (`test.c`):
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-
-int main() {
-  const char* message = "Привет, κόσμος!\n";
-  if ((unsigned char)message[0] != 0xD0 && (unsigned char)message[1] != 0x9F)
-    abort();
-  printf(message);
-}
-```
-
-Java (`Test.java`):
-
-```java
-class Test {
-  public static void main(String[] args) {
-    String message = "Привет, κόσμος!\n";
-    if (message.charAt(0) != 0x41F) throw new RuntimeException();
-    System.out.print(message);
-  }
-}
-```
-
-JavaScript / Node.js (`test.js`):
-
-```js
-message = "Привет, κόσμος!";
-if (message.charCodeAt(0) != 0x41F) throw "wrong encoding";
-console.log(message);
-```
-
-Python (`test.py`):
-
-```python
-message = "Привет, κόσμος!"
-if ord(message[0]) != 0x41F:
-    raise Exception()
-print(message)
-```
-
-Rust (`test.rs`):
-
-```rust
-fn main() {
-  if "Привет, κόσμος!".chars().nth(0).unwrap() as u32 != 0x41F {
-    panic!();
-  }
-  println!("Привет, κόσμος!");
-}
-```
-
-macOS:
-
-```
-% cc test.c -o c-test
-% ./c-test
-Привет, κόσμος!
-% ./c-test > out-c-macos.txt
-
-% java Test
-Привет, κόσμος!
-% java Test > out-java-macos.txt
-
-% node test.js
-Привет, κόσμος!
-% node test.js > out-js-macos.txt
-
-% python3 test.py
-Привет, κόσμος!
-% python3 test.py > out-py-macos.txt
-
-% rustc test.rs -o rust-test
-% ./rust-test
-Привет, κόσμος!
-% ./rust-test > out-rust-macos.txt
-```
-
-All output files are in UTF-8:
-* [out-c-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt)
-* [out-java-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt)
-* [out-js-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt)
-* [out-py-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt)
-* [out-rust-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt)
-
-macOS configuration:
-
-* macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
-    Russian
-* cc: Apple clang version 12.0.0 (clang-1200.0.32.27)
-* javac: openjdk 14.0.1 2020-04-14
-* node: v14.5.0
-* python3: 3.7.5
-* rustc: 1.47.0
-
-Windows:
-
-```
->cl /Fe:c-test.exe test.c
-...
->c-test
-╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
->c-test > out-c-windows.txt
->c-test | findstr ,
-╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
-
->java Test
-Привет, ??????!
->java Test > out-java-windows.txt
->java Test | findstr ,
-╧ЁштхЄ, ??????!
-
->node test.js
-Привет, κόσμος!
->node test.js > out-js-windows.txt
->node test.js | findstr ,
-╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
-
->python test.py
-Привет, κόσμος!
->python test.py > out-py-windows.txt
-Traceback (most recent call last):
-  File "...\test.py", line 4, in <module>
-    print(message)
-  File "...\Python39\lib\encodings\cp1251.py", line 19, in encode
-    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
->python test.py | findstr ,
-Traceback (most recent call last):
-  File "...\test.py", line 4, in <module>
-    print(message)
-  File "...\Python39\lib\encodings\cp1251.py", line 19, in encode
-    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
-
->rustc test.rs -o rust-test.exe
->rust-test
-Привет, κόσμος!
->rust-test > out-rust-windows.txt
->rust-test | findstr ,
-╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
-```
-
-Note that none of the tested language facilities were able to produce readable
-output when piped through `findstr`.
-
-C, JavaScript (node.js) and Rust produced valid UTF-8 when the output was
-redirected to files. Java produced a file in CP1251 encoding with `?` for
-non-representable code points. Python failed on transcoding to CP1251.
-Output files:
-* [out-c-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt)
-* [out-java-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt)
-* [out-js-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt)
-* [out-py-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt)
-* [out-rust-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt)
-
-Windows configuration:
-
-* Windows 10 10.0.19041 with Russian Region and Language settings
-* cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335
-* java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)
-* node: v14.15.3
-* python: 3.9.1
-* rustc: v14.15.3
+The full listings of test programs are given in [[#lst]].
 
 Performance {#perf}
 ===========
@@ -1176,6 +1013,178 @@ or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications.
 </ins>
+
+Appendix A: Unicode tests {#lst}
+=========================
+
+This appendix gives full listings of programs for testing Unicode handling in
+various formatting facilities as well as test commands and their output on
+different platforms. The code contains additional sanity checks to ensure that
+the strings are encoded in some form of UTF as opposed to a legacy encoding.
+
+C (`test.c`):
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+  const char* message = "Привет, κόσμος!\n";
+  if ((unsigned char)message[0] != 0xD0 && (unsigned char)message[1] != 0x9F)
+    abort();
+  printf(message);
+}
+```
+
+Java (`Test.java`):
+
+```java
+class Test {
+  public static void main(String[] args) {
+    String message = "Привет, κόσμος!\n";
+    if (message.charAt(0) != 0x41F) throw new RuntimeException();
+    System.out.print(message);
+  }
+}
+```
+
+JavaScript / Node.js (`test.js`):
+
+```js
+message = "Привет, κόσμος!";
+if (message.charCodeAt(0) != 0x41F) throw "wrong encoding";
+console.log(message);
+```
+
+Python (`test.py`):
+
+```python
+message = "Привет, κόσμος!"
+if ord(message[0]) != 0x41F:
+    raise Exception()
+print(message)
+```
+
+Rust (`test.rs`):
+
+```rust
+fn main() {
+  if "Привет, κόσμος!".chars().nth(0).unwrap() as u32 != 0x41F {
+    panic!();
+  }
+  println!("Привет, κόσμος!");
+}
+```
+
+macOS:
+
+```
+% cc test.c -o c-test
+% ./c-test
+Привет, κόσμος!
+% ./c-test > out-c-macos.txt
+
+% java Test
+Привет, κόσμος!
+% java Test > out-java-macos.txt
+
+% node test.js
+Привет, κόσμος!
+% node test.js > out-js-macos.txt
+
+% python3 test.py
+Привет, κόσμος!
+% python3 test.py > out-py-macos.txt
+
+% rustc test.rs -o rust-test
+% ./rust-test
+Привет, κόσμος!
+% ./rust-test > out-rust-macos.txt
+```
+
+All output files are in UTF-8:
+* [out-c-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt)
+* [out-java-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt)
+* [out-js-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt)
+* [out-py-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt)
+* [out-rust-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt)
+
+macOS configuration:
+
+* macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
+    Russian
+* cc: Apple clang version 12.0.0 (clang-1200.0.32.27)
+* javac: openjdk 14.0.1 2020-04-14
+* node: v14.5.0
+* python3: 3.7.5
+* rustc: 1.47.0
+
+Windows:
+
+```
+>cl /Fe:c-test.exe test.c
+...
+>c-test
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+>c-test > out-c-windows.txt
+>c-test | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+
+>java Test
+Привет, ??????!
+>java Test > out-java-windows.txt
+>java Test | findstr ,
+╧ЁштхЄ, ??????!
+
+>node test.js
+Привет, κόσμος!
+>node test.js > out-js-windows.txt
+>node test.js | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+
+>python test.py
+Привет, κόσμος!
+>python test.py > out-py-windows.txt
+Traceback (most recent call last):
+  File "...\test.py", line 4, in <module>
+    print(message)
+  File "...\Python39\lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
+>python test.py | findstr ,
+Traceback (most recent call last):
+  File "...\test.py", line 4, in <module>
+    print(message)
+  File "...\Python39\lib\encodings\cp1251.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: character maps to <undefined>
+
+>rustc test.rs -o rust-test.exe
+>rust-test
+Привет, κόσμος!
+>rust-test > out-rust-windows.txt
+>rust-test | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+```
+
+C, JavaScript (node.js) and Rust produced valid UTF-8 when the output was
+redirected to files. Java produced a file in CP1251 encoding with `?` for
+non-representable code points. Python failed on transcoding to CP1251.
+Output files:
+* [out-c-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt)
+* [out-java-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt)
+* [out-js-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt)
+* [out-py-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt)
+* [out-rust-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt)
+
+Windows configuration:
+
+* Windows 10 10.0.19041 with Russian Region and Language settings
+* cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335
+* java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)
+* node: v14.15.3
+* python: 3.9.1
+* rustc: v14.15.3
 
 Acknowledgements {#ack}
 ================
