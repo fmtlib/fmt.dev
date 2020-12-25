@@ -466,6 +466,15 @@ different programming languages:
   <td>UTF-8</td>
 </tr>
 <tr>
+  <td>Go</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+  <td>Correct</td>
+  <td>UTF-8</td>
+</tr>
+<tr>
   <td>Java</td>
   <td>Correct</td>
   <td>UTF-8<sup>*</sup></td>
@@ -509,7 +518,22 @@ Correct means that the test message "Привет, κόσμος!" was fully read
 terminal output. None of the tested language facilities were able to produce
 readable output when piped through the standard `findstr` command on Windows.
 Java gave the worst results producing both mojibake and replacement characters
-in this case: "╧ЁштхЄ, ??????!".
+in this case: "╧ЁштхЄ, ??????!". Most other languages produced valid UTF-8
+when the output of `findstr` was redirected to a file.
+
+The current paper proposes following C, Go, JavaScript and Rust and preserve
+the original encoding (modulo UTF conversion). The only difference compared to
+`printf` is that we fix the output to console on Windows. Java's approach is
+problematic for the following reasons:
+
+* There is a silent data loss for **valid** Unicode code points when the output
+    is redirected to a file.
+* It is more expensive because of transcoding.
+* It may give an unusable result when piped through standard Windows commands
+    like `findstr`.
+* It transcodes into legacy encodings that are rarely used in practice nowadays.
+    For example, usage of CP-1251 dropped from 4.3% to 0.9% in the last 10 years
+    ([[ENCODING-TRENDS]]).
 
 The full listings of test programs are given in [[#lst]].
 
@@ -1036,6 +1060,23 @@ int main() {
 }
 ```
 
+Go (`test.go`):
+
+```go
+package main
+
+import "fmt"
+import "log"
+
+func main() {
+  var message = "Привет, κόσμος!"
+  if message[0] != 0xD0 && message[1] != 0x9F {
+    log.Fatal("wrong encoding")
+  }
+  fmt.Println(message)
+}
+```
+
 Java (`Test.java`):
 
 ```java
@@ -1076,6 +1117,55 @@ fn main() {
 }
 ```
 
+Linux:
+
+```
+$ cc test.c -o c-test
+$ ./c-test
+Привет, κόσμος!
+$ ./c-test > out-c-linux.txt
+
+$ go build -o go-test test.go
+$ ./go-test
+Привет, κόσμος!
+$ ./go-test > out-go-linux.txt
+
+$ java Test
+Привет, κόσμος!
+$ java Test > out-java-linux.txt
+
+$ node test.js
+Привет, κόσμος!
+$ node test.js > out-js-linux.txt
+
+$ python3 test.py
+Привет, κόσμος!
+$ python3 test.py > out-py-linux.txt
+
+$ rustc test.rs -o rust-test
+$ ./rust-test
+Привет, κόσμος!
+$ ./rust-test > out-rust-linux.txt
+```
+
+All output files are in UTF-8:
+* [out-c-linux.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-linux.txt)
+* [out-go-linux.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-linux.txt)
+* [out-java-linux.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-linux.txt)
+* [out-js-linux.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-linux.txt)
+* [out-py-linux.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-linux.txt)
+* [out-rust-linux.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-linux.txt)
+
+Linux configuration:
+
+* Ubuntu Focal 20.04 with the ru_RU.UTF-8 locale
+* cc: gcc 9.3.0
+* go: go1.13.8
+* java: openjdk 11.0.9.1
+* node: v14.5.0
+* python3: 3.7.5
+* rustc: 1.47.0
+
 macOS:
 
 ```
@@ -1083,6 +1173,11 @@ macOS:
 % ./c-test
 Привет, κόσμος!
 % ./c-test > out-c-macos.txt
+
+% go build -o test-go test.go
+% ./test-go
+Привет, κόσμος!
+% ./test-go > out-go-macos.txt
 
 % java Test
 Привет, κόσμος!
@@ -1104,6 +1199,7 @@ macOS:
 
 All output files are in UTF-8:
 * [out-c-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt)
+* [out-go-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-macos.txt)
 * [out-java-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt)
 * [out-js-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt)
 * [out-py-macos.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt)
@@ -1114,7 +1210,8 @@ macOS configuration:
 * macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
     Russian
 * cc: Apple clang version 12.0.0 (clang-1200.0.32.27)
-* javac: openjdk 14.0.1 2020-04-14
+* go: go1.15.5
+* java: openjdk 14.0.1
 * node: v14.5.0
 * python3: 3.7.5
 * rustc: 1.47.0
@@ -1128,6 +1225,13 @@ Windows:
 ╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
 >c-test > out-c-windows.txt
 >c-test | findstr ,
+╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
+
+>go build -o go-test.exe test.go
+>go-test
+Привет, κόσμος!
+>go-test > out-go-windows.txt
+>go-test | findstr ,
 ╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
 
 >java Test
@@ -1167,11 +1271,12 @@ UnicodeEncodeError: 'charmap' codec can't encode characters in position 8-13: ch
 ╨Я╤А╨╕╨▓╨╡╤В, ╬║╧М╧Г╬╝╬┐╧В!
 ```
 
-C, JavaScript (node.js) and Rust produced valid UTF-8 when the output was
-redirected to files. Java produced a file in CP1251 encoding with `?` for
-non-representable code points. Python failed on transcoding to CP1251.
+C, JavaScript (node.js), Rust and Go produced valid UTF-8 when the output was
+redirected to files. Java produced a file in the legacy CP1251 encoding with `?`
+for non-representable code points. Python failed on transcoding to CP1251.
 Output files:
 * [out-c-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt)
+* [out-go-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-windows.txt)
 * [out-java-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt)
 * [out-js-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt)
 * [out-py-windows.txt](https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt)
@@ -1181,6 +1286,7 @@ Windows configuration:
 
 * Windows 10 10.0.19041 with Russian Region and Language settings
 * cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335
+* go: go1.15.6
 * java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)
 * node: v14.15.3
 * python: 3.9.1
@@ -1291,6 +1397,10 @@ support, constructive criticism and contributions to the proposal.
   "WHATWG-CONSOLE": {
     "title": "WHATWG Standards, Console",
     "href": "https://console.spec.whatwg.org/"
+  },
+  "ENCODING-TRENDS": {
+    "title": "Historical yearly trends in the usage statistics of character encodings for websites",
+    "href": "https://w3techs.com/technologies/history_overview/character_encoding/ms/y"
   }
 }
 </pre>
