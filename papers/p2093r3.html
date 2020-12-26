@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R2: Formatted output</title>
+  <title>P2093R3: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1297,7 +1297,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="http://fmt.dev/papers/p2093.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="49df66fe6002d53884e85a83b5655e3a88eb619a" name="document-revision">
+  <meta content="9a43ab402870b926afdf79f6768c94cb4cbd8834" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1520,8 +1520,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R2<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2020-10-15">2020-10-15</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R3<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2020-12-26">2020-12-26</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1587,11 +1587,16 @@ advantage of using <code class="highlight"><c- n>stdout</c-></code> in <a href="
      <p>Clarified that <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> can be used for literal encoding detection per SG16
 feedback.</p>
     <li data-md>
+     <p>Added comparison of Unicode handling in various languages in <a href="#lst">Appendix A: Unicode tests</a> and a
+summary in <a href="#unicode">§ 6 Unicode</a> per SG16 request.</p>
+    <li data-md>
      <p>Removed incorrect "exposition-only" in <a href="#unicode">§ 6 Unicode</a>.</p>
     <li data-md>
      <p>Replaced "both source and literal encodings are UTF-8, which is enabled by the <code class="highlight">/utf-8</code> compiler flag" with "the literal
 (execution) encoding is UTF-8, which is enabled by the <code class="highlight">/execution-charset:utf-8</code> compiler flag" since
 the source encoding is irrelevant there.</p>
+    <li data-md>
+     <p>Rephrased <em>Effects</em> of <code class="highlight"><c- n>vprint_unicode</c-></code> for clarity.</p>
    </ul>
    <p>Changes since R1:</p>
    <ul>
@@ -1930,7 +1935,7 @@ is redirected to a file.</p>
 like <code class="highlight"><c- n>findstr</c-></code>.</p>
     <li data-md>
      <p>It transcodes into legacy encodings that are rarely used in practice nowadays.
-For example, usage of CP-1251 dropped from 4.3% to 0.9% in the last 10 years
+For example, usage of CP1251 dropped from 4.3% to 0.9% in the last 10 years
 (<a data-link-type="biblio" href="#biblio-encoding-trends">[ENCODING-TRENDS]</a>).</p>
    </ul>
    <p>The full listings of test programs are given in <a href="#lst">Appendix A: Unicode tests</a>.</p>
@@ -2234,9 +2239,10 @@ in a place that respects the table’s current alphabetic order:</p>
 </ins></pre>
    <ins> <span class="parnum">31</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>stream</c-></code> refers to a terminal
 [ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>_isatty</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> return 1 respectively. — end note ] capable of
-displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> transcoded to the native system Unicode
-encoding to the terminal using the native API that preserves the encoding.
-Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> without transcoding. </ins>
+displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the native Unicode API.
+[ Note: On Windows this API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ]
+If this requires transcoding then invalid code points are substituted with 
+U+FFFD � REPLACEMENT CHARACTER. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
@@ -2563,7 +2569,7 @@ Output files:</p>
    </ul>
    <h2 class="heading settled" data-level="12" id="ack"><span class="secno">12. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
-   <p>Thanks to Roger Orr, the BSI C++ panel and Tom Honermann for their feedback,
+   <p>Thanks to Roger Orr, Peter Brett, the BSI C++ panel and Tom Honermann for their feedback,
 support, constructive criticism and contributions to the proposal.</p>
   </main>
 <script>

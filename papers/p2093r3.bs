@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093 <!-- TODO -->
-Revision: 2
+Revision: 3
 Audience: LEWG
 Status: P <!-- TODO -->
 Group: WG21
 URL: http://fmt.dev/papers/p2093.html
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2020-10-15
+Date: 2020-12-26
 Markup Shorthands: markdown yes
 </pre>
 
@@ -26,12 +26,6 @@ Markup Shorthands: markdown yes
     font-size: small;
   }
 </style>
-
-<!--p style="text-align: right">
-"Pray, Mr. Babbage, if you put into the machine wrong figures, will the right
-answers come out?" <br>
-― anonymous
-</p-->
 
 <p style="text-align: right">
 "╨ƒ╤Ç╨╕╨▓╨╡╤é, ╬║╧î╧â╬╝╬┐╧é!" <br>
@@ -61,6 +55,9 @@ Changes since R2:
 * Clarified that [[P1885]] can be used for literal encoding detection per SG16
     feedback.
 
+* Added comparison of Unicode handling in various languages in [[#lst]] and a
+    summary in [[#unicode]] per SG16 request.
+
 * Removed incorrect "exposition-only" in [[#unicode]].
 
 * Replaced "both source and literal encodings are UTF-8, which is enabled by the
@@ -68,6 +65,8 @@ Changes since R2:
     (execution) encoding is UTF-8, which is enabled by the
     <code highlight="text">/execution-charset:utf-8</code> compiler flag" since
     the source encoding is irrelevant there.
+
+* Rephrased *Effects* of ``vprint_unicode`` for clarity.
 
 Changes since R1:
 
@@ -532,7 +531,7 @@ problematic for the following reasons:
 * It may give an unusable result when piped through standard Windows commands
     like `findstr`.
 * It transcodes into legacy encodings that are rarely used in practice nowadays.
-    For example, usage of CP-1251 dropped from 4.3% to 0.9% in the last 10 years
+    For example, usage of CP1251 dropped from 4.3% to 0.9% in the last 10 years
     ([[ENCODING-TRENDS]]).
 
 The full listings of test programs are given in [[#lst]].
@@ -935,9 +934,10 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 <span class="parnum">31</span> *Effects:* Let `out = vformat(fmt, args)`. If `stream` refers to a terminal
 [ Note: On POSIX and Windows meaning that `isatty(fileno(stream))` and
 `_isatty(_fileno(stream))` return 1 respectively. — end note ] capable of
-displaying Unicode, writes `out` transcoded to the native system Unicode
-encoding to the terminal using the native API that preserves the encoding.
-Otherwise writes `out` to `stream` without transcoding.
+displaying Unicode, writes `out` to the terminal using the native Unicode API.
+[ Note: On Windows this API is `WriteConsoleW`. — end note ]
+If this requires transcoding then invalid code points are substituted with 
+U+FFFD � REPLACEMENT CHARACTER. Otherwise writes `out` to `stream` unchanged.
 </ins>
 <p>
 <ins>
@@ -1298,7 +1298,7 @@ Acknowledgements {#ack}
 Thanks to Corentin Jabot for his work on text encodings in C++ and in particular
 [[P1885]] that will simplify implementation of the current proposal.
 
-Thanks to Roger Orr, the BSI C++ panel and Tom Honermann for their feedback,
+Thanks to Roger Orr, Peter Brett, the BSI C++ panel and Tom Honermann for their feedback,
 support, constructive criticism and contributions to the proposal.
 
 <pre class=biblio>
