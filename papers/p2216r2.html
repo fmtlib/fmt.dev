@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2216R1: std::format improvements</title>
+  <title>P2216R2: std::format improvements</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1295,9 +1295,8 @@ Possible extra rowspan handling
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
-  <link href="http://fmt.dev/papers/p2216r1.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="89edb5b68e3f99d75a1f9d07c15466adf49e116d" name="document-revision">
+  <meta content="3366020be997f10d56a3828ee93fa30e57ebcfd2" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1518,12 +1517,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2216R1<br>std::format improvements</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2020-11-25">2020-11-25</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2216R2<br>std::format improvements</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2020-01-11">2020-01-11</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
-     <dt>This version:
-     <dd><a class="u-url" href="http://fmt.dev/papers/p2216r1.html">http://fmt.dev/papers/p2216r1.html</a>
      <dt>Author:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
@@ -1565,6 +1562,25 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <p>Reducing binary code size of <code class="highlight"><c- n>format_to</c-></code></p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R1:</p>
+   <ul>
+    <li data-md>
+     <p>Made the <code class="highlight"><c- n>str</c-></code> member of <code class="highlight"><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></code> exposition-only.</p>
+    <li data-md>
+     <p>Added missing <code class="highlight"><c- k>consteval</c-></code> to the <code class="highlight"><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></code> constructor.</p>
+    <li data-md>
+     <p>Added "String <code class="highlight"><c- n>s</c-></code> is a format string for argument types <code class="highlight"><c- n>Args</c-></code> if there exist <code class="highlight"><c- n>args</c-></code> of types <code class="highlight"><c- n>Args</c-></code> such that <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>args</c-></code>." to
+[format.string.general].</p>
+    <li data-md>
+     <p>Replaced "Initializes <code class="highlight"><c- n>str</c-></code>" with "Direct-initializes <code class="highlight"><c- n>str</c-></code>" in the
+the <em>Effects</em> clause of the <code class="highlight"><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></code> constructor.</p>
+    <li data-md>
+     <p>Replaced "<code class="highlight"><c- n>is_convertible_v</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>></c-></code>"
+with "<code class="highlight"><c- n>is_constructible_v</c-><c- o>&lt;</c-><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>,</c-> <c- k>const</c-> <c- n>T</c-><c- o>&amp;></c-></code>" in the <em>Constraints</em> clause of the <code class="highlight"><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></code> constructor.</p>
+    <li data-md>
+     <p>Replaced "<em>Mandates:</em> <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>Args</c-></code>." with "<em>Remarks:</em> Not
+a core constant expression ([expr.const]) unless <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>Args</c-></code>." in the specification of the <code class="highlight"><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></code> constructor.</p>
+   </ul>
    <p>Changes since R0:</p>
    <ul>
     <li data-md>
@@ -1881,18 +1897,18 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n48
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <ins>  <c- c1>// 20.20.3, error reporting</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
-    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <i><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
+    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <i><c- n>str</c-></i><c- p>;</c->                                    <i><c- c1>// exposition only</c-></i>
 
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
   <c- p>};</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>using</c-> <c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- o>=</c->
-      <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->     <i><c- c1>// exposition only</c-></i>
+      <i><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->     <i><c- c1>// exposition only</c-></i>
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>using</c-> <c- n>wformat</c-><c- o>-</c-><c- n>string</c-> <c- o>=</c->
-      <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->  <i><c- c1>// exposition only</c-></i></ins>
+      <i><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->  <i><c- c1>// exposition only</c-></i></ins>
 
   <c- c1>// 20.20.4, formatting functions</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
@@ -1972,6 +1988,15 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n48
     <c- k>using</c-> <c- n>format_args_t</c-> <c- o>=</c-> <c- n>basic_format_args</c-><c- o>&lt;</c-><c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- n>charT</c-><c- o>>></c-><c- p>;</c-></del>
 </pre>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=732">[format.string.general]</a>:</p>
+   <p>
+    A <em>format string</em> for arguments <code class="highlight"><c- n>args</c-></code> is a (possibly empty) sequence of
+replacement fields, escape sequences, and characters other than <code class="highlight"><c- p>{</c-></code> and <code class="highlight"><c- p>}</c-></code>. 
+    <ins> String <code class="highlight"><c- n>s</c-></code> is a format string for argument types <code class="highlight"><c- n>Args</c-></code> if there exist <code class="highlight"><c- n>args</c-></code> of types <code class="highlight"><c- n>Args</c-></code> such that <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>args</c-></code>.</ins>
+     Let <code class="highlight"><c- n>charT</c-></code> be the character type of the format string. Each character that is
+not part of a replacement field or an escape sequence is copied unchanged to the
+output.
+   </p>
+   <p>...</p>
    <p>If all <em>arg-id</em>s in a format string are omitted (including those in the <em>format-spec</em>, as interpreted by the corresponding <code class="highlight"><c- n>formatter</c-></code> specialization),
 argument indices 0, 1, 2, ... will automatically be used in that order. If some <em>arg-id</em>s are omitted and some are present, the string is not a format string.
 [Note: A format string cannot contain a mixture of automatic and manual
@@ -1987,20 +2012,21 @@ indexing. — end note] [<em>Example</em>:</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.err.report]</a>:</p>
    <p>... Failure to allocate storage is reported by throwing an exception as described in
 16.5.5.13.</p>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
-  <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>str</c-><c- p>;</c->
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c-> <c- k>struct</c-> <i><c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- p>{</c->  <i><c- c1>// exposition only</c-></i>
+  <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <i><c- n>str</c-></i><c- p>;</c->                                    <i><c- c1>// exposition only</c-></i>
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
 <c- p>};</c-></ins>
 </pre>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c-></ins>
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c-></ins>
 </pre>
-   <ins> <em>Constraints:</em> <code class="highlight"><c- n>is_convertible_v</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>></c-></code> is <code class="highlight">true</code>. </ins>
+   <ins> <em>Constraints:</em> <code class="highlight"><c- n>is_constructible_v</c-><c- o>&lt;</c-><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>,</c-> <c- k>const</c-> <c- n>T</c-><c- o>&amp;></c-></code> is <code class="highlight">true</code>. </ins>
    <p>
-    <ins> <em>Mandates:</em> <code class="highlight"><c- n>s</c-></code> is a format string for <code class="highlight"><c- n>Args</c-></code>. </ins>
+    <ins> <em>Remarks:</em> Not a core constant expression ([expr.const]) unless <code class="highlight"><c- n>s</c-></code> is a
+format string for <code class="highlight"><c- n>Args</c-></code>. </ins>
    </p>
    <p>
-    <ins> <em>Effects:</em> initializes <code class="highlight"><c- n>str</c-></code> with <code class="highlight"><c- n>s</c-></code>. </ins>
+    <ins> <em>Effects:</em> Direct-initializes <code class="highlight"><c- n>str</c-></code> with <code class="highlight"><c- n>s</c-></code>. </ins>
    </p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
