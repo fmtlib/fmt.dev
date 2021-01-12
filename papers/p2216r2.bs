@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: std::format improvements
 Shortname: P2216
-Revision: 1
+Revision: 2
 <!-- !Draft Revision: 0 -->
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
-URL: http://fmt.dev/papers/p2216r1.html
+URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2020-11-25
+Date: 2020-01-11
 Markup Shorthands: markdown yes
 </pre>
 
@@ -41,6 +41,27 @@ This paper proposes the following improvements to the C++20 formatting facility:
 
 Revision history {#hist}
 ================
+
+Changes since R1:
+
+* Made the `str` member of `basic-format-string` exposition-only.
+
+* Added missing `consteval` to the `basic-format-string` constructor.
+
+* Added "String `s` is a format string for argument types `Args` if there exist
+    `args` of types `Args` such that `s` is a format string for `args`." to
+    [format.string.general].
+
+* Replaced "Initializes `str`" with "Direct-initializes `str`" in the
+    the *Effects* clause of the `basic-format-string` constructor.
+
+* Replaced "`is_convertible_v<const T&, basic_string_view<charT>>`"
+    with "`is_constructible_v<basic_string_view<charT>, const T&>`" in the
+    *Constraints* clause of the `basic-format-string` constructor.
+
+* Replaced "*Mandates:* `s` is a format string for `Args`." with "*Remarks:* Not
+    a core constant expression ([expr.const]) unless `s` is a format string for
+    `Args`." in the specification of the `basic-format-string` constructor.
 
 Changes since R0:
 
@@ -457,18 +478,18 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 <pre>
 namespace std {
 <ins>  // 20.20.3, error reporting
-  template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
-    basic_string_view&lt;charT> str;
+  template&lt;class charT, class... Args> struct <i>basic-format-string</i> {  <i>// exposition only</i>
+    basic_string_view&lt;charT> <i>str</i>;                                    <i>// exposition only</i>
 
     template&lt;class T> consteval basic-format-string(const T& s);
   };
 
   template&lt;class... Args>
     using format-string =
-      basic-format-string&lt;char, type_identity_t&lt;Args>...>;     <i>// exposition only</i>
+      <i>basic-format-string</i>&lt;char, type_identity_t&lt;Args>...>;     <i>// exposition only</i>
   template&lt;class... Args>
     using wformat-string =
-      basic-format-string&lt;wchar_t, type_identity_t&lt;Args>...>;  <i>// exposition only</i></ins>
+      <i>basic-format-string</i>&lt;wchar_t, type_identity_t&lt;Args>...>;  <i>// exposition only</i></ins>
 
   // 20.20.4, formatting functions
   template&lt;class... Args>
@@ -550,6 +571,16 @@ namespace std {
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=732">[format.string.general]</a>:
 
+A *format string* for arguments `args` is a (possibly empty) sequence of
+replacement fields, escape sequences, and characters other than `{` and `}`. <ins>
+String `s` is a format string for argument types `Args` if there exist
+`args` of types `Args` such that `s` is a format string for `args`.</ins>
+Let `charT` be the character type of the format string. Each character that is
+not part of a replacement field or an escape sequence is copied unchanged to the
+output.
+
+...
+
 If all *arg-id*s in a format string are omitted (including those in the
 *format-spec*, as interpreted by the corresponding `formatter` specialization),
 argument indices 0, 1, 2, ... will automatically be used in that order. If some
@@ -572,26 +603,27 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 16.5.5.13.
 
 <pre>
-<ins>template&lt;class charT, class... Args> struct basic-format-string {  <i>// exposition only</i>
-  basic_string_view&lt;charT> str;
+<ins>template&lt;class charT, class... Args> struct <i>basic-format-string</i> {  <i>// exposition only</i>
+  basic_string_view&lt;charT> <i>str</i>;                                    <i>// exposition only</i>
 
   template&lt;class T> consteval basic-format-string(const T& s);
 };</ins>
 </pre>
 
 <pre>
-<ins>template&lt;class T> basic-format-string(const T& s);</ins>
+<ins>template&lt;class T> consteval basic-format-string(const T& s);</ins>
 </pre>
 <ins>
-*Constraints:* `is_convertible_v<const T&, basic_string_view<charT>>` is `true`.
+*Constraints:* `is_constructible_v<basic_string_view<charT>, const T&>` is `true`.
 </ins>
 <p>
 <ins>
-*Mandates:* `s` is a format string for `Args`.
+*Remarks:* Not a core constant expression ([expr.const]) unless `s` is a
+format string for `Args`.
 </ins>
 <p>
 <ins>
-*Effects:* initializes `str` with `s`.
+*Effects:* Direct-initializes `str` with `s`.
 </ins>
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
