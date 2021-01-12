@@ -139,6 +139,7 @@ and tuples</p></li>
 <li><p><a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a>: date and time formatting</p></li>
 <li><p><a class="reference internal" href="#compile-api"><span class="std std-ref">fmt/compile.h</span></a>: format string compilation</p></li>
 <li><p><a class="reference internal" href="#color-api"><span class="std std-ref">fmt/color.h</span></a>: terminal color and text style</p></li>
+<li><p><a class="reference internal" href="#os-api"><span class="std std-ref">fmt/os.h</span></a>: system APIs</p></li>
 <li><p><a class="reference internal" href="#ostream-api"><span class="std std-ref">fmt/ostream.h</span></a>: <code class="docutils literal notranslate"><span class="pre">std::ostream</span></code> support</p></li>
 <li><p><a class="reference internal" href="#printf-api"><span class="std std-ref">fmt/printf.h</span></a>: <code class="docutils literal notranslate"><span class="pre">printf</span></code> formatting</p></li>
 </ul>
@@ -1185,6 +1186,45 @@ specify text formatting.</p>
 <dt id="_CPPv4N3fmt2bgEN6detail10color_typeE">
 <span id="_CPPv3N3fmt2bgEN6detail10color_typeE"></span><span id="_CPPv2N3fmt2bgEN6detail10color_typeE"></span><span id="fmt::bg__detail::color_type"></span><span class="target" id="color_8h_1ac224d0b347a592cb9f453ca00168d8c2"></span>text_style <code class="sig-prename descclassname">fmt<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">bg</code><span class="sig-paren">(</span>detail::color_type <em>background</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3fmt2bgEN6detail10color_typeE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Creates a text style from the background color. </p>
+</dd></dl>
+
+</div>
+<div class="section" id="system-apis">
+<span id="os-api"></span><h2>System APIs<a class="headerlink" href="#system-apis" title="Permalink to this headline">¶</a></h2>
+<dl class="cpp class">
+<dt id="_CPPv4N3fmt7ostreamE">
+<span id="_CPPv3N3fmt7ostreamE"></span><span id="_CPPv2N3fmt7ostreamE"></span><span id="fmt::ostream"></span><span class="target" id="classfmt_1_1ostream"></span><em class="property">class </em><code class="sig-prename descclassname">fmt<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">ostream</code> : <em class="property">private</em> fmt::detail::<a class="reference internal" href="#_CPPv4I0EN3fmt6detail6bufferE" title="fmt::detail::buffer">buffer</a>&lt;char&gt;<a class="headerlink" href="#_CPPv4N3fmt7ostreamE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>A fast output stream which is not thread-safe. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="cpp function">
+<dt id="_CPPv4I0DpEN3fmt7ostream5printEvRK1SDpRR4Args">
+<span id="_CPPv3I0DpEN3fmt7ostream5printERK1SDpRR4Args"></span><span id="_CPPv2I0DpEN3fmt7ostream5printERK1SDpRR4Args"></span>template&lt;typename <code class="sig-name descname">S</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br /><span class="target" id="classfmt_1_1ostream_1a0140fca69d8bdd907d7541f01fedbc63"></span>void <code class="sig-name descname">print</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0DpEN3fmt7ostream5printEvRK1SDpRR4Args" title="fmt::ostream::print::S">S</a> &amp;<em>format_str</em>, <a class="reference internal" href="#_CPPv4I0DpEN3fmt7ostream5printEvRK1SDpRR4Args" title="fmt::ostream::print::Args">Args</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0DpEN3fmt7ostream5printEvRK1SDpRR4Args" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Formats <code class="docutils literal notranslate"><span class="pre">args</span></code> according to specifications in <code class="docutils literal notranslate"><span class="pre">format_str</span></code> and writes the output to the file. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Friends</p>
+<dl class="cpp function">
+<dt id="_CPPv4IDpEN3fmt7ostream11output_fileE7ostream12cstring_viewDp1T">
+<span id="_CPPv3IDpEN3fmt7ostream11output_fileE12cstring_viewDp1T"></span><span id="_CPPv2IDpEN3fmt7ostream11output_fileE12cstring_viewDp1T"></span>template&lt;typename ...<code class="sig-name descname">T</code>&gt;<br /><span class="target" id="classfmt_1_1ostream_1ae2b994bc71e34d2cfdcec7717985cb05"></span><em class="property">friend</em> <a class="reference internal" href="#_CPPv4N3fmt7ostreamE" title="fmt::ostream">ostream</a> <code class="sig-name descname">output_file</code><span class="sig-paren">(</span>cstring_view <em>path</em>, <a class="reference internal" href="#_CPPv4IDpEN3fmt7ostream11output_fileE7ostream12cstring_viewDp1T" title="fmt::ostream::output_file::T">T</a>... <em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4IDpEN3fmt7ostream11output_fileE7ostream12cstring_viewDp1T" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p><p><p>Opens a file for writing. Supported parameters passed in <em>params</em>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;integer&gt;</span></code>: Flags passed to <a class="reference external" href="https://pubs.opengroup.org/onlinepubs/007904875/functions/open.html">open</a>
+(<code class="docutils literal notranslate"><span class="pre">file::WRONLY</span> <span class="pre">|</span> <span class="pre">file::CREATE</span></code> by default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">buffer_size=&lt;integer&gt;</span></code>: Output buffer size</p></li>
+</ul>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">out</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">output_file</span><span class="p">(</span><span class="s">&quot;guide.txt&quot;</span><span class="p">);</span>
+<span class="n">out</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Don&#39;t {}&quot;</span><span class="p">,</span> <span class="s">&quot;Panic&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</p>
+ </p>
+</dd></dl>
+
+</div>
 </dd></dl>
 
 </div>
