@@ -48,20 +48,21 @@ Changes since R1:
 
 * Added missing `consteval` to the `basic-format-string` constructor.
 
-* Added "String `s` is a format string for argument types `Args` if there exist
-    `args` of types `Args` such that `s` is a format string for `args`." to
+* Added "A string `s` is a format string for argument types `Args` if there
+    exist `args` of types `Args` such that `s` is a format string for `args`." to
     [format.string.general].
 
-* Replaced "Initializes `str`" with "Direct-initializes `str`" in the
+* Replaced "Initializes `str`" with "Direct-non-list-initializes `str`" in the
     the *Effects* clause of the `basic-format-string` constructor.
 
 * Replaced "`is_convertible_v<const T&, basic_string_view<charT>>`"
-    with "`is_constructible_v<basic_string_view<charT>, const T&>`" in the
+    with "`const T&` models `convertible_to<basic_string_view<charT>>`" in the
     *Constraints* clause of the `basic-format-string` constructor.
 
-* Replaced "*Mandates:* `s` is a format string for `Args`." with "*Remarks:* Not
-    a core constant expression ([expr.const]) unless `s` is a format string for
-    `Args`." in the specification of the `basic-format-string` constructor.
+* Replaced "*Mandates:* `s` is a format string for `Args`." with "*Remarks:*
+    A call to this function is not a core constant expression ([expr.const])
+    unless `str` is a format string for `Args`." in the specification of the
+    `basic-format-string` constructor.
 
 Changes since R0:
 
@@ -573,7 +574,7 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 
 A *format string* for arguments `args` is a (possibly empty) sequence of
 replacement fields, escape sequences, and characters other than `{` and `}`. <ins>
-String `s` is a format string for argument types `Args` if there exist
+A string `s` is a format string for argument types `Args` if there exist
 `args` of types `Args` such that `s` is a format string for `args`.</ins>
 Let `charT` be the character type of the format string. Each character that is
 not part of a replacement field or an escape sequence is copied unchanged to the
@@ -614,16 +615,16 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 <ins>template&lt;class T> consteval basic-format-string(const T& s);</ins>
 </pre>
 <ins>
-*Constraints:* `is_constructible_v<basic_string_view<charT>, const T&>` is `true`.
+*Constraints:* `const T&` models `convertible_to<basic_string_view<charT>>`.
 </ins>
 <p>
 <ins>
-*Remarks:* Not a core constant expression ([expr.const]) unless `s` is a
-format string for `Args`.
+*Effects:* Direct-non-list-initializes `str` with `s`.
 </ins>
 <p>
 <ins>
-*Effects:* Direct-initializes `str` with `s`.
+*Remarks:* A call to this function is not a core constant expression
+([expr.const]) unless `str` is a format string for `Args`.
 </ins>
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
