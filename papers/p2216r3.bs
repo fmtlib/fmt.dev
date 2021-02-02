@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: std::format improvements
-Shortname: P2216
-Revision: 2
+Shortname: D2216
+Revision: 3
 <!-- !Draft Revision: 0 -->
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2020-01-14
+Date: 2020-02-02
 Markup Shorthands: markdown yes
 </pre>
 
@@ -41,6 +41,10 @@ This paper proposes the following improvements to the C++20 formatting facility:
 
 Revision history {#hist}
 ================
+
+Changes since R2:
+
+* 
 
 Changes since R1:
 
@@ -898,6 +902,42 @@ Let
 Let `charT` be <code>decltype(fmt<ins>.str</ins>)::value_type</code>.
 
 ...
+
+Add to Annex C (informative) Compatibility
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=1641">[diff]</a>
+the following new subclause:
+
+<p>
+<ins>
+**C.? C++ and ISO C++ 2020** [diff.cpp20]
+</ins>
+<p>
+<ins>
+This subclause lists the differences between C++ and ISO C++ 2020 (ISO/IEC
+14882:2017, Programming Languages — C++), by the chapters of this document.
+</ins>
+
+<p>
+<ins>
+**C.?.1 Clause 20: general utilites library** [diff.cpp20.utilities]
+</ins>
+<p>
+<ins>
+**Affected subclauses:** 20.20<br>
+**Change:** Signature changes: `format`, `format_to`, `vformat_to`,
+`format_to_n`, `formatted_size`. Removal of `format_args_t`.<br>
+**Rationale:** Improve safety via compile-time format string checks, avoid
+unnecessary template instantiations.<br>
+**Effect on original feature:** Valid C++20 code that contained errors in format
+strings or relied on previous format string signatures or `format_args_t` may
+become ill-formed. For example:
+</ins>
+<pre>
+<ins>
+auto s = std::format("{:d}", "I am not a number"); // ill-formed,
+                                                   // previously threw format_error 
+</ins>
+</pre>
 
 Acknowledgements {#ack}
 ================

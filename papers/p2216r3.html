@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2216R2: std::format improvements</title>
+  <title>D2216R3: std::format improvements</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="820c84a46eea75beb044b52b38947797f53580d4" name="document-revision">
+  <meta content="90f97ac477c624edb2516140d14d1ccf7cc2c371" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1517,8 +1517,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2216R2<br>std::format improvements</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2020-01-14">2020-01-14</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2216R3<br>std::format improvements</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2020-02-02">2020-02-02</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Author:
@@ -1563,6 +1563,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <p>Reducing binary code size of <code class="highlight"><c- n>format_to</c-></code></p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R2:</p>
+   <ul>
+    <li data-md>
+   </ul>
    <p>Changes since R1:</p>
    <ul>
     <li data-md>
@@ -2224,6 +2228,26 @@ indexing. — end note] [<em>Example</em>:</p>
 </pre>
    <p>Let <code class="highlight"><c- n>charT</c-></code> be <code class="highlight"><c- k>decltype</c-><c- p>(</c-><c- n>fmt</c-><ins><c- p>.</c-><c- n>str</c-></ins><c- p>)</c-><c- o>::</c-><c- n>value_type</c-></code>.</p>
    <p>...</p>
+   <p>Add to Annex C (informative) Compatibility <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=1641">[diff]</a> the following new subclause:</p>
+   <p>
+    <ins> <strong>C.? C++ and ISO C++ 2020</strong> [diff.cpp20] </ins>
+   </p>
+   <p>
+    <ins> This subclause lists the differences between C++ and ISO C++ 2020 (ISO/IEC
+14882:2017, Programming Languages — C++), by the chapters of this document. </ins>
+   </p>
+   <p>
+    <ins> <strong>C.?.1 Clause 20: general utilites library</strong> [diff.cpp20.utilities] </ins>
+   </p>
+   <p>
+    <ins> <strong>Affected subclauses:</strong> 20.20<br> <strong>Change:</strong> Signature changes: <code class="highlight"><c- n>format</c-></code>, <code class="highlight"><c- n>format_to</c-></code>, <code class="highlight"><c- n>vformat_to</c-></code>, <code class="highlight"><c- n>format_to_n</c-></code>, <code class="highlight"><c- n>formatted_size</c-></code>. Removal of <code class="highlight"><c- n>format_args_t</c-></code>.<br> <strong>Rationale:</strong> Improve safety via compile-time format string checks, avoid
+unnecessary template instantiations.<br> <strong>Effect on original feature:</strong> Valid C++20 code that contained errors in format
+strings or relied on previous format string signatures or <code class="highlight"><c- n>format_args_t</c-></code> may
+become ill-formed. For example: </ins>
+   </p>
+<pre class="highlight"><ins><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:d}"</c-><c- p>,</c-> <c- s>"I am not a number"</c-><c- p>);</c-> <c- c1>// ill-formed,</c->
+                                                   <c- c1>// previously threw format_error </c->
+</ins></pre>
    <h2 class="heading settled" data-level="9" id="ack"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Hana Dusíková for demonstrating that the optimal formatting API can be
 implemented with P1221.</p>
