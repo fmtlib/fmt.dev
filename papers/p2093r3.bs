@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093 <!-- TODO -->
-Revision: 3
+Revision: 4
 Audience: LEWG
-Status: P <!-- TODO -->
+Status: D <!-- TODO -->
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
@@ -46,6 +46,13 @@ intuitive API achieving the following goals:
 
 Revision history {#hist}
 ================
+
+Changes since R3:
+
+* Replaced `_isatty(_fileno(stream))` with
+    `GetConsoleMode(_get_osfhandle(_fileno(stream)), ...)` in a note in
+    [format.functions] because the former may return 1 for streams not referring
+    to a terminal.
 
 Changes since R2:
 
@@ -931,9 +938,10 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">31</span> *Effects:* Let `out = vformat(fmt, args)`. If `stream` refers to a terminal
-[ Note: On POSIX and Windows meaning that `isatty(fileno(stream))` and
-`_isatty(_fileno(stream))` return 1 respectively. — end note ] capable of
+<span class="parnum">31</span> *Effects:* Let `out = vformat(fmt, args)`.
+If `stream` refers to a terminal [ Note: On POSIX and Windows meaning that
+`isatty(fileno(stream))` and `GetConsoleMode(_get_osfhandle(_fileno(stream)), ...)`
+return nonzero respectively. — end note ] capable of
 displaying Unicode, writes `out` to the terminal using the native Unicode API.
 [ Note: On Windows this API is `WriteConsoleW`. — end note ]
 If this requires transcoding then invalid code points are substituted with 

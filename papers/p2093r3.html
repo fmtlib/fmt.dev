@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d3e79483e77bfa92905f8389867bff26c91697e1" name="document-revision">
+  <meta content="903c48f85d29114efbfd442fd836dbc31ec1cbc5" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1575,6 +1575,12 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R3:</p>
+   <ul>
+    <li data-md>
+     <p>Replaced <code class="highlight"><c- n>_isatty</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> with <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> in a note in
+[format.functions].</p>
+   </ul>
    <p>Changes since R2:</p>
    <ul>
     <li data-md>
@@ -2234,8 +2240,8 @@ in a place that respects the table’s current alphabetic order:</p>
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">31</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>stream</c-></code> refers to a terminal
-[ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>_isatty</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> return 1 respectively. — end note ] capable of
+   <ins> <span class="parnum">31</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
+If <code class="highlight"><c- n>stream</c-></code> refers to a terminal [ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> return nonzero respectively. — end note ] capable of
 displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the native Unicode API.
 [ Note: On Windows this API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ]
 If this requires transcoding then invalid code points are substituted with 
