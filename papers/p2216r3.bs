@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: std::format improvements
-Shortname: D2216
+Shortname: P2216
 Revision: 3
 <!-- !Draft Revision: 0 -->
 Audience: LEWG
-Status: D
+Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2020-02-02
+Date: 2020-02-05
 Markup Shorthands: markdown yes
 </pre>
 
@@ -50,6 +50,16 @@ Changes since R2:
     <i>`basic-format-string`</i>, <i>`str`</i> and deitalicized `<Args...>`.
 
 * Replaced `fmt` with <code>fmt.<i>str</i></code> in the Effects of `format_to` (wide overloads).
+
+* Made the <i>`str`</i> member of <i>`basic-format-string`</i> private.
+
+* Replaced "<i>`str`</i> is a format string for `Args`" with "there exist `args`
+    of types `Args` such that <i>`str`</i> is a format string for `args`" in the
+    *Remarks* clause of the `basic-format-string` constructor and removed the
+    definition of a format string for argument types from
+    [format.string.general].
+
+* Replaced 14882:2017 with 14882:2020 in [diff.cpp20].
 
 Changes since R1:
 
@@ -600,8 +610,10 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 namespace std {
 <ins>  // 20.20.3, error reporting
   template&lt;class charT, class... Args> struct <i>basic-format-string</i> {  <i>// exposition only</i>
+  private:
     basic_string_view&lt;charT> <i>str</i>;                                    <i>// exposition only</i>
 
+  public:
     template&lt;class T> consteval <i>basic-format-string</i>(const T& s);
   };
 
@@ -692,14 +704,6 @@ namespace std {
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=732">[format.string.general]</a>:
 
-A *format string* for arguments `args` is a (possibly empty) sequence of
-replacement fields, escape sequences, and characters other than `{` and `}`. <ins>
-A string `s` is a format string for argument types `Args` if there exist
-`args` of types `Args` such that `s` is a format string for `args`.</ins>
-Let `charT` be the character type of the format string. Each character that is
-not part of a replacement field or an escape sequence is copied unchanged to the
-output.
-
 ...
 
 If all *arg-id*s in a format string are omitted (including those in the
@@ -725,8 +729,10 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 
 <pre>
 <ins>template&lt;class charT, class... Args> struct <i>basic-format-string</i> {  <i>// exposition only</i>
+private:
   basic_string_view&lt;charT> <i>str</i>;                                    <i>// exposition only</i>
 
+public:
   template&lt;class T> consteval <i>basic-format-string</i>(const T& s);
 };</ins>
 </pre>
@@ -744,7 +750,8 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 <p>
 <ins>
 *Remarks:* A call to this function is not a core constant expression
-([expr.const]) unless <i>`str`</i> is a format string for `Args`.
+([expr.const]) unless there exist `args` of types `Args` such that <i>`str`</i>
+is a format string for `args`.
 </ins>
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
@@ -921,7 +928,7 @@ the following new subclause:
 <p>
 <ins>
 This subclause lists the differences between C++ and ISO C++ 2020 (ISO/IEC
-14882:2017, Programming Languages — C++), by the chapters of this document.
+14882:2020, Programming Languages — C++), by the chapters of this document.
 </ins>
 
 <p>
