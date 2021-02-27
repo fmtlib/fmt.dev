@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="026e2b8ec7e6b6747b346b56f64b806eab230784" name="document-revision">
+  <meta content="41221ab14452cf7a87eb7cd92a9e739152e40669" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1580,6 +1580,11 @@ intuitive API achieving the following goals:</p>
    <ul>
     <li data-md>
      <p>Added SG16 Unicode poll results.</p>
+    <li data-md>
+     <p>Added a list of candidate headers formatted output functions can be added to.</p>
+    <li data-md>
+     <p>Moved the non-<code class="highlight"><c- n>ostream</c-></code> overloads of formatted output functions to a separate
+header for cleaner separation of formatting and I/O facilities.</p>
    </ul>
    <p>Changes since R3:</p>
    <ul>
@@ -1832,6 +1837,29 @@ formatting: <code class="highlight"><c- n>print</c-></code> in Python and Swift.
 </pre>
    <p>Although <code class="highlight"><c- n>println</c-></code> doesn’t provide much usability improvement compared to <code class="highlight"><c- n>print</c-></code> with explicit <code class="highlight"><c- sc>'\n'</c-></code>, it has been a frequently requested feature in the
 fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
+   <p>Another question is which header non-<code class="highlight"><c- n>ostream</c-></code> overloads of formatted output
+functions should go to. Possible options:</p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code></p>
+    <li data-md>
+     <p><code class="highlight"><c- o>&lt;</c-><c- n>utility</c-><c- o>></c-></code></p>
+   </ul>
+   <p>The current paper proposes <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> analogous to <code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code> so that the future
+I/O facilities that don’t depend on ostream could be added there. Using <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> is undesirable becase this header and its transitive dependencies
+are very big (42 thousand lines preprocessed on libc++):</p>
+<pre class="highlight"><c- o>%</c-> <c- n>echo</c-> '#<c- n>include</c-> <c- o>&lt;</c-><c- n>ostream</c-><c- o>></c->' <c- o>|</c-> <c- n>clang</c-><c- o>++</c-> <c- o>-</c-><c- n>E</c-> <c- o>-</c-><c- n>x</c-> <c- n>c</c-><c- o>++</c-> <c- o>-</c-> <c- o>|</c-> <c- n>wc</c-> <c- o>-</c-><c- n>l</c->
+   <c- mi>42491</c->
+</pre>
+   <p>It also pulls in a lot of unrelated symbols such as <code class="highlight"><c- n>ostream</c-></code> insertion
+operators, global <code class="highlight"><c- n>cout</c-></code>, <code class="highlight"><c- n>cerr</c-></code>, <code class="highlight"><c- n>clog</c-></code> variables and their <code class="highlight"><c- b>wchar_t</c-></code> counterparts.</p>
+   <p><code class="highlight"><c- n>ostream</c-></code> overloads are added to the <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> header.</p>
    <h2 class="heading settled" data-level="7" id="unicode"><span class="secno">7. </span><span class="content">Unicode</span><a class="self-link" href="#unicode"></a></h2>
    <p>We can prevent mojibake in the Unicode example by detecting if the string
 literal encoding is UTF-8 and dispatching to a different function that correctly
@@ -2154,7 +2182,7 @@ handling would make its code size closer to that of <code class="highlight"><c- 
      <p>Preparing the array of formatting arguments.</p>
    </ul>
    <h2 class="heading settled" data-level="10" id="impact"><span class="secno">10. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
-   <p>The current proposal adds new functions to the headers <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> and should have no impact on existing code.</p>
+   <p>The current proposal adds new functions to the headers <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> and should have no impact on existing code.</p>
    <h2 class="heading settled" data-level="11" id="impl"><span class="secno">11. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>print</c-></code> function has been implemented in the the open-source fmt
 library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in use for about 6 years.</p>
@@ -2163,27 +2191,26 @@ library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in 
 in a place that respects the table’s current alphabetic order:</p>
 <pre class="highlight"><ins><c- cp>#define __cpp_lib_print  202005L **placeholder**  </c-><c- c1>// also in &lt;format></c-></ins>
 </pre>
-   <p>Modify section "Header <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.1">[format.syn</a>]":</p>
-<pre class="highlight"><c- c1>// 20.20.3, formatting functions</c->
-<c- p>...</c->
-<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-<ins>
-<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+   <p>Add the header <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> to the "C++ library headers" table in [headers], in a
+place that respects the table’s current alphabetic order.</p>
+   <ins>29.7.? Header <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> synopsis [io.syn].</ins>
+<pre class="highlight"><ins><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
-<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
-<c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
-<c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 
-<c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
-<c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+<c- p>}</c->
 </ins></pre>
    <p>Modify section "Header <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.29.7.2">[ostream.syn</a>]":</p>
 <pre class="highlight"><c- p>...</c->
@@ -2198,12 +2225,7 @@ in a place that respects the table’s current alphabetic order:</p>
 <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <p>Modify section "Formatting functions <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.4">[format.functions</a>]":</p>
-<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-</pre>
-   ... 
-   <p><span class="parnum">25</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">20.20.3</a>.</p>
+   <ins>29.7.? Print functions [print.fun].</ins>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>

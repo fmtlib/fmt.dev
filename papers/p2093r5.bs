@@ -50,6 +50,9 @@ Revision history {#hist}
 Changes since R4:
 
 * Added SG16 Unicode poll results.
+* Added a list of candidate headers formatted output functions can be added to.
+* Moved the non-`ostream` overloads of formatted output functions to a separate
+    header for cleaner separation of formatting and I/O facilities.
 
 Changes since R3:
 
@@ -386,6 +389,31 @@ Although `println` doesn't provide much usability improvement compared to
 fmt library ([[FMT]]).
 
 <!-- https://twitter.com/vzverovich/status/1261986120683806721 --> 
+
+Another question is which header non-`ostream` overloads of formatted output
+functions should go to. Possible options:
+
+* `<io>`
+* `<print>`
+* `<format>`
+* `<ostream>`
+* `<utility>`
+
+The current paper proposes `<io>` analogous to `<cstdio>` so that the future
+I/O facilities that don't depend on ostream could be added there. Using
+`<ostream>` is undesirable becase this header and its transitive dependencies
+are very big (42 thousand lines preprocessed on libc++):
+
+```
+% echo '#include <ostream>' | clang++ -E -x c++ - | wc -l
+   42491
+```
+
+It also pulls in a lot of unrelated symbols such as `ostream` insertion
+operators, global `cout`, `cerr`, `clog` variables and their `wchar_t`
+counterparts.
+
+`ostream` overloads are added to the `<ostream>` header.
 
 Unicode {#unicode}
 =======
@@ -800,7 +828,7 @@ The following factors contribute to the difference in binary code size between
 Impact on existing code {#impact}
 =======================
 
-The current proposal adds new functions to the headers `<format>` and
+The current proposal adds new functions to the headers `<io>` and
 `<ostream>` and should have no impact on existing code.
 
 Implementation {#impl}
@@ -821,30 +849,30 @@ in a place that respects the table’s current alphabetic order:
 <ins>#define __cpp_lib_print  202005L **placeholder**	// also in &lt;format&gt;</ins>
 </pre>
 
-Modify section "Header `<format>` synopsis [[format.syn](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.1)]":
+Add the header `<io>` to the "C++ library headers" table in [headers], in a
+place that respects the table’s current alphabetic order.
+
+<ins>29.7.? Header `<io>` synopsis [io.syn].</ins>
 
 <pre>
-// 20.20.3, formatting functions
-...
-template&lt;class... Args&gt;
-  size_t formatted_size(const locale& loc, wstring_view fmt, const Args&... args);
 <ins>
-template&lt;class... Args&gt;
-  void print(string_view fmt, const Args&... args);
-template&lt;class... Args&gt;
-  void print(FILE* stream, string_view fmt, const Args&... args);
+namespace std {
+  template&lt;class... Args&gt;
+    void print(string_view fmt, const Args&... args);
+  template&lt;class... Args&gt;
+    void print(FILE* stream, string_view fmt, const Args&... args);
 
-template&lt;class... Args&gt;
-  void println(string_view fmt, const Args&... args);
-template&lt;class... Args&gt;
-  void println(FILE* stream, string_view fmt, const Args&... args);
+  template&lt;class... Args&gt;
+    void println(string_view fmt, const Args&... args);
+  template&lt;class... Args&gt;
+    void println(FILE* stream, string_view fmt, const Args&... args);
 
-void vprint_unicode(string_view fmt, format_args args);
-void vprint_unicode(FILE* stream, string_view fmt, format_args args);
+  void vprint_unicode(string_view fmt, format_args args);
+  void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 
-void vprint_nonunicode(string_view fmt, format_args args);
-void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
+  void vprint_nonunicode(string_view fmt, format_args args);
+  void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
+}
 </ins>
 </pre>
 
@@ -866,17 +894,7 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 
-Modify section "Formatting functions [[format.functions](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.4)]":
-
-```
-template<class... Args>
-  size_t formatted_size(const locale& loc, wstring_view fmt, const Args&... args);
-```
-...
-
-<span class="parnum">25</span> *Throws:* As specified in [20.20.3](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3).
+<ins>29.7.? Print functions [print.fun].</ins>
 
 <pre>
 <ins>
