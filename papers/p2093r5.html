@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="daf4ba75d45339fca950df93f464879a16ae7506" name="document-revision">
+  <meta content="026e2b8ec7e6b6747b346b56f64b806eab230784" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1540,17 +1540,18 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
-    <li><a href="#polls"><span class="secno">3</span> <span class="content">LEWG polls (R1)</span></a>
-    <li><a href="#motivation"><span class="secno">4</span> <span class="content">Motivating examples</span></a>
-    <li><a href="#api"><span class="secno">5</span> <span class="content">API and naming</span></a>
-    <li><a href="#unicode"><span class="secno">6</span> <span class="content">Unicode</span></a>
-    <li><a href="#perf"><span class="secno">7</span> <span class="content">Performance</span></a>
-    <li><a href="#binary"><span class="secno">8</span> <span class="content">Binary code</span></a>
-    <li><a href="#impact"><span class="secno">9</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">10</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">11</span> <span class="content">Wording</span></a>
+    <li><a href="#sg16-polls"><span class="secno">3</span> <span class="content">SG16 polls (R3)</span></a>
+    <li><a href="#lewg-polls"><span class="secno">4</span> <span class="content">LEWG polls (R1)</span></a>
+    <li><a href="#motivation"><span class="secno">5</span> <span class="content">Motivating examples</span></a>
+    <li><a href="#api"><span class="secno">6</span> <span class="content">API and naming</span></a>
+    <li><a href="#unicode"><span class="secno">7</span> <span class="content">Unicode</span></a>
+    <li><a href="#perf"><span class="secno">8</span> <span class="content">Performance</span></a>
+    <li><a href="#binary"><span class="secno">9</span> <span class="content">Binary code</span></a>
+    <li><a href="#impact"><span class="secno">10</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">11</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">12</span> <span class="content">Wording</span></a>
     <li><a href="#lst"><span class="secno"></span> <span class="content">Appendix A: Unicode tests</span></a>
-    <li><a href="#ack"><span class="secno">12</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#ack"><span class="secno">13</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -1575,6 +1576,11 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R4:</p>
+   <ul>
+    <li data-md>
+     <p>Added SG16 Unicode poll results.</p>
+   </ul>
    <p>Changes since R3:</p>
    <ul>
     <li data-md>
@@ -1586,15 +1592,15 @@ to a terminal.</p>
    <ul>
     <li data-md>
      <p>Added better compatibility with other formatted I/O facilities as another
-advantage of using <code class="highlight"><c- n>stdout</c-></code> in <a href="#api">§ 5 API and naming</a> per SG16 feedback.</p>
+advantage of using <code class="highlight"><c- n>stdout</c-></code> in <a href="#api">§ 6 API and naming</a> per SG16 feedback.</p>
     <li data-md>
      <p>Clarified that <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> can be used for literal encoding detection per SG16
 feedback.</p>
     <li data-md>
      <p>Added comparison of Unicode handling in various languages in <a href="#lst">Appendix A: Unicode tests</a> and a
-summary in <a href="#unicode">§ 6 Unicode</a> per SG16 request.</p>
+summary in <a href="#unicode">§ 7 Unicode</a> per SG16 request.</p>
     <li data-md>
-     <p>Removed incorrect "exposition-only" in <a href="#unicode">§ 6 Unicode</a>.</p>
+     <p>Removed incorrect "exposition-only" in <a href="#unicode">§ 7 Unicode</a>.</p>
     <li data-md>
      <p>Replaced "both source and literal encodings are UTF-8, which is enabled by the <code class="highlight">/utf-8</code> compiler flag" with "the literal
 (execution) encoding is UTF-8, which is enabled by the <code class="highlight">/execution-charset:utf-8</code> compiler flag" since
@@ -1609,7 +1615,7 @@ the source encoding is irrelevant there.</p>
     <li data-md>
      <p>Moved the print functions that take <code class="highlight"><c- n>ostream</c-><c- o>&amp;</c-></code> to <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> since <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> shouldn’t depend on <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code>.</p>
     <li data-md>
-     <p>Clarified why it is useful to provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> functions in <a href="#binary">§ 8 Binary code</a>.</p>
+     <p>Clarified why it is useful to provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> functions in <a href="#binary">§ 9 Binary code</a>.</p>
     <li data-md>
      <p>Rebased the wording onto the latest working draft, N4861, in particular
 updating the <em>Throws</em> clauses to match existing wording.</p>
@@ -1624,7 +1630,13 @@ updating the <em>Throws</em> clauses to match existing wording.</p>
      <p>Clarified that adding <code class="highlight"><c- b>wchar_t</c-></code> overloads will be addressed in a separate
 paper per the UK C++ panel feedback.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG polls (R1)</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="3" id="sg16-polls"><span class="secno">3. </span><span class="content">SG16 polls (R3)</span><a class="self-link" href="#sg16-polls"></a></h2>
+   <p><strong>Forward P2093R3 to LEWG.</strong></p>
+<pre class="highlight"><c- n>SF</c->    <c- n>WF</c->    <c- n>N</c->     <c- n>WA</c->    <c- n>SA</c->
+<c- mi>4</c->     <c- mi>2</c->     <c- mi>2</c->     <c- mi>0</c->     <c- mi>1</c->
+</pre>
+   <p>Consensus? Yes</p>
+   <h2 class="heading settled" data-level="4" id="lewg-polls"><span class="secno">4. </span><span class="content">LEWG polls (R1)</span><a class="self-link" href="#lewg-polls"></a></h2>
    <p><strong>We prefer <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> as the default output target.</strong></p>
 <pre class="highlight"><c- n>SF</c->    <c- n>WF</c->    <c- n>N</c->     <c- n>WA</c->    <c- n>SA</c->
 <c- mi>3</c->     <c- mi>2</c->     <c- mi>6</c->     <c- mi>6</c->     <c- mi>5</c->
@@ -1642,7 +1654,7 @@ paper per the UK C++ panel feedback.</p>
    <p><strong>We are happy with the design with regards to UTF-8 output.</strong></p>
    <p>Unanimous consent.</p>
    <p>Attendance: 35</p>
-   <h2 class="heading settled" data-level="4" id="motivation"><span class="secno">4. </span><span class="content">Motivating examples</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="5" id="motivation"><span class="secno">5. </span><span class="content">Motivating examples</span><a class="self-link" href="#motivation"></a></h2>
    <p>Consider a common task of printing formatted text to <code class="highlight"><c- n>stdout</c-></code>:</p>
    <table width="100%">
     <tbody>
@@ -1661,7 +1673,7 @@ paper per the UK C++ panel feedback.</p>
 temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code> object and calling <code class="highlight"><c- k>operator</c-><c- o>&lt;&lt;</c-></code> which performs formatted
 I/O on text that is already formatted. The number of function calls is reduced
 to one which, together with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vformat</c-></code>-like type erasure, results in much
-smaller binary code (see <a href="#binary">§ 8 Binary code</a>).</p>
+smaller binary code (see <a href="#binary">§ 9 Binary code</a>).</p>
    <p>Existing alternatives in C++20:</p>
    <table width="100%">
     <tbody>
@@ -1715,7 +1727,7 @@ code page and console settings:
    <p>This problem is independent of formatting <code class="highlight"><c- b>char8_t</c-></code> strings but the same
 solution applies there. Adding <code class="highlight"><c- n>charN_t</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> overloads will be
 explored in a separate paper in a more general context.</p>
-   <h2 class="heading settled" data-level="5" id="api"><span class="secno">5. </span><span class="content">API and naming</span><a class="self-link" href="#api"></a></h2>
+   <h2 class="heading settled" data-level="6" id="api"><span class="secno">6. </span><span class="content">API and naming</span><a class="self-link" href="#api"></a></h2>
    <p>Many programming languages provide functions for printing text to standard
 output, often combined with formatting:</p>
    <table width="100%">
@@ -1779,7 +1791,7 @@ using <code class="highlight"><c- n>stdout</c-></code> for the following reasons
    <ul>
     <li data-md>
      <p><code class="highlight"><c- n>stdout</c-></code> is considerably faster on at least two major implementations
-(see <a href="#perf">§ 7 Performance</a>).</p>
+(see <a href="#perf">§ 8 Performance</a>).</p>
     <li data-md>
      <p>Better compatibilty with other formatted I/O facilities compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> and its associated <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>streambuf</c-></code> that suffer from private
 buffering, localization and conversion services that must be synchronized at
@@ -1820,7 +1832,7 @@ formatting: <code class="highlight"><c- n>print</c-></code> in Python and Swift.
 </pre>
    <p>Although <code class="highlight"><c- n>println</c-></code> doesn’t provide much usability improvement compared to <code class="highlight"><c- n>print</c-></code> with explicit <code class="highlight"><c- sc>'\n'</c-></code>, it has been a frequently requested feature in the
 fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
-   <h2 class="heading settled" data-level="6" id="unicode"><span class="secno">6. </span><span class="content">Unicode</span><a class="self-link" href="#unicode"></a></h2>
+   <h2 class="heading settled" data-level="7" id="unicode"><span class="secno">7. </span><span class="content">Unicode</span><a class="self-link" href="#unicode"></a></h2>
    <p>We can prevent mojibake in the Unicode example by detecting if the string
 literal encoding is UTF-8 and dispatching to a different function that correctly
 handles Unicode, for example:</p>
@@ -1943,11 +1955,11 @@ For example, usage of CP1251 dropped from 4.3% to 0.9% in the last 10 years
 (<a data-link-type="biblio" href="#biblio-encoding-trends">[ENCODING-TRENDS]</a>).</p>
    </ul>
    <p>The full listings of test programs are given in <a href="#lst">Appendix A: Unicode tests</a>.</p>
-   <h2 class="heading settled" data-level="7" id="perf"><span class="secno">7. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
+   <h2 class="heading settled" data-level="8" id="perf"><span class="secno">8. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>All the performance benefits of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (<a data-link-type="biblio" href="#biblio-format">[FORMAT]</a>) automatically carry
 over to this proposal. In particular, locale-independence by default reduces
 global state and makes formatting more efficient compared to stdio and
-iostreams. There are fewer function calls (see <a href="#binary">§ 8 Binary code</a>) and no shared
+iostreams. There are fewer function calls (see <a href="#binary">§ 9 Binary code</a>) and no shared
 formatting state compared to iostreams.</p>
    <p>The following benchmark compares the reference implementation of <code class="highlight"><c- n>print</c-></code> with <code class="highlight"><c- n>printf</c-></code> and <code class="highlight"><c- n>ostream</c-></code>. This benchmark formats a simple message and prints it to
 the output stream redirected to <code class="highlight"><c- o>/</c-><c- n>dev</c-><c- o>/</c-><c- n>null</c-></code>. It uses the Google Benchmark
@@ -2033,7 +2045,7 @@ print                  580 ns          572 ns      1120000
 print_cout             623 ns          614 ns      1120000
 print_cout_sync        615 ns          614 ns      1120000
 </pre>
-   <h2 class="heading settled" data-level="8" id="binary"><span class="secno">8. </span><span class="content">Binary code</span><a class="self-link" href="#binary"></a></h2>
+   <h2 class="heading settled" data-level="9" id="binary"><span class="secno">9. </span><span class="content">Binary code</span><a class="self-link" href="#binary"></a></h2>
    <p>We propose minimizing per-call binary code size by applying the type erasure
 mechanism from <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>. In this approach all the formatting and printing logic
 is implemented in a non-variadic function <code class="highlight"><c- n>vprint</c-></code>. Inline variadic <code class="highlight"><c- n>print</c-></code> function only constructs a <code class="highlight"><c- n>format_args</c-></code> object, representing an array of
@@ -2141,12 +2153,12 @@ handling would make its code size closer to that of <code class="highlight"><c- 
     <li data-md>
      <p>Preparing the array of formatting arguments.</p>
    </ul>
-   <h2 class="heading settled" data-level="9" id="impact"><span class="secno">9. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="10" id="impact"><span class="secno">10. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>The current proposal adds new functions to the headers <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> and should have no impact on existing code.</p>
-   <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="11" id="impl"><span class="secno">11. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>print</c-></code> function has been implemented in the the open-source fmt
 library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in use for about 6 years.</p>
-   <h2 class="heading settled" data-level="11" id="wording"><span class="secno">11. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="12" id="wording"><span class="secno">12. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_print</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
 <pre class="highlight"><ins><c- cp>#define __cpp_lib_print  202005L **placeholder**  </c-><c- c1>// also in &lt;format></c-></ins>
@@ -2571,7 +2583,7 @@ Output files:</p>
     <li data-md>
      <p>rustc: v14.15.3</p>
    </ul>
-   <h2 class="heading settled" data-level="12" id="ack"><span class="secno">12. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="13" id="ack"><span class="secno">13. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
    <p>Thanks to Roger Orr, Peter Brett, the BSI C++ panel and Tom Honermann for their feedback,
 support, constructive criticism and contributions to the proposal.</p>
