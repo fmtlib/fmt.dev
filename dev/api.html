@@ -1259,7 +1259,7 @@ specify text formatting.</p>
 <div class="section" id="std-ostream-support">
 <span id="ostream-api"></span><h2><code class="docutils literal notranslate"><span class="pre">std::ostream</span></code> Support<a class="headerlink" href="#std-ostream-support" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">fmt/ostream.h</span></code> provides <code class="docutils literal notranslate"><span class="pre">std::ostream</span></code> support including formatting of
-user-defined types that have overloaded <code class="docutils literal notranslate"><span class="pre">operator&lt;&lt;</span></code>:</p>
+user-defined types that have an overloaded insertion operator (<code class="docutils literal notranslate"><span class="pre">operator&lt;&lt;</span></code>):</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/ostream.h&gt;</span><span class="cp"></span>
 
 <span class="k">class</span> <span class="nc">date</span> <span class="p">{</span>
@@ -1276,6 +1276,8 @@ user-defined types that have overloaded <code class="docutils literal notranslat
 <span class="c1">// s == &quot;The date is 2012-12-9&quot;</span>
 </pre></div>
 </div>
+<p>{fmt} only supports insertion operators that are defined in the same namespaces
+as the types they format and can be found with the argument-dependent lookup.</p>
 <dl class="cpp function">
 <dt id="_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args">
 <span id="_CPPv3I0Dp0EN3fmt5printERNSt13basic_ostreamI4CharEERK1SDpRR4Args"></span><span id="_CPPv2I0Dp0EN3fmt5printERNSt13basic_ostreamI4CharEERK1SDpRR4Args"></span>template&lt;typename <code class="sig-name descname">S</code>, typename ...<code class="sig-name descname">Args</code>, typename <code class="sig-name descname">Char</code> = enable_if_t&lt;detail::is_string&lt;<a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::S">S</a>&gt;::value, <a class="reference internal" href="#_CPPv4N3fmt6char_tE" title="fmt::char_t">char_t</a>&lt;<a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::S">S</a>&gt;&gt;&gt;<br /><span class="target" id="ostream_8h_1a8e964a5eb5f076d5b526637c16965077"></span>void <code class="sig-prename descclassname">fmt<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">print</code><span class="sig-paren">(</span>std::basic_ostream&lt;<a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::Char">Char</a>&gt; &amp;<em>os</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::S">S</a> &amp;<em>format_str</em>, <a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::Args">Args</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="Permalink to this definition">¶</a><br /></dt>
