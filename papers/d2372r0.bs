@@ -1,0 +1,171 @@
+<pre class='metadata'>
+Title: Fixing locale handling in chrono formatters
+Shortname: D2372
+Revision: 0
+<!-- !Draft Revision: 0 -->
+Audience: LEWG
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+Editor: Corentin Jabot, corentin.jabot@gmail.com
+No abstract: true
+Date: 2021-05-01
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+	ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+		text-align: right;
+    width: 20%;
+	}
+</style>
+
+<p style="text-align: right">
+"Mistakes have been made, as all can see and I admit it." <br>
+― Ulysses S. Grant
+</p>
+
+The problem {#prob}
+===========
+
+In C++20 "Extending `<chrono>` to Calendars and Time Zones" ([[P0355]]) and
+"Text Formatting" ([[P0645]]) proposals were integrated ([[P1361]]).
+Unfortunately during this integration a design issue was missed: `std::format`
+is locale-independent by default and provides control over locale via format
+specifiers but the new formatter specializations for chrono types are localized
+by default and don't provide such control.
+
+For example:
+
+```c++
+  std::locale::global(std::locale("ru_RU"));
+  std::string s1 = std::format("{}", 4.2);         // s1 == "4.2" (not localized)
+  std::string s2 = std::format("{:L}", 4.2);       // s2 == "4,2" (localized)
+  using sec = std::chrono::duration<double>;
+  std::string s3 = std::format("{:%S}", sec(4.2)); // s3 == "04,200" (localized)
+```
+
+In addition to being inconsistent with the design of `std::format`, there is no
+way to avoid locale other than doing formatting of date and time components
+manually.
+
+This issue has been reported in [[LWG3547]].
+
+We propose fixing it by making chrono formatters locale-independent by default
+and providing the `L` specifier to opt into localized formatting in the same way
+as it is done for all other standard formatters
+([format.string.std](https://eel.is/c++draft/format.string.std)).
+
+SG16 polls {#polls}
+==========
+
+[[LWG3547]] has been discussed at a SG16 telecon and there was a strong
+consensus to fix the issue.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>
+  <td>
+  <td>
+  <td>
+  <td>
+</tr>
+</table>
+
+Implementation experience {#impl}
+=========================
+
+The `L` specifier has been implemented for durations in the fmt library ([[FMT]]).
+Additionally, some format specifiers like `S` have never used a locale by default
+so this was a novel behavior accidentally introduced in C++20:
+
+```
+std::locale::global(std::locale("ru_RU"));
+using sec = std::chrono::duration<double>;
+std::string s3 = fmt::format("{:%S}", sec(4.2)); // s3 == "04.200" (not localized)
+```
+
+Impact on existing code {#impact}
+=======================
+
+Changing the semantics of chrono formatters to be consistent with standard
+format specifiers ([format.string.std](https://eel.is/c++draft/format.string.std))
+is a breaking change. At the time of writing none of the standard libraries
+shipped the С++20 formatting facility and therefore there is no code using it.
+However, Microsoft's STL implementation is close to shipping.
+
+Wording {#wording}
+=======
+
+All wording is relative to the C++ working draft [[N4885]].
+
+Update the value of the feature-testing macro `__cpp_lib_format` to the date of
+adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=500">[version.syn]</a>:
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1324">[time.format]</a>:
+
+<pre>
+<i>chrono-format-spec</i>:
+  <i>fill-and-align<sub>opt</sub> width<sub>opt</sub> precision<sub>opt</sub> <ins>L<sub>opt</sub></ins> chrono-specs<sub>opt</sub></i>
+</pre>
+
+2 Each conversion specifier *conversion-spec* is replaced by appropriate
+characters as described in Table [tab:time.format.spec]; the formats specified
+in ISO 8601:2004 shall be used where so described. <del>Some of the conversion
+specifiers depend on the locale that is passed to the formatting function if the
+latter takes one, or the global locale otherwise.</del> <ins>If the *L* option is
+used, that locale is the locale that is passed to the formatting function if the
+latter takes one, or the global locale otherwise. If the *L* option is not used,
+that locale is the "C" locale.<ins> If the formatted object does not contain the
+information the conversion specifier refers to, an exception of type
+`format_error` is thrown.
+
+<pre class=biblio>
+{
+  "FMT": {
+    "title": "The {fmt} library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "P0355": {
+    "title": "Extending to Calendars and Time Zones.",
+    "authors": ["Howard E. Hinnant", "Tomasz Kamiński"],
+    "href": "https://wg21.link/p0355"
+  },
+  "P0645": {
+    "title": "Text Formatting",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p0645"
+  },
+  "P1361": {
+    "title": "Integration of chrono with text formatting",
+    "authors": ["Victor Zverovich", "Daniela Engert", "Howard E. Hinnant"],
+    "href": "https://wg21.link/p1361"
+  },
+  "LWG3547": {
+    "title": "Time formatters should not be locale sensitive by default",
+    "authors": ["Corentin Jabot"],
+    "href": "https://cplusplus.github.io/LWG/issue3547"
+  },
+  "N4885": {
+    "title": "Working Draft, Standard for Programming Language C++",
+    "authors": ["Richard Smith", "Thomas Koeppe", "Jens Maurer", "Dawn Perchik"],
+    "href": "http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf"
+  }
+}
+</pre>
