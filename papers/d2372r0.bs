@@ -96,7 +96,7 @@ so this was a novel behavior accidentally introduced in C++20:
 ```
 std::locale::global(std::locale("ru_RU"));
 using sec = std::chrono::duration<double>;
-std::string s3 = fmt::format("{:%S}", sec(4.2)); // s3 == "04.200" (not localized)
+std::string s = fmt::format("{:%S}", sec(4.2)); // s == "04.200" (not localized)
 ```
 
 Impact on existing code {#impact}
@@ -125,12 +125,12 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885
 
 2 Each conversion specifier *conversion-spec* is replaced by appropriate
 characters as described in Table [tab:time.format.spec]; the formats specified
-in ISO 8601:2004 shall be used where so described. <del>Some of the conversion
-specifiers depend on the locale that is passed to the formatting function if the
-latter takes one, or the global locale otherwise.</del> <ins>If the *L* option is
+in ISO 8601:2004 shall be used where so described. Some of the conversion
+specifiers depend on <del>the locale that is passed to the formatting function if the
+latter takes one, or the global locale otherwise.</del> <ins> a locale. If the *L* option is
 used, that locale is the locale that is passed to the formatting function if the
 latter takes one, or the global locale otherwise. If the *L* option is not used,
-that locale is the "C" locale.<ins> If the formatted object does not contain the
+that locale is the "C" locale.</ins> If the formatted object does not contain the
 information the conversion specifier refers to, an exception of type
 `format_error` is thrown.
 

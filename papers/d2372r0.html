@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="dfecf04316420e1786a5897eded39c14d3008725" name="document-revision">
+  <meta content="1c020351a962aa37328f6c3c546ab8e9a83df3a3" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1521,9 +1521,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-05-01">2021-05-01</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
-     <dt>Author:
+     <dt>Authors:
      <dd>
       <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
+     <dd>
+      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:corentin.jabot@gmail.com">Corentin Jabot</a>
      <dt>Audience:
      <dd>LEWG
      <dt>Project:
@@ -1595,7 +1597,7 @@ Additionally, some format specifiers like <code class="highlight"><c- n>S</c-></
 so this was a novel behavior accidentally introduced in C++20:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"ru_RU"</c-><c- p>));</c->
 <c- k>using</c-> <c- n>sec</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- b>double</c-><c- o>></c-><c- p>;</c->
-<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s3</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c-> <c- c1>// s3 == "04.200" (not localized)</c->
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c-> <c- c1>// s == "04.200" (not localized)</c->
 </pre>
    <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Changing the semantics of chrono formatters to be consistent with standard
@@ -1614,18 +1616,16 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n48
    <p>
     2 Each conversion specifier <em>conversion-spec</em> is replaced by appropriate
 characters as described in Table [tab:time.format.spec]; the formats specified
-in ISO 8601:2004 shall be used where so described. 
-    <del>Some of the conversion
-specifiers depend on the locale that is passed to the formatting function if the
+in ISO 8601:2004 shall be used where so described. Some of the conversion
+specifiers depend on 
+    <del>the locale that is passed to the formatting function if the
 latter takes one, or the global locale otherwise.</del>
-    <ins>
-     If the <em>L</em> option is
+    <ins> a locale. If the <em>L</em> option is
 used, that locale is the locale that is passed to the formatting function if the
 latter takes one, or the global locale otherwise. If the <em>L</em> option is not used,
-that locale is the "C" locale.
-     <ins> If the formatted object does not contain the
-information the conversion specifier refers to, an exception of type <code class="highlight"><c- n>format_error</c-></code> is thrown.</ins>
-    </ins>
+that locale is the "C" locale.</ins>
+     If the formatted object does not contain the
+information the conversion specifier refers to, an exception of type <code class="highlight"><c- n>format_error</c-></code> is thrown.
    </p>
   </main>
 <script>
