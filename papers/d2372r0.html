@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a70a79f31b9529a931f00aeff88e0dbbf392e0b2" name="document-revision">
+  <meta content="1ba78317f503a440eca78a0f34157d9101466ae6" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1540,7 +1540,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#prob"><span class="secno">1</span> <span class="content">The problem</span></a>
     <li><a href="#the-solution"><span class="secno">2</span> <span class="content">The solution</span></a>
-    <li><a href="#non-locale-dependent-specifiers"><span class="secno">3</span> <span class="content">Non locale-dependent specifiers</span></a>
+    <li><a href="#locale-alternative-forms"><span class="secno">3</span> <span class="content">Locale alternative forms</span></a>
     <li><a href="#the-c-locale"><span class="secno">4</span> <span class="content">The "C" locale</span></a>
     <li><a href="#polls"><span class="secno">5</span> <span class="content">SG16 polls</span></a>
     <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation experience</span></a>
@@ -1614,7 +1614,7 @@ as it is done for all other standard formatters
 <c- c1>// s == "04,200"</c->
 </pre>
    </table>
-   <h2 class="heading settled" data-level="3" id="non-locale-dependent-specifiers"><span class="secno">3. </span><span class="content">Non locale-dependent specifiers</span><a class="self-link" href="#non-locale-dependent-specifiers"></a></h2>
+   <h2 class="heading settled" data-level="3" id="locale-alternative-forms"><span class="secno">3. </span><span class="content">Locale alternative forms</span><a class="self-link" href="#locale-alternative-forms"></a></h2>
    <p>Some specifiers (<code class="highlight"><c- o>%</c-><c- n>d</c-> <c- o>%</c-><c- n>H</c-> <c- o>%</c-><c- n>I</c-> <c- o>%</c-><c- n>m</c-> <c- o>%</c-><c- n>M</c-> <c- o>%</c-><c- n>S</c-> <c- o>%</c-><c- n>u</c-> <c- o>%</c-><c- n>w</c-> <c- o>%</c-><c- n>y</c-> <c- o>%</c-><c- n>z</c-></code>) produce digits which are
 not localized (aka they use the arabic numerals <code class="highlight"><c- mo>01234567</c-><c- mi>89</c-></code>) although as we
 demonstrated earlier <code class="highlight"><c- o>%</c-><c- n>S</c-></code> is still using a localized decimal separator.
@@ -1709,6 +1709,8 @@ so this was a novel behavior accidentally introduced in C++20:</p>
 <c- k>using</c-> <c- n>sec</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- b>double</c-><c- o>></c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c-> <c- c1>// s == "04.200" (not localized)</c->
 </pre>
+   <p>This proposal has been implemented in the Microsoft standard library and the
+change is under review.</p>
    <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Changing the semantics of chrono formatters to be consistent with standard
 format specifiers (<a href="https://eel.is/c++draft/format.string.std">format.string.std</a>)
