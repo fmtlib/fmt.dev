@@ -46,8 +46,10 @@ For example:
 
 ```c++
   std::locale::global(std::locale("ru_RU"));
+
   std::string s1 = std::format("{}", 4.2);         // s1 == "4.2" (not localized)
   std::string s2 = std::format("{:L}", 4.2);       // s2 == "4,2" (localized)
+
   using sec = std::chrono::duration<double>;
   std::string s3 = std::format("{:%S}", sec(4.2)); // s3 == "04,200" (localized)
 ```
@@ -56,47 +58,63 @@ In addition to being inconsistent with the design of `std::format`, there is no
 way to avoid locale other than doing formatting of date and time components
 manually.
 
-This issue has been reported in [[LWG3547]].
+Confusingly, some chrono format specifiers such as `%S` may give an impression
+that they are locale-independent by having a locale's alternative representation
+like `%OS` while in fact they are not.
+
+The implementation of [[P1361]] in [[FMT]] actually did the right thing and
+made most chrono specifiers locale-independent by default, for example:
+
+```
+  using sec = std::chrono::duration<double>;
+  std::string s = fmt::format("{:%S}", sec(4.2));  // s == "04.200" (not localized)
+```
+
+This implementation has been available and actively used in this form for 2+
+years. The bug in the specification of chrono formatters in the standard and
+the mismatch with the actual implementation have only been discovered recently
+and reported in [[LWG3547]].
+
+The solution
+============
 
 We propose fixing it by making chrono formatters locale-independent by default
 and providing the `L` specifier to opt into localized formatting in the same way
 as it is done for all other standard formatters
 ([format.string.std](https://eel.is/c++draft/format.string.std)).
 
-Non locale-dependant specifiers
+Non locale-dependent specifiers
 ===============================
 
-Some specifiers (`%d %H %I %m %M %S %u %w %y %z`) produce digits
-which are not localized (aka they use the arabic numerals `0123456789`).
+Some specifiers (`%d %H %I %m %M %S %u %w %y %z`) produce digits which are
+not localized (aka they use the arabic numerals `0123456789`) although as we
+demonstrated earlier `%S` is still using a localized decimal separator.
 They have an equivalent form (`%Od %OH %OI %Om %OM %OS %Ou %Ow %Oy %Oz`)
 where the numerals can be localized. for example Japanese numerals
-`〇 一 二 三 四 五 ...` can be used as the "alternative representation" by a `ja_JP` locale,
+`〇 一 二 三 四 五 ...` can be used as the "alternative representation" by a
+`ja_JP` locale,
 
-But because the `L` option applies to all specifiers,
-we do not propose to modify the specifiers.
+But because the `L` option applies to all specifiers, we do not propose to
+modify the specifiers.
 
 For example, `"{:L%p%I}"` and `"{:L%p%OI}"` should be valid specifiers producing
-`午後一` and `午後1` respectiveely.
+`午後1` `午後一` and respectiveely.
 
 Appropriate use of numeral systems for localized numbers and dates
-requires more work, this paper focuses on consistent default behavior.
+requires more work, this paper focuses on a consistent default behavior.
 
+The "C" locale
+==============
 
-"C" locale
-========
-
-The "C" locale is used in the wording as a way to express locale-independent behavior.
-The C standard specifies the "C" locale behavior for strftime as follow
+The "C" locale is used in the wording as a way to express locale-independent
+behavior. The C standard specifies the "C" locale behavior for `strftime` as
+follows
 
 <blockquote>
-
-
 In the "C" locale, the E and O modifiers are ignored
 and the replacement strings for the following specifiers are:
 
-
 <pre>
-
 %a the first three characters of %A.
 %A one of ''Sunday'', ''Monday'', ... , ''Saturday''.
 %b the first three characters of %B.
@@ -107,20 +125,17 @@ and the replacement strings for the following specifiers are:
 %x equivalent to ''%m/%d/%y''.
 %X equivalent to %T.
 %Z implementation-defined.
-
 </pre>
 </blockquote>
 
-
-This makes it possible, as long as a `L` option is not specified,
-to format dates in environment without locale support (embedded platforms, `constexpr` if someone proposes it, etc).
-
+This makes it possible, as long as the `L` option is not specified, to format
+dates in environment without locale support (embedded platforms, `constexpr` if
+someone proposes it, etc).
 
 SG16 polls {#polls}
 ==========
 
-[[LWG3547]] has been discussed at a SG16 telecon and there was a strong
-consensus to fix the issue.
+Poll: LWG3547 raises a valid design defect in [time.format] in C++20.
 
 <table class="poll">
 <tr>
@@ -131,13 +146,52 @@ consensus to fix the issue.
   <th>SA
 </th>
 <tr>
-  <td>
-  <td>
-  <td>
-  <td>
-  <td>
+  <td>7
+  <td>2
+  <td>2
+  <td>0
+  <td>0
 </tr>
 </table>
+
+Consensus: Strong consensus that this is a design defect.
+
+Poll: The proposed LWG3547 resolution as written should be applied to C++23.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>4
+  <td>2
+  <td>4
+  <td>1
+</tr>
+</table>
+
+Consensus: No consensus for the resolution
+
+SA motivation: Migrating things embedded in a string literal is very
+difficult.  There are options to deal with this in an additive way.
+Needless break in backwards with compatibility.
+
+SG16 recognized that this is a design defect but was concerned about this
+being a breaking change. However, the following facts were not known at the time
+of the discussion:
+
+* The implementation of [[P1361]] in [[FMT]] is locale-independent. This was the
+    only implementation available for 2+ years.
+* Both `%S` and `%OS` depend on locale and there is no locale-independent
+    equivalent.
+* The chrono formatting in the Microsoft's implementation has only been merged
+    into the main branch on 22 April and has bugs that will require breaking
+    changes anyway.
 
 Implementation experience {#impl}
 =========================
@@ -157,9 +211,14 @@ Impact on existing code {#impact}
 
 Changing the semantics of chrono formatters to be consistent with standard
 format specifiers ([format.string.std](https://eel.is/c++draft/format.string.std))
-is a breaking change. At the time of writing none of the standard libraries
-shipped the С++20 formatting facility and therefore there is no code using it.
-However, Microsoft's STL implementation is close to shipping.
+is a breaking change. At the time of writing the Microsoft's implementation
+recenly merged the chrono formatting into the main branch and is known to be
+not fully conformant. For example:
+
+```
+  using sec = std::chrono::duration<double>;
+  std::string s = std::format("{:%S}", sec(4.2)); // s == "04" (incorrect)
+```
 
 Wording {#wording}
 =======
@@ -217,7 +276,8 @@ information the conversion specifier refers to, an exception of type
   },
   "N4885": {
     "title": "Working Draft, Standard for Programming Language C++",
-    "authors": ["Richard Smith", "Thomas Koeppe", "Jens Maurer", "Dawn Perchik"],
+    "authors": ["Thomas Köppe"],
+    "etAl": true,
     "href": "http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf"
   }
 }
