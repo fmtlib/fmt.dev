@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="41f8701cedac99db67c4aa949d5dc21cb9751d0d" name="document-revision">
+  <meta content="a70a79f31b9529a931f00aeff88e0dbbf392e0b2" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1586,10 +1586,34 @@ years. The bug in the specification of chrono formatters in the standard and
 the mismatch with the actual implementation have only been discovered recently
 and reported in <a data-link-type="biblio" href="#biblio-lwg3547">[LWG3547]</a>.</p>
    <h2 class="heading settled" data-level="2" id="the-solution"><span class="secno">2. </span><span class="content">The solution</span><a class="self-link" href="#the-solution"></a></h2>
-   <p>We propose fixing it by making chrono formatters locale-independent by default
+   <p>We propose fixing this issue by making chrono formatters locale-independent by default
 and providing the <code class="highlight"><c- n>L</c-></code> specifier to opt into localized formatting in the same way
 as it is done for all other standard formatters
 (<a href="https://eel.is/c++draft/format.string.std">format.string.std</a>).</p>
+   <table>
+    <tbody>
+     <tr>
+      <td>Before 
+      <td>After 
+     <tr>
+      <td>
+<pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c->
+<c- c1>// s == "04,200"</c->
+</pre>
+      <td>
+<pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c->
+<c- c1>// s == "04.200"</c->
+</pre>
+     <tr>
+      <td>
+<pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:L%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c->
+<c- c1>// throws format_error</c->
+</pre>
+      <td>
+<pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:L%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c->
+<c- c1>// s == "04,200"</c->
+</pre>
+   </table>
    <h2 class="heading settled" data-level="3" id="non-locale-dependent-specifiers"><span class="secno">3. </span><span class="content">Non locale-dependent specifiers</span><a class="self-link" href="#non-locale-dependent-specifiers"></a></h2>
    <p>Some specifiers (<code class="highlight"><c- o>%</c-><c- n>d</c-> <c- o>%</c-><c- n>H</c-> <c- o>%</c-><c- n>I</c-> <c- o>%</c-><c- n>m</c-> <c- o>%</c-><c- n>M</c-> <c- o>%</c-><c- n>S</c-> <c- o>%</c-><c- n>u</c-> <c- o>%</c-><c- n>w</c-> <c- o>%</c-><c- n>y</c-> <c- o>%</c-><c- n>z</c-></code>) produce digits which are
 not localized (aka they use the arabic numerals <code class="highlight"><c- mo>01234567</c-><c- mi>89</c-></code>) although as we
@@ -1667,14 +1691,15 @@ of the discussion:</p>
    <ul>
     <li data-md>
      <p>The implementation of <a data-link-type="biblio" href="#biblio-p1361">[P1361]</a> in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> is locale-independent. This was the
-only implementation available for 2+ years.</p>
+only implementation available for 2+ years and was cited as the only source
+of implementation experience in the paper.</p>
     <li data-md>
      <p>Both <code class="highlight"><c- o>%</c-><c- n>S</c-></code> and <code class="highlight"><c- o>%</c-><c- n>OS</c-></code> depend on locale and there is no locale-independent
 equivalent.</p>
     <li data-md>
      <p>The chrono formatting in the Microsoft’s implementation has only been merged
 into the main branch on 22 April and has bugs that will require breaking
-changes anyway.</p>
+changes.</p>
    </ul>
    <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The <code class="highlight"><c- n>L</c-></code> specifier has been implemented for durations in the fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).

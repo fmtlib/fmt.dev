@@ -78,10 +78,41 @@ and reported in [[LWG3547]].
 The solution
 ============
 
-We propose fixing it by making chrono formatters locale-independent by default
+We propose fixing this issue by making chrono formatters locale-independent by default
 and providing the `L` specifier to opt into localized formatting in the same way
 as it is done for all other standard formatters
 ([format.string.std](https://eel.is/c++draft/format.string.std)).
+
+<table>
+<tr>
+  <td>Before
+  <td>After
+</tr>
+<tr>
+  <td>
+```
+auto s = std::format("{:%S}", sec(4.2));
+// s == "04,200"
+```
+  <td>
+```
+auto s = std::format("{:%S}", sec(4.2));
+// s == "04.200"
+```
+</tr>
+<tr>
+  <td>
+```
+auto s = std::format("{:L%S}", sec(4.2));
+// throws format_error
+```
+  <td>
+```
+auto s = std::format("{:L%S}", sec(4.2));
+// s == "04,200"
+```
+</tr>
+</table>
 
 Non locale-dependent specifiers
 ===============================
@@ -186,12 +217,13 @@ being a breaking change. However, the following facts were not known at the time
 of the discussion:
 
 * The implementation of [[P1361]] in [[FMT]] is locale-independent. This was the
-    only implementation available for 2+ years.
+    only implementation available for 2+ years and was cited as the only source
+    of implementation experience in the paper.
 * Both `%S` and `%OS` depend on locale and there is no locale-independent
     equivalent.
 * The chrono formatting in the Microsoft's implementation has only been merged
     into the main branch on 22 April and has bugs that will require breaking
-    changes anyway.
+    changes.
 
 Implementation experience {#impl}
 =========================
