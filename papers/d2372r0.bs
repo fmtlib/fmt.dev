@@ -63,6 +63,55 @@ and providing the `L` specifier to opt into localized formatting in the same way
 as it is done for all other standard formatters
 ([format.string.std](https://eel.is/c++draft/format.string.std)).
 
+Non locale-dependant specifiers
+===============================
+
+Some specifiers (`%d %H %I %m %M %S %u %w %y %z`) produce digits
+which are not localized (aka they use the arabic numerals `0123456789`).
+They have an equivalent form (`%Od %OH %OI %Om %OM %OS %Ou %Ow %Oy %Oz`)
+where the numerals can be localized. for example Japanese numerals
+`〇 一 二 三 四 五 ...` can be used as the "alternative representation" by a `ja_JP` locale,
+
+But because the `L` option applies to all specifiers,
+we do not propose to modify the specifiers.
+
+For example, `"{:L%p%I}"` and `"{:L%p%OI}"` should be valid specifiers producing
+`午後一` and `午後1` respectiveely.
+
+Appropriate use of numeral systems for localized numbers and dates
+requires more work, this paper focuses on consistent default behavior.
+
+
+"C" locale
+========
+
+The "C" locale is used in the wording as a way to express locale-independent behavior.
+The C standard specifies the "C" locale behavior for strftime as follow
+
+<blockquote>
+
+
+In the "C" locale, the E and O modifiers are ignored
+and the replacement strings for the following specifiers are:
+
+
+<pre>
+
+%a the first three characters of %A.
+%A one of ''Sunday'', ''Monday'', ... , ''Saturday''.
+%b the first three characters of %B.
+%B one of ''January'', ''February'', ... , ''December''.
+%c equivalent to ''%a %b %e %T %Y''.
+%p one of ''AM'' or ''PM''.
+%r equivalent to ''%I:%M:%S %p''.
+%x equivalent to ''%m/%d/%y''.
+%X equivalent to %T.
+%Z implementation-defined.
+
+</pre>
+</blockquote>
+
+
 SG16 polls {#polls}
 ==========
 
