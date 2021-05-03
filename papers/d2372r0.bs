@@ -121,9 +121,9 @@ Some specifiers (`%d %H %I %m %M %S %u %w %y %z`) produce digits which are
 not localized (aka they use the Arabic numerals `0123456789`) although as we
 demonstrated earlier `%S` is still using a localized decimal separator.
 They have an equivalent form (`%Od %OH %OI %Om %OM %OS %Ou %Ow %Oy %Oz`)
-where the numerals can be localized. for example Japanese numerals
+where the numerals can be localized. For example, Japanese numerals
 `〇 一 二 三 四 五 ...` can be used as the "alternative representation" by a
-`ja_JP` locale,
+`ja_JP` locale.
 
 But because the `L` option applies to all specifiers, we do not propose to
 modify the specifiers.
@@ -280,6 +280,296 @@ latter takes one, or the global locale otherwise. If the *L* option is not used,
 that locale is the "C" locale.</ins> If the formatted object does not contain the
 information the conversion specifier refers to, an exception of type
 `format_error` is thrown.
+
+Change in [time.clock.system.nonmembers]:
+
+```
+template<class charT, class traits, class Duration>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const sys_time<Duration>& tp);
+```
+
+...
+
+2 *Effects*: Equivalent to:
+
+<pre>
+  auto const dp = floor<days>(tp);
+  return os << format(os.getloc(), STATICALLY-WIDEN<charT>(<del>"{} {}"</del><ins>"{:L} {:L}"</ins>),
+                      year_month_day{dp}, hh_mm_ss{tp-dp});
+</pre>
+
+Change in [time.clock.utc.nonmembers]:
+
+```
+template<class charT, class traits, class Duration>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const utc_time<Duration>& t);
+```
+
+1 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
+</pre>
+
+Change in [time.clock.tai.nonmembers]:
+
+```
+template<class charT, class traits, class Duration>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const tai_time<Duration>& t);
+```
+
+1 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
+</pre>
+
+Change in [time.clock.gps.nonmembers]:
+
+```
+template<class charT, class traits, class Duration>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const gps_time<Duration>& t);
+```
+
+1 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
+</pre>
+
+Change in [time.clock.file.nonmembers]:
+
+```
+template<class charT, class traits, class Duration>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const file_time<Duration>& t);
+```
+
+1 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
+</pre>
+
+Change in [time.cal.month.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const month& m);
+```
+
+7 *Effects*: Equivalent to:
+
+<pre>
+  return os << (m.ok() ?
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{:%b}"</del><ins>"{:L%b}"</ins>), m) :
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>("{} is not a valid month"),
+           static_cast&lt;unsigned>(m)));
+</pre>
+
+Change in [time.cal.wd.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const weekday& wd);
+```
+
+6 *Effects*: Equivalent to:
+
+<pre>
+  return os << (wd.ok() ?
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{:%a}"</del><ins>"{:L%a}"</ins>), wd) :
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>("{} is not a valid weekday"),
+           static_cast&lt;unsigned>(wd.wd_)));
+</pre>
+
+Change in [time.cal.wdidx.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const weekday_indexed& wdi);
+```
+
+2 *Effects*: Equivalent to:
+
+<pre>
+  auto i = wdi.index();
+  return os << (i >= 1 && i <= 5 ?
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}[{}]"</del><ins>"{:L}[{}]"</ins>), wdi.weekday(), i) :
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}[{} is not a valid index]"</del><ins>"{:L}[{} is not a valid index]"</ins>),
+           wdi.weekday(), i));
+</pre>
+
+Change in [time.cal.wdlast.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const weekday_last& wdl);
+```
+
+2 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}[last]"</del><ins>"{:L}[last]"), wdl.weekday());
+</pre>
+
+Change in [time.cal.md.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const month_day& md);
+```
+
+3 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{}"</ins>),
+                      md.month(), md.day());
+</pre>
+
+Change in [time.cal.mdlast]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const month_day_last& mdl);
+```
+
+9 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/last"</del><ins>"{:L}/last"</ins>), mdl.month());
+</pre>
+
+Change in [time.cal.mwd.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const month_weekday& mwd);
+```
+
+2 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
+                      mwd.month(), mwd.weekday_indexed());
+</pre>
+
+Change in [time.cal.mwdlast.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const month_weekday_last& mwdl);
+```
+
+2 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
+                      mwdl.month(), mwdl.weekday_last());
+</pre>
+
+Change in [time.cal.ym.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const year_month& ym);
+```
+
+14 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
+                      ym.year(), ym.month());
+</pre>
+
+Change in [time.cal.ymd.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const year_month_day& ymd);
+```
+
+14 *Effects*: Equivalent to:
+
+<pre>
+  return os << (ymd.ok() ?
+    format(STATICALLY-WIDEN&lt;charT>(<ins>os.getloc(), "{:L%F}"</ins><del>"{:%F}"</del>), ymd) :
+    format(STATICALLY-WIDEN&lt;charT>(<ins>os.getloc(), "{:L%F} is not a valid date"</ins><del>"{:%F} is not a valid date"</del>), ymd));
+</pre>
+
+Change in [time.cal.ymdlast.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const year_month_day_last& ymdl);
+```
+
+12 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<ins>"{:L}/{:L}"</ins><del>"{}/{}"</del>),
+                      ymdl.year(), ymdl.month_day_last());
+</pre>
+
+Change in [time.cal.ymwd.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const year_month_weekday& ymwd);
+```
+
+12 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>("{}/{}/{}"),
+                      ymwd.year(), ymwd.month(), ymwd.weekday_indexed());
+</pre>
+
+Change in [time.cal.ymwdlast.nonmembers]:
+
+```
+template<class charT, class traits>
+  basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>& os, const year_month_weekday_last& ymwdl);
+```
+
+11 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<ins>"{:L}/{:L}/{:L}"</ins><del>"{}/{}/{}"</del>),
+                      ymwdl.year(), ymwdl.month(), ymwdl.weekday_last());
+</pre>
+
+Change in [time.hms.nonmembers]:
+
+```
+template<class charT, class traits, class Duration>
+basic_ostream<charT, traits>&
+operator<<(basic_ostream<charT, traits>& os, const hh_mm_ss<Duration>& hms);
+```
+
+1 *Effects*: Equivalent to:
+
+<pre>
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<ins>"{:%T}"</ins><del>"{:%T}"</del>), hms);
+</pre>
+
 
 <pre class=biblio>
 {

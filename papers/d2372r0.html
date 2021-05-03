@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="83594149040ac1024caeaab044fde5db5572910e" name="document-revision">
+  <meta content="c323f4bbb478a6ca8268476c90e472bd13bc48ea" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1619,7 +1619,7 @@ as it is done for all other standard formatters
 not localized (aka they use the Arabic numerals <code class="highlight"><c- mo>01234567</c-><c- mi>89</c-></code>) although as we
 demonstrated earlier <code class="highlight"><c- o>%</c-><c- n>S</c-></code> is still using a localized decimal separator.
 They have an equivalent form (<code class="highlight"><c- o>%</c-><c- n>Od</c-> <c- o>%</c-><c- n>OH</c-> <c- o>%</c-><c- n>OI</c-> <c- o>%</c-><c- n>Om</c-> <c- o>%</c-><c- n>OM</c-> <c- o>%</c-><c- n>OS</c-> <c- o>%</c-><c- n>Ou</c-> <c- o>%</c-><c- n>Ow</c-> <c- o>%</c-><c- n>Oy</c-> <c- o>%</c-><c- n>Oz</c-></code>)
-where the numerals can be localized. for example Japanese numerals <code class="highlight">〇 一 二 三 四 五 <c- p>...</c-></code> can be used as the "alternative representation" by a <code class="highlight"><c- n>ja_JP</c-></code> locale,</p>
+where the numerals can be localized. For example, Japanese numerals <code class="highlight">〇 一 二 三 四 五 <c- p>...</c-></code> can be used as the "alternative representation" by a <code class="highlight"><c- n>ja_JP</c-></code> locale.</p>
    <p>But because the <code class="highlight"><c- n>L</c-></code> option applies to all specifiers, we do not propose to
 modify the specifiers.</p>
    <p>For example, <code class="highlight"><c- s>"{:L%p%I}"</c-></code> and <code class="highlight"><c- s>"{:L%p%OI}"</c-></code> should be valid specifiers producing <code class="highlight">午後<c- mi>1</c-></code> and <code class="highlight">午後一</code> respectively.</p>
@@ -1742,6 +1742,180 @@ that locale is the "C" locale.</ins>
      If the formatted object does not contain the
 information the conversion specifier refers to, an exception of type <code class="highlight"><c- n>format_error</c-></code> is thrown.
    </p>
+   <p>Change in [time.clock.system.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>sys_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>tp</c-><c- p>);</c->
+</pre>
+   <p>...</p>
+   <p>2 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>auto</c-> <c- k>const</c-> <c- n>dp</c-> <c- o>=</c-> <c- n>floor</c-><days><c- p>(</c-><c- n>tp</c-><c- p>);</c->
+<c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{} {}"</c-></del><ins><c- s>"{:L} {:L}"</c-></ins><c- p>),</c->
+                    <c- n>year_month_day</c-><c- p>{</c-><c- n>dp</c-><c- p>},</c-> <c- n>hh_mm_ss</c-><c- p>{</c-><c- n>tp</c-><c- o>-</c-><c- n>dp</c-><c- p>});</c->
+</chart></days></pre>
+   <p>Change in [time.clock.utc.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>utc_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
+</pre>
+   <p>1 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
+</chart></pre>
+   <p>Change in [time.clock.tai.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>tai_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
+</pre>
+   <p>1 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
+</chart></pre>
+   <p>Change in [time.clock.gps.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>gps_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
+</pre>
+   <p>1 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
+</chart></pre>
+   <p>Change in [time.clock.file.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>file_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
+</pre>
+   <p>1 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
+</chart></pre>
+   <p>Change in [time.cal.month.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month</c-><c- o>&amp;</c-> <c- n>m</c-><c- p>);</c->
+</pre>
+   <p>7 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- p>(</c-><c- n>m</c-><c- p>.</c-><c- n>ok</c-><c- p>()</c-> <c- o>?</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{:%b}"</c-></del><ins><c- s>"{:L%b}"</c-></ins><c- p>),</c-> <c- n>m</c-><c- p>)</c-> <c- o>:</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{} is not a valid month"</c-><c- p>),</c->
+         <c- k>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-><c- o>></c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
+</pre>
+   <p>Change in [time.cal.wd.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>weekday</c-><c- o>&amp;</c-> <c- n>wd</c-><c- p>);</c->
+</pre>
+   <p>6 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- p>(</c-><c- n>wd</c-><c- p>.</c-><c- n>ok</c-><c- p>()</c-> <c- o>?</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{:%a}"</c-></del><ins><c- s>"{:L%a}"</c-></ins><c- p>),</c-> <c- n>wd</c-><c- p>)</c-> <c- o>:</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{} is not a valid weekday"</c-><c- p>),</c->
+         <c- k>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-><c- o>></c-><c- p>(</c-><c- n>wd</c-><c- p>.</c-><c- n>wd_</c-><c- p>)));</c->
+</pre>
+   <p>Change in [time.cal.wdidx.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>weekday_indexed</c-><c- o>&amp;</c-> <c- n>wdi</c-><c- p>);</c->
+</pre>
+   <p>2 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>auto</c-> <c- n>i</c-> <c- o>=</c-> <c- n>wdi</c-><c- p>.</c-><c- n>index</c-><c- p>();</c->
+<c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- p>(</c-><c- n>i</c-> <c- o>>=</c-> <c- mi>1</c-> <c- o>&amp;&amp;</c-> <c- n>i</c-> <c- o>&lt;=</c-> <c- mi>5</c-> <c- o>?</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}[{}]"</c-></del><ins><c- s>"{:L}[{}]"</c-></ins><c- p>),</c-> <c- n>wdi</c-><c- p>.</c-><c- n>weekday</c-><c- p>(),</c-> <c- n>i</c-><c- p>)</c-> <c- o>:</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}[{} is not a valid index]"</c-></del><ins><c- s>"{:L}[{} is not a valid index]"</c-></ins><c- p>),</c->
+         <c- n>wdi</c-><c- p>.</c-><c- n>weekday</c-><c- p>(),</c-> <c- n>i</c-><c- p>));</c->
+</pre>
+   <p>Change in [time.cal.wdlast.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>weekday_last</c-><c- o>&amp;</c-> <c- n>wdl</c-><c- p>);</c->
+</pre>
+   <p>2 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}[last]"</c-></del><ins><c- s>"{:L}[last]"</c-><c- p>),</c-> <c- n>wdl</c-><c- p>.</c-><c- n>weekday</c-><c- p>());</c->
+</ins></pre>
+   <p>Change in [time.cal.md.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_day</c-><c- o>&amp;</c-> <c- n>md</c-><c- p>);</c->
+</pre>
+   <p>3 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{}"</c-></ins><c- p>),</c->
+                    <c- n>md</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>md</c-><c- p>.</c-><c- n>day</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.mdlast]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_day_last</c-><c- o>&amp;</c-> <c- n>mdl</c-><c- p>);</c->
+</pre>
+   <p>9 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/last"</c-></del><ins><c- s>"{:L}/last"</c-></ins><c- p>),</c-> <c- n>mdl</c-><c- p>.</c-><c- n>month</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.mwd.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_weekday</c-><c- o>&amp;</c-> <c- n>mwd</c-><c- p>);</c->
+</pre>
+   <p>2 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
+                    <c- n>mwd</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>mwd</c-><c- p>.</c-><c- n>weekday_indexed</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.mwdlast.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_weekday_last</c-><c- o>&amp;</c-> <c- n>mwdl</c-><c- p>);</c->
+</pre>
+   <p>2 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
+                    <c- n>mwdl</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>mwdl</c-><c- p>.</c-><c- n>weekday_last</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.ym.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month</c-><c- o>&amp;</c-> <c- n>ym</c-><c- p>);</c->
+</pre>
+   <p>14 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
+                    <c- n>ym</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ym</c-><c- p>.</c-><c- n>month</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.ymd.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_day</c-><c- o>&amp;</c-> <c- n>ymd</c-><c- p>);</c->
+</pre>
+   <p>14 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- p>(</c-><c- n>ymd</c-><c- p>.</c-><c- n>ok</c-><c- p>()</c-> <c- o>?</c->
+  <c- n>format</c-><c- p>(</c-><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- s>"{:L%F}"</c-></ins><del><c- s>"{:%F}"</c-></del><c- p>),</c-> <c- n>ymd</c-><c- p>)</c-> <c- o>:</c->
+  <c- n>format</c-><c- p>(</c-><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- s>"{:L%F} is not a valid date"</c-></ins><del><c- s>"{:%F} is not a valid date"</c-></del><c- p>),</c-> <c- n>ymd</c-><c- p>));</c->
+</pre>
+   <p>Change in [time.cal.ymdlast.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_day_last</c-><c- o>&amp;</c-> <c- n>ymdl</c-><c- p>);</c->
+</pre>
+   <p>12 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- s>"{:L}/{:L}"</c-></ins><del><c- s>"{}/{}"</c-></del><c- p>),</c->
+                    <c- n>ymdl</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ymdl</c-><c- p>.</c-><c- n>month_day_last</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.ymwd.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_weekday</c-><c- o>&amp;</c-> <c- n>ymwd</c-><c- p>);</c->
+</pre>
+   <p>12 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{}/{}/{}"</c-><c- p>),</c->
+                    <c- n>ymwd</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ymwd</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>ymwd</c-><c- p>.</c-><c- n>weekday_indexed</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.cal.ymwdlast.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
+  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_weekday_last</c-><c- o>&amp;</c-> <c- n>ymwdl</c-><c- p>);</c->
+</pre>
+   <p>11 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- s>"{:L}/{:L}/{:L}"</c-></ins><del><c- s>"{}/{}/{}"</c-></del><c- p>),</c->
+                    <c- n>ymwdl</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ymwdl</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>ymwdl</c-><c- p>.</c-><c- n>weekday_last</c-><c- p>());</c->
+</pre>
+   <p>Change in [time.hms.nonmembers]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+<c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
+<c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>hh_mm_ss</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>hms</c-><c- p>);</c->
+</pre>
+   <p>1 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- s>"{:%T}"</c-></ins><del><c- s>"{:%T}"</c-></del><c- p>),</c-> <c- n>hms</c-><c- p>);</c->
+</pre>
   </main>
 <script>
 (function() {
