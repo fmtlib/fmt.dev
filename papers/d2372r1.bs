@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Fixing locale handling in chrono formatters
 Shortname: D2372
-Revision: 0
+Revision: 1
 <!-- !Draft Revision: 0 -->
 Audience: LEWG
 Status: D
@@ -113,6 +113,16 @@ auto s = std::format("{:L%S}", sec(4.2));
 ```
 </tr>
 </table>
+
+Changes from R0
+===============
+
+* Keep ostream insertion operators (`operator<<`) locale-dependent for
+    consistency with the rest of the ostream library per LEWG feedback.
+
+* Drive by fix: make ostream insertion operators of `utc_time`, `tai_time`,
+    `gps_time` and `file_time` use the stream's locale instead of the global
+    locale. They are locale-dependent because the decimal point is localized.
 
 Locale alternative forms
 ========================
