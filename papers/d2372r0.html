@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c323f4bbb478a6ca8268476c90e472bd13bc48ea" name="document-revision">
+  <meta content="fef4538ea2811397a89b062e8f4073ecc4f1c1d8" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1518,7 +1518,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">D2372R0<br>Fixing locale handling in chrono formatters</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-05-01">2021-05-01</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-05-03">2021-05-03</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Authors:
@@ -1742,7 +1742,7 @@ that locale is the "C" locale.</ins>
      If the formatted object does not contain the
 information the conversion specifier refers to, an exception of type <code class="highlight"><c- n>format_error</c-></code> is thrown.
    </p>
-   <p>Change in [time.clock.system.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1269">[time.clock.system.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>sys_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>tp</c-><c- p>);</c->
@@ -1753,7 +1753,7 @@ information the conversion specifier refers to, an exception of type <code class
 <c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{} {}"</c-></del><ins><c- s>"{:L} {:L}"</c-></ins><c- p>),</c->
                     <c- n>year_month_day</c-><c- p>{</c-><c- n>dp</c-><c- p>},</c-> <c- n>hh_mm_ss</c-><c- p>{</c-><c- n>tp</c-><c- o>-</c-><c- n>dp</c-><c- p>});</c->
 </chart></days></pre>
-   <p>Change in [time.clock.utc.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1271">[time.clock.utc.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>utc_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
@@ -1761,7 +1761,8 @@ information the conversion specifier refers to, an exception of type <code class
    <p>1 <em>Effects</em>: Equivalent to:</p>
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
 </chart></pre>
-   <p>Change in [time.clock.tai.nonmembers]:</p>
+   <p>(Adding <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>()</c-></code> is a drive-by fix.)</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1273">[time.clock.tai.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>tai_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
@@ -1769,7 +1770,7 @@ information the conversion specifier refers to, an exception of type <code class
    <p>1 <em>Effects</em>: Equivalent to:</p>
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
 </chart></pre>
-   <p>Change in [time.clock.gps.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1274">[time.clock.gps.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>gps_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
@@ -1777,7 +1778,7 @@ information the conversion specifier refers to, an exception of type <code class
    <p>1 <em>Effects</em>: Equivalent to:</p>
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
 </chart></pre>
-   <p>Change in [time.clock.file.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1275">[time.clock.file.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>file_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>t</c-><c- p>);</c->
@@ -1785,7 +1786,9 @@ information the conversion specifier refers to, an exception of type <code class
    <p>1 <em>Effects</em>: Equivalent to:</p>
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> </ins><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><chart><c- p>(</c-><del><c- s>"{:%F %T}"</c-></del><ins><c- s>"{:L%F %T}"</c-></ins><c- p>),</c-> <c- n>t</c-><c- p>);</c->
 </chart></pre>
-   <p>Change in [time.cal.month.nonmembers]:</p>
+   <p>[time.cal.day.nonmembers] is intentionally left unchanged because <code class="highlight"><c- o>%</c-><c- n>d</c-></code> is
+locale-independent.</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1283">[time.cal.month.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month</c-><c- o>&amp;</c-> <c- n>m</c-><c- p>);</c->
@@ -1796,7 +1799,9 @@ information the conversion specifier refers to, an exception of type <code class
   <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{} is not a valid month"</c-><c- p>),</c->
          <c- k>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-><c- o>></c-><c- p>(</c-><c- n>m</c-><c- p>)));</c->
 </pre>
-   <p>Change in [time.cal.wd.nonmembers]:</p>
+   <p>[time.cal.year.nonmembers] is intentionally left unchanged because <code class="highlight"><c- o>%</c-><c- n>Y</c-></code> is
+locale-independent.</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1287">[time.cal.wd.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>weekday</c-><c- o>&amp;</c-> <c- n>wd</c-><c- p>);</c->
@@ -1807,7 +1812,7 @@ information the conversion specifier refers to, an exception of type <code class
   <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{} is not a valid weekday"</c-><c- p>),</c->
          <c- k>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-><c- o>></c-><c- p>(</c-><c- n>wd</c-><c- p>.</c-><c- n>wd_</c-><c- p>)));</c->
 </pre>
-   <p>Change in [time.cal.wdidx.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1289">[time.cal.wdidx.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>weekday_indexed</c-><c- o>&amp;</c-> <c- n>wdi</c-><c- p>);</c->
@@ -1816,27 +1821,27 @@ information the conversion specifier refers to, an exception of type <code class
 <pre class="highlight"><c- k>auto</c-> <c- n>i</c-> <c- o>=</c-> <c- n>wdi</c-><c- p>.</c-><c- n>index</c-><c- p>();</c->
 <c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- p>(</c-><c- n>i</c-> <c- o>>=</c-> <c- mi>1</c-> <c- o>&amp;&amp;</c-> <c- n>i</c-> <c- o>&lt;=</c-> <c- mi>5</c-> <c- o>?</c->
   <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}[{}]"</c-></del><ins><c- s>"{:L}[{}]"</c-></ins><c- p>),</c-> <c- n>wdi</c-><c- p>.</c-><c- n>weekday</c-><c- p>(),</c-> <c- n>i</c-><c- p>)</c-> <c- o>:</c->
-  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}[{} is not a valid index]"</c-></del><ins><c- s>"{:L}[{} is not a valid index]"</c-></ins><c- p>),</c->
+  <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{</c-><ins><c- s>:L</c-></ins><c- s>}[{} is not a valid index]"</c-><c- p>),</c->
          <c- n>wdi</c-><c- p>.</c-><c- n>weekday</c-><c- p>(),</c-> <c- n>i</c-><c- p>));</c->
 </pre>
-   <p>Change in [time.cal.wdlast.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1290">[time.cal.wdlast.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>weekday_last</c-><c- o>&amp;</c-> <c- n>wdl</c-><c- p>);</c->
 </pre>
    <p>2 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}[last]"</c-></del><ins><c- s>"{:L}[last]"</c-><c- p>),</c-> <c- n>wdl</c-><c- p>.</c-><c- n>weekday</c-><c- p>());</c->
-</ins></pre>
-   <p>Change in [time.cal.md.nonmembers]:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{</c-><ins><c- s>:L</c-></ins><c- s>}[last]"</c-><c- p>),</c-> <c- n>wdl</c-><c- p>.</c-><c- n>weekday</c-><c- p>());</c->
+</pre>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1291">[time.cal.md.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_day</c-><c- o>&amp;</c-> <c- n>md</c-><c- p>);</c->
 </pre>
    <p>3 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{}"</c-></ins><c- p>),</c->
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>md</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>md</c-><c- p>.</c-><c- n>day</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.mdlast]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1291">[time.cal.mdlast]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_day_last</c-><c- o>&amp;</c-> <c- n>mdl</c-><c- p>);</c->
@@ -1844,7 +1849,7 @@ information the conversion specifier refers to, an exception of type <code class
    <p>9 <em>Effects</em>: Equivalent to:</p>
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/last"</c-></del><ins><c- s>"{:L}/last"</c-></ins><c- p>),</c-> <c- n>mdl</c-><c- p>.</c-><c- n>month</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.mwd.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1292">[time.cal.mwd.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_weekday</c-><c- o>&amp;</c-> <c- n>mwd</c-><c- p>);</c->
@@ -1853,7 +1858,7 @@ information the conversion specifier refers to, an exception of type <code class
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>mwd</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>mwd</c-><c- p>.</c-><c- n>weekday_indexed</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.mwdlast.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1293">[time.cal.mwdlast.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>month_weekday_last</c-><c- o>&amp;</c-> <c- n>mwdl</c-><c- p>);</c->
@@ -1862,7 +1867,7 @@ information the conversion specifier refers to, an exception of type <code class
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>mwdl</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>mwdl</c-><c- p>.</c-><c- n>weekday_last</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.ym.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1295">[time.cal.ym.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month</c-><c- o>&amp;</c-> <c- n>ym</c-><c- p>);</c->
@@ -1871,50 +1876,42 @@ information the conversion specifier refers to, an exception of type <code class
 <pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>ym</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ym</c-><c- p>.</c-><c- n>month</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.ymd.nonmembers]:</p>
-<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
-  <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
-    <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_day</c-><c- o>&amp;</c-> <c- n>ymd</c-><c- p>);</c->
-</pre>
-   <p>14 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- p>(</c-><c- n>ymd</c-><c- p>.</c-><c- n>ok</c-><c- p>()</c-> <c- o>?</c->
-  <c- n>format</c-><c- p>(</c-><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- s>"{:L%F}"</c-></ins><del><c- s>"{:%F}"</c-></del><c- p>),</c-> <c- n>ymd</c-><c- p>)</c-> <c- o>:</c->
-  <c- n>format</c-><c- p>(</c-><c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- s>"{:L%F} is not a valid date"</c-></ins><del><c- s>"{:%F} is not a valid date"</c-></del><c- p>),</c-> <c- n>ymd</c-><c- p>));</c->
-</pre>
-   <p>Change in [time.cal.ymdlast.nonmembers]:</p>
+   <p>[time.cal.ymd.nonmembers] is intentionally left unchanged because <code class="highlight"><c- o>%</c-><c- n>F</c-></code> is
+locale-independent.</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1300">[time.cal.ymdlast.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_day_last</c-><c- o>&amp;</c-> <c- n>ymdl</c-><c- p>);</c->
 </pre>
    <p>12 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- s>"{:L}/{:L}"</c-></ins><del><c- s>"{}/{}"</c-></del><c- p>),</c->
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}"</c-></del><ins><c- s>"{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>ymdl</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ymdl</c-><c- p>.</c-><c- n>month_day_last</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.ymwd.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1303">[time.cal.ymwd.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_weekday</c-><c- o>&amp;</c-> <c- n>ymwd</c-><c- p>);</c->
 </pre>
-   <p>12 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><c- s>"{}/{}/{}"</c-><c- p>),</c->
+   <p>11 <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}/{}"</c-></del><ins><c- s>"{:L}/{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>ymwd</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ymwd</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>ymwd</c-><c- p>.</c-><c- n>weekday_indexed</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.cal.ymwdlast.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1305">[time.cal.ymwdlast.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
     <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>year_month_weekday_last</c-><c- o>&amp;</c-> <c- n>ymwdl</c-><c- p>);</c->
 </pre>
    <p>11 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- s>"{:L}/{:L}/{:L}"</c-></ins><del><c- s>"{}/{}/{}"</c-></del><c- p>),</c->
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{}/{}/{}"</c-></del><ins><c- s>"{:L}/{:L}/{:L}"</c-></ins><c- p>),</c->
                     <c- n>ymwdl</c-><c- p>.</c-><c- n>year</c-><c- p>(),</c-> <c- n>ymwdl</c-><c- p>.</c-><c- n>month</c-><c- p>(),</c-> <c- n>ymwdl</c-><c- p>.</c-><c- n>weekday_last</c-><c- p>());</c->
 </pre>
-   <p>Change in [time.hms.nonmembers]:</p>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1311">[time.hms.nonmembers]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
 <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c->
 <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>hh_mm_ss</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>>&amp;</c-> <c- n>hms</c-><c- p>);</c->
 </pre>
    <p>1 <em>Effects</em>: Equivalent to:</p>
-<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><ins><c- s>"{:%T}"</c-></ins><del><c- s>"{:%T}"</c-></del><c- p>),</c-> <c- n>hms</c-><c- p>);</c->
+<pre class="highlight"><c- k>return</c-> <c- n>os</c-> <c- o>&lt;&lt;</c-> <c- n>format</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>STATICALLY</c-><c- o>-</c-><c- n>WIDEN</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>(</c-><del><c- s>"{:%T}"</c-></del><ins><c- s>"{:L%T}"</c-></ins><c- p>),</c-> <c- n>hms</c-><c- p>);</c->
 </pre>
   </main>
 <script>

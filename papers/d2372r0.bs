@@ -10,7 +10,7 @@ URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Corentin Jabot, corentin.jabot@gmail.com
 No abstract: true
-Date: 2021-05-01
+Date: 2021-05-03
 Markup Shorthands: markdown yes
 </pre>
 
@@ -281,7 +281,7 @@ that locale is the "C" locale.</ins> If the formatted object does not contain th
 information the conversion specifier refers to, an exception of type
 `format_error` is thrown.
 
-Change in [time.clock.system.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1269">[time.clock.system.nonmembers]</a>:
 
 ```
 template<class charT, class traits, class Duration>
@@ -299,7 +299,7 @@ template<class charT, class traits, class Duration>
                       year_month_day{dp}, hh_mm_ss{tp-dp});
 </pre>
 
-Change in [time.clock.utc.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1271">[time.clock.utc.nonmembers]</a>:
 
 ```
 template<class charT, class traits, class Duration>
@@ -313,7 +313,9 @@ template<class charT, class traits, class Duration>
   return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
 </pre>
 
-Change in [time.clock.tai.nonmembers]:
+(Adding `os.getloc()` is a drive-by fix.)
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1273">[time.clock.tai.nonmembers]</a>:
 
 ```
 template<class charT, class traits, class Duration>
@@ -327,7 +329,7 @@ template<class charT, class traits, class Duration>
   return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
 </pre>
 
-Change in [time.clock.gps.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1274">[time.clock.gps.nonmembers]</a>:
 
 ```
 template<class charT, class traits, class Duration>
@@ -341,7 +343,7 @@ template<class charT, class traits, class Duration>
   return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
 </pre>
 
-Change in [time.clock.file.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1275">[time.clock.file.nonmembers]</a>:
 
 ```
 template<class charT, class traits, class Duration>
@@ -355,7 +357,10 @@ template<class charT, class traits, class Duration>
   return os << format(<ins>os.getloc(), </ins>STATICALLY-WIDEN<charT>(<del>"{:%F %T}"</del><ins>"{:L%F %T}"</ins>), t);
 </pre>
 
-Change in [time.cal.month.nonmembers]:
+[time.cal.day.nonmembers] is intentionally left unchanged because `%d` is
+locale-independent.
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1283">[time.cal.month.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -372,7 +377,10 @@ template<class charT, class traits>
            static_cast&lt;unsigned>(m)));
 </pre>
 
-Change in [time.cal.wd.nonmembers]:
+[time.cal.year.nonmembers] is intentionally left unchanged because `%Y` is
+locale-independent.
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1287">[time.cal.wd.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -389,7 +397,7 @@ template<class charT, class traits>
            static_cast&lt;unsigned>(wd.wd_)));
 </pre>
 
-Change in [time.cal.wdidx.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1289">[time.cal.wdidx.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -403,11 +411,11 @@ template<class charT, class traits>
   auto i = wdi.index();
   return os << (i >= 1 && i <= 5 ?
     format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}[{}]"</del><ins>"{:L}[{}]"</ins>), wdi.weekday(), i) :
-    format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}[{} is not a valid index]"</del><ins>"{:L}[{} is not a valid index]"</ins>),
+    format(os.getloc(), STATICALLY-WIDEN&lt;charT>("{<ins>:L</ins>}[{} is not a valid index]"),
            wdi.weekday(), i));
 </pre>
 
-Change in [time.cal.wdlast.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1290">[time.cal.wdlast.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -418,10 +426,10 @@ template<class charT, class traits>
 2 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}[last]"</del><ins>"{:L}[last]"), wdl.weekday());
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>("{<ins>:L</ins>}[last]"), wdl.weekday());
 </pre>
 
-Change in [time.cal.md.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1291">[time.cal.md.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -432,11 +440,11 @@ template<class charT, class traits>
 3 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
                       md.month(), md.day());
 </pre>
 
-Change in [time.cal.mdlast]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1291">[time.cal.mdlast]</a>:
 
 ```
 template<class charT, class traits>
@@ -450,7 +458,7 @@ template<class charT, class traits>
   return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/last"</del><ins>"{:L}/last"</ins>), mdl.month());
 </pre>
 
-Change in [time.cal.mwd.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1292">[time.cal.mwd.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -465,7 +473,7 @@ template<class charT, class traits>
                       mwd.month(), mwd.weekday_indexed());
 </pre>
 
-Change in [time.cal.mwdlast.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1293">[time.cal.mwdlast.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -480,7 +488,7 @@ template<class charT, class traits>
                       mwdl.month(), mwdl.weekday_last());
 </pre>
 
-Change in [time.cal.ym.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1295">[time.cal.ym.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -495,7 +503,11 @@ template<class charT, class traits>
                       ym.year(), ym.month());
 </pre>
 
-Change in [time.cal.ymd.nonmembers]:
+[time.cal.ymd.nonmembers] is intentionally left unchanged because `%F` is
+locale-independent.
+
+<!--
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1298">[time.cal.ymd.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -507,11 +519,12 @@ template<class charT, class traits>
 
 <pre>
   return os << (ymd.ok() ?
-    format(STATICALLY-WIDEN&lt;charT>(<ins>os.getloc(), "{:L%F}"</ins><del>"{:%F}"</del>), ymd) :
-    format(STATICALLY-WIDEN&lt;charT>(<ins>os.getloc(), "{:L%F} is not a valid date"</ins><del>"{:%F} is not a valid date"</del>), ymd));
+    format(STATICALLY-WIDEN&lt;charT>(<ins>os.getloc(), </ins><del>"{:%F}"</del><ins>"{:L%F}"</ins>), ymd) :
+    format(STATICALLY-WIDEN&lt;charT>(<ins>os.getloc(), "{:<ins>L</ins>%F} is not a valid date"), ymd));
 </pre>
+-->
 
-Change in [time.cal.ymdlast.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1300">[time.cal.ymdlast.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -522,11 +535,11 @@ template<class charT, class traits>
 12 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<ins>"{:L}/{:L}"</ins><del>"{}/{}"</del>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
                       ymdl.year(), ymdl.month_day_last());
 </pre>
 
-Change in [time.cal.ymwd.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1303">[time.cal.ymwd.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -534,14 +547,14 @@ template<class charT, class traits>
     operator<<(basic_ostream<charT, traits>& os, const year_month_weekday& ymwd);
 ```
 
-12 *Effects*: Equivalent to:
+11 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>("{}/{}/{}"),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}/{}"</del><ins>"{:L}/{:L}/{:L}"</ins>),
                       ymwd.year(), ymwd.month(), ymwd.weekday_indexed());
 </pre>
 
-Change in [time.cal.ymwdlast.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1305">[time.cal.ymwdlast.nonmembers]</a>:
 
 ```
 template<class charT, class traits>
@@ -552,11 +565,11 @@ template<class charT, class traits>
 11 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<ins>"{:L}/{:L}/{:L}"</ins><del>"{}/{}/{}"</del>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}/{}"</del><ins>"{:L}/{:L}/{:L}"</ins>),
                       ymwdl.year(), ymwdl.month(), ymwdl.weekday_last());
 </pre>
 
-Change in [time.hms.nonmembers]:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1311">[time.hms.nonmembers]</a>:
 
 ```
 template<class charT, class traits, class Duration>
@@ -567,9 +580,8 @@ operator<<(basic_ostream<charT, traits>& os, const hh_mm_ss<Duration>& hms);
 1 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<ins>"{:%T}"</ins><del>"{:%T}"</del>), hms);
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{:%T}"</del><ins>"{:L%T}"</ins>), hms);
 </pre>
-
 
 <pre class=biblio>
 {
