@@ -117,14 +117,16 @@ auto s = std::format("{:L%S}", sec(4.2));
 Changes from R0
 ===============
 
-* Keep ostream insertion operators (`operator<<`) locale-dependent for
+* Kept ostream insertion operators (`operator<<`) locale-dependent for
     consistency with the rest of the ostream library per LEWG feedback.
 
-* Drive-by fix: make ostream insertion operators of `utc_time`, `tai_time`,
+* Drive-by fix: made ostream insertion operators of `utc_time`, `tai_time`,
     `gps_time` and `file_time` use the stream's locale instead of the global
     locale. They are locale-dependent because the decimal point is localized.
 
-* Drive-by fix: Use the correct locale if the *chrono-specs* is omitted.
+* Drive-by fix: Used the correct locale if the *chrono-specs* is omitted.
+
+* Added LEWG poll results.
 
 Locale alternative forms
 ========================
@@ -175,7 +177,7 @@ This makes it possible, as long as the `L` option is not specified, to format
 dates in environment without locale support (embedded platforms, `constexpr` if
 someone proposes it, etc).
 
-SG16 polls {#polls}
+SG16 polls {#sg16polls}
 ==========
 
 Poll: LWG3547 raises a valid design defect in [time.format] in C++20.
@@ -197,7 +199,7 @@ Poll: LWG3547 raises a valid design defect in [time.format] in C++20.
 </tr>
 </table>
 
-Consensus: Strong consensus that this is a design defect.
+Outcome: Strong consensus that this is a design defect.
 
 Poll: The proposed LWG3547 resolution as written should be applied to C++23.
 
@@ -218,7 +220,7 @@ Poll: The proposed LWG3547 resolution as written should be applied to C++23.
 </tr>
 </table>
 
-Consensus: No consensus for the resolution
+Outcome: No consensus for the resolution
 
 SA motivation: Migrating things embedded in a string literal is very
 difficult.  There are options to deal with this in an additive way.
@@ -236,6 +238,56 @@ of the discussion:
 * The chrono formatting in the Microsoft's implementation has only been merged
     into the main branch on 22 April and has bugs that will require breaking
     changes.
+* Some chrono types are partially localized, e.g. `month_day_last{May}` may be
+    formatted as `Mai/last` in a German locale with only month localized.
+
+LEWG polls {#lewg-polls}
+==========
+
+Poll: Revise D2372 to keep the ostream operators for chrono formatting dependent
+on the stream locale
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>10
+  <td>8
+  <td>2
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Outcome: Strong Consensus in Favor
+
+Poll: LEWG approves of the direction of this work and encourages further work as
+directed above with the intent that D2372 (Fixing locale handling in chrono
+formatters) will land in C++23 and be applied retroactively to C++20
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>14
+  <td>8
+  <td>0
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Outcome: Unanimous approval
 
 Implementation experience {#impl}
 =========================
@@ -285,23 +337,23 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885
 2 Each conversion specifier *conversion-spec* is replaced by appropriate
 characters as described in Table [tab:time.format.spec]; the formats specified
 in ISO 8601:2004 shall be used where so described. Some of the conversion
-specifiers depend on <del>the locale that is passed to the formatting function if the
-latter takes one, or the global locale otherwise.</del> <ins> a locale. If the *L* option is
-used, that locale is the locale that is passed to the formatting function if the
-latter takes one, or the global locale otherwise. If the *L* option is not used,
-that locale is the "C" locale.</ins> If the formatted object does not contain the
-information the conversion specifier refers to, an exception of type
-`format_error` is thrown.
+specifiers depend on <del>the locale that is passed to the formatting function
+if the latter takes one, or the global locale otherwise.</del> <ins> a locale.
+If the *L* option is used, the locale is the locale passed to the formatting
+function, or otherwise the global locale. If the *L* option is not used, the
+"C” locale is used.</ins>
+If the formatted object does not contain the information the conversion
+specifier refers to, an exception of type `format_error` is thrown.
 
 ...
 
 6 If the *chrono-specs* is omitted, the chrono object is formatted as if by
 streaming it to `std::ostringstream os` <ins>with a locale imbued</ins> and
 copying `os.str()` through the output iterator of the context with additional
-padding and adjustments as specified by the format specifiers. <ins>If the `L`
-option is present, the imbued locale is the locale that is passed to the
-formatting function if the latter takes one, or the global locale otherwise.
-If the `L` option is not present, the imbued locale is `locale::classic()`.</ins>
+padding and adjustments as specified by the format specifiers. <ins>If the *L*
+option is used, the locale is the locale passed to the formatting function, or
+otherwise the global locale. If the *L* option is not used, the "C” locale is
+used.</ins>
 
 (Using the locale passed to the formatting function is a drive-by fix.)
 
