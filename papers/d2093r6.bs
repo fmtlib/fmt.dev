@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
-Shortname: P2093
-Revision: 5
+Shortname: D2093
+Revision: 6
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-03-14
+Date: 2021-05-11
 Markup Shorthands: markdown yes
 </pre>
 
@@ -46,6 +46,11 @@ intuitive API achieving the following goals:
 
 Revision history {#hist}
 ================
+
+Changes since R4:
+
+* Added more LEWG polls.
+* Clarified the choice of literal encoding in [[#unicode]].
 
 Changes since R4:
 
@@ -110,7 +115,20 @@ SF    WF    N     WA    SA
 
 Consensus? Yes
 
-LEWG polls (R1) {#lewg-polls}
+LEWG polls (R2) {#lewg-polls2}
+===============
+
+<strong>We want P2093R2 to revert moving the `print(ostream)` overloads to the
+`<ostream>` header.</strong>
+
+```
+SF    WF    N     WA    SA
+0     0     6     6     1
+```
+
+Outcome: Keep the paper as is
+
+LEWG polls (R1) {#lewg-polls1}
 ===============
 
 <strong>We prefer `std::cout` as the default output target.</strong>
@@ -451,8 +469,34 @@ is UTF-8, which is enabled by the <code highlight="text">/execution-charset:utf-
 compiler flags or other means, and `false` otherwise. Literal encoding detection
 can be implemented in a more elegant way using [[P1885]].
 
-This approach has been implemented in the fmt library ([[FMT]]) and successfully
-tested on a variety of platforms.
+We propose using the literal encoding for the following reasons:
+
+1. Consistency with the design of `std::format` which is locale-independent by
+     default ([[P0645]]).
+2. Consistency with the encoding used for width estimation ([[P1868]]).
+3. Safety: the result of `formatted_size` does not depend on the global locale
+     by default and a buffer allocated with this size can be passed safely to
+     `format_to` even if the locale has been changed in the meantime, possibly
+     from another thread.
+4. Implementation and usage experience.
+5. In the vast majority of cases format strings are literals. For example,
+     analyzing a sample of 100 `printf` calls from [[CODESEARCH]] showed that 98
+     of them are string literals and 2 are string literals wrapped in the `_`
+     gettext macro.
+6. The active code page and the terminal encoding being unrelated on popular
+     Windows localizations such as Russian where the former is CP1251 while the
+     latter is CP866. Instead of assuming one encoding regarless of the string
+     origin which would often result in mojibake, an explicit encoding
+     indication can be done via the standard extension API, e.g.
+     (exposition only)
+     ```
+print("Привет, {} and {}!", locale_enc(string_in_acp), term_enc(string_from_terminal));
+     ```
+     This is already possible to implement with existing `std::format` extension
+     API.
+
+This approach has been implemented in the fmt library ([[FMT]]), successfully
+tested and used on a variety of platforms.
 
 Here's an example output on Windows:
 
@@ -1345,6 +1389,11 @@ support, constructive criticism and contributions to the proposal.
 
 <pre class=biblio>
 {
+  "CODESEARCH": {
+	  "title": "Code search engine website",
+	  "authors": ["Andrew Tomazos"],
+	  "href": "https://codesearch.isocpp.org"
+  },
   "DOTNET-WRITE": {
     "title": ".NET documentation, Console.Write Method",
     "href": "https://docs.microsoft.com/en-us/dotnet/api/system.console.write"
@@ -1406,6 +1455,11 @@ support, constructive criticism and contributions to the proposal.
     "title": "Naming Text Encodings to Demystify Them",
     "authors": ["Corentin Jabot"],
     "href": "https://wg21.link/p1885"
+  },
+  "P1868": {
+    "title": "🦄 width: clarifying units of width and precision in std::format",
+    "authors": ["Victor Zverovich", "Zach Laine"],
+    "href": "https://wg21.link/p1868"
   },
   "PERL-PRINTF": {
     "title": "Perl 5 version 30.0 documentation, Language reference, printf",
