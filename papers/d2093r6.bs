@@ -47,10 +47,17 @@ intuitive API achieving the following goals:
 Revision history {#hist}
 ================
 
-Changes since R4:
+Changes since R5:
 
-* Added more LEWG polls.
+* Added new LEWG poll results.
+* Replaced `<io>` with `<print>` per LEWG feedback.
+* Clarified the choice of U+FFFD � REPLACEMENT CHARACTER for transcoding errors
+    in [[#unicode]].
 * Clarified the choice of literal encoding in [[#unicode]].
+* Clarified that ANSI escape codes for specifying coding systems are not
+    considered a native system API that supports Unicode in [[#unicode]].
+* Added a reference to Rust's standard output facility that implements the same
+    mojibake prevention mechanism to [[#impl]]
 
 Changes since R4:
 
@@ -103,15 +110,91 @@ Changes since R0:
 * Clarified that adding `wchar_t` overloads will be addressed in a separate
     paper per the UK C++ panel feedback.
 
+LEWG polls (R5) {#lewg-polls2}
+===============
+
+<!-- https://wiki.edg.com/bin/view/Wg21telecons2021/P2093?twiki_redirect_cache=a3b691de29417a0240d9e2b83122b331 -->
+
+<strong>Block P2093 until we have a proposal for a lower level facility that can query tty/console and perform direct output to the console</strong>
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>2
+  <td>1
+  <td>5
+  <td>5
+  <td>6
+</tr>
+</table>
+
+Outcome: Consensus Against
+
+<strong>We want `std::print` et al. non `ostream` overloads to go to:</strong>
+
+<table class="poll">
+<tr>
+  <th>Header
+  <th>Approve
+  <th>Disapprove
+</th>
+<tr>
+  <td>`<ostream>`
+  <td>3
+  <td>7
+</tr>
+<tr>
+  <td>`<io>`
+  <td>6
+  <td>5
+</tr>
+<tr>
+  <td>`<print>`
+  <td>10
+  <td>3
+</tr>
+<tr>
+  <td>`<format>`
+  <td>12
+  <td>1
+</tr>
+<tr>
+  <td>`<utility>`
+  <td>1
+  <td>13
+</tr>
+</table>
+
+Outcome: both `<print>` and `<format>` have consensus, author can choose one for the
+  next revision.
+
 SG16 polls (R3) {#sg16-polls}
 ===============
 
 <strong>Forward P2093R3 to LEWG.</strong>
 
-```
-SF    WF    N     WA    SA
-4     2     2     0     1
-```
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>4
+  <td>2
+  <td>2
+  <td>0
+  <td>1
+</tr>
+</table>
 
 Consensus? Yes
 
@@ -121,10 +204,22 @@ LEWG polls (R2) {#lewg-polls2}
 <strong>We want P2093R2 to revert moving the `print(ostream)` overloads to the
 `<ostream>` header.</strong>
 
-```
-SF    WF    N     WA    SA
-0     0     6     6     1
-```
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>0
+  <td>6
+  <td>6
+  <td>1
+</tr>
+</table>
 
 Outcome: Keep the paper as is
 
@@ -133,26 +228,64 @@ LEWG polls (R1) {#lewg-polls1}
 
 <strong>We prefer `std::cout` as the default output target.</strong>
 
-```
-SF    WF    N     WA    SA
-3     2     6     6     5
-```
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>3
+  <td>2
+  <td>6
+  <td>6
+  <td>5
+</tr>
+</table>
 
 <strong>Add a member function on `ostream` instead of a
 `std::print(ostream&, ...)` free function overload.</strong>
 
-```
-SF    WF    N     WA    SA
-0     2     5     17    3
-```
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>2
+  <td>5
+  <td>17
+  <td>3
+</tr>
+</table>
+
 Consensus against.
 
 <strong>Remove `std::println` from the paper?</strong>
 
-```
-SF    WF    N     WA    SA
-1     10    7     4     4
-```
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>1
+  <td>10
+  <td>7
+  <td>4
+  <td>4
+</tr>
+</table>
+
 No consensus for change.
 
 <strong>We are happy with the design with regards to UTF-8 output.</strong>
@@ -417,10 +550,11 @@ functions should go to. Possible options:
 * `<ostream>`
 * `<utility>`
 
-The current paper proposes `<io>` analogous to `<cstdio>` so that the future
-I/O facilities that don't depend on ostream could be added there. Using
-`<ostream>` is undesirable becase this header and its transitive dependencies
-are very big (42 thousand lines preprocessed on libc++):
+The earlier version of the paper proposed `<io>` analogous to `<cstdio>` so
+that the future I/O facilities that don't depend on ostream could be added
+there. This was changed to a more narrow-focused `<print>` but `<io>` can be
+added in the future. Using `<ostream>` is undesirable becase this header and its
+transitive dependencies are very big (42 thousand lines preprocessed on libc++):
 
 ```
 % echo '#include <ostream>' | clang++ -E -x c++ - | wc -l
@@ -456,11 +590,22 @@ void print(string_view fmt, const Args&... args) {
     vprint_nonunicode(fmt, make_format_args(args...));
 }
 ```
-where the `vprint_unicode` function formats and prints text in
-the UTF-8 encoding using the native system API that supports Unicode and
-`vprint_nonunicode` does the same for other encodings. The latter
-ensures that interoperability with code using legacy encodings is preserved even
-though `print` is a new API and it is not strictly necessary.
+where the `vprint_unicode` function formats and prints text in UTF-8 using the
+native system API that supports Unicode and `vprint_nonunicode` does the same
+for other encodings. The latter ensures that interoperability with code using
+legacy encodings is preserved even though `print` is a new API and it is not
+strictly necessary. If calling the system API requires transcoding we propose
+substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER which is
+consistent with how such errors are commonly handled in terminals. For example
+
+```c++
+#include <stdio.h>
+
+int main() {
+  puts("\xc3\x28"); // Invalid 2 Octet Sequence
+}
+```
+prints `�(` in iTerm2 and `?(` in macOS Terminal.
 
 <!-- Check encoding term with Corentin. Probably literal encoding per
      https://twitter.com/vzverovich/status/1241752737831718912 -->
@@ -469,10 +614,17 @@ is UTF-8, which is enabled by the <code highlight="text">/execution-charset:utf-
 compiler flags or other means, and `false` otherwise. Literal encoding detection
 can be implemented in a more elegant way using [[P1885]].
 
+Note that ANSI escape codes for specifying coding systems ([[ISO2022]]) are not
+considered a native system API that supports Unicode for the purposes of this
+proposal.
+
+<!-- https://en.wikipedia.org/wiki/ISO/IEC_2022#Interaction_with_other_coding_systems -->
+
 We propose using the literal encoding for the following reasons:
 
 1. Consistency with the design of `std::format` which is locale-independent by
-     default ([[P0645]]).
+     default ([[P0645]]) and disallows implicitly mixing encodings
+     e.g. passing a narrow string into a wide `std::format` is ill-formed.
 2. Consistency with the encoding used for width estimation ([[P1868]]).
 3. Safety: the result of `formatted_size` does not depend on the global locale
      by default and a buffer allocated with this size can be passed safely to
@@ -490,10 +642,10 @@ We propose using the literal encoding for the following reasons:
      indication can be done via the standard extension API, e.g.
      (exposition only)
      ```
-print("Привет, {} and {}!", locale_enc(string_in_acp), term_enc(string_from_terminal));
+print("Привет, {}!", locale_enc(string_in_locale_encoding));
      ```
-     This is already possible to implement with existing `std::format` extension
-     API.
+     This is already possible to implement by providing appropriate
+     `std::formatter` specializations.
 
 This approach has been implemented in the fmt library ([[FMT]]), successfully
 tested and used on a variety of platforms.
@@ -872,7 +1024,7 @@ The following factors contribute to the difference in binary code size between
 Impact on existing code {#impact}
 =======================
 
-The current proposal adds new functions to the headers `<io>` and
+The current proposal adds new functions to the headers `<print>` and
 `<ostream>` and should have no impact on existing code.
 
 Implementation {#impl}
@@ -880,6 +1032,10 @@ Implementation {#impl}
 
 The proposed `print` function has been implemented in the the open-source fmt
 library [[FMT]] and has been in use for about 6 years.
+
+Rust's standard output facility uses essentially the same approach for
+preventing mojibake when printing to console on Windows ([[RUST-STDIO]]).
+The main difference is that invalid code units are reported as errors in Rust.
 
 Wording {#wording}
 =======
@@ -893,10 +1049,10 @@ in a place that respects the table’s current alphabetic order:
 <ins>#define __cpp_lib_print  202005L **placeholder**	// also in &lt;format&gt;</ins>
 </pre>
 
-Add the header `<io>` to the "C++ library headers" table in [headers], in a
+Add the header `<print>` to the "C++ library headers" table in [headers], in a
 place that respects the table’s current alphabetic order.
 
-<ins>29.7.? Header `<io>` synopsis [io.syn].</ins>
+<ins>29.7.? Header `<print>` synopsis [print.syn].</ins>
 
 <pre>
 <ins>
@@ -1422,6 +1578,10 @@ support, constructive criticism and contributions to the proposal.
     "title": "Google Benchmark: A microbenchmark support library",
     "href": "https://github.com/google/benchmark"
   },
+  "ISO2022": {
+    "title": "ISO/IEC 2022 Information technology—Character code structure and extension techniques",
+    "href": "https://www.iso.org/standard/22747.html"
+  },
   "JAVA-PRINT": {
     "title":
     "Java™ Platform, Standard Edition 7 API Specification, Class PrintStream",
@@ -1485,6 +1645,10 @@ support, constructive criticism and contributions to the proposal.
   "RUST-PRINT": {
     "title": "The Rust Standard Library, Macro std::print",
     "href": "https://doc.rust-lang.org/std/macro.print.html"
+  },
+  "RUST-STDIO": {
+    "title": "The Rust Programming Language repository, windows_stdio",
+    "href": "https://github.com/rust-lang/rust/blob/db492ecd5ba6bd82205612cebb9034710653f0c2/library/std/src/sys/windows/stdio.rs"
   },
   "SWIFT-PRINT": {
     "title": "Swift Standard Library, print",
