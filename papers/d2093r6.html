@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2bb0b0fb56985b91a1d7aec7acce44d77eeca34d" name="document-revision">
+  <meta content="24d62f80bb92f0a1451c32eca55cc5c828efbd09" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1932,7 +1932,7 @@ using <code class="highlight"><c- n>stdout</c-></code> for the following reasons
      <p><code class="highlight"><c- n>stdout</c-></code> is considerably faster on at least two major implementations
 (see <a href="#perf">§ 10 Performance</a>).</p>
     <li data-md>
-     <p>Better compatibilty with other formatted I/O facilities compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> and its associated <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>streambuf</c-></code> that suffer from private
+     <p>Better compatibility with other formatted I/O facilities compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> and its associated <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>streambuf</c-></code> that suffer from private
 buffering, localization and conversion services that must be synchronized at
 a lower level.</p>
     <li data-md>
@@ -1941,7 +1941,7 @@ a lower level.</p>
    <p>Since <code class="highlight"><c- n>stdout</c-></code> doesn’t have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with <code class="highlight"><c- n>format</c-></code>. With <code class="highlight"><c- n>cout</c-></code> or another explicitly passed
-stream, the stream’s locale will be used. In all cases the defalt formatting is
+stream, the stream’s locale will be used. In all cases the default formatting is
 locale-independent.</p>
    <p>Another option is to make <code class="highlight"><c- n>print</c-></code> a member function of <code class="highlight"><c- n>basic_ostream</c-></code>. This
 would make usage somewhat more awkward:</p>
@@ -1988,7 +1988,7 @@ functions should go to. Possible options:</p>
    <p>Earlier versions of the paper proposed <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> analogous to <code class="highlight"><c- o>&lt;</c-><c- n>cstdio</c-><c- o>></c-></code> so that
 the future I/O facilities that don’t depend on ostream could be added there.
 This was changed to a more narrow-focused <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> but <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> can be added in
-the future once a symmetric input facility becomes available. Using <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> is undesirable becase this header and its transitive dependencies are very big
+the future once a symmetric input facility becomes available. Using <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> is undesirable because this header and its transitive dependencies are very big
 (42 thousand lines preprocessed on libc++):</p>
 <pre class="highlight"><c- o>%</c-> <c- n>echo</c-> '#<c- n>include</c-> <c- o>&lt;</c-><c- n>ostream</c-><c- o>></c->' <c- o>|</c-> <c- n>clang</c-><c- o>++</c-> <c- o>-</c-><c- n>E</c-> <c- o>-</c-><c- n>x</c-> <c- n>c</c-><c- o>++</c-> <c- o>-</c-> <c- o>|</c-> <c- n>wc</c-> <c- o>-</c-><c- n>l</c->
    <c- mi>42491</c->
@@ -2019,14 +2019,16 @@ for other encodings. The latter ensures that interoperability with code using
 legacy encodings is preserved even though <code class="highlight"><c- n>print</c-></code> is a new API and it is not
 strictly necessary. If calling the system API requires transcoding we propose
 substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER which is
-consistent with how such errors are commonly handled in terminals. For example 
+consistent with the treatment of malformed UTF-8 in UTF-8-native terminals.
+For example 
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;stdio.h>
 
 <c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
   <c- n>puts</c-><c- p>(</c-><c- s>"</c-><c- se>\xc3\x28</c-><c- s>"</c-><c- p>);</c-> <c- c1>// Invalid 2 Octet Sequence</c->
 <c- p>}</c->
 </pre>
-   prints <code class="highlight">�<c- p>(</c-></code> in iTerm2 and <code class="highlight"><c- o>?</c-><c- p>(</c-></code> in macOS Terminal. 
+   prints <code class="highlight">�<c- p>(</c-></code> in iTerm2 and <code class="highlight"><c- o>?</c-><c- p>(</c-></code> in macOS Terminal. So whether transcoding is done
+or not in the UTF-8 case, you will normally get similar observed behavior. 
    <p>In Visual C++ <code class="highlight"><c- n>is_utf8</c-></code> will return <code class="highlight">true</code> if the literal (execution) encoding
 is UTF-8, which is enabled by the <code class="highlight">/execution-charset:utf-8</code> compiler flags or other means, and <code class="highlight">false</code> otherwise. Literal encoding detection
 can be implemented in a more elegant way using <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a>.</p>
@@ -2054,7 +2056,7 @@ proposal.</p>
     <li data-md>
      <p>The active code page and the terminal encoding being unrelated on popular
  Windows localizations such as Russian where the former is CP1251 while the
- latter is CP866. Instead of assuming one encoding regarless of the string
+ latter is CP866. Instead of assuming one encoding regardless of the string
  origin which would often result in mojibake, an explicit encoding
  indication can be done via the standard extension API, e.g.
  (exposition only)</p>
@@ -2144,7 +2146,7 @@ Java gave the worst results producing both mojibake and replacement characters
 in this case: "╧ЁштхЄ, ??????!". Most other languages produced valid UTF-8
 when the output of <code class="highlight"><c- n>findstr</c-></code> was redirected to a file.</p>
    <p>The current paper proposes following C, Go, JavaScript and Rust and preserve
-the original encoding (modulo UTF conversion). The only difference compared to <code class="highlight"><c- n>printf</c-></code> is that we fix the output to console on Windows. Java’s approach is
+the original encoding (modulo UTF conversion). The only difference compared to <code class="highlight"><c- n>printf</c-></code> is that we fix the console output on Windows. Java’s approach is
 problematic for the following reasons:</p>
    <ul>
     <li data-md>
@@ -2234,7 +2236,7 @@ synchronization to the standard C streams turned off. <code class="highlight"><c
 printing to <code class="highlight"><c- n>stdout</c-></code> than to <code class="highlight"><c- n>cout</c-></code>. For this reason and because <code class="highlight"><c- n>print</c-></code> doesn’t
 use formatting facilities of <code class="highlight"><c- n>ostream</c-></code> we propose using <code class="highlight"><c- n>stdout</c-></code> as the default
 output stream and providing an overload for writing to <code class="highlight"><c- n>ostream</c-></code>.</p>
-   <p>On Windows 10 with Visual C++ 2019 the results are similar althought the
+   <p>On Windows 10 with Visual C++ 2019 the results are similar although the
 difference between <code class="highlight"><c- n>print</c-></code> writing to <code class="highlight"><c- n>stdout</c-></code> and <code class="highlight"><c- n>cout</c-></code> is smaller with <code class="highlight"><c- n>stdout</c-></code> being 7% faster:</p>
 <pre class="language-text highlight">Run on (1 X 2808 MHz CPU )
 CPU Caches:
@@ -2362,7 +2364,7 @@ handling would make its code size closer to that of <code class="highlight"><c- 
    <h2 class="heading settled" data-level="12" id="impact"><span class="secno">12. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>The current proposal adds new functions to the headers <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> and should have no impact on existing code.</p>
    <h2 class="heading settled" data-level="13" id="impl"><span class="secno">13. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
-   <p>The proposed <code class="highlight"><c- n>print</c-></code> function has been implemented in the the open-source fmt
+   <p>The proposed <code class="highlight"><c- n>print</c-></code> function has been implemented in the open-source fmt
 library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in use for about 6 years.</p>
    <p>Rust’s standard output facility uses essentially the same approach for
 preventing mojibake when printing to console on Windows (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>).
@@ -2788,8 +2790,9 @@ Output files:</p>
    </ul>
    <h2 class="heading settled" data-level="15" id="ack"><span class="secno">15. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
-   <p>Thanks to Roger Orr, Peter Brett, the BSI C++ panel and Tom Honermann for their feedback,
-support, constructive criticism and contributions to the proposal.</p>
+   <p>Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
+Honermann for their feedback, support, constructive criticism and contributions
+to the proposal.</p>
   </main>
 <script>
 (function() {

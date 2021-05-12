@@ -487,7 +487,7 @@ using `stdout` for the following reasons:
 * `stdout` is considerably faster on at least two major implementations
     (see [[#perf]]).
 
-* Better compatibilty with other formatted I/O facilities compared to
+* Better compatibility with other formatted I/O facilities compared to
     `std::cout` and its associated `std::streambuf` that suffer from private
     buffering, localization and conversion services that must be synchronized at
     a lower level.
@@ -497,7 +497,7 @@ using `stdout` for the following reasons:
 Since `stdout` doesn't have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with `format`. With `cout` or another explicitly passed
-stream, the stream's locale will be used. In all cases the defalt formatting is
+stream, the stream's locale will be used. In all cases the default formatting is
 locale-independent.
 
 Another option is to make `print` a member function of `basic_ostream`. This
@@ -554,7 +554,7 @@ Earlier versions of the paper proposed `<io>` analogous to `<cstdio>` so that
 the future I/O facilities that don't depend on ostream could be added there.
 This was changed to a more narrow-focused `<print>` but `<io>` can be added in
 the future once a symmetric input facility becomes available. Using `<ostream>`
-is undesirable becase this header and its transitive dependencies are very big
+is undesirable because this header and its transitive dependencies are very big
 (42 thousand lines preprocessed on libc++):
 
 ```
@@ -597,7 +597,8 @@ for other encodings. The latter ensures that interoperability with code using
 legacy encodings is preserved even though `print` is a new API and it is not
 strictly necessary. If calling the system API requires transcoding we propose
 substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER which is
-consistent with how such errors are commonly handled in terminals. For example
+consistent with the treatment of malformed UTF-8 in UTF-8-native terminals.
+For example
 
 ```c++
 #include <stdio.h>
@@ -606,7 +607,8 @@ int main() {
   puts("\xc3\x28"); // Invalid 2 Octet Sequence
 }
 ```
-prints `�(` in iTerm2 and `?(` in macOS Terminal.
+prints `�(` in iTerm2 and `?(` in macOS Terminal. So whether transcoding is done
+or not in the UTF-8 case, you will normally get similar observed behavior.
 
 <!-- Check encoding term with Corentin. Probably literal encoding per
      https://twitter.com/vzverovich/status/1241752737831718912 -->
@@ -638,7 +640,7 @@ We propose using the literal encoding for the following reasons:
      gettext macro.
 6. The active code page and the terminal encoding being unrelated on popular
      Windows localizations such as Russian where the former is CP1251 while the
-     latter is CP866. Instead of assuming one encoding regarless of the string
+     latter is CP866. Instead of assuming one encoding regardless of the string
      origin which would often result in mojibake, an explicit encoding
      indication can be done via the standard extension API, e.g.
      (exposition only)
@@ -770,7 +772,7 @@ when the output of `findstr` was redirected to a file.
 
 The current paper proposes following C, Go, JavaScript and Rust and preserve
 the original encoding (modulo UTF conversion). The only difference compared to
-`printf` is that we fix the output to console on Windows. Java's approach is
+`printf` is that we fix the console output on Windows. Java's approach is
 problematic for the following reasons:
 
 * There is a silent data loss for **valid** Unicode code points when the output
@@ -869,7 +871,7 @@ printing to `stdout` than to `cout`. For this reason and because `print` doesn't
 use formatting facilities of `ostream` we propose using `stdout` as the default
 output stream and providing an overload for writing to `ostream`.
 
-On Windows 10 with Visual C++ 2019 the results are similar althought the
+On Windows 10 with Visual C++ 2019 the results are similar although the
 difference between `print` writing to `stdout` and `cout` is smaller with
 `stdout` being 7% faster:
 
@@ -1031,7 +1033,7 @@ The current proposal adds new functions to the headers `<print>` and
 Implementation {#impl}
 ==============
 
-The proposed `print` function has been implemented in the the open-source fmt
+The proposed `print` function has been implemented in the open-source fmt
 library [[FMT]] and has been in use for about 6 years.
 
 Rust's standard output facility uses essentially the same approach for
@@ -1541,8 +1543,9 @@ Acknowledgements {#ack}
 Thanks to Corentin Jabot for his work on text encodings in C++ and in particular
 [[P1885]] that will simplify implementation of the current proposal.
 
-Thanks to Roger Orr, Peter Brett, the BSI C++ panel and Tom Honermann for their feedback,
-support, constructive criticism and contributions to the proposal.
+Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
+Honermann for their feedback, support, constructive criticism and contributions
+to the proposal.
 
 <pre class=biblio>
 {
