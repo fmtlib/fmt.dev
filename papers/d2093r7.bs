@@ -49,6 +49,19 @@ Revision history {#hist}
 
 Changes since R6:
 
+* Replaced "invalid code units" with "invalid code unit sequences" in
+    [[#unicode]] per SG16 feedback.
+
+* Replaced "invalid code points are substituted with U+FFFD � REPLACEMENT
+    CHARACTER" with "invalid code unit sequences are substituted with U+FFFD �
+    REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
+    Specification, Chapter 3.9 Unicode Encoding Forms, U+FFFD Substitution of
+    Maximal Subparts." in [[#wording]] per SG16 feedback.
+
+* Added "The Unicode® Standard Version 13.0 – Core Specification, Chapter 3.9
+    Unicode Encoding Forms, U+FFFD Substitution of Maximal Subparts" to
+    Normative references in [[#wording]].
+
 * Clarified the behavior when mixing encodings in [[#unicode]].
 
 Changes since R5:
@@ -164,7 +177,7 @@ units with `U+FFFD REPLACEMENT CHARACTER`.
 </tr>
 </table>
 
-Consensus: Consensus against the direction.
+Outcome: Consensus against the direction.
 
 LEWG polls (R5) {#lewg-polls5}
 ===============
@@ -653,9 +666,9 @@ native system API that supports Unicode and `vprint_nonunicode` does the same
 for other encodings. The latter ensures that interoperability with code using
 legacy encodings is preserved even though `print` is a new API and it is not
 strictly necessary. If calling the system API requires transcoding we propose
-substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER which is
-consistent with the treatment of malformed UTF-8 in UTF-8-native terminals.
-For example
+substituting invalid code unit sequences with U+FFFD � REPLACEMENT CHARACTER
+which is consistent with the treatment of malformed UTF-8 in UTF-8-native
+terminals. For example
 
 ```c++
 #include <stdio.h>
@@ -1246,8 +1259,10 @@ If `stream` refers to a terminal [ Note: On POSIX and Windows meaning that
 return nonzero respectively. — end note ] capable of
 displaying Unicode, writes `out` to the terminal using the native Unicode API.
 [ Note: On Windows this API is `WriteConsoleW`. — end note ]
-If this requires transcoding then invalid code points are substituted with 
-U+FFFD � REPLACEMENT CHARACTER. Otherwise writes `out` to `stream` unchanged.
+If this requires transcoding then invalid code unit sequences are substituted
+with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 –
+Core Specification, Chapter 3.9 Unicode Encoding Forms, U+FFFD Substitution of
+Maximal Subparts. Otherwise writes `out` to `stream` unchanged.
 </ins>
 <p>
 <ins>
@@ -1346,6 +1361,13 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.
 or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications.
+</ins>
+
+Add to Normative references [intro.refs]:
+
+<ins>
+– The Unicode® Standard Version 13.0 – Core Specification, Chapter 3.9 Unicode
+Encoding Forms, U+FFFD Substitution of Maximal Subparts
 </ins>
 
 Appendix A: Unicode tests {#lst}
