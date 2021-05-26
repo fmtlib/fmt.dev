@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R6: Formatted output</title>
+  <title>D2093R7: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1296,7 +1296,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bc6fdf8e2bacdd137d5c8dfde98d3a9baee51672" name="document-revision">
+  <meta content="8b82ce94c677ff44ee81105ad957e1f1db431870" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1519,8 +1519,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R6<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-05-13">2021-05-13</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2093R7<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-05-26">2021-05-26</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Author:
@@ -1582,13 +1582,13 @@ intuitive API achieving the following goals:</p>
    <p>Changes since R6:</p>
    <ul>
     <li data-md>
-     <p>Replaced "invalid code units" with "invalid code unit sequences" in <a href="#unicode">§ 10 Unicode</a> per SG16 feedback.</p>
-    <li data-md>
      <p>Replaced "invalid code points are substituted with U+FFFD � REPLACEMENT
-CHARACTER" with "invalid code unit sequences are substituted with U+FFFD �
+CHARACTER" with "invalid code units are substituted with U+FFFD �
 REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
-Specification, Chapter 3.9 Unicode Encoding Forms, U+FFFD Substitution of
-Maximal Subparts." in <a href="#wording">§ 15 Wording</a> per SG16 feedback.</p>
+Specification, Chapter 3.9" in <a href="#wording">§ 15 Wording</a> per SG16 feedback.</p>
+    <li data-md>
+     <p>Added "The Unicode® Standard Version 13.0 – Core Specification" to
+Normative references in <a href="#wording">§ 15 Wording</a>.</p>
     <li data-md>
      <p>Clarified the behavior when mixing encodings in <a href="#unicode">§ 10 Unicode</a>.</p>
    </ul>
@@ -2075,7 +2075,7 @@ native system API that supports Unicode and <code class="highlight"><c- n>vprint
 for other encodings. The latter ensures that interoperability with code using
 legacy encodings is preserved even though <code class="highlight"><c- n>print</c-></code> is a new API and it is not
 strictly necessary. If calling the system API requires transcoding we propose
-substituting invalid code unit sequences with U+FFFD � REPLACEMENT CHARACTER
+substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER
 which is consistent with the treatment of malformed UTF-8 in UTF-8-native
 terminals. For example 
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;stdio.h>
@@ -2526,10 +2526,9 @@ place that respects the table’s current alphabetic order.</p>
 If <code class="highlight"><c- n>stream</c-></code> refers to a terminal [ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> return nonzero respectively. — end note ] capable of
 displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the native Unicode API.
 [ Note: On Windows this API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ]
-If this requires transcoding then invalid code unit sequences are substituted
+If this requires transcoding then invalid code units are substituted
 with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 –
-Core Specification, Chapter 3.9 Unicode Encoding Forms, U+FFFD Substitution of
-Maximal Subparts. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
+Core Specification, Chapter 3.9. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
@@ -2590,8 +2589,7 @@ other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
    <p>Add to Normative references [intro.refs]:</p>
-   <ins> – The Unicode® Standard Version 13.0 – Core Specification, Chapter 3.9 Unicode
-Encoding Forms, U+FFFD Substitution of Maximal Subparts </ins>
+   <ins> – The Unicode® Standard Version 13.0 – Core Specification </ins>
    <h2 class="heading settled" id="lst"><span class="content">Appendix A: Unicode tests</span><a class="self-link" href="#lst"></a></h2>
    <p>This appendix gives full listings of programs for testing Unicode handling in
 various formatting facilities as well as test commands and their output on
