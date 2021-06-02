@@ -177,14 +177,16 @@ than common standard library implementations.
 The <a class="reference external" href="syntax.html">format string syntax</a> is similar to the one used by
 <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format">str.format</a> in
 Python:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">fmt::format</span></code> function returns a string “The answer is 42.”. You can use
 <code class="docutils literal notranslate"><span class="pre">fmt::memory_buffer</span></code> to avoid constructing <code class="docutils literal notranslate"><span class="pre">std::string</span></code>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span> <span class="n">out</span><span class="p">;</span>
-<span class="n">format_to</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">&quot;For a moment, {} happened.&quot;</span><span class="p">,</span> <span class="s">&quot;nothing&quot;</span><span class="p">);</span>
-<span class="n">out</span><span class="p">.</span><span class="n">data</span><span class="p">();</span> <span class="c1">// returns a pointer to the formatted data</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">out</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span><span class="p">();</span>
+<span class="n">format_to</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">back_inserter</span><span class="p">(</span><span class="n">out</span><span class="p">),</span>
+          <span class="s">&quot;For a moment, {} happened.&quot;</span><span class="p">,</span> <span class="s">&quot;nothing&quot;</span><span class="p">);</span>
+<span class="k">auto</span> <span class="n">data</span> <span class="o">=</span> <span class="n">out</span><span class="p">.</span><span class="n">data</span><span class="p">();</span> <span class="c1">// pointer to the formatted data</span>
+<span class="k">auto</span> <span class="n">size</span> <span class="o">=</span> <span class="n">out</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="c1">// size of the formatted data</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">fmt::print</span></code> function performs formatting and writes the result to a stream:</p>
@@ -233,14 +235,10 @@ See <a class="reference external" href="api.html#c.fmt">here</a> for details.</p
 </pre></div>
 </div>
 <p>produces a compile-time error because wide character <code class="docutils literal notranslate"><span class="pre">L'\x42e'</span></code> cannot be
-formatted into a narrow string. You can use a wide format string instead:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span>fmt::format(L&quot;Cyrillic letter {}&quot;, L&#39;\x42e&#39;);
-</pre></div>
-</div>
-<p>For comparison, writing a wide character to <code class="docutils literal notranslate"><span class="pre">std::ostream</span></code> results in
-its numeric value being written to the stream (i.e. 1070 instead of letter ‘ю’
-which is represented by <code class="docutils literal notranslate"><span class="pre">L'\x42e'</span></code> if we use Unicode) which is rarely
-desirable.</p>
+formatted into a narrow string. For comparison, writing a wide character to
+<code class="docutils literal notranslate"><span class="pre">std::ostream</span></code> results in its numeric value being written to the stream
+(i.e. 1070 instead of letter ‘ю’ which is represented by <code class="docutils literal notranslate"><span class="pre">L'\x42e'</span></code> if we
+use Unicode) which is rarely desirable.</p>
 </section>
 <section id="compact-binary-code">
 <h2>Compact Binary Code<a class="headerlink" href="#compact-binary-code" title="Permalink to this headline">¶</a></h2>
