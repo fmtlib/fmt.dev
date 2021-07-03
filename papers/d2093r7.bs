@@ -8,7 +8,7 @@ Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-05-26
+Date: 2021-07-03
 Markup Shorthands: markdown yes
 </pre>
 
@@ -48,6 +48,9 @@ Revision history {#hist}
 ================
 
 Changes since R6:
+
+* Rebased the wording onto the latest draft, most importantly adding
+    compile-time checks introduced by [[P2216]].
 
 * Replaced "invalid code points are substituted with U+FFFD � REPLACEMENT
     CHARACTER" with "invalid code units are substituted with U+FFFD �
@@ -1134,14 +1137,14 @@ place that respects the table’s current alphabetic order.
 <ins>
 namespace std {
   template&lt;class... Args&gt;
-    void print(string_view fmt, const Args&... args);
+    void print(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
   template&lt;class... Args&gt;
-    void print(FILE* stream, string_view fmt, const Args&... args);
+    void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 
   template&lt;class... Args&gt;
-    void println(string_view fmt, const Args&... args);
+    void println(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
   template&lt;class... Args&gt;
-    void println(FILE* stream, string_view fmt, const Args&... args);
+    void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 
   void vprint_unicode(string_view fmt, format_args args);
   void vprint_unicode(FILE* stream, string_view fmt, format_args args);
@@ -1161,9 +1164,9 @@ template&lt;class charT, class traits, class T&gt;
 basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&& os, const T& x);
 <ins>
 template&lt;class... Args&gt;
-  void print(ostream& os, string_view fmt, const Args&... args);
+  void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 template&lt;class... Args&gt;
-  void println(ostream& os, string_view fmt, const Args&... args);
+  void println(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 
 void vprint_unicode(ostream& os, string_view fmt, format_args args);
 void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
@@ -1175,7 +1178,7 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(string_view fmt, const Args&... args);
+  void print(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
 <span class="parnum">26</span> <ins>*Effects:* Equivalent to:
@@ -1188,26 +1191,26 @@ template&lt;class... Args&gt;
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(FILE* stream, string_view fmt, const Args&... args);
+  void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
 <span class="parnum">27</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(stream, fmt, make_format_args(args...));
+  vprint_unicode(stream, fmt.str, make_format_args(args...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(stream, fmt, make_format_args(args...));
+  vprint_nonunicode(stream, fmt.str, make_format_args(args...));
 </ins>
 </pre>
 
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void println(string_view fmt, const Args&... args);
+  void println(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
 <span class="parnum">28</span> <ins>*Effects:* Equivalent to:
@@ -1220,7 +1223,7 @@ template&lt;class... Args&gt;
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void println(FILE* stream, string_view fmt, const Args&... args);
+  void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
 <span class="parnum">29</span> <ins>*Effects:* Equivalent to:
@@ -1304,7 +1307,7 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(ostream& os, string_view fmt, const Args&... args);
+  void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
 <span class="parnum">1</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
@@ -1705,6 +1708,11 @@ to the proposal.
     "title": "🦄 width: clarifying units of width and precision in std::format",
     "authors": ["Victor Zverovich", "Zach Laine"],
     "href": "https://wg21.link/p1868"
+  },
+  "P2216": {
+    "title": "std::format improvements",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2216"
   },
   "PERL-PRINTF": {
     "title": "Perl 5 version 30.0 documentation, Language reference, printf",
