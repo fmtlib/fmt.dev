@@ -49,6 +49,8 @@ Revision history {#hist}
 
 Changes since R6:
 
+* Added new SG16 poll results.
+
 * Rebased the wording onto the latest draft, most importantly adding
     compile-time checks introduced by [[P2216]].
 
@@ -129,7 +131,7 @@ Changes since R0:
 SG16 polls (R6) {#sg16-polls6}
 ===============
 
-Poll: When `<print>` facilities must transcode their formatting results for
+**Poll**: When `<print>` facilities must transcode their formatting results for
 display on a device, and during that process invalidly-encoded text is
 encountered, `print()` should replace the erroneously-encoded code units with
 `U+FFFD REPLACEMENT CHARACTER`.
@@ -153,7 +155,7 @@ encountered, `print()` should replace the erroneously-encoded code units with
 
 Outcome: Consensus for the position
 
-Poll: When `<print>` facilities need not transcode their formatting results
+**Poll**: When `<print>` facilities need not transcode their formatting results
 for display on a device, and during that process invalidly-encoded text is
 encountered, `print()` should nevertheless replace the erroneously-encoded code
 units with `U+FFFD REPLACEMENT CHARACTER`.
@@ -176,6 +178,217 @@ units with `U+FFFD REPLACEMENT CHARACTER`.
 </table>
 
 Outcome: Consensus against the direction.
+
+**Poll**: `<format>` and `<print>` facilities should have consistent behavior
+with respect to encoding expectations for the format string.
+
+No objection to unanimous consent.
+
+**Poll**: formatters should not be sensitive to whether they are being used with a
+`<format>` or `<print>` facility.
+
+No objection to unanimous consent.
+
+**Poll**: Regardless of format string encoding assumptions, `<format>` facilities
+may be used to format binary data.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>5
+  <td>1
+  <td>1
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus: Strong consensus in favor.
+
+**Poll**: Regardless of format string encoding assumptions, `<print>` facilities may
+be used to format binary data.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>2
+  <td>1
+  <td>3
+  <td>1
+  <td>0
+</tr>
+</table>
+
+Consensus: Weak consensus in favor.
+
+**Poll**: `<print>` facilities exhibit undefined behavior when an encoding
+expectation is present and a format string or formatter output does not match
+those expectations.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>2
+  <td>4
+  <td>0
+  <td>0
+  <td>1
+</tr>
+</table>
+
+Consensus: Strong consensus in favor.
+
+**Poll**: `<print>` facilities exhibit undefined behavior when an encoding
+expectation is present and a format string or formatter output does not match
+those expectations and output is directed to a device that has encoding
+expectations.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>6
+  <td>0
+  <td>1
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus: Stronger consensus in favor relative to previous poll.
+
+**Poll**: `<print>` facility implementors are encouraged to provide a run-time
+means for diagnosing format strings and formatter output that is not well-formed
+according to the expected encoding.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>4
+  <td>0
+  <td>2
+  <td>1
+  <td>0
+</tr>
+</table>
+
+Consensus: Consensus in favor.
+
+**Poll**: `<format>` and `<print>` facilities should have consistent behavior
+with respect to encoding expectations for the output of formatters.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>1
+  <td>1
+  <td>5
+  <td>1
+</tr>
+</table>
+
+Consensus: Strong consensus against.
+
+**Poll**: `<print>` facility implementors are encouraged to substitute `U+FFFD`
+replacement characters following Unicode guidance when output is directed to a
+device and transcoding is necessary.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>2
+  <td>5
+  <td>0
+  <td>0
+  <td>1
+</tr>
+</table>
+
+Consensus: Consensus in favor.
+
+**Poll**: `<print>` facilities must provide an explicit program-controlled error
+handling mechanism for violations of encoding expectations.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>0
+  <td>3
+  <td>3
+  <td>3
+</tr>
+</table>
+
+**Poll**: Use of UTF-8 as the literal encoding is sufficient for `<print>`
+facilities to establish encoding expectations.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>3
+  <td>1
+  <td>3
+  <td>2
+  <td>0
+</tr>
+</table>
+
+Consensus: Very weak consensus.
 
 LEWG polls (R5) {#lewg-polls5}
 ===============

@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="022fa9212457743ef4a67b833c0a110c852d5ac4" name="document-revision">
+  <meta content="7ed7421753367f04642dbae251ace2551005b9ea" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2147,6 +2147,8 @@ intuitive API achieving the following goals:</p>
    <p>Changes since R6:</p>
    <ul>
     <li data-md>
+     <p>Added new SG16 poll results.</p>
+    <li data-md>
      <p>Rebased the wording onto the latest draft, most importantly adding
 compile-time checks introduced by <a data-link-type="biblio" href="#biblio-p2216">[P2216]</a>.</p>
     <li data-md>
@@ -2240,7 +2242,7 @@ updating the <em>Throws</em> clauses to match existing wording.</p>
 paper per the UK C++ panel feedback.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="sg16-polls6"><span class="secno">3. </span><span class="content">SG16 polls (R6)</span><a class="self-link" href="#sg16-polls6"></a></h2>
-   <p>Poll: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities must transcode their formatting results for
+   <p><strong>Poll</strong>: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities must transcode their formatting results for
 display on a device, and during that process invalidly-encoded text is
 encountered, <code class="highlight"><c- n>print</c-><c- p>()</c-></code> should replace the erroneously-encoded code units with <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-> <c- n>REPLACEMENT</c-> <c- n>CHARACTER</c-></code>.</p>
    <table class="poll">
@@ -2259,7 +2261,7 @@ encountered, <code class="highlight"><c- n>print</c-><c- p>()</c-></code> should
       <td>0 
    </table>
    <p>Outcome: Consensus for the position</p>
-   <p>Poll: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities need not transcode their formatting results
+   <p><strong>Poll</strong>: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities need not transcode their formatting results
 for display on a device, and during that process invalidly-encoded text is
 encountered, <code class="highlight"><c- n>print</c-><c- p>()</c-></code> should nevertheless replace the erroneously-encoded code
 units with <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-> <c- n>REPLACEMENT</c-> <c- n>CHARACTER</c-></code>.</p>
@@ -2279,6 +2281,175 @@ units with <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-> <c- n
       <td>3 
    </table>
    <p>Outcome: Consensus against the direction.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities should have consistent behavior
+with respect to encoding expectations for the format string.</p>
+   <p>No objection to unanimous consent.</p>
+   <p><strong>Poll</strong>: formatters should not be sensitive to whether they are being used with a <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> or <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facility.</p>
+   <p>No objection to unanimous consent.</p>
+   <p><strong>Poll</strong>: Regardless of format string encoding assumptions, <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> facilities
+may be used to format binary data.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>5 
+      <td>1 
+      <td>1 
+      <td>0 
+      <td>0 
+   </table>
+   <p>Consensus: Strong consensus in favor.</p>
+   <p><strong>Poll</strong>: Regardless of format string encoding assumptions, <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities may
+be used to format binary data.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>2 
+      <td>1 
+      <td>3 
+      <td>1 
+      <td>0 
+   </table>
+   <p>Consensus: Weak consensus in favor.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities exhibit undefined behavior when an encoding
+expectation is present and a format string or formatter output does not match
+those expectations.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>2 
+      <td>4 
+      <td>0 
+      <td>0 
+      <td>1 
+   </table>
+   <p>Consensus: Strong consensus in favor.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities exhibit undefined behavior when an encoding
+expectation is present and a format string or formatter output does not match
+those expectations and output is directed to a device that has encoding
+expectations.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>6 
+      <td>0 
+      <td>1 
+      <td>0 
+      <td>0 
+   </table>
+   <p>Consensus: Stronger consensus in favor relative to previous poll.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facility implementors are encouraged to provide a run-time
+means for diagnosing format strings and formatter output that is not well-formed
+according to the expected encoding.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>4 
+      <td>0 
+      <td>2 
+      <td>1 
+      <td>0 
+   </table>
+   <p>Consensus: Consensus in favor.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities should have consistent behavior
+with respect to encoding expectations for the output of formatters.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>0 
+      <td>1 
+      <td>1 
+      <td>5 
+      <td>1 
+   </table>
+   <p>Consensus: Strong consensus against.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facility implementors are encouraged to substitute <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-></code> replacement characters following Unicode guidance when output is directed to a
+device and transcoding is necessary.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>2 
+      <td>5 
+      <td>0 
+      <td>0 
+      <td>1 
+   </table>
+   <p>Consensus: Consensus in favor.</p>
+   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities must provide an explicit program-controlled error
+handling mechanism for violations of encoding expectations.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>0 
+      <td>0 
+      <td>3 
+      <td>3 
+      <td>3 
+   </table>
+   <p><strong>Poll</strong>: Use of UTF-8 as the literal encoding is sufficient for <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities to establish encoding expectations.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>3 
+      <td>1 
+      <td>3 
+      <td>2 
+      <td>0 
+   </table>
+   <p>Consensus: Very weak consensus.</p>
    <h2 class="heading settled" data-level="4" id="lewg-polls5"><span class="secno">4. </span><span class="content">LEWG polls (R5)</span><a class="self-link" href="#lewg-polls5"></a></h2>
    <p>Poll: Block P2093 until we have a proposal for a lower level facility that can
 query tty/console and perform direct output to the console</p>
