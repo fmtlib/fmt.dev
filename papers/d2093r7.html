@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="069ed7a0cfc769d8d6be5277e3be7644e7284c1b" name="document-revision">
+  <meta content="e1a47cdf2f557987588ed18c8c912a4bb0c7163b" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2152,12 +2152,13 @@ intuitive API achieving the following goals:</p>
      <p>Rebased the wording onto the latest draft, most importantly adding
 compile-time checks introduced by <a data-link-type="biblio" href="#biblio-p2216">[P2216]</a>.</p>
     <li data-md>
-     <p>Added "If <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior is undefined."
+     <p>Added "If <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior is undefined and
+implementations are encouraged to diagnose it."
 to the definition of <code class="highlight"><c- n>vprint_unicode</c-></code> per SG16 feedback.</p>
     <li data-md>
      <p>Replaced "invalid code points are substituted with U+FFFD � REPLACEMENT
-CHARACTER" with "invalid code units are substituted with U+FFFD �
-REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
+CHARACTER" with " implementations should substitute invalid code units with
+U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
 Specification, Chapter 3.9" in <a href="#wording">§ 15 Wording</a> per SG16 feedback.</p>
     <li data-md>
      <p>Added "The Unicode® Standard Version 13.0 – Core Specification" to
@@ -3268,10 +3269,11 @@ place that respects the table’s current alphabetic order.</p>
 If <code class="highlight"><c- n>stream</c-></code> refers to a terminal [ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> return nonzero respectively. — end note ] capable of
 displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the native Unicode API.
 [ Note: On Windows this API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ]
-If <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior is undefined.
-If this requires transcoding then invalid code units are substituted
-with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 –
-Core Specification, Chapter 3.9. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
+If <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior is undefined and
+implementations are encouraged to diagnose it.
+If this requires transcoding then implementations should substitute invalid code
+units with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0
+– Core Specification, Chapter 3.9. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or

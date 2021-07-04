@@ -54,12 +54,13 @@ Changes since R6:
 * Rebased the wording onto the latest draft, most importantly adding
     compile-time checks introduced by [[P2216]].
 
-* Added "If `out` contains invalid code units, the behavior is undefined."
+* Added "If `out` contains invalid code units, the behavior is undefined and
+    implementations are encouraged to diagnose it."
     to the definition of `vprint_unicode` per SG16 feedback.
 
 * Replaced "invalid code points are substituted with U+FFFD � REPLACEMENT
-    CHARACTER" with "invalid code units are substituted with U+FFFD �
-    REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
+    CHARACTER" with " implementations should substitute invalid code units with
+    U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
     Specification, Chapter 3.9" in [[#wording]] per SG16 feedback.
 
 * Added "The Unicode® Standard Version 13.0 – Core Specification" to
@@ -1473,10 +1474,11 @@ If `stream` refers to a terminal [ Note: On POSIX and Windows meaning that
 return nonzero respectively. — end note ] capable of
 displaying Unicode, writes `out` to the terminal using the native Unicode API.
 [ Note: On Windows this API is `WriteConsoleW`. — end note ]
-If `out` contains invalid code units, the behavior is undefined.
-If this requires transcoding then invalid code units are substituted
-with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 –
-Core Specification, Chapter 3.9. Otherwise writes `out` to `stream` unchanged.
+If `out` contains invalid code units, the behavior is undefined and
+implementations are encouraged to diagnose it.
+If this requires transcoding then implementations should substitute invalid code
+units with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0
+– Core Specification, Chapter 3.9. Otherwise writes `out` to `stream` unchanged.
 </ins>
 <!-- https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf -->
 <p>
