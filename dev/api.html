@@ -838,8 +838,8 @@ class and shouldn’t be used directly, only via <a class="reference internal" h
 with the first <code class="docutils literal notranslate"><span class="pre">SIZE</span></code> elements stored in the object itself.</p>
 <p>You can use the <code class="docutils literal notranslate"><span class="pre">memory_buffer</span></code> type alias for <code class="docutils literal notranslate"><span class="pre">char</span></code> instead.</p>
 <p><strong>Example</strong>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span> <span class="n">out</span><span class="p">;</span>
-<span class="n">format_to</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">out</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span><span class="p">();</span>
+<span class="n">format_to</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">back_inserter</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>This will append the following output to the <code class="docutils literal notranslate"><span class="pre">out</span></code> object:</p>
@@ -954,8 +954,8 @@ allocator:</p>
 
 <span class="n">custom_string</span> <span class="nf">vformat</span><span class="p">(</span><span class="n">custom_allocator</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">string_view</span> <span class="n">format_str</span><span class="p">,</span>
                       <span class="n">fmt</span><span class="o">::</span><span class="n">format_args</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">custom_memory_buffer</span> <span class="n">buf</span><span class="p">(</span><span class="n">alloc</span><span class="p">);</span>
-  <span class="n">fmt</span><span class="o">::</span><span class="n">vformat_to</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">buf</span> <span class="o">=</span> <span class="n">custom_memory_buffer</span><span class="p">(</span><span class="n">alloc</span><span class="p">);</span>
+  <span class="n">fmt</span><span class="o">::</span><span class="n">vformat_to</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">back_inserter</span><span class="p">(</span><span class="n">buf</span><span class="p">),</span> <span class="n">format_str</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>
   <span class="k">return</span> <span class="n">custom_string</span><span class="p">(</span><span class="n">buf</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span> <span class="n">buf</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">alloc</span><span class="p">);</span>
 <span class="p">}</span>
 
