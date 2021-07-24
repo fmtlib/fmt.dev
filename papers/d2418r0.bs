@@ -1,0 +1,157 @@
+<pre class='metadata'>
+Title: Add support for <code>std::generator</code>-like types to <code>std::format</code>
+Shortname: D2418
+Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2021-07-24
+Markup Shorthands: markdown yes
+</pre>
+
+[[P2286]] raised an issue of formatting `std::generator` from P2168R0 and
+similar views in C++20 `std::format`. It is illustrated in the following
+example:
+
+```c++
+  auto ints_coro(int n) -> std::generator<int> {
+      for (int i = 0; i < n; ++i) {
+          co_yield i;
+      }
+  }
+  std::format("{}", ints_coro(10)); // error
+```
+
+Unfortunately we cannot make `std::generator` formattable because it is neither
+const-iterable nor copyable and `std::format` takes arguments by `const&`. This
+hasn't been a problem in C++20 because range adapters which can also be not
+const-iterable are usually copyable. However, it will likely become a problem in
+the future once coroutines are more widely adopted.
+
+This paper proposes solving the issue by making `std::format` take formatting
+arguments by forwarding references.
+
+Other benefits of using forwarding references:
+
+* Formatting of non-const-iterable views can be more efficient by avoiding a
+    copy.
+* It becomes possible to detect common lifetime errors
+
+TODO: example of passing format_join by lvalue
+
+Impact on existing code {#wording}
+=======================
+
+This change will break formatting of bit fields (supporting them was one of the
+reasons `std::format` passed arguments by `const&` in the first place):
+
+```c++
+  struct S {
+    int bit: 1;
+  };
+
+  auto s = S();
+  fmt::format("{}", s.bit); // will become ill-formed
+```
+
+There are simple workarounds for this:
+
+```c++
+  fmt::format("{}", +s.bit); // use + or cast to int
+```
+
+Implementation experience {#wording}
+=========================
+
+The proposal has been implemented in the {fmt} library. Arguments have been
+passed by forwarding references since {fmt} 6.0 released about two years ago and
+non-`const&` argument support in `formatter` specializations was added recently.
+
+Wording {#wording}
+=======
+
+TODO: fix reference
+
+All wording is relative to the C++ working draft [[N4861]].
+
+Update the value of the feature-testing macro `__cpp_lib_format` to the date of
+adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=493">[version.syn]</a>:
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:
+
+<pre>
+namespace std {
+  // 20.20.4, formatting functions
+  template&lt;class... Args>
+    string format(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    wstring format(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    string format(const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                  <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    wstring format(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                   <del>const Args&</del><ins>Args&&</ins>... args);
+
+  ...
+
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, <i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, <i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                  <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class Out, class... Args>
+    Out format_to(Out out, const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                  <del>const Args&</del><ins>Args&&</ins>... args);
+
+  ...
+
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        <i>format-string</i>&lt;Args...> fmt,
+                                        <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        <i>wformat-string</i>&lt;Args...> fmt,
+                                        <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc,
+                                        <i>format-string</i>&lt;Args...> fmt,
+                                        <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class Out, class... Args>
+    format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                        const locale& loc,
+                                        <i>wformat-string</i>&lt;Args...> fmt,
+                                        <del>const Args&</del><ins>Args&&</ins>... args);
+
+  template&lt;class... Args>
+    size_t formatted_size(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    size_t formatted_size(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                          <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                          <del>const Args&</del><ins>Args&&</ins>... args);
+  ...
+}
+</pre>
+
+TODO: update relevant wording
+
+<pre class=biblio>
+{
+  "P2286": {
+    "title": "Formatting Ranges",
+    "authors": ["Barry Revzin"],
+    "href": "https://wg21.link/p2286"
+  }
+}
+</pre>
