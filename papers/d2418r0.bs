@@ -43,15 +43,14 @@ Other benefits of using forwarding references:
     copy.
 * It becomes possible to detect common lifetime errors, for example:
     ```
-    auto joined = std::format_join(std::vector{10, 20, 30, 40, 50, 60}, ":");
-    std::format("{:02x}", joined); // UB
+auto joined = std::format_join(std::vector{10, 20, 30, 40, 50, 60}, ":");
+std::format("{:02x}", joined); // UB but can be made ill-formed with this proposal
     ```
 
-Impact on existing code {#wording}
+Impact on existing code {#impact}
 =======================
 
-This change will break formatting of bit fields (supporting them was one of the
-reasons `std::format` passed arguments by `const&` in the first place):
+This change will break formatting of bit fields:
 
 ```c++
 struct S {
@@ -62,13 +61,14 @@ auto s = S();
 fmt::format("{}", s.bit); // will become ill-formed
 ```
 
-There are simple workarounds for this:
+Supporting bit fields was one of the reasons `std::format` passed arguments by
+`const&` in the first place. However, there are simple workarounds for this:
 
 ```c++
 fmt::format("{}", +s.bit); // use + or cast to int
 ```
 
-Implementation experience {#wording}
+Implementation experience {#impl}
 =========================
 
 The proposal has been implemented in the {fmt} library. Arguments have been
@@ -78,14 +78,12 @@ non-`const&` argument support in `formatter` specializations was added recently.
 Wording {#wording}
 =======
 
-TODO: fix reference
-
-All wording is relative to the C++ working draft [[N4861]].
+All wording is relative to the C++ working draft [[N4892]].
 
 Update the value of the feature-testing macro `__cpp_lib_format` to the date of
-adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=493">[version.syn]</a>:
+adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=504">[version.syn]</a>:
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=729">[format.syn]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=740">[format.syn]</a>:
 
 <pre>
 namespace std {
@@ -159,29 +157,21 @@ namespace std {
 }
 </pre>
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=748">[format.functions]</a>:
 
 <pre>
 template&lt;class... Args>
   string format(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-
-<pre>
-return vformat(fmt.<i>str</i>, make_format_args(args...));
-</pre>
+...
 
 <pre>
 template&lt;class... Args>
   wstring format(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-
-<pre>
-return vformat(fmt.<i>str</i>, make_wformat_args(args...));
-</pre>
+...
 
 <pre>
 template&lt;class... Args>
@@ -189,22 +179,12 @@ template&lt;class... Args>
                 <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-
-<pre>
-return vformat(loc, fmt.<i>str</i>, make_format_args(args...));
-</pre>
+...
 
 <pre>
 template&lt;class... Args>
   wstring format(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
                  <del>const Args&</del><ins>Args&&</ins>... args);
-</pre>
-
-*Effects:* Equivalent to:
-
-<pre>
-return vformat(loc, fmt.<i>str</i>, make_wformat_args(args...));
 </pre>
 
 ...
@@ -214,22 +194,14 @@ template&lt;class Out, class... Args>
   Out format_to(Out out, <i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-
-<pre>
-return vformat_to(out, fmt.<i>str</i>, make_format_args(args...));
-</pre>
+...
 
 <pre>
 template&lt;class Out, class... Args>
   Out format_to(Out out, <i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-
-<pre>
-return vformat_to(out, fmt.<i>str</i>, make_wformat_args(args...));
-</pre>
+...
 
 <pre>
 template&lt;class Out, class... Args>
@@ -237,10 +209,7 @@ template&lt;class Out, class... Args>
                 <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-<pre>
-return vformat_to(out, loc, fmt.<i>str</i>, make_format_args(args...));
-</pre>
+...
 
 <pre>
 template&lt;class Out, class... Args>
@@ -248,12 +217,6 @@ template&lt;class Out, class... Args>
                 <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-*Effects:* Equivalent to:
-
-<pre>
-return vformat_to(out, loc, fmt.<i>str</i>, make_wformat_args(args...));
-</pre>
-
 ...
 
 <pre>
@@ -277,28 +240,44 @@ template&lt;class Out, class... Args>
                                       <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-Let
-
-— `charT` be <code>decltype(fmt.<i>str</i>)::value_type</code>
-
 ...
 
 <pre>
-  template&lt;class... Args>
-    size_t formatted_size(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
-  template&lt;class... Args>
-    size_t formatted_size(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
-  template&lt;class... Args>
-    size_t formatted_size(const locale& loc, <i>format-string</i>&lt;Args...> fmt,
-                          <del>const Args&</del><ins>Args&&</ins>... args);
-  template&lt;class... Args>
-    size_t formatted_size(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
-                          <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class... Args>
+  size_t formatted_size(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class... Args>
+  size_t formatted_size(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class... Args>
+  size_t formatted_size(const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                        <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class... Args>
+  size_t formatted_size(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                        <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
-Let `charT` be <code>decltype(fmt.<i>str</i>)::value_type</code>.
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=750">[formatter.requirements]</a>:
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.arg]</a>:
+Table 67: *Formatter* requirements [tab:formatter]
+
+<table>
+<thead>
+<tr>
+<td>**Expression**
+<td>**Return type**
+<td>**Requirement**
+</tr>
+</thead>
+<tr>
+<td colspan="3">...
+</tr>
+<tr>
+<td>`f.format(u, fc)`
+<td>`FC​::​iterator`
+<td>As above, but does not modify `u` <ins>unless specified otherwise</ins>.
+</tr>
+</table>
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=755">[format.arg]</a>:
 
 <pre>
 namespace std {
@@ -361,7 +340,7 @@ namespace std {
 template&lt;class T> explicit handle(<del>const T&</del><ins>T&&</ins> val) noexcept;
 </pre>
 
-*Mandates*:
+<ins>*Mandates*:</ins>
 
 <pre>
 <ins>typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
@@ -389,7 +368,7 @@ template&lt;class T> explicit handle(<del>const T&</del><ins>T&&</ins> val) noex
 }
 </pre>
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.arg.store]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=757">[format.arg.store]</a>:
 
 <pre>
 template&lt;class Context = format_context, class... Args>
@@ -400,28 +379,6 @@ template&lt;class Context = format_context, class... Args>
 template&lt;class... Args>
   format-arg-store&lt;wformat_context, Args...> make_wformat_args(<del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
-
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[formatter.requirements]</a>:
-
-Table 67: Formatter requirements [tab:formatter]
-
-<table>
-<thead>
-<tr>
-<td>**Expression**
-<td>**Return type**
-<td>**Requirement**
-</tr>
-</thead>
-<tr>
-<td colspan="3">...
-</tr>
-<tr>
-<td>`f.format(u, fc)`
-<td>`FC​::​iterator`
-<td>As above, but does not modify `u` <ins>unless specified otherwise</ins>.
-</tr>
-</table>
 
 <pre class=biblio>
 {
