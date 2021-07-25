@@ -12,17 +12,20 @@ Date: 2021-07-24
 Markup Shorthands: markdown yes
 </pre>
 
-[[P2286]] raised an issue of formatting `std::generator` from P2168R0 and
+Proposal {#proposal}
+========
+
+[[P2286]] raised an issue of formatting `std::generator` from [[P2168]] and
 similar views in C++20 `std::format`. It is illustrated in the following
 example:
 
 ```c++
-  auto ints_coro(int n) -> std::generator<int> {
-      for (int i = 0; i < n; ++i) {
-          co_yield i;
-      }
+auto ints_coro(int n) -> std::generator<int> {
+  for (int i = 0; i < n; ++i) {
+    co_yield i;
   }
-  std::format("{}", ints_coro(10)); // error
+}
+std::format("{}", ints_coro(10)); // error
 ```
 
 Unfortunately we cannot make `std::generator` formattable because it is neither
@@ -38,9 +41,11 @@ Other benefits of using forwarding references:
 
 * Formatting of non-const-iterable views can be more efficient by avoiding a
     copy.
-* It becomes possible to detect common lifetime errors
-
-TODO: example of passing format_join by lvalue
+* It becomes possible to detect common lifetime errors, for example:
+    ```
+    auto joined = std::format_join(std::vector{10, 20, 30, 40, 50, 60}, ":");
+    std::format("{:02x}", joined); // UB
+    ```
 
 Impact on existing code {#wording}
 =======================
@@ -49,18 +54,18 @@ This change will break formatting of bit fields (supporting them was one of the
 reasons `std::format` passed arguments by `const&` in the first place):
 
 ```c++
-  struct S {
-    int bit: 1;
-  };
+struct S {
+  int bit: 1;
+};
 
-  auto s = S();
-  fmt::format("{}", s.bit); // will become ill-formed
+auto s = S();
+fmt::format("{}", s.bit); // will become ill-formed
 ```
 
 There are simple workarounds for this:
 
 ```c++
-  fmt::format("{}", +s.bit); // use + or cast to int
+fmt::format("{}", +s.bit); // use + or cast to int
 ```
 
 Implementation experience {#wording}
@@ -84,7 +89,7 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861
 
 <pre>
 namespace std {
-  // 20.20.4, formatting functions
+  // [format.functions], formatting functions
   template&lt;class... Args>
     string format(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
   template&lt;class... Args>
@@ -140,14 +145,291 @@ namespace std {
   template&lt;class... Args>
     size_t formatted_size(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
                           <del>const Args&</del><ins>Args&&</ins>... args);
+      
+  ...
+
+  template&lt;class Context = format_context, class... Args>
+    format-arg-store&lt;Context, Args...>
+      make_format_args(<del>const Args&</del><ins>Args&&</ins>... fmt_args);
+  template&lt;class... Args>
+    format-arg-store&lt;wformat_context, Args...>
+      make_wformat_args(<del>const Args&</del><ins>Args&&</ins>... args);
+
   ...
 }
 </pre>
 
-TODO: update relevant wording
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.functions]</a>:
+
+<pre>
+template&lt;class... Args>
+  string format(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat(fmt.<i>str</i>, make_format_args(args...));
+</pre>
+
+<pre>
+template&lt;class... Args>
+  wstring format(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat(fmt.<i>str</i>, make_wformat_args(args...));
+</pre>
+
+<pre>
+template&lt;class... Args>
+  string format(const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat(loc, fmt.<i>str</i>, make_format_args(args...));
+</pre>
+
+<pre>
+template&lt;class... Args>
+  wstring format(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                 <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat(loc, fmt.<i>str</i>, make_wformat_args(args...));
+</pre>
+
+...
+
+<pre>
+template&lt;class Out, class... Args>
+  Out format_to(Out out, <i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat_to(out, fmt.<i>str</i>, make_format_args(args...));
+</pre>
+
+<pre>
+template&lt;class Out, class... Args>
+  Out format_to(Out out, <i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat_to(out, fmt.<i>str</i>, make_wformat_args(args...));
+</pre>
+
+<pre>
+template&lt;class Out, class... Args>
+  Out format_to(Out out, const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+<pre>
+return vformat_to(out, loc, fmt.<i>str</i>, make_format_args(args...));
+</pre>
+
+<pre>
+template&lt;class Out, class... Args>
+  Out format_to(Out out, const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+*Effects:* Equivalent to:
+
+<pre>
+return vformat_to(out, loc, fmt.<i>str</i>, make_wformat_args(args...));
+</pre>
+
+...
+
+<pre>
+template&lt;class Out, class... Args>
+  format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                      <i>format-string</i>&lt;Args...> fmt,
+                                      <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class Out, class... Args>
+  format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                      <i>wformat-string</i>&lt;Args...> fmt,
+                                      <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class Out, class... Args>
+  format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                      const locale& loc,
+                                      <i>format-string</i>&lt;Args...> fmt,
+                                      <del>const Args&</del><ins>Args&&</ins>... args);
+template&lt;class Out, class... Args>
+  format_to_n_result&lt;Out> format_to_n(Out out, iter_difference_t&lt;Out> n,
+                                      const locale& loc,
+                                      <i>wformat-string</i>&lt;Args...> fmt,
+                                      <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+Let
+
+— `charT` be <code>decltype(fmt.<i>str</i>)::value_type</code>
+
+...
+
+<pre>
+  template&lt;class... Args>
+    size_t formatted_size(<i>format-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    size_t formatted_size(<i>wformat-string</i>&lt;Args...> fmt, <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, <i>format-string</i>&lt;Args...> fmt,
+                          <del>const Args&</del><ins>Args&&</ins>... args);
+  template&lt;class... Args>
+    size_t formatted_size(const locale& loc, <i>wformat-string</i>&lt;Args...> fmt,
+                          <del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+Let `charT` be <code>decltype(fmt.<i>str</i>)::value_type</code>.
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.arg]</a>:
+
+<pre>
+namespace std {
+  template<class Context>
+  class basic_format_arg {
+  private:
+    ...
+    template&lt;class T> explicit basic_format_arg(<del>const T&</del><ins>T&&</ins> v) noexcept;  // exposition only
+    ...
+}
+</pre>
+...
+<pre>
+template&lt;class T> explicit basic_format_arg(<del>const T&</del><ins>T&&</ins> v) noexcept;
+</pre>
+
+*Constraints*: The template specialization
+
+<pre>
+typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>
+</pre>
+
+meets the *Formatter* requirements ([formatter.requirements]). The extent to
+which an implementation determines that the specialization meets the *Formatter*
+requirements is unspecified, except that as a minimum the expression
+
+<pre>
+typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
+  .format(declval&lt;const T&>(), declval&lt;Context&>())
+</pre>
+
+<ins>or</ins>
+
+<pre>
+<ins>typename Context::template formatter_type&lt;remove_cvref_t&lt;T>>()
+  .format(declval&lt;T&>(), declval&lt;Context&>())</ins>
+</pre>
+
+shall be well-formed when treated as an unevaluated operand.
+
+...
+
+The class `handle` allows formatting an object of a user-defined type.
+
+<pre>
+namespace std {
+  template&lt;class Context>
+  class basic_format_arg&lt;Context>::handle {
+    <del>const </del>void* ptr_;                                             // exposition only
+    void (*format_)(basic_format_parse_context&lt;char_type>&,
+                    Context&, <del>const </del>void*);                       // exposition only
+
+    template&lt;class T> explicit handle(<del>const T&</del><ins>T&&</ins> val) noexcept;  // exposition only
+    ...
+  };
+}
+</pre>
+
+<pre>
+template&lt;class T> explicit handle(<del>const T&</del><ins>T&&</ins> val) noexcept;
+</pre>
+
+*Mandates*:
+
+<pre>
+<ins>typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
+  .format(declval&lt;const T&>(), declval&lt;Context&>())</ins>
+</pre>
+
+<ins>is well-formed or `is_const<remove_reference<T>>` is `false`.</ins>
+
+*Effects*: <ins>Let `qualified_type` be `const remove_cvref<T>` if</ins>
+
+<pre>
+<ins>typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
+  .format(declval&lt;const T&>(), declval&lt;Context&>())</ins>
+</pre>
+
+<ins>is well-formed and `remove_cvref<T>` otherwise.</ins> Initializes `ptr_`­ with
+<del>`addressof(val)`</del><ins>`const_cast<void*>(addressof(val))`</ins> and `format_`­ with
+
+<pre>
+[](basic_format_parse_context&lt;char_type>& parse_ctx,
+   Context& format_ctx, <del>const</del> void* ptr) {
+  typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>> f;
+  parse_ctx.advance_to(f.parse(parse_ctx));
+  format_ctx.advance_to(f.format(*static_cast&lt;<del>const T</del><ins>qualified_type</ins>*>(ptr), format_ctx));
+}
+</pre>
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[format.arg.store]</a>:
+
+<pre>
+template&lt;class Context = format_context, class... Args>
+  format-arg-store&lt;Context, Args...> make_format_args(<del>const Args&</del><ins>Args&&</ins>... fmt_args);
+
+...
+
+template&lt;class... Args>
+  format-arg-store&lt;wformat_context, Args...> make_wformat_args(<del>const Args&</del><ins>Args&&</ins>... args);
+</pre>
+
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#page=736">[formatter.requirements]</a>:
+
+Table 67: Formatter requirements [tab:formatter]
+
+<table>
+<thead>
+<tr>
+<td>**Expression**
+<td>**Return type**
+<td>**Requirement**
+</tr>
+</thead>
+<tr>
+<td colspan="3">...
+</tr>
+<tr>
+<td>`f.format(u, fc)`
+<td>`FC​::​iterator`
+<td>As above, but does not modify `u` <ins>unless specified otherwise</ins>.
+</tr>
+</table>
 
 <pre class=biblio>
 {
+  "P2168": {
+    "title": "<code>std::generator</code>: Synchronous Coroutine Generator for Ranges",
+    "authors": ["Lewis Baker", "Corentin Jabot"],
+    "href": "https://wg21.link/p2168"
+  },
   "P2286": {
     "title": "Formatting Ranges",
     "authors": ["Barry Revzin"],
