@@ -16,8 +16,8 @@ Proposal {#proposal}
 ========
 
 [[P2286]] raised an issue of formatting `std::generator` from [[P2168]] and
-similar views in C++20 `std::format`. It is illustrated in the following
-example:
+similar views with C++20 `std::format`. The issue is illustrated in the
+following example:
 
 ```c++
 auto ints_coro(int n) -> std::generator<int> {
@@ -255,25 +255,80 @@ template&lt;class... Args>
                         <del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
+...
+
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=750">[formatter.requirements]</a>:
 
-Table 67: *Formatter* requirements [tab:formatter]
+A type `F` meets the *Formatter* requirements if:
+
+<ul>
+<li>it meets the
+  <ul>
+  <li>*Cpp17DefaultConstructible* (Table 27),
+  <li>*Cpp17CopyConstructible* (Table 29),
+  <li>*Cpp17CopyAssignable* (Table 31), and
+  <li>*Cpp17Destructible* (Table 32)
+  </ul>
+  requirements,
+<li>it is swappable ([swappable.requirements]) for lvalues, and
+<li>the expressions shown in Table 67 <ins>or Table [tab:mut.formatter]</ins>
+    are valid and have the indicated semantics.
+</ul>
+
+<ins>
+A type `F` meets the *BasicFormatter* requirements if it meets the *Formatter*
+requirements and the expressions shown in Table 67 are valid and have the
+indicated semantics. All types that have `formatter` specializations satisfy the
+*BasicFormatter* requirements unless specified otherwise.
+</ins>
+
+...
+
+Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]
 
 <table>
 <thead>
 <tr>
-<td>**Expression**
-<td>**Return type**
-<td>**Requirement**
+  <td>**Expression**
+  <td>**Return type**
+  <td>**Requirement**
 </tr>
 </thead>
 <tr>
-<td colspan="3">...
+  <td colspan="3">...
+</tr>
+</table>
+
+<p>
+<ins>Table �: Mutating *Formatter* requirements [tab:mut.formatter]</ins>
+
+<table>
+<thead>
+<tr>
+  <td><ins>**Expression**
+  <td><ins>**Return type**
+  <td><ins>**Requirement**
+</tr>
+</thead>
+<tr>
+  <td><ins>`f.parse(pc)`
+  <td><ins>`PC::iterator`
+  <td><ins>Parses *format-spec* (20.20.2) for type T in the range `[pc.begin(),
+      pc.end())` until the first unmatched character. Throws `format_error`
+      unless the whole range is parsed or the unmatched character is `}`.<br>
+      [*Note 1*: This allows formatters to emit meaningful error messages.
+      — *end note*]<br>
+      Stores the parsed format specifiers in `*this` and returns an iterator
+      past the end of the parsed range.
 </tr>
 <tr>
-<td>`f.format(u, fc)`
-<td>`FC​::​iterator`
-<td>As above, but does not modify `u` <ins>unless specified otherwise</ins>.
+  <td><ins><code>f.format(u,&nbsp;fc)</code>
+  <td><ins>`FC::iterator`
+  <td><ins>Formats `u` according to the specifiers stored in `*this`, writes the
+      output to `fc.out()` and returns an iterator past the end of the output
+      range. The output shall only depend on `u`, `fc.locale()`, `fc.arg(n)` for
+      any value `n` of type `size_t`, and the range `[pc.begin(), pc.end())`
+      from the last call to `f.parse(pc)`.
 </tr>
 </table>
 
@@ -306,14 +361,7 @@ requirements is unspecified, except that as a minimum the expression
 
 <pre>
 typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
-  .format(declval&lt;const T&>(), declval&lt;Context&>())
-</pre>
-
-<ins>or</ins>
-
-<pre>
-<ins>typename Context::template formatter_type&lt;remove_cvref_t&lt;T>>()
-  .format(declval&lt;T&>(), declval&lt;Context&>())</ins>
+  .format(declval&lt;<del>const </del>T&>(), declval&lt;Context&>())
 </pre>
 
 shall be well-formed when treated as an unevaluated operand.

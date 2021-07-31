@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="1366795097db35d37f85f0f4e60cc9899d1ccf4c" name="document-revision">
+  <meta content="3ac5b814011050a00c67c48c7c81aaadf21a7b30" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2103,8 +2103,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <h2 class="heading settled" data-level="1" id="proposal"><span class="secno">1. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2286">[P2286]</a> raised an issue of formatting <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> from <a data-link-type="biblio" href="#biblio-p2168">[P2168]</a> and
-similar views in C++20 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. It is illustrated in the following
-example:</p>
+similar views with C++20 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. The issue is illustrated in the
+following example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- nf>ints_coro</c-><c- p>(</c-><c- b>int</c-> <c- n>n</c-><c- p>)</c-> <c- o>-></c-> <c- n>std</c-><c- o>::</c-><c- n>generator</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- p>{</c->
   <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- n>n</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
     <c- n>co_yield</c-> <c- n>i</c-><c- p>;</c->
@@ -2289,8 +2289,29 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n48
   <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <i><c- n>wformat</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c->
                         <del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
+   <p>...</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=750">[formatter.requirements]</a>:</p>
-   <p>Table 67: <em>Formatter</em> requirements [tab:formatter]</p>
+   <p>A type <code class="highlight"><c- n>F</c-></code> meets the <em>Formatter</em> requirements if:</p>
+   <ul>
+    <li>
+     it meets the 
+     <ul>
+      <li><em>Cpp17DefaultConstructible</em> (Table 27), 
+      <li><em>Cpp17CopyConstructible</em> (Table 29), 
+      <li><em>Cpp17CopyAssignable</em> (Table 31), and 
+      <li><em>Cpp17Destructible</em> (Table 32) 
+     </ul>
+      requirements, 
+    <li>it is swappable ([swappable.requirements]) for lvalues, and 
+    <li>
+     the expressions shown in Table 67 
+     <ins>or Table [tab:mut.formatter]</ins>
+      are valid and have the indicated semantics. 
+   </ul>
+   <ins> A type <code class="highlight"><c- n>F</c-></code> meets the <em>BasicFormatter</em> requirements if it meets the <em>Formatter</em> requirements and the expressions shown in Table 67 are valid and have the
+indicated semantics. All types that have <code class="highlight"><c- n>formatter</c-></code> specializations satisfy the <em>BasicFormatter</em> requirements unless specified otherwise. </ins>
+   <p>...</p>
+   <p>Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]</p>
    <table>
     <thead>
      <tr>
@@ -2300,13 +2321,39 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n48
     <tbody>
      <tr>
       <td colspan="3">... 
+   </table>
+   <p>
+    <ins>Table �: Mutating <em>Formatter</em> requirements [tab:mut.formatter]</ins>
+   </p>
+   <table>
+    <thead>
      <tr>
-      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>u</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
-      <td><code class="highlight"><c- n>FC</c->​<c- o>::</c->​<c- n>iterator</c-></code> 
       <td>
-       As above, but does not modify <code class="highlight"><c- n>u</c-></code> 
-       <ins>unless specified otherwise</ins>
-       . 
+       <ins><strong>Expression</strong> </ins>
+      <td>
+       <ins><strong>Return type</strong> </ins>
+      <td>
+       <ins><strong>Requirement</strong> </ins>
+    <tbody>
+     <tr>
+      <td>
+       <ins><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> </ins>
+      <td>
+       <ins><code class="highlight"><c- n>PC</c-><c- o>::</c-><c- n>iterator</c-></code> </ins>
+      <td>
+       <ins>Parses <em>format-spec</em> (20.20.2) for type T in the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> until the first unmatched character. Throws <code class="highlight"><c- n>format_error</c-></code> unless the whole range is parsed or the unmatched character is <code class="highlight"><c- p>}</c-></code>.<br> [<em>Note 1</em>: This allows formatters to emit meaningful error messages.
+      — <em>end note</em>]<br> Stores the parsed format specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> and returns an iterator
+      past the end of the parsed range. </ins>
+     <tr>
+      <td>
+       <ins><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>u</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> </ins>
+      <td>
+       <ins><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> </ins>
+      <td>
+       <ins>Formats <code class="highlight"><c- n>u</c-></code> according to the specifiers stored in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>, writes the
+      output to <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code> and returns an iterator past the end of the output
+      range. The output shall only depend on <code class="highlight"><c- n>u</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>locale</c-><c- p>()</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>arg</c-><c- p>(</c-><c- n>n</c-><c- p>)</c-></code> for
+      any value <code class="highlight"><c- n>n</c-></code> of type <code class="highlight"><c- b>size_t</c-></code>, and the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> from the last call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>. </ins>
    </table>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=755">[format.arg]</a>:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
@@ -2327,11 +2374,7 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n48
    <p>meets the <em>Formatter</em> requirements ([formatter.requirements]). The extent to
 which an implementation determines that the specialization meets the <em>Formatter</em> requirements is unspecified, except that as a minimum the expression</p>
 <pre class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins><c- o>></c-><c- p>()</c->
-  <c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c->
-</pre>
-   <ins>or</ins>
-<pre class="highlight"><ins><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-><c- p>()</c->
-  <c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- n>T</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c-></ins>
+  <c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><del><c- k>const</c-> </del><c- n>T</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c->
 </pre>
    <p>shall be well-formed when treated as an unevaluated operand.</p>
    <p>...</p>
