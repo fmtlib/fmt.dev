@@ -58,14 +58,14 @@ struct S {
 };
 
 auto s = S();
-fmt::format("{}", s.bit); // will become ill-formed
+std::format("{}", s.bit); // will become ill-formed
 ```
 
 Supporting bit fields was one of the reasons `std::format` passed arguments by
 `const&` in the first place. However, there are simple workarounds for this:
 
 ```c++
-fmt::format("{}", +s.bit); // use + or cast to int
+std::format("{}", +s.bit); // use + or cast to int
 ```
 
 Implementation experience {#impl}
@@ -428,10 +428,33 @@ template&lt;class... Args>
   format-arg-store&lt;wformat_context, Args...> make_wformat_args(<del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
+Add to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=1685">[diff.cpp20.utilities]</a>:
+
+
+<ins>
+**Affected subclause:** 20.20<br>
+**Change:** Signature changes: `format`, `format_to`, `format_to_n`,
+`formatted_size`.<br>
+**Rationale:** Enable formatting of views that are neither const-iterable nor copyable.<br>
+**Effect on original feature:** Valid C++20 code that passed bit fields to formatting functions may
+become ill-formed. For example:
+</ins>
+<pre>
+<ins>
+struct tiny {
+  int bit: 1;
+};
+
+auto t = tiny();
+std::format("{}", t.bit); // ill-formed,
+                          // previously returned "0"
+</ins>
+</pre>
+
 <pre class=biblio>
 {
   "P2168": {
-    "title": "<code>std::generator</code>: Synchronous Coroutine Generator for Ranges",
+    "title": "std::generator: Synchronous Coroutine Generator for Ranges",
     "authors": ["Lewis Baker", "Corentin Jabot"],
     "href": "https://wg21.link/p2168"
   },

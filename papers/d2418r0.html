@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2a0b30bf6d6e16c933850733b9c90d9c2990a902" name="document-revision">
+  <meta content="79f1c5e4d2f8ba4816e026aa2de260226e428ea4" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2137,10 +2137,10 @@ copy.</p>
 <c- p>};</c->
 
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>S</c-><c- p>();</c->
-<c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>s</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// will become ill-formed</c->
+<c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>s</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// will become ill-formed</c->
 </pre>
    <p>Supporting bit fields was one of the reasons <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> passed arguments by <code class="highlight"><c- k>const</c-><c- o>&amp;</c-></code> in the first place. However, there are simple workarounds for this:</p>
-<pre class="language-c++ highlight"><c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- o>+</c-><c- n>s</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// use + or cast to int</c->
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- o>+</c-><c- n>s</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// use + or cast to int</c->
 </pre>
    <h2 class="heading settled" data-level="3" id="impl"><span class="secno">3. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposal has been implemented in the {fmt} library. Arguments have been
@@ -2426,6 +2426,17 @@ which an implementation determines that the specialization meets the <em>Formatt
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>format</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-><c- o>&lt;</c-><c- n>wformat_context</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>make_wformat_args</c-><c- p>(</c-><del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
+   <p>Add to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=1685">[diff.cpp20.utilities]</a>:</p>
+   <ins> <strong>Affected subclause:</strong> 20.20<br> <strong>Change:</strong> Signature changes: <code class="highlight"><c- n>format</c-></code>, <code class="highlight"><c- n>format_to</c-></code>, <code class="highlight"><c- n>format_to_n</c-></code>, <code class="highlight"><c- n>formatted_size</c-></code>.<br> <strong>Rationale:</strong> Enable formatting of views that are neither const-iterable nor copyable.<br> <strong>Effect on original feature:</strong> Valid C++20 code that passed bit fields to formatting functions may
+become ill-formed. For example: </ins>
+<pre class="highlight"><ins><c- k>struct</c-> <c- nc>tiny</c-> <c- p>{</c->
+  <c- b>int</c-> <c- nl>bit</c-><c- p>:</c-> <c- mi>1</c-><c- p>;</c->
+<c- p>};</c->
+
+<c- k>auto</c-> <c- n>t</c-> <c- o>=</c-> <c- n>tiny</c-><c- p>();</c->
+<c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>t</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// ill-formed,</c->
+                          <c- c1>// previously returned "0"</c->
+</ins></pre>
   </main>
 <script>
 (function() {
@@ -2562,7 +2573,7 @@ which an implementation determines that the specialization meets the <em>Formatt
    <dt id="biblio-n4892">[N4892]
    <dd>Thomas Köppe. <a href="https://wg21.link/n4892">Working Draft, Standard for Programming Language C++</a>. 18 June 2021. URL: <a href="https://wg21.link/n4892">https://wg21.link/n4892</a>
    <dt id="biblio-p2168">[P2168]
-   <dd>Lewis Baker; Corentin Jabot. <a href="https://wg21.link/p2168">&lt;code>std::generator&lt;/code>: Synchronous Coroutine Generator for Ranges</a>. URL: <a href="https://wg21.link/p2168">https://wg21.link/p2168</a>
+   <dd>Lewis Baker; Corentin Jabot. <a href="https://wg21.link/p2168">std::generator: Synchronous Coroutine Generator for Ranges</a>. URL: <a href="https://wg21.link/p2168">https://wg21.link/p2168</a>
    <dt id="biblio-p2286">[P2286]
    <dd>Barry Revzin. <a href="https://wg21.link/p2286">Formatting Ranges</a>. URL: <a href="https://wg21.link/p2286">https://wg21.link/p2286</a>
   </dl>
