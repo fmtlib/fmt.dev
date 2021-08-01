@@ -15,12 +15,125 @@ Markup Shorthands: markdown yes
 Proposal {#proposal}
 ========
 
-TODO
+C++20 added formatting of chrono types with `std::format` but left unspecified
+what happens during localized formatting when the locale and literal encodings
+do not match ([[LWG3565]]).
+
+Consider the following example:
+
+```c++
+std::locale::global(std::locale("Russian.1251"));
+auto s = std::format("День недели: {}", std::chrono::Monday);
+```
+where `"День недели"` means `"Day of week"` in Russian.
+
+(Note that `"{}"` should be replaced with `"{:L}"` if [[P2372]] is adopted but
+that's non-essential.)
+
+If the literal encoding is UTF-8 and the "Russian.1251" locale exists we have a
+mismatch between encodings. As far as we can see the standard doesn't specify
+what happens in this case.
+
+One possible and undesirable result (mojibake) is
+
+```
+"День недели: \xcf\xed"
+```
+where `"\xcf\xed"` is `"Пн"` (`"Mon"` in Russian) in CP1251 and is not valid
+UTF-8.
+
+Another possible and desirable result is
+
+```
+"День недели: Пн"
+```
+where everything is in one encoding (UTF-8).
+
+We propose clarifying the specification to prevent mojibake when possible by
+allowing implementation do transcoding or substituting the locale so that the
+result is in a consistent encoding.
+
+This issue is not resolved by [[LWG3547]] / [[P2372]], the latter only
+reduces the scope of the problem to format strings with the `L` specifier only.
+The resolution proposed here is compatible with [[P2372]].
+
+SG16 Unicode reviewed [[LWG3547]] and there was a strong support for the
+direction of this paper. SG16 poll results:
+
+Require implementations to make `std::chrono` substitutions with `std::format`
+as if transcoded to UTF-8 when the literal encoding E associated with the format
+string is UTF-8, for an implementation-defined set of locales.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>1
+  <td>6
+  <td>2
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus: Consensus in favour.
+
+Permit such substitutions when the encoding E is any Unicode encoding form.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>0
+  <td>7
+  <td>2
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus: Consensus in favour.
+
+Prohibit such substitutions otherwise.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>1
+  <td>3
+  <td>3
+  <td>1
+  <td>1
+</tr>
+</table>
+
+Consensus: No consensus.
+
+SA reason: Over-constrains implementations. May be sensible for implementations
+to perform all conversions uniformly.
 
 Implementation experience {#impl}
 =========================
 
-TODO
+The proposal has been implemented in the open-source {fmt} library ([[FMT]])
+which includes chrono formatting facilities and tested on a variety of
+platforms.
 
 Wording {#wording}
 =======
@@ -30,11 +143,51 @@ All wording is relative to the C++ working draft [[N4892]].
 Update the value of the feature-testing macro `__cpp_lib_format` to the date of
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=504">[version.syn]</a>:
 
-Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=740">[format.syn]</a>:
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=1347">[time.format]</a>:
 
-TODO
+Each conversion specifier *conversion-spec* is replaced by appropriate
+characters as described in Table [tab:time.format.spec]; the formats specified
+in ISO 8601:2004 shall be used where so described. Some of the conversion
+specifiers depend on the locale that is passed to the formatting function if the
+latter takes one, or the global locale otherwise. <ins>If the string literal
+encoding is a Unicode encoding form the replacement of a conversion specifier
+that depends on the locale is transcoded to this encoding form.</ins>
+If the formatted object does not contain the information the conversion
+specifier refers to, an exception of type `format_error` is thrown.
+
+Acknowledgement {#ack}
+===============
+
+Thanks Hubert Tong for bringing up this issue during the discussion of
+[[P2093]].
 
 <pre class=biblio>
 {
+  "FMT": {
+    "title": "The fmt library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "LWG3547": {
+    "title": "Time formatters should not be locale sensitive by default",
+    "authors": ["Victor Zverovich"],
+    "href": "https://cplusplus.github.io/LWG/issue3547"
+  },
+  "LWG3565": {
+    "title": "Handling of encodings in localized formatting of chrono types is underspecified",
+    "authors": ["Victor Zverovich"],
+    "href": "https://cplusplus.github.io/LWG/issue3565"
+  },
+  "P2093": {
+    "title": "Formatted output",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2093"
+  },
+  "P2372": {
+    "title": "Fixing locale handling in chrono formatters",
+    "authors": ["Victor Zverovich", "Corentin Jabot"],
+    "href": "https://wg21.link/p2372"
+  }
 }
 </pre>
