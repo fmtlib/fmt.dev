@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="79f32551f6358daebba753bb28300f5cc9ec4a2f" name="document-revision">
+  <meta content="188faab684b0b66c214b70223faca205b29d48ff" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2311,6 +2311,35 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n48
    <ins> A type <code class="highlight"><c- n>F</c-></code> meets the <em>BasicFormatter</em> requirements if it meets the <em>Formatter</em> requirements and the expressions shown in Table 67 are valid and have the
 indicated semantics. All types that have <code class="highlight"><c- n>formatter</c-></code> specializations satisfy the <em>BasicFormatter</em> requirements unless specified otherwise. </ins>
    <p>...</p>
+   <p>
+    Given character type <code class="highlight"><c- n>charT</c-></code>, output iterator type <code class="highlight"><c- n>Out</c-></code>, and formatting
+argument type <code class="highlight"><c- n>T</c-></code>, in 
+    <del>Table</del>
+    <ins>Tables</ins>
+     67 
+    <ins>and
+[tab:mut.formatter]</ins>
+    :
+   </p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- n>f</c-></code> is a value of type F,</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>u</c-></code> is an lvalue of type T,</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>t</c-></code> is a value of a type convertible to (possibly const) <code class="highlight"><c- n>T</c-></code>,</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>PC</c-></code> is <code class="highlight"><c- n>basic_</c->­<c- n>format_</c->­<c- n>parse_</c->­<c- n>context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-></code>,</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>FC</c-></code> is <code class="highlight"><c- n>basic_</c->­<c- n>format_</c->­<c- n>context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code>,</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>pc</c-></code> is an lvalue of type <code class="highlight"><c- n>PC</c-></code>, and</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>fc</c-></code> is an lvalue of type <code class="highlight"><c- n>FC</c-></code>.</p>
+   </ul>
+   <p><code class="highlight"><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-></code> points to the beginning of the <em>format-spec</em> ([format.string]) of
+the replacement field being formatted in the format string. If <em>format-spec</em> is
+empty then either <code class="highlight"><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>==</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>()</c-></code> or <code class="highlight"><c- o>*</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>==</c-> <c- sc>'}'</c-></code>.</p>
    <p>Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]</p>
    <table>
     <thead>
@@ -2320,7 +2349,22 @@ indicated semantics. All types that have <code class="highlight"><c- n>formatter
       <td><strong>Requirement</strong> 
     <tbody>
      <tr>
-      <td colspan="3">... 
+      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> 
+      <td><code class="highlight"><c- n>PC</c-><c- o>::</c-><c- n>iterator</c-></code> 
+      <td>Parses <em>format-spec</em> (20.20.2) for type T in the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> until the first unmatched character. Throws <code class="highlight"><c- n>format_error</c-></code> unless the whole range is parsed or the unmatched character is <code class="highlight"><c- p>}</c-></code>.<br> [<em>Note 1</em>: This allows formatters to emit meaningful error messages.
+      — <em>end note</em>]<br> Stores the parsed format specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> and returns an iterator
+      past the end of the parsed range. 
+     <tr>
+      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>t</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
+      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
+      <td>Formats <code class="highlight"><c- n>t</c-></code> according to the specifiers stored in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>, writes the
+      output to <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code> and returns an iterator past the end of the output
+      range. The output shall only depend on <code class="highlight"><c- n>t</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>locale</c-><c- p>()</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>arg</c-><c- p>(</c-><c- n>n</c-><c- p>)</c-></code> for
+      any value <code class="highlight"><c- n>n</c-></code> of type <code class="highlight"><c- n>size_</c->­<c- n>t</c-></code>, and the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> from the last call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>. 
+     <tr>
+      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>u</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
+      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
+      <td>As above, but does not modify <code class="highlight"><c- n>u</c-></code>. 
    </table>
    <p>
     <ins>Table �: Mutating <em>Formatter</em> requirements [tab:mut.formatter]</ins>

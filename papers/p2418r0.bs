@@ -284,6 +284,21 @@ indicated semantics. All types that have `formatter` specializations satisfy the
 
 ...
 
+Given character type `charT`, output iterator type `Out`, and formatting
+argument type `T`, in <del>Table</del><ins>Tables</ins> 67 <ins>and
+[tab:mut.formatter]</ins>:
+* `f` is a value of type F,
+* `u` is an lvalue of type T,
+* `t` is a value of a type convertible to (possibly const) `T`,
+* `PC` is `basic_­format_­parse_­context<charT>`,
+* `FC` is `basic_­format_­context<Out, charT>`,
+* `pc` is an lvalue of type `PC`, and
+* `fc` is an lvalue of type `FC`.
+
+`pc.begin()` points to the beginning of the *format-spec* ([format.string]) of
+the replacement field being formatted in the format string. If *format-spec* is
+empty then either `pc.begin() == pc.end()` or `*pc.begin() == '}'`.
+
 Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]
 
 <table>
@@ -295,7 +310,29 @@ Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]
 </tr>
 </thead>
 <tr>
-  <td colspan="3">...
+  <td>`f.parse(pc)`
+  <td>`PC::iterator`
+  <td>Parses *format-spec* (20.20.2) for type T in the range `[pc.begin(),
+      pc.end())` until the first unmatched character. Throws `format_error`
+      unless the whole range is parsed or the unmatched character is `}`.<br>
+      [*Note 1*: This allows formatters to emit meaningful error messages.
+      — *end note*]<br>
+      Stores the parsed format specifiers in `*this` and returns an iterator
+      past the end of the parsed range.
+</tr>
+<tr>
+  <td><code>f.format(t,&nbsp;fc)</code>
+  <td>`FC::iterator`
+  <td>Formats `t` according to the specifiers stored in `*this`, writes the
+      output to `fc.out()` and returns an iterator past the end of the output
+      range. The output shall only depend on `t`, `fc.locale()`, `fc.arg(n)` for
+      any value `n` of type `size_­t`, and the range `[pc.begin(), pc.end())`
+      from the last call to `f.parse(pc)`.
+</tr>
+<tr>
+  <td><code>f.format(u,&nbsp;fc)</code>
+  <td>`FC::iterator`
+  <td>As above, but does not modify `u`.
 </tr>
 </table>
 
