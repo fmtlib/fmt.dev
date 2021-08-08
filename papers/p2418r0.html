@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bb77fdb30419ce3ae60e0eea2b8d7e23e08a0c49" name="document-revision">
+  <meta content="f7c0696cf1ff57d6010aa3df3968f6676a81321f" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2297,7 +2297,7 @@ each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code
 each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code class="highlight"><c- n>Args</c-></code>.</p>
    <p>...</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=750">[formatter.requirements]</a>:</p>
-   <p>A type <code class="highlight"><c- n>F</c-></code> meets the <em>Formatter</em> requirements if:</p>
+   <p>A type <code class="highlight"><c- n>F</c-></code> meets the <i><ins>Basic</ins>Formatter</i> requirements if:</p>
    <ul>
     <li>
      it meets the 
@@ -2310,22 +2310,21 @@ each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code
       requirements, 
     <li>it is swappable ([swappable.requirements]) for lvalues, and 
     <li>
-     the expressions shown in Table 67 
-     <ins>or Table [tab:mut.formatter]</ins>
+     the expressions shown in 
+     <del>Table 67</del>
+     <ins>Table [tab:basic.formatter]</ins>
       are valid and have the indicated semantics. 
    </ul>
-   <ins> A type <code class="highlight"><c- n>F</c-></code> meets the <em>BasicFormatter</em> requirements if it meets the <em>Formatter</em> requirements and the expressions shown in Table 67 are valid and have the
-indicated semantics. All types that have <code class="highlight"><c- n>formatter</c-></code> specializations satisfy the <em>BasicFormatter</em> requirements unless specified otherwise. </ins>
+   <ins> A type <code class="highlight"><c- n>F</c-></code> meets the <em>Formatter</em> requirements if it meets the <em>BasicFormatter</em> requirements and the expressions shown in Table 67 are valid and have the
+indicated semantics. All types that have <code class="highlight"><c- n>formatter</c-></code> specializations satisfy the <em>Formatter</em> requirements unless specified otherwise. </ins>
    <p>...</p>
    <p>
     Given character type <code class="highlight"><c- n>charT</c-></code>, output iterator type <code class="highlight"><c- n>Out</c-></code>, and formatting
 argument type <code class="highlight"><c- n>T</c-></code>, in 
     <del>Table</del>
-    <ins>Tables</ins>
-     67 
-    <ins>and
-[tab:mut.formatter]</ins>
-    :
+    <ins>Tables [tab:basic.formatter]
+and</ins>
+     67:
    </p>
    <ul>
     <li data-md>
@@ -2346,34 +2345,8 @@ argument type <code class="highlight"><c- n>T</c-></code>, in
    <p><code class="highlight"><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-></code> points to the beginning of the <em>format-spec</em> ([format.string]) of
 the replacement field being formatted in the format string. If <em>format-spec</em> is
 empty then either <code class="highlight"><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>==</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>()</c-></code> or <code class="highlight"><c- o>*</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>==</c-> <c- sc>'}'</c-></code>.</p>
-   <p>Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]</p>
-   <table>
-    <thead>
-     <tr>
-      <td><strong>Expression</strong> 
-      <td><strong>Return type</strong> 
-      <td><strong>Requirement</strong> 
-    <tbody>
-     <tr>
-      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> 
-      <td><code class="highlight"><c- n>PC</c-><c- o>::</c-><c- n>iterator</c-></code> 
-      <td>Parses <em>format-spec</em> (20.20.2) for type T in the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> until the first unmatched character. Throws <code class="highlight"><c- n>format_error</c-></code> unless the whole range is parsed or the unmatched character is <code class="highlight"><c- p>}</c-></code>.<br> [<em>Note 1</em>: This allows formatters to emit meaningful error messages.
-      — <em>end note</em>]<br> Stores the parsed format specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> and returns an iterator
-      past the end of the parsed range. 
-     <tr>
-      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>t</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
-      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
-      <td>Formats <code class="highlight"><c- n>t</c-></code> according to the specifiers stored in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>, writes the
-      output to <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code> and returns an iterator past the end of the output
-      range. The output shall only depend on <code class="highlight"><c- n>t</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>locale</c-><c- p>()</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>arg</c-><c- p>(</c-><c- n>n</c-><c- p>)</c-></code> for
-      any value <code class="highlight"><c- n>n</c-></code> of type <code class="highlight"><c- n>size_</c->­<c- n>t</c-></code>, and the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> from the last call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>. 
-     <tr>
-      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>u</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
-      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
-      <td>As above, but does not modify <code class="highlight"><c- n>u</c-></code>. 
-   </table>
    <p>
-    <ins>Table �: Mutating <em>Formatter</em> requirements [tab:mut.formatter]</ins>
+    <ins>Table �: <em>BasicFormatter</em> requirements [tab:basic.formatter]</ins>
    </p>
    <table>
     <thead>
@@ -2404,6 +2377,35 @@ empty then either <code class="highlight"><c- n>pc</c-><c- p>.</c-><c- n>begin</
       output to <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code> and returns an iterator past the end of the output
       range. The output shall only depend on <code class="highlight"><c- n>u</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>locale</c-><c- p>()</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>arg</c-><c- p>(</c-><c- n>n</c-><c- p>)</c-></code> for
       any value <code class="highlight"><c- n>n</c-></code> of type <code class="highlight"><c- b>size_t</c-></code>, and the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> from the last call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>. </ins>
+   </table>
+   <p>Table 67: <i>Formatter</i> requirements [tab:formatter]</p>
+   <table>
+    <thead>
+     <tr>
+      <td><strong>Expression</strong> 
+      <td><strong>Return type</strong> 
+      <td><strong>Requirement</strong> 
+    <tbody>
+     <tr>
+      <td>
+       <del><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> </del>
+      <td>
+       <del><code class="highlight"><c- n>PC</c-><c- o>::</c-><c- n>iterator</c-></code> </del>
+      <td>
+       <del>Parses <em>format-spec</em> (20.20.2) for type T in the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> until the first unmatched character. Throws <code class="highlight"><c- n>format_error</c-></code> unless the whole range is parsed or the unmatched character is <code class="highlight"><c- p>}</c-></code>.<br> [<em>Note 1</em>: This allows formatters to emit meaningful error messages.
+      — <em>end note</em>]<br> Stores the parsed format specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> and returns an iterator
+      past the end of the parsed range. </del>
+     <tr>
+      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>t</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
+      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
+      <td>Formats <code class="highlight"><c- n>t</c-></code> according to the specifiers stored in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>, writes the
+      output to <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code> and returns an iterator past the end of the output
+      range. The output shall only depend on <code class="highlight"><c- n>t</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>locale</c-><c- p>()</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>arg</c-><c- p>(</c-><c- n>n</c-><c- p>)</c-></code> for
+      any value <code class="highlight"><c- n>n</c-></code> of type <code class="highlight"><c- n>size_</c->­<c- n>t</c-></code>, and the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> from the last call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>. 
+     <tr>
+      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>u</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
+      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
+      <td>As above, but does not modify <code class="highlight"><c- n>u</c-></code>. 
    </table>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=755">[format.arg]</a>:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->

@@ -273,7 +273,7 @@ each <code>T<sub>i</sub></code> in `Args`.
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=750">[formatter.requirements]</a>:
 
-A type `F` meets the *Formatter* requirements if:
+A type `F` meets the <i><ins>Basic</ins>Formatter</i> requirements if:
 
 <ul>
 <li>it meets the
@@ -285,22 +285,22 @@ A type `F` meets the *Formatter* requirements if:
   </ul>
   requirements,
 <li>it is swappable ([swappable.requirements]) for lvalues, and
-<li>the expressions shown in Table 67 <ins>or Table [tab:mut.formatter]</ins>
+<li>the expressions shown in <del>Table 67</del><ins>Table [tab:basic.formatter]</ins>
     are valid and have the indicated semantics.
 </ul>
 
 <ins>
-A type `F` meets the *BasicFormatter* requirements if it meets the *Formatter*
+A type `F` meets the *Formatter* requirements if it meets the *BasicFormatter*
 requirements and the expressions shown in Table 67 are valid and have the
 indicated semantics. All types that have `formatter` specializations satisfy the
-*BasicFormatter* requirements unless specified otherwise.
+*Formatter* requirements unless specified otherwise.
 </ins>
 
 ...
 
 Given character type `charT`, output iterator type `Out`, and formatting
-argument type `T`, in <del>Table</del><ins>Tables</ins> 67 <ins>and
-[tab:mut.formatter]</ins>:
+argument type `T`, in <del>Table</del><ins>Tables [tab:basic.formatter]
+and</ins> 67:
 * `f` is a value of type F,
 * `u` is an lvalue of type T,
 * `t` is a value of a type convertible to (possibly const) `T`,
@@ -313,45 +313,8 @@ argument type `T`, in <del>Table</del><ins>Tables</ins> 67 <ins>and
 the replacement field being formatted in the format string. If *format-spec* is
 empty then either `pc.begin() == pc.end()` or `*pc.begin() == '}'`.
 
-Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]
-
-<table>
-<thead>
-<tr>
-  <td>**Expression**
-  <td>**Return type**
-  <td>**Requirement**
-</tr>
-</thead>
-<tr>
-  <td>`f.parse(pc)`
-  <td>`PC::iterator`
-  <td>Parses *format-spec* (20.20.2) for type T in the range `[pc.begin(),
-      pc.end())` until the first unmatched character. Throws `format_error`
-      unless the whole range is parsed or the unmatched character is `}`.<br>
-      [*Note 1*: This allows formatters to emit meaningful error messages.
-      — *end note*]<br>
-      Stores the parsed format specifiers in `*this` and returns an iterator
-      past the end of the parsed range.
-</tr>
-<tr>
-  <td><code>f.format(t,&nbsp;fc)</code>
-  <td>`FC::iterator`
-  <td>Formats `t` according to the specifiers stored in `*this`, writes the
-      output to `fc.out()` and returns an iterator past the end of the output
-      range. The output shall only depend on `t`, `fc.locale()`, `fc.arg(n)` for
-      any value `n` of type `size_­t`, and the range `[pc.begin(), pc.end())`
-      from the last call to `f.parse(pc)`.
-</tr>
-<tr>
-  <td><code>f.format(u,&nbsp;fc)</code>
-  <td>`FC::iterator`
-  <td>As above, but does not modify `u`.
-</tr>
-</table>
-
 <p>
-<ins>Table �: Mutating *Formatter* requirements [tab:mut.formatter]</ins>
+<ins>Table �: *BasicFormatter* requirements [tab:basic.formatter]</ins>
 
 <table>
 <thead>
@@ -380,6 +343,43 @@ Table 67: <i><ins>Basic</ins>Formatter</i> requirements [tab:formatter]
       range. The output shall only depend on `u`, `fc.locale()`, `fc.arg(n)` for
       any value `n` of type `size_t`, and the range `[pc.begin(), pc.end())`
       from the last call to `f.parse(pc)`.
+</tr>
+</table>
+
+Table 67: <i>Formatter</i> requirements [tab:formatter]
+
+<table>
+<thead>
+<tr>
+  <td>**Expression**
+  <td>**Return type**
+  <td>**Requirement**
+</tr>
+</thead>
+<tr>
+  <td><del>`f.parse(pc)`
+  <td><del>`PC::iterator`
+  <td><del>Parses *format-spec* (20.20.2) for type T in the range `[pc.begin(),
+      pc.end())` until the first unmatched character. Throws `format_error`
+      unless the whole range is parsed or the unmatched character is `}`.<br>
+      [*Note 1*: This allows formatters to emit meaningful error messages.
+      — *end note*]<br>
+      Stores the parsed format specifiers in `*this` and returns an iterator
+      past the end of the parsed range.
+</tr>
+<tr>
+  <td><code>f.format(t,&nbsp;fc)</code>
+  <td>`FC::iterator`
+  <td>Formats `t` according to the specifiers stored in `*this`, writes the
+      output to `fc.out()` and returns an iterator past the end of the output
+      range. The output shall only depend on `t`, `fc.locale()`, `fc.arg(n)` for
+      any value `n` of type `size_­t`, and the range `[pc.begin(), pc.end())`
+      from the last call to `f.parse(pc)`.
+</tr>
+<tr>
+  <td><code>f.format(u,&nbsp;fc)</code>
+  <td>`FC::iterator`
+  <td>As above, but does not modify `u`.
 </tr>
 </table>
 
