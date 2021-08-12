@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D2418R0: Clarify handling of encodings in localized formatting of chrono types</title>
+  <title>D2419R0: Clarify handling of encodings in localized formatting of chrono types</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="dfbc7454bbb4aee6c95fc9b453bf58c0ec7921e3" name="document-revision">
+  <meta content="1a2322947bab565e753bf0dff725cf31f79414fc" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2071,12 +2071,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D2418R0<br>Clarify handling of encodings in localized formatting of chrono types</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-07-31">2021-07-31</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2419R0<br>Clarify handling of encodings in localized formatting of chrono types</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-08-12">2021-08-12</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
-     <dt class="editor">Author:
+     <dt class="editor">Authors:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:pbrett@cadence.com">Peter Brett</a>
      <dt>Audience:
      <dd>SG16, LEWG
      <dt>Project:
@@ -2101,8 +2102,6 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <p style="text-align: right"> "Like floating point and Unicode handling, date and time is one of those areas
-many developers are afraid of." <br> ― Jon Skeet </p>
    <h2 class="heading settled" data-level="1" id="proposal"><span class="secno">1. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>C++20 added formatting of chrono types with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> but left unspecified
 what happens during localized formatting when the locale and literal encodings
@@ -2204,9 +2203,10 @@ in ISO 8601:2004 shall be used where so described. Some of the conversion
 specifiers depend on the locale that is passed to the formatting function if the
 latter takes one, or the global locale otherwise. 
     <ins>If the string literal
-encoding is a Unicode encoding form the replacement of a conversion specifier
-that depends on the locale is transcoded to this encoding form for an
-implementation-defined set of locales.</ins>
+encoding is a Unicode encoding form and the locale is among an
+implementation-defined set of locales, each replacement that depends on
+the locale is performed as if the replacement character sequence is transcoded
+to the string literal encoding.</ins>
      If the formatted object does not contain the information the conversion
 specifier refers to, an exception of type <code class="highlight"><c- n>format_error</c-></code> is thrown.
    </p>
