@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093
-Revision: 7
+Revision: 8
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-07-03
+Date: 2021-08-15
 Markup Shorthands: markdown yes
 </pre>
 
@@ -46,6 +46,11 @@ intuitive API achieving the following goals:
 
 Revision history {#hist}
 ================
+
+Changes since R7:
+
+* Added a reference to LLVM's `raw_ostream` that implements similar mojibake
+    prevention mechanism to [[#impl]]
 
 Changes since R6:
 
@@ -1336,6 +1341,10 @@ Rust's standard output facility uses essentially the same approach for
 preventing mojibake when printing to console on Windows ([[RUST-STDIO]]).
 The main difference is that invalid code units are reported as errors in Rust.
 
+LLVM's `raw_ostream` [[LLVM-OSTREAM]] also implements this approach when writing
+to console on Windows. The main difference is that in case of invalid UTF-8 it
+falls back on writing raw (not transcoded) data.
+
 Wording {#wording}
 =======
 
@@ -1896,6 +1905,11 @@ to the proposal.
     "title":
     "Java™ Platform, Standard Edition 7 API Specification, Class PrintStream",
     "href": "https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html"
+  },
+  "LLVM-OSTREAM": {
+    "title":
+    "The LLVM Compiler Infrastructure repository, raw_ostream",
+    "href": "https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp"
   },
   "MSVC-UTF8": {
     "title":
