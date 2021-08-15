@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R7: Formatted output</title>
+  <title>P2093R8: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="fb29d08f3bd866782e22cf4363b6a3d1f47cca73" name="document-revision">
+  <meta content="219c5a7c8069b54ff1455f559844389c47188d91" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R7<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-07-03">2021-07-03</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R8<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-08-15">2021-08-15</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2144,6 +2144,12 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R7:</p>
+   <ul>
+    <li data-md>
+     <p>Added a reference to LLVM’s <code class="highlight"><c- n>raw_ostream</c-></code> that implements similar mojibake
+prevention mechanism to <a href="#impl">§ 14 Implementation</a>.</p>
+   </ul>
    <p>Changes since R6:</p>
    <ul>
     <li data-md>
@@ -3179,6 +3185,9 @@ library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in 
    <p>Rust’s standard output facility uses essentially the same approach for
 preventing mojibake when printing to console on Windows (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>).
 The main difference is that invalid code units are reported as errors in Rust.</p>
+   <p>LLVM’s <code class="highlight"><c- n>raw_ostream</c-></code> <a data-link-type="biblio" href="#biblio-llvm-ostream">[LLVM-OSTREAM]</a> also implements this approach when writing
+to console on Windows. The main difference is that in case of invalid UTF-8 it
+falls back on writing raw (not transcoded) data.</p>
    <h2 class="heading settled" data-level="15" id="wording"><span class="secno">15. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_print</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
@@ -3761,6 +3770,8 @@ to the proposal.</p>
    <dd><a href="https://www.iso.org/standard/22747.html">ISO/IEC 2022 Information technology—Character code structure and extension techniques</a>. URL: <a href="https://www.iso.org/standard/22747.html">https://www.iso.org/standard/22747.html</a>
    <dt id="biblio-java-print">[JAVA-PRINT]
    <dd><a href="https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html">Java™ Platform, Standard Edition 7 API Specification, Class PrintStream</a>. URL: <a href="https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html">https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html</a>
+   <dt id="biblio-llvm-ostream">[LLVM-OSTREAM]
+   <dd><a href="https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp">The LLVM Compiler Infrastructure repository, raw_ostream</a>. URL: <a href="https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp">https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp</a>
    <dt id="biblio-msvc-utf8">[MSVC-UTF8]
    <dd><a href="https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8">Visual C++ Documentation, /utf-8 (Set Source and Executable character sets to UTF-8)</a>. URL: <a href="https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8">https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8</a>
    <dt id="biblio-n0147">[N0147]
