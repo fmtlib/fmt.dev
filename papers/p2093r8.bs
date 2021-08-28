@@ -47,6 +47,10 @@ intuitive API achieving the following goals:
 Revision history {#hist}
 ================
 
+Changes since R8:
+
+* Clarified the difference from the Python's `print` in [[#api]].
+
 Changes since R7:
 
 * Added a reference to LLVM's `raw_ostream` that implements similar mojibake
@@ -784,6 +788,15 @@ using `stdout` for the following reasons:
 
 * `print` won't use any formatted output functionality of `ostream`.
 
+In some languages like Python `print` only provides the default formatting
+although some formatting control may be achieved by other means such as named
+arguments and/or doing formatting manually via `str.format` or string
+interpolation. The current paper doesn't propose such a default formatting
+facility. A search in a large Python codebase revealed that over 70%
+of `print` calls either take a string literal or use interpolation. These use
+cases are covered by the current proposal with better usability and potentially
+better performance because there are no separate formatting function calls.
+
 Since `stdout` doesn't have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with `format`. With `cout` or another explicitly passed
@@ -826,8 +839,8 @@ std::println("Hello, {}!", name);  // prints a newline
 ```
 
 Although `println` doesn't provide much usability improvement compared to
-`print` with explicit `'\n'`, it has been a frequently requested feature in the
-fmt library ([[FMT]]).
+`print` with explicit `'\n'`, it has been an occasionally requested feature in
+the fmt library ([[FMT]]).
 
 <!-- https://twitter.com/vzverovich/status/1261986120683806721 --> 
 

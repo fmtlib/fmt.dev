@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="219c5a7c8069b54ff1455f559844389c47188d91" name="document-revision">
+  <meta content="88a9c8ebc7be6b00ae11f1ad27ea130aa2f909c3" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2144,6 +2144,11 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R8:</p>
+   <ul>
+    <li data-md>
+     <p>Clarified the difference from the Python’s <code class="highlight"><c- n>print</c-></code> in <a href="#api">§ 9 API and naming</a>.</p>
+   </ul>
    <p>Changes since R7:</p>
    <ul>
     <li data-md>
@@ -2744,6 +2749,14 @@ a lower level.</p>
     <li data-md>
      <p><code class="highlight"><c- n>print</c-></code> won’t use any formatted output functionality of <code class="highlight"><c- n>ostream</c-></code>.</p>
    </ul>
+   <p>In some languages like Python <code class="highlight"><c- n>print</c-></code> only provides the default formatting
+although some formatting control may be achieved by other means such as named
+arguments and/or doing formatting manually via <code class="highlight"><c- n>str</c-><c- p>.</c-><c- n>format</c-></code> or string
+interpolation. The current paper doesn’t propose such a default formatting
+facility. A search in a large Python codebase revealed that over 70%
+of <code class="highlight"><c- n>print</c-></code> calls either take a string literal or use interpolation. These use
+cases are covered by the current proposal with better usability and potentially
+better performance because there are no separate formatting function calls.</p>
    <p>Since <code class="highlight"><c- n>stdout</c-></code> doesn’t have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with <code class="highlight"><c- n>format</c-></code>. With <code class="highlight"><c- n>cout</c-></code> or another explicitly passed
@@ -2775,8 +2788,8 @@ formatting: <code class="highlight"><c- n>print</c-></code> in Python and Swift.
    <p>Additionally we can provide a function that appends a newline:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>println</c-><c- p>(</c-><c- s>"Hello, {}!"</c-><c- p>,</c-> <c- n>name</c-><c- p>);</c->  <c- c1>// prints a newline</c->
 </pre>
-   <p>Although <code class="highlight"><c- n>println</c-></code> doesn’t provide much usability improvement compared to <code class="highlight"><c- n>print</c-></code> with explicit <code class="highlight"><c- sc>'\n'</c-></code>, it has been a frequently requested feature in the
-fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
+   <p>Although <code class="highlight"><c- n>println</c-></code> doesn’t provide much usability improvement compared to <code class="highlight"><c- n>print</c-></code> with explicit <code class="highlight"><c- sc>'\n'</c-></code>, it has been an occasionally requested feature in
+the fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
    <p>Another question is which header non-<code class="highlight"><c- n>ostream</c-></code> overloads of formatted output
 functions should go to. Possible options:</p>
    <ul>
