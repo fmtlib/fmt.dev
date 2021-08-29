@@ -1,10 +1,10 @@
 <pre class='metadata'>
 Title: Fixing locale handling in chrono formatters
-Shortname: P2372
-Revision: 2
+Shortname: D2372
+Revision: 3
 <!-- !Draft Revision: 0 -->
 Audience: LWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
@@ -344,7 +344,8 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885
   <i>fill-and-align<sub>opt</sub> width<sub>opt</sub> precision<sub>opt</sub> <ins>L<sub>opt</sub></ins> chrono-specs<sub>opt</sub></i>
 </pre>
 
-<ins>A locale used by a formatting function is determined as follows:</ins>
+<ins>A *formatting locale* is an instance of `locale` used by a formatting
+function, that is determined as follows:</ins>
 <ul>
 <li><ins>the "C" locale if the `L` option is not present in *chrono-format-spec*,
     otherwise</ins>
@@ -356,16 +357,16 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885
 characters as described in Table [tab:time.format.spec]; the formats specified
 in ISO 8601:2004 shall be used where so described. Some of the conversion
 specifiers depend on <del>the locale that is passed to the formatting function
-if the latter takes one, or the global locale otherwise.</del> <ins> a locale.</ins>
-If the formatted object does not contain the information the conversion
-specifier refers to, an exception of type `format_error` is thrown.
+if the latter takes one, or the global locale otherwise</del><ins>a formatting
+locale</ins>. If the formatted object does not contain the information the
+conversion specifier refers to, an exception of type `format_error` is thrown.
 
 ...
 
 6 If the *chrono-specs* is omitted, the chrono object is formatted as if by
-streaming it to `std::ostringstream os` <ins>with a locale imbued</ins> and
-copying `os.str()` through the output iterator of the context with additional
-padding and adjustments as specified by the format specifiers.
+streaming it to `std::ostringstream os` <ins>with a formatting locale
+imbued</ins> and copying `os.str()` through the output iterator of the context
+with additional padding and adjustments as specified by the format specifiers.
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1269">[time.clock.system.nonmembers]</a>:
 
