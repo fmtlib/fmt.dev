@@ -8,7 +8,7 @@ Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-08-28
+Date: 2021-09-08
 Markup Shorthands: markdown yes
 </pre>
 
@@ -48,6 +48,8 @@ Revision history {#hist}
 ================
 
 Changes since R8:
+
+* Added new SG16 poll results.
 
 * Clarified the difference from the Python's `print` in [[#api]].
 
@@ -140,6 +142,53 @@ Changes since R0:
 
 * Clarified that adding `wchar_t` overloads will be addressed in a separate
     paper per the UK C++ panel feedback.
+
+SG16 polls (R8) {#sg16-polls8}
+===============
+
+**Poll**: Use of UTF-8 as the literal encoding is sufficient for `<print>`
+facilities to establish encoding expectations.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>2
+  <td>3
+  <td>2
+  <td>1
+  <td>0
+</tr>
+</table>
+
+Consensus: Consensus in favour.
+
+**Poll**: Correct the P2093R8 wording for [print.syn].31 to remove ambiguities,
+and forward P2093 as revised to LEWG with a recommended ship vehicle of C++23.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>1
+  <td>4
+  <td>2
+  <td>0
+  <td>0
+</tr>
+</table>
+
+Consensus: Consensus in favour.
 
 SG16 polls (R6) {#sg16-polls6}
 ===============
@@ -1495,21 +1544,25 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </pre>
 <ins>
 <span class="parnum">31</span> *Effects:* Let `out = vformat(fmt, args)`.
-If `stream` refers to a terminal [ Note: On POSIX and Windows meaning that
+If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
+the terminal using the native Unicode API; if `out` contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+If invoking the API requires transcoding, implementations should substitute
+invalid code units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard
+Version 13.0 – Core Specification, Chapter 3.9. Otherwise writes `out` to
+`stream` unchanged.
+</ins>
+<p>
+<ins>
+[ Note: On POSIX and Windows `stream` referring to a terminal means that
 `isatty(fileno(stream))` and `GetConsoleMode(_get_osfhandle(_fileno(stream)), ...)`
-return nonzero respectively. — end note ] capable of
-displaying Unicode, writes `out` to the terminal using the native Unicode API.
-[ Note: On Windows this API is `WriteConsoleW`. — end note ]
-If `out` contains invalid code units, the behavior is undefined and
-implementations are encouraged to diagnose it.
-If this requires transcoding then implementations should substitute invalid code
-units with U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0
-– Core Specification, Chapter 3.9. Otherwise writes `out` to `stream` unchanged.
+return nonzero, respectively. — end note ]
+[ Note: On Windows the native Unicode API is `WriteConsoleW`. — end note ]
 </ins>
 <!-- https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf -->
 <p>
 <ins>
-*Throws:* As specified in [[format.err.report](
+<span class="parnum">32</span> *Throws:* As specified in [[format.err.report](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
 or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
@@ -1521,7 +1574,7 @@ its specifications.
 void vprint_nonunicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<span class="parnum">32</span> <ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">33</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_nonunicode(stdout, fmt, args));
@@ -1534,7 +1587,7 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">33</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
+<span class="parnum">34</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
 </ins>
 <p>
 <ins>
