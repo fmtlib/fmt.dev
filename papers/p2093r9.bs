@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
-Shortname: D2093 <!-- TODO: update -->
+Shortname: P2093
 Revision: 9
 Audience: LEWG
-Status: D <!-- TODO: update -->
+Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-09-08
+Date: 2021-09-09
 Markup Shorthands: markdown yes
 </pre>
 
@@ -50,6 +50,11 @@ Revision history {#hist}
 Changes since R8:
 
 * Added new SG16 poll results.
+
+* Improved wording for [print.syn].6 (previously [print.syn].31) to remove
+    ambiguities per SG16 feedback.
+
+* Fixed paragraph numbering in the wording.
 
 * Clarified the difference from the Python's `print` in [[#api]].
 
@@ -1473,7 +1478,7 @@ template&lt;class... Args&gt;
   void print(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
-<span class="parnum">26</span> <ins>*Effects:* Equivalent to:
+<span class="parnum">1</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
   print(stdout, fmt, make_format_args(args...));
@@ -1486,7 +1491,7 @@ template&lt;class... Args&gt;
   void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
-<span class="parnum">27</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<span class="parnum">2</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
   vprint_unicode(stream, fmt.str, make_format_args(args...));
@@ -1505,7 +1510,7 @@ template&lt;class... Args&gt;
   void println(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
-<span class="parnum">28</span> <ins>*Effects:* Equivalent to:
+<span class="parnum">3</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
   print("{}\n", format(fmt, args...));
@@ -1518,7 +1523,7 @@ template&lt;class... Args&gt;
   void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
 </ins>
 </pre>
-<span class="parnum">29</span> <ins>*Effects:* Equivalent to:
+<span class="parnum">4</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
   print(stream, "{}\n", format(fmt, args...));
@@ -1530,7 +1535,7 @@ template&lt;class... Args&gt;
 void vprint_unicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<span class="parnum">30</span> <ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">5</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_unicode(stdout, fmt, args));
@@ -1543,7 +1548,7 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">31</span> *Effects:* Let `out = vformat(fmt, args)`.
+<span class="parnum">6</span> *Effects:* Let `out = vformat(fmt, args)`.
 If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
@@ -1562,7 +1567,7 @@ return nonzero, respectively. — end note ]
 <!-- https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf -->
 <p>
 <ins>
-<span class="parnum">32</span> *Throws:* As specified in [[format.err.report](
+<span class="parnum">7</span> *Throws:* As specified in [[format.err.report](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
 or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
@@ -1574,7 +1579,7 @@ its specifications.
 void vprint_nonunicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<span class="parnum">33</span> <ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">8</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_nonunicode(stdout, fmt, args));
@@ -1587,11 +1592,11 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">34</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
+<span class="parnum">9</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
 </ins>
 <p>
 <ins>
-*Throws:* As specified in [[format.err.report](
+<span class="parnum">10</span> *Throws:* As specified in [[format.err.report](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
 or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
