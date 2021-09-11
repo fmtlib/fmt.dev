@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D2372R3: Fixing locale handling in chrono formatters</title>
+  <title>P2372R3: Fixing locale handling in chrono formatters</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="4304052df4ee34e5d121a43371dab38dea75fdf0" name="document-revision">
+  <meta content="a813c39d77eac6c328283f81487e5abeb62aea56" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2083,8 +2083,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D2372R3<br>Fixing locale handling in chrono formatters</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-08-06">2021-08-06</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2372R3<br>Fixing locale handling in chrono formatters</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-11">2021-09-11</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Authors:
@@ -2104,15 +2104,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#prob"><span class="secno">1</span> <span class="content">The problem</span></a>
     <li><a href="#the-solution"><span class="secno">2</span> <span class="content">The solution</span></a>
-    <li><a href="#changes-from-r1"><span class="secno">3</span> <span class="content">Changes from R1</span></a>
-    <li><a href="#changes-from-r0"><span class="secno">4</span> <span class="content">Changes from R0</span></a>
-    <li><a href="#locale-alternative-forms"><span class="secno">5</span> <span class="content">Locale alternative forms</span></a>
-    <li><a href="#the-c-locale"><span class="secno">6</span> <span class="content">The "C" locale</span></a>
-    <li><a href="#sg16polls"><span class="secno">7</span> <span class="content">SG16 polls</span></a>
-    <li><a href="#lewg-polls"><span class="secno">8</span> <span class="content">LEWG polls</span></a>
-    <li><a href="#impl"><span class="secno">9</span> <span class="content">Implementation experience</span></a>
-    <li><a href="#impact"><span class="secno">10</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#wording"><span class="secno">11</span> <span class="content">Wording</span></a>
+    <li><a href="#changes-from-r2"><span class="secno">3</span> <span class="content">Changes from R2</span></a>
+    <li><a href="#changes-from-r1"><span class="secno">4</span> <span class="content">Changes from R1</span></a>
+    <li><a href="#changes-from-r0"><span class="secno">5</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#locale-alternative-forms"><span class="secno">6</span> <span class="content">Locale alternative forms</span></a>
+    <li><a href="#the-c-locale"><span class="secno">7</span> <span class="content">The "C" locale</span></a>
+    <li><a href="#sg16polls"><span class="secno">8</span> <span class="content">SG16 polls</span></a>
+    <li><a href="#lewg-polls"><span class="secno">9</span> <span class="content">LEWG polls</span></a>
+    <li><a href="#impl"><span class="secno">10</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#impact"><span class="secno">11</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#wording"><span class="secno">12</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2181,7 +2182,12 @@ as it is done for all other standard formatters
 <c- c1>// s == "04,200"</c->
 </pre>
    </table>
-   <h2 class="heading settled" data-level="3" id="changes-from-r1"><span class="secno">3. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes-from-r1"></a></h2>
+   <h2 class="heading settled" data-level="3" id="changes-from-r2"><span class="secno">3. </span><span class="content">Changes from R2</span><a class="self-link" href="#changes-from-r2"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Minor wording tweaks per LWG feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="4" id="changes-from-r1"><span class="secno">4. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes-from-r1"></a></h2>
    <ul>
     <li data-md>
      <p>Replaced two occurrences of "If the <em>L</em> option is used, the locale is the
@@ -2191,7 +2197,7 @@ specifying the choice of locale in wording.</p>
     <li data-md>
      <p>Added the <code class="highlight"><c- n>L</c-></code> option in <code class="highlight"><c- p>[</c-><c- n>time</c-><c- p>.</c-><c- n>zone</c-><c- p>.</c-><c- n>zonedtime</c-><c- p>.</c-><c- n>nonmembers</c-><c- p>]</c-></code>.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="changes-from-r0"><span class="secno">4. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes-from-r0"></a></h2>
+   <h2 class="heading settled" data-level="5" id="changes-from-r0"><span class="secno">5. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes-from-r0"></a></h2>
    <ul>
     <li data-md>
      <p>Kept ostream insertion operators (<code class="highlight"><c- k>operator</c-><c- o>&lt;&lt;</c-></code>) locale-dependent for
@@ -2204,7 +2210,7 @@ locale. They are locale-dependent because the decimal point is localized.</p>
     <li data-md>
      <p>Added LEWG poll results.</p>
    </ul>
-   <h2 class="heading settled" data-level="5" id="locale-alternative-forms"><span class="secno">5. </span><span class="content">Locale alternative forms</span><a class="self-link" href="#locale-alternative-forms"></a></h2>
+   <h2 class="heading settled" data-level="6" id="locale-alternative-forms"><span class="secno">6. </span><span class="content">Locale alternative forms</span><a class="self-link" href="#locale-alternative-forms"></a></h2>
    <p>Some specifiers (<code class="highlight"><c- o>%</c-><c- n>d</c-> <c- o>%</c-><c- n>H</c-> <c- o>%</c-><c- n>I</c-> <c- o>%</c-><c- n>m</c-> <c- o>%</c-><c- n>M</c-> <c- o>%</c-><c- n>S</c-> <c- o>%</c-><c- n>u</c-> <c- o>%</c-><c- n>w</c-> <c- o>%</c-><c- n>y</c-> <c- o>%</c-><c- n>z</c-></code>) produce digits which are
 not localized (aka they use the Arabic numerals <code class="highlight"><c- mo>01234567</c-><c- mi>89</c-></code>) although as we
 demonstrated earlier <code class="highlight"><c- o>%</c-><c- n>S</c-></code> is still using a localized decimal separator.
@@ -2215,7 +2221,7 @@ modify the specifiers.</p>
    <p>For example, <code class="highlight"><c- s>"{:L%p%I}"</c-></code> and <code class="highlight"><c- s>"{:L%p%OI}"</c-></code> should be valid specifiers producing <code class="highlight">午後<c- mi>1</c-></code> and <code class="highlight">午後一</code> respectively.</p>
    <p>Appropriate use of numeral systems for localized numbers and dates
 requires more work, this paper focuses on a consistent default behavior.</p>
-   <h2 class="heading settled" data-level="6" id="the-c-locale"><span class="secno">6. </span><span class="content">The "C" locale</span><a class="self-link" href="#the-c-locale"></a></h2>
+   <h2 class="heading settled" data-level="7" id="the-c-locale"><span class="secno">7. </span><span class="content">The "C" locale</span><a class="self-link" href="#the-c-locale"></a></h2>
    <p>The "C" locale is used in the wording as a way to express locale-independent
 behavior. The C standard specifies the "C" locale behavior for <code class="highlight"><c- n>strftime</c-></code> as
 follows</p>
@@ -2237,7 +2243,7 @@ and the replacement strings for the following specifiers are:
    <p>This makes it possible, as long as the <code class="highlight"><c- n>L</c-></code> option is not specified, to format
 dates in environment without locale support (embedded platforms, <code class="highlight"><c- k>constexpr</c-></code> if
 someone proposes it, etc).</p>
-   <h2 class="heading settled" data-level="7" id="sg16polls"><span class="secno">7. </span><span class="content">SG16 polls</span><a class="self-link" href="#sg16polls"></a></h2>
+   <h2 class="heading settled" data-level="8" id="sg16polls"><span class="secno">8. </span><span class="content">SG16 polls</span><a class="self-link" href="#sg16polls"></a></h2>
    <p>Poll: LWG3547 raises a valid design defect in [time.format] in C++20.</p>
    <table class="poll">
     <tbody>
@@ -2294,7 +2300,7 @@ changes.</p>
      <p>Some chrono types are partially localized, e.g. <code class="highlight"><c- n>month_day_last</c-><c- p>{</c-><c- n>May</c-><c- p>}</c-></code> may be
 formatted as <code class="highlight"><c- n>Mai</c-><c- o>/</c-><c- n>last</c-></code> in a German locale with only month localized.</p>
    </ul>
-   <h2 class="heading settled" data-level="8" id="lewg-polls"><span class="secno">8. </span><span class="content">LEWG polls</span><a class="self-link" href="#lewg-polls"></a></h2>
+   <h2 class="heading settled" data-level="9" id="lewg-polls"><span class="secno">9. </span><span class="content">LEWG polls</span><a class="self-link" href="#lewg-polls"></a></h2>
    <p>Poll: Revise D2372 to keep the ostream operators for chrono formatting dependent
 on the stream locale</p>
    <table class="poll">
@@ -2332,7 +2338,7 @@ formatters) will land in C++23 and be applied retroactively to C++20</p>
       <td>0 
    </table>
    <p>Outcome: Unanimous approval</p>
-   <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The <code class="highlight"><c- n>L</c-></code> specifier has been implemented for durations in the fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).
 Additionally, some format specifiers like <code class="highlight"><c- n>S</c-></code> have never used a locale by default
 so this was a novel behavior accidentally introduced in C++20:</p>
@@ -2342,7 +2348,7 @@ so this was a novel behavior accidentally introduced in C++20:</p>
 </pre>
    <p>This proposed fix has also been implemented and submitted to the Microsoft
 standard library.</p>
-   <h2 class="heading settled" data-level="10" id="impact"><span class="secno">10. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="11" id="impact"><span class="secno">11. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Changing the semantics of chrono formatters to be consistent with standard
 format specifiers (<a href="https://eel.is/c++draft/format.string.std">format.string.std</a>)
 is a breaking change. At the time of writing the Microsoft’s implementation
@@ -2351,7 +2357,7 @@ not fully conformant. For example:</p>
 <pre class="highlight">  <c- k>using</c-> <c- n>sec</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- b>double</c-><c- o>></c-><c- p>;</c->
   <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:%S}"</c-><c- p>,</c-> <c- n>sec</c-><c- p>(</c-><c- mf>4.2</c-><c- p>));</c-> <c- c1>// s == "04" (incorrect)</c->
 </pre>
-   <h2 class="heading settled" data-level="11" id="wording"><span class="secno">11. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="12" id="wording"><span class="secno">12. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>All wording is relative to the C++ working draft <a data-link-type="biblio" href="#biblio-n4885">[N4885]</a>.</p>
    <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_format</c-></code> to the date of
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=500">[version.syn]</a>:</p>
