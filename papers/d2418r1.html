@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b847215a219d05aca93c0d9ddb42fd54e0272c51" name="document-revision">
+  <meta content="2b8eb24d8523b5ff0b59bd42deb1c89f503d6bed" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2095,6 +2095,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
     <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation experience</span></a>
     <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">7</span> <span class="content">Acknowledgement</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2136,6 +2137,10 @@ copy.</p>
    <ul>
     <li data-md>
      <p>Added LEWG poll results.</p>
+    <li data-md>
+     <p>Improved the wording.</p>
+    <li data-md>
+     <p>Added the Acknowledgements section.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG polls</span><a class="self-link" href="#polls"></a></h2>
    <p>Poll: Send P2418R0 (Adding support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>) to
@@ -2459,9 +2464,9 @@ which an implementation determines that the specialization meets the <em>Formatt
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- o>></c->
   <c- k>class</c-> <c- nc>basic_format_arg</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>>::</c-><c- n>handle</c-> <c- p>{</c->
-    <del><c- k>const</c-> </del><c- b>void</c-><c- o>*</c-> <c- n>ptr_</c-><c- p>;</c->                                             <c- c1>// exposition only</c->
+    <c- k>const</c-> <c- b>void</c-><c- o>*</c-> <c- n>ptr_</c-><c- p>;</c->                                             <c- c1>// exposition only</c->
     <c- b>void</c-> <c- p>(</c-><c- o>*</c-><c- n>format_</c-><c- p>)(</c-><c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-><c- p>,</c->
-                    <c- n>Context</c-><c- o>&amp;</c-><c- p>,</c-> <del><c- k>const</c-> </del><c- b>void</c-><c- o>*</c-><c- p>);</c->                       <c- c1>// exposition only</c->
+                    <c- n>Context</c-><c- o>&amp;</c-><c- p>,</c-> <c- k>const</c-> <c- b>void</c-><c- o>*</c-><c- p>);</c->                       <c- c1>// exposition only</c->
 
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>explicit</c-> <c- n>handle</c-><c- p>(</c-><del><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-></del><ins><c- n>T</c-><c- o>&amp;&amp;</c-></ins> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->  <c- c1>// exposition only</c->
     <c- p>...</c->
@@ -2470,28 +2475,24 @@ which an implementation determines that the specialization meets the <em>Formatt
 </pre>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>explicit</c-> <c- n>handle</c-><c- p>(</c-><del><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-></del><ins><c- n>T</c-><c- o>&amp;&amp;</c-></ins> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
 </pre>
-   <ins><em>Mandates</em>:</ins>
-<pre class="highlight"><ins><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins><c- o>></c-><c- p>()</c->
-  <c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c-></ins>
-</pre>
-   <ins>is well-formed or <code class="highlight"><c- n>is_const</c-><c- o>&lt;</c-><c- n>remove_reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-></code> is <code class="highlight">false</code>.</ins>
-   <p>
-    <em>Effects</em>: 
-    <ins>Let <code class="highlight"><c- n>qualified_type</c-></code> be <code class="highlight"><c- k>const</c-> <c- n>remove_cvref</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> if</ins>
-   </p>
-<pre class="highlight"><ins><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins><c- o>></c-><c- p>()</c->
-  <c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c-></ins>
-</pre>
-   <ins>is well-formed and <code class="highlight"><c- n>remove_cvref</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> otherwise.</ins>
-    Initializes <code class="highlight"><c- n>ptr_</c-></code>­ with 
-   <del><code class="highlight"><c- n>addressof</c-><c- p>(</c-><c- n>val</c-><c- p>)</c-></code></del>
-   <ins><code class="highlight"><c- k>const_cast</c-><c- o>&lt;</c-><c- b>void</c-><c- o>*></c-><c- p>(</c-><c- n>addressof</c-><c- p>(</c-><c- n>val</c-><c- p>))</c-></code></ins>
-    and <code class="highlight"><c- n>format_</c-></code>­ with 
+   <ins>Let</ins>
+   <ul>
+    <li data-md>
+     <ins><code class="highlight"><c- n>TD</c-></code> be <code class="highlight"><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>,</ins>
+    <li data-md>
+     <ins><em>const-formattable</em> be <code class="highlight">true</code> if <code class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><c- n>TD</c-><c- o>></c-><c- p>().</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>TD</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c-></code> is well-formed, otherwise <code class="highlight">false</code>,</ins>
+    <li data-md>
+     <ins><code class="highlight"><c- n>TQ</c-></code> be <code class="highlight"><c- k>const</c-> <c- n>TD</c-></code> if <em>const-formattable</em> is <code class="highlight">true</code> and <code class="highlight"><c- n>TD</c-></code> otherwise.</ins>
+   </ul>
+   <ins><em>Mandates</em>: <em>const-formattable</em> <code class="highlight"><c- o>||</c-> <c- o>!</c-><c- n>is_const</c-><c- o>&lt;</c-><c- n>remove_reference_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-></code> is <code class="highlight">true</code>.</ins>
+   <p><em>Effects</em>: Initializes <code class="highlight"><c- n>ptr_</c-></code>­ with <code class="highlight"><c- n>addressof</c-><c- p>(</c-><c- n>val</c-><c- p>)</c-></code> and <code class="highlight"><c- n>format_</c-></code>­ with</p>
 <pre class="highlight"><c- p>[](</c-><c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c->
-   <c- n>Context</c-><c- o>&amp;</c-> <c- n>format_ctx</c-><c- p>,</c-> <del><c- k>const</c-></del> <c- b>void</c-><c- o>*</c-> <c- n>ptr</c-><c- p>)</c-> <c- p>{</c->
-  <c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins><c- o>></c-> <c- n>f</c-><c- p>;</c->
+   <c- n>Context</c-><c- o>&amp;</c-> <c- n>format_ctx</c-><c- p>,</c-> <c- k>const</c-> <c- b>void</c-><c- o>*</c-> <c- n>ptr</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>TD</c-></ins><c- o>></c-> <c- n>f</c-><c- p>;</c->
   <c- n>parse_ctx</c-><c- p>.</c-><c- n>advance_to</c-><c- p>(</c-><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>parse_ctx</c-><c- p>));</c->
-  <c- n>format_ctx</c-><c- p>.</c-><c- n>advance_to</c-><c- p>(</c-><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- o>*</c-><c- k>static_cast</c-><c- o>&lt;</c-><del><c- k>const</c-> <c- n>T</c-></del><ins><c- n>qualified_type</c-></ins><c- o>*></c-><c- p>(</c-><c- n>ptr</c-><c- p>),</c-> <c- n>format_ctx</c-><c- p>));</c->
+  <c- n>format_ctx</c-><c- p>.</c-><c- n>advance_to</c-><c- p>(</c-><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c->
+    <del><c- o>*</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>*></c-><c- p>(</c-><c- n>ptr</c-><c- p>)</c-></del><ins><c- k>const_cast</c-><c- o>&lt;</c-><c- n>TQ</c-><c- o>*></c-><c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>TD</c-><c- o>*></c-><c- p>(</c-><c- n>ptr</c-><c- p>))</c-></ins><c- p>,</c->
+    <c- n>format_ctx</c-><c- p>));</c->
 <c- p>}</c->
 </pre>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=757">[format.arg.store]</a>:</p>
@@ -2514,6 +2515,9 @@ become ill-formed. For example: </ins>
 <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>t</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// ill-formed,</c->
                           <c- c1>// previously returned "0"</c->
 </ins></pre>
+   <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgement</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks Barry Revzin for bringing up the issue of formatting <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> in <a data-link-type="biblio" href="#biblio-p2286">[P2286]</a>. Thanks Tim Song and Tomasz Kamiński for wording improvement
+suggestions.</p>
   </main>
 <script>
 (function() {

@@ -51,6 +51,8 @@ Changes since R0 {#changes}
 ================
 
 * Added LEWG poll results.
+* Improved the wording.
+* Added the Acknowledgements section.
 
 LEWG polls {#polls}
 ==========
@@ -453,9 +455,9 @@ The class `handle` allows formatting an object of a user-defined type.
 namespace std {
   template&lt;class Context>
   class basic_format_arg&lt;Context>::handle {
-    <del>const </del>void* ptr_;                                             // exposition only
+    const void* ptr_;                                             // exposition only
     void (*format_)(basic_format_parse_context&lt;char_type>&,
-                    Context&, <del>const </del>void*);                       // exposition only
+                    Context&, const void*);                       // exposition only
 
     template&lt;class T> explicit handle(<del>const T&</del><ins>T&&</ins> val) noexcept;  // exposition only
     ...
@@ -467,31 +469,25 @@ namespace std {
 template&lt;class T> explicit handle(<del>const T&</del><ins>T&&</ins> val) noexcept;
 </pre>
 
-<ins>*Mandates*:</ins>
+<ins>Let</ins>
+* <ins>`TD` be `remove_cvref_t<T>`,</ins>
+* <ins>*const-formattable* be `true` if
+    `typename Context::template formatter_type<TD>().format(declval<const TD&>(), declval<Context&>())`
+    is well-formed, otherwise `false`,</ins>
+* <ins>`TQ` be `const TD` if *const-formattable* is `true` and `TD` otherwise.</ins>
 
-<pre>
-<ins>typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
-  .format(declval&lt;const T&>(), declval&lt;Context&>())</ins>
-</pre>
+<ins>*Mandates*: *const-formattable* `|| !is_const<remove_reference_t<T>>` is `true`.</ins>
 
-<ins>is well-formed or `is_const<remove_reference<T>>` is `false`.</ins>
-
-*Effects*: <ins>Let `qualified_type` be `const remove_cvref<T>` if</ins>
-
-<pre>
-<ins>typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
-  .format(declval&lt;const T&>(), declval&lt;Context&>())</ins>
-</pre>
-
-<ins>is well-formed and `remove_cvref<T>` otherwise.</ins> Initializes `ptr_`­ with
-<del>`addressof(val)`</del><ins>`const_cast<void*>(addressof(val))`</ins> and `format_`­ with
+*Effects*: Initializes `ptr_`­ with `addressof(val)` and `format_`­ with
 
 <pre>
 [](basic_format_parse_context&lt;char_type>& parse_ctx,
-   Context& format_ctx, <del>const</del> void* ptr) {
-  typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>> f;
+   Context& format_ctx, const void* ptr) {
+  typename Context::template formatter_type&lt;<del>T</del><ins>TD</ins>> f;
   parse_ctx.advance_to(f.parse(parse_ctx));
-  format_ctx.advance_to(f.format(*static_cast&lt;<del>const T</del><ins>qualified_type</ins>*>(ptr), format_ctx));
+  format_ctx.advance_to(f.format(
+    <del>*static_cast&lt;const T*>(ptr)</del><ins>const_cast&lt;TQ*>(static_cast&lt;const TD*>(ptr))</ins>,
+    format_ctx));
 }
 </pre>
 
@@ -529,6 +525,13 @@ std::format("{}", t.bit); // ill-formed,
                           // previously returned "0"
 </ins>
 </pre>
+
+Acknowledgement {#ack}
+===============
+
+Thanks Barry Revzin for bringing up the issue of formatting `std::generator` in
+[[P2286]]. Thanks Tim Song and Tomasz Kamiński for wording improvement
+suggestions.
 
 <pre class=biblio>
 {
