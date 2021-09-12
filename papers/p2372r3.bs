@@ -386,9 +386,12 @@ template<class charT, class traits, class Duration>
 2 *Effects*: Equivalent to:
 
 <pre>
+  <del>
   auto const dp = floor<days>(tp);
-  return os << format(os.getloc(), STATICALLY-WIDEN<charT>(<del>"{} {}"</del><ins>"{} {:L}"</ins>),
-                      year_month_day{dp}, hh_mm_ss{tp-dp});
+  return os << format(os.getloc(), STATICALLY-WIDEN<charT>("{} {}"),
+                      year_month_day{dp}, hh_mm_ss{tp-dp});</del><ins>
+  return os << format(os.getloc(), STATICALLY-WIDEN<charT>("{:L%F %T}"), tp);
+  </ins>
 </pre>
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1271">[time.clock.utc.nonmembers]</a>:
