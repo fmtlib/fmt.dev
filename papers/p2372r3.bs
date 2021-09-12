@@ -387,7 +387,7 @@ template<class charT, class traits, class Duration>
 
 <pre>
   auto const dp = floor<days>(tp);
-  return os << format(os.getloc(), STATICALLY-WIDEN<charT>(<del>"{} {}"</del><ins>"{:L} {:L}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN<charT>(<del>"{} {}"</del><ins>"{} {:L}"</ins>),
                       year_month_day{dp}, hh_mm_ss{tp-dp});
 </pre>
 
@@ -532,7 +532,7 @@ template<class charT, class traits>
 3 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{}"</ins>),
                       md.month(), md.day());
 </pre>
 
@@ -591,7 +591,7 @@ template<class charT, class traits>
 14 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{}/{:L}"</ins>),
                       ym.year(), ym.month());
 </pre>
 
@@ -627,7 +627,7 @@ template<class charT, class traits>
 12 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{:L}/{:L}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}"</del><ins>"{}/{:L}"</ins>),
                       ymdl.year(), ymdl.month_day_last());
 </pre>
 
@@ -642,7 +642,7 @@ template<class charT, class traits>
 11 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}/{}"</del><ins>"{:L}/{:L}/{:L}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}/{}"</del><ins>"{}/{:L}/{:L}"</ins>),
                       ymwd.year(), ymwd.month(), ymwd.weekday_indexed());
 </pre>
 
@@ -657,7 +657,7 @@ template<class charT, class traits>
 11 *Effects*: Equivalent to:
 
 <pre>
-  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}/{}"</del><ins>"{:L}/{:L}/{:L}"</ins>),
+  return os << format(os.getloc(), STATICALLY-WIDEN&lt;charT>(<del>"{}/{}/{}"</del><ins>"{}/{:L}/{:L}"</ins>),
                       ymwdl.year(), ymwdl.month(), ymwdl.weekday_last());
 </pre>
 
@@ -677,8 +677,9 @@ operator<<(basic_ostream<charT, traits>& os, const hh_mm_ss<Duration>& hms);
 
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4885.pdf#page=1322">[time.zone.zonedtime.nonmembers]</a>:
 
-2 *Effects*: Streams the value returned from `t.get_local_time()` to `os` using
-the format <del>`"%F %T %Z"`</del><ins>`"L%F %T %Z"`</ins>.
+2 *Effects*: <del>Streams the value returned from `t.get_local_time()` to `os` using
+the format `"%F %T %Z"`.</del><ins>Equivalent to:
+`return os << format(os.getloc(), STATICALLY-WIDEN("{:L%F %T %Z}"), t);`</ins>
 
 <pre class=biblio>
 {
