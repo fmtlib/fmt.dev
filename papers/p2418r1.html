@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b74cf7939486e384c833cb2baa9e42a2c6f2b9e7" name="document-revision">
+  <meta content="bce1164c0461f1748e2f3ad0e2e5698ae4a9b748" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2072,7 +2072,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P2418R1<br>Add support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code>-like types to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-11">2021-09-11</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-18">2021-09-18</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2090,12 +2090,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#proposal"><span class="secno">1</span> <span class="content">Proposal</span></a>
-    <li><a href="#changes"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#polls"><span class="secno">3</span> <span class="content">LEWG polls</span></a>
-    <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation experience</span></a>
-    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
-    <li><a href="#ack"><span class="secno">7</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">4</span> <span class="content">LEWG polls</span></a>
+    <li><a href="#impact"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2104,6 +2105,18 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
+   <p>TODO:</p>
+   <ol start="4">
+    <li data-md>
+     <p>http://eel.is/c++draft/format.formatter.spec: para 6: Formatter -> BasicFormatter</p>
+    <li data-md>
+     <p>http://eel.is/c++draft/format.arg: para 4: Formatter -> BasicFormatter (2 places)</p>
+    <li data-md>
+     <p>format_to_n / formatted_size: Formatter -> BasicFormatter in precondition</p>
+    <li data-md>
+     <p>http://eel.is/c++draft/format.arg.store:
+ Formatter -> BasicFormatter</p>
+   </ol>
    <h2 class="heading settled" data-level="1" id="proposal"><span class="secno">1. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2286">[P2286]</a> raised an issue of formatting <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> from <a data-link-type="biblio" href="#biblio-p2168">[P2168]</a> and
 similar views with C++20 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. The issue is illustrated in the
@@ -2133,7 +2146,21 @@ copy.</p>
 <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:02x}"</c-><c- p>,</c-> <c- n>joined</c-><c- p>);</c-> <c- c1>// UB but can be made ill-formed with this proposal</c->
 </pre>
    </ul>
-   <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Removed previously added "All types that have <code class="highlight"><c- n>formatter</c-></code> specializations
+satisfy the <em>Formatter</em> requirements unless specified otherwise." from
+[formatter.requirements].</p>
+    <li data-md>
+     <p>Removed "[Note 1 : Enabled specializations meet the Formatter requirements,
+and disabled specializations do not. — end note]" in
+[format.formatter.spec], paragraph 2.</p>
+    <li data-md>
+     <p>Added "and meets the Formatter requirements" to [format.formatter.spec],
+paragraph 4.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added LEWG poll results.</p>
@@ -2142,7 +2169,7 @@ copy.</p>
     <li data-md>
      <p>Added the Acknowledgements section.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">LEWG polls</span><a class="self-link" href="#polls"></a></h2>
    <p>Poll: Send P2418R0 (Adding support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>) to
 LWG for C++23 and as a DR for C++20, treated as an urgent matter.</p>
    <table class="poll">
@@ -2160,7 +2187,7 @@ LWG for C++23 and as a DR for C++20, treated as an urgent matter.</p>
       <td>0 
       <td>0 
    </table>
-   <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impact"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This change will break formatting of bit fields:</p>
 <pre class="language-c++ highlight"><c- k>struct</c-> <c- nc>S</c-> <c- p>{</c->
   <c- b>int</c-> <c- nl>bit</c-><c- p>:</c-> <c- mi>1</c-><c- p>;</c->
@@ -2172,11 +2199,11 @@ LWG for C++23 and as a DR for C++20, treated as an urgent matter.</p>
    <p>Supporting bit fields was one of the reasons <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> passed arguments by <code class="highlight"><c- k>const</c-><c- o>&amp;</c-></code> in the first place. However, there are simple workarounds for this:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- o>+</c-><c- n>s</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// use + or cast to int</c->
 </pre>
-   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposal has been implemented in the {fmt} library. Arguments have been
 passed by forwarding references since {fmt} 6.0 released about two years ago and
 non-<code class="highlight"><c- k>const</c-><c- o>&amp;</c-></code> argument support in <code class="highlight"><c- n>formatter</c-></code> specializations was added recently.</p>
-   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>All wording is relative to the C++ working draft <a data-link-type="biblio" href="#biblio-n4892">[N4892]</a>.</p>
    <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_format</c-></code> to the date of
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=504">[version.syn]</a>:</p>
@@ -2346,7 +2373,7 @@ each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code
       are valid and have the indicated semantics. 
    </ul>
    <ins> A type <code class="highlight"><c- n>F</c-></code> meets the <em>Formatter</em> requirements if it meets the <em>BasicFormatter</em> requirements and the expressions shown in Table 67 are valid and have the
-indicated semantics. All types that have <code class="highlight"><c- n>formatter</c-></code> specializations satisfy the <em>Formatter</em> requirements unless specified otherwise. </ins>
+indicated semantics. </ins>
    <p>...</p>
    <p>
     Given character type <code class="highlight"><c- n>charT</c-></code>, output iterator type <code class="highlight"><c- n>Out</c-></code>, and formatting
@@ -2437,6 +2464,18 @@ empty then either <code class="highlight"><c- n>pc</c-><c- p>.</c-><c- n>begin</
       <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
       <td>As above, but does not modify <code class="highlight"><c- n>u</c-></code>. 
    </table>
+   <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=751">[format.formatter.spec]</a>:</p>
+   <p>2 Let <code class="highlight"><c- n>charT</c-></code> be either <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is either enabled or disabled, as described below.</p>
+   <del>[Note 1 : Enabled specializations meet the Formatter requirements, and
+disabled specializations do not. — end note]</del>
+   <p>...</p>
+   <p>
+    4 If the library provides an explicit or partial specialization of <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code>, that specialization is enabled 
+    <ins>and meets the <em>Formatter</em> requirements</ins>
+     except as noted otherwise.
+   </p>
+   <p>...</p>
+   <p>6 An enabled specialization <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> meets the <i><ins>Basic</ins>Formatter</i> requirements (20.20.6.1).</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=755">[format.arg]</a>:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- k>template</c-><class context>
@@ -2514,7 +2553,7 @@ become ill-formed. For example: </ins>
 <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>t</c-><c- p>.</c-><c- n>bit</c-><c- p>);</c-> <c- c1>// ill-formed,</c->
                           <c- c1>// previously returned "0"</c->
 </ins></pre>
-   <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks Barry Revzin for bringing up the issue of formatting <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> in <a data-link-type="biblio" href="#biblio-p2286">[P2286]</a>. Thanks Tim Song and Tomasz Kamiński for wording improvement
 suggestions.</p>
   </main>
