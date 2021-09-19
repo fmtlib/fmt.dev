@@ -8,7 +8,7 @@ Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-09-11
+Date: 2021-09-18
 Markup Shorthands: markdown yes
 </pre>
 
@@ -47,7 +47,25 @@ auto joined = std::format_join(std::vector{10, 20, 30, 40, 50, 60}, ":");
 std::format("{:02x}", joined); // UB but can be made ill-formed with this proposal
     ```
 
-Changes since R0 {#changes}
+Changes since R1 {#changes1}
+================
+
+* Removed previously added "All types that have `formatter` specializations
+    satisfy the *Formatter* requirements unless specified otherwise." from
+    [formatter.requirements].
+
+* Removed "[Note 1 : Enabled specializations meet the Formatter requirements,
+    and disabled specializations do not. — end note]" in
+    [format.formatter.spec], paragraph 2.
+
+* Added "and meets the Formatter requirements" to [format.formatter.spec],
+    paragraph 4.
+
+* Replaced *Formatter* with *BasicFormatter* in [format.formatter.spec],
+    paragraph 6, [format.arg], paragraph 4, [format.functions], paragraphs 20
+    and 25 and [format.arg.store], paragraph 2.
+
+Changes since R0 {#changes0}
 ================
 
 * Added LEWG poll results.
@@ -272,10 +290,10 @@ template&lt;class Out, class... Args>
 
 ...
 
-*Preconditions*: `Out` models `output_­iterator<const charT&>`, and
+20 *Preconditions*: `Out` models `output_iterator<const charT&>`, and
 <code>formatter&lt;<del>T<sub>i</sub></del><ins>remove_cvref_t&lt;T<sub>i</sub>></ins>,
-charT></code> meets the *Formatter* requirements ([formatter.requirements]) for
-each <code>T<sub>i</sub></code> in `Args`.
+charT></code> meets the <i><ins>Basic</ins>Formatter</i> requirements
+([formatter.requirements]) for each <code>T<sub>i</sub></code> in `Args`.
 
 ...
 
@@ -294,10 +312,10 @@ template&lt;class... Args>
 
 ...
 
-*Preconditions*:
+25 *Preconditions*:
 <code>formatter&lt;<del>T<sub>i</sub></del><ins>remove_cvref_t&lt;T<sub>i</sub>></ins>,
-charT></code> meets the *Formatter* requirements ([formatter.requirements]) for
-each <code>T<sub>i</sub></code> in `Args`.
+charT></code> meets the <i><ins>Basic</ins>Formatter</i> requirements
+([formatter.requirements]) for each <code>T<sub>i</sub></code> in `Args`.
 
 ...
 
@@ -322,8 +340,7 @@ A type `F` meets the <i><ins>Basic</ins>Formatter</i> requirements if:
 <ins>
 A type `F` meets the *Formatter* requirements if it meets the *BasicFormatter*
 requirements and the expressions shown in Table 67 are valid and have the
-indicated semantics. All types that have `formatter` specializations satisfy the
-*Formatter* requirements unless specified otherwise.
+indicated semantics.
 </ins>
 
 ...
@@ -413,6 +430,25 @@ Table 67: <i>Formatter</i> requirements [tab:formatter]
 </tr>
 </table>
 
+Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=751">[format.formatter.spec]</a>:
+
+2 Let `charT` be either `char` or `wchar_t`. Each specialization of `formatter`
+is either enabled or disabled, as described below.
+
+<del>[Note 1 : Enabled specializations meet the Formatter requirements, and
+disabled specializations do not. — end note]</del>
+
+...
+
+4 If the library provides an explicit or partial specialization of
+`formatter<T, charT>`, that specialization is enabled <ins>and meets the
+*Formatter* requirements</ins> except as noted otherwise.
+
+...
+
+6 An enabled specialization `formatter<T, charT>` meets the
+<i><ins>Basic</ins>Formatter</i> requirements (20.20.6.1).
+
 Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=755">[format.arg]</a>:
 
 <pre>
@@ -430,15 +466,16 @@ namespace std {
 template&lt;class T> explicit basic_format_arg(<del>const T&</del><ins>T&&</ins> v) noexcept;
 </pre>
 
-*Constraints*: The template specialization
+4 *Constraints*: The template specialization
 
 <pre>
 typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>
 </pre>
 
-meets the *Formatter* requirements ([formatter.requirements]). The extent to
-which an implementation determines that the specialization meets the *Formatter*
-requirements is unspecified, except that as a minimum the expression
+meets the <i><ins>Basic</ins>Formatter</i> requirements
+([formatter.requirements]). The extent to which an implementation determines
+that the specialization meets the <i><ins>Basic</ins>Formatter</i> requirements
+is unspecified, except that as a minimum the expression
 
 <pre>
 typename Context::template formatter_type&lt;<del>T</del><ins>remove_cvref_t&lt;T></ins>>()
@@ -495,15 +532,21 @@ Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892
 <pre>
 template&lt;class Context = format_context, class... Args>
   format-arg-store&lt;Context, Args...> make_format_args(<del>const Args&</del><ins>Args&&</ins>... fmt_args);
+</pre>
+
+2 *Preconditions*:
+The type typename <code>Context::template formatter_type&lt;T<sub>i</sub>></code>
+meets the <i><ins>Basic</ins>Formatter</i> requirements ([formatter.requirements])
+for each <code>T<sub>i</sub></code> in `Args`.
 
 ...
 
+<pre>
 template&lt;class... Args>
   format-arg-store&lt;wformat_context, Args...> make_wformat_args(<del>const Args&</del><ins>Args&&</ins>... args);
 </pre>
 
 Add to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=1685">[diff.cpp20.utilities]</a>:
-
 
 <ins>
 **Affected subclause:** 20.20<br>
