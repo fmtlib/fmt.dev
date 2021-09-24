@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2418R1: Add support for &lt;code>std::generator&lt;/code>-like types to &lt;code>std::format&lt;/code></title>
+  <title>P2418R2: Add support for &lt;code>std::generator&lt;/code>-like types to &lt;code>std::format&lt;/code></title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bce1164c0461f1748e2f3ad0e2e5698ae4a9b748" name="document-revision">
+  <meta content="c02eb9a525cbfb8c7ab34ee61429761a4d582f31" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2071,14 +2071,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2418R1<br>Add support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code>-like types to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-18">2021-09-18</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2418R2<br>Add support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code>-like types to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-24">2021-09-24</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
-     <dd>LEWG
+     <dd>LWG
      <dt>Project:
      <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
     </dl>
@@ -2105,18 +2105,6 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <p>TODO:</p>
-   <ol start="4">
-    <li data-md>
-     <p>http://eel.is/c++draft/format.formatter.spec: para 6: Formatter -> BasicFormatter</p>
-    <li data-md>
-     <p>http://eel.is/c++draft/format.arg: para 4: Formatter -> BasicFormatter (2 places)</p>
-    <li data-md>
-     <p>format_to_n / formatted_size: Formatter -> BasicFormatter in precondition</p>
-    <li data-md>
-     <p>http://eel.is/c++draft/format.arg.store:
- Formatter -> BasicFormatter</p>
-   </ol>
    <h2 class="heading settled" data-level="1" id="proposal"><span class="secno">1. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2286">[P2286]</a> raised an issue of formatting <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>generator</c-></code> from <a data-link-type="biblio" href="#biblio-p2168">[P2168]</a> and
 similar views with C++20 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. The issue is illustrated in the
@@ -2159,6 +2147,10 @@ and disabled specializations do not. — end note]" in
     <li data-md>
      <p>Added "and meets the Formatter requirements" to [format.formatter.spec],
 paragraph 4.</p>
+    <li data-md>
+     <p>Replaced <em>Formatter</em> with <em>BasicFormatter</em> in [format.formatter.spec],
+paragraph 6, [format.arg], paragraph 4, [format.functions], paragraphs 20
+and 25 and [format.arg.store], paragraph 2.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
@@ -2335,8 +2327,8 @@ adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n48
                                       <del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p>...</p>
-   <p><em>Preconditions</em>: <code class="highlight"><c- n>Out</c-></code> models <code class="highlight"><c- n>output_</c->­<c- n>iterator</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>charT</c-><c- o>&amp;></c-></code>, and <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><del><c- n>T</c-><sub><c- n>i</c-></sub></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><sub><c- n>i</c-></sub><c- o>></c-></ins><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> meets the <em>Formatter</em> requirements ([formatter.requirements]) for
-each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code class="highlight"><c- n>Args</c-></code>.</p>
+   <p>20 <em>Preconditions</em>: <code class="highlight"><c- n>Out</c-></code> models <code class="highlight"><c- n>output_iterator</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>charT</c-><c- o>&amp;></c-></code>, and <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><del><c- n>T</c-><sub><c- n>i</c-></sub></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><sub><c- n>i</c-></sub><c- o>></c-></ins><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> meets the <i><ins>Basic</ins>Formatter</i> requirements
+([formatter.requirements]) for each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code class="highlight"><c- n>Args</c-></code>.</p>
    <p>...</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>size_t</c-> <c- n>formatted_size</c-><c- p>(</c-><i><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>args</c-><c- p>);</c->
@@ -2350,8 +2342,8 @@ each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code
                         <del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p>...</p>
-   <p><em>Preconditions</em>: <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><del><c- n>T</c-><sub><c- n>i</c-></sub></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><sub><c- n>i</c-></sub><c- o>></c-></ins><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> meets the <em>Formatter</em> requirements ([formatter.requirements]) for
-each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code class="highlight"><c- n>Args</c-></code>.</p>
+   <p>25 <em>Preconditions</em>: <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><del><c- n>T</c-><sub><c- n>i</c-></sub></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><sub><c- n>i</c-></sub><c- o>></c-></ins><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> meets the <i><ins>Basic</ins>Formatter</i> requirements
+([formatter.requirements]) for each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code class="highlight"><c- n>Args</c-></code>.</p>
    <p>...</p>
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=750">[formatter.requirements]</a>:</p>
    <p>A type <code class="highlight"><c- n>F</c-></code> meets the <i><ins>Basic</ins>Formatter</i> requirements if:</p>
@@ -2489,11 +2481,13 @@ disabled specializations do not. — end note]</del>
    <p>...</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>explicit</c-> <c- n>basic_format_arg</c-><c- p>(</c-><del><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-></del><ins><c- n>T</c-><c- o>&amp;&amp;</c-></ins> <c- n>v</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
 </pre>
-   <p><em>Constraints</em>: The template specialization</p>
+   <p>4 <em>Constraints</em>: The template specialization</p>
 <pre class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins><c- o>></c->
 </pre>
-   <p>meets the <em>Formatter</em> requirements ([formatter.requirements]). The extent to
-which an implementation determines that the specialization meets the <em>Formatter</em> requirements is unspecified, except that as a minimum the expression</p>
+   <p>meets the <i><ins>Basic</ins>Formatter</i> requirements
+([formatter.requirements]). The extent to which an implementation determines
+that the specialization meets the <i><ins>Basic</ins>Formatter</i> requirements
+is unspecified, except that as a minimum the expression</p>
 <pre class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><del><c- n>T</c-></del><ins><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></ins><c- o>></c-><c- p>()</c->
   <c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><del><c- k>const</c-> </del><c- n>T</c-><c- o>&amp;></c-><c- p>(),</c-> <c- n>declval</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>&amp;></c-><c- p>())</c->
 </pre>
@@ -2536,10 +2530,12 @@ which an implementation determines that the specialization meets the <em>Formatt
    <p>Change in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=757">[format.arg.store]</a>:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-> <c- o>=</c-> <c- n>format_context</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>format</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-><c- o>&lt;</c-><c- n>Context</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>make_format_args</c-><c- p>(</c-><del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>fmt_args</c-><c- p>);</c->
-
-<c- p>...</c->
-
-<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+</pre>
+   <p>2 <em>Preconditions</em>:
+The type typename <code class="highlight"><c- n>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>formatter_type</c-><c- o>&lt;</c-><c- n>T</c-><sub><c- n>i</c-></sub><c- o>></c-></code> meets the <i><ins>Basic</ins>Formatter</i> requirements ([formatter.requirements])
+for each <code class="highlight"><c- n>T</c-><sub><c- n>i</c-></sub></code> in <code class="highlight"><c- n>Args</c-></code>.</p>
+   <p>...</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>format</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-><c- o>&lt;</c-><c- n>wformat_context</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>make_wformat_args</c-><c- p>(</c-><del><c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-></del><ins><c- n>Args</c-><c- o>&amp;&amp;</c-></ins><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p>Add to <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=1685">[diff.cpp20.utilities]</a>:</p>
