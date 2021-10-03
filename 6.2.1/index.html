@@ -21,6 +21,8 @@
         VERSION:     '6.2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
+        LINK_SUFFIX: '.html',
+        SOURCELINK_SUFFIX: '.txt',
         HAS_SOURCE:  true,
         SOURCELINK_SUFFIX:  '.txt'
       };
@@ -72,11 +74,11 @@
                 <span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
                 
+                <li><a href="https://fmt.dev/8.0.1">8.0.1</a></li>
+                
                 <li><a href="https://fmt.dev/8.0.0">8.0.0</a></li>
                 
                 <li><a href="https://fmt.dev/7.1.3">7.1.3</a></li>
-                
-                <li><a href="https://fmt.dev/7.1.2">7.1.2</a></li>
                 
               </ul>
             </li>
@@ -133,15 +135,15 @@
       <ul class="dropdown-menu">
       
       
+        <li><a href="https://github.com/fmtlib/fmt/releases/download/8.0.1/fmt-8.0.1.zip">Version 8.0.1
+          </a></li>
+      
+      
         <li><a href="https://github.com/fmtlib/fmt/releases/download/8.0.0/fmt-8.0.0.zip">Version 8.0.0
           </a></li>
       
       
         <li><a href="https://github.com/fmtlib/fmt/releases/download/7.1.3/fmt-7.1.3.zip">Version 7.1.3
-          </a></li>
-      
-      
-        <li><a href="https://github.com/fmtlib/fmt/releases/download/7.1.2/fmt-7.1.2.zip">Version 7.1.2
           </a></li>
       
       </ul>
@@ -177,40 +179,40 @@ than common standard library implementations.
 The <a class="reference external" href="syntax.html">format string syntax</a> is similar to the one used by
 <a class="reference external" href="http://docs.python.org/3/library/stdtypes.html#str.format">str.format</a> in
 Python:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">fmt::format</span></code> function returns a string “The answer is 42.”. You can use
 <code class="docutils literal notranslate"><span class="pre">fmt::memory_buffer</span></code> to avoid constructing <code class="docutils literal notranslate"><span class="pre">std::string</span></code>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span> <span class="n">out</span><span class="p">;</span>
-<span class="n">format_to</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">&quot;For a moment, {} happened.&quot;</span><span class="p">,</span> <span class="s">&quot;nothing&quot;</span><span class="p">);</span>
-<span class="n">out</span><span class="p">.</span><span class="n">data</span><span class="p">();</span> <span class="c1">// returns a pointer to the formatted data</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span><span class="w"> </span><span class="n">out</span><span class="p">;</span><span class="w"></span>
+<span class="n">format_to</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;For a moment, {} happened.&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;nothing&quot;</span><span class="p">);</span><span class="w"></span>
+<span class="n">out</span><span class="p">.</span><span class="n">data</span><span class="p">();</span><span class="w"> </span><span class="c1">// returns a pointer to the formatted data</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">fmt::print</span></code> function performs formatting and writes the result to a stream:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;System error code = {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">errno</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;System error code = {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errno</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>The file argument can be omitted in which case the function prints to
 <code class="docutils literal notranslate"><span class="pre">stdout</span></code>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Don&#39;t {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&quot;panic&quot;</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Don&#39;t {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;panic&quot;</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>The Format API also supports positional arguments useful for localization:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;I&#39;d rather be {1} than {0}.&quot;</span><span class="p">,</span> <span class="s">&quot;right&quot;</span><span class="p">,</span> <span class="s">&quot;happy&quot;</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;I&#39;d rather be {1} than {0}.&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;happy&quot;</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Named arguments can be created with <code class="docutils literal notranslate"><span class="pre">fmt::arg</span></code>. This makes it easier to track
 what goes where when multiple arguments are being formatted:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;</span><span class="p">,</span>
-           <span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">,</span> <span class="s">&quot;World&quot;</span><span class="p">),</span> <span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;number&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">));</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;World&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;number&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">));</span><span class="w"></span>
 </pre></div>
 </div>
 <p>If your compiler supports C++11 user-defined literals, the suffix <code class="docutils literal notranslate"><span class="pre">_a</span></code> offers
 an alternative, slightly terser syntax for named arguments:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="nn">fmt</span><span class="o">::</span><span class="nn">literals</span><span class="p">;</span>
-<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;</span><span class="p">,</span>
-           <span class="s">&quot;name&quot;</span><span class="n">_a</span><span class="o">=</span><span class="s">&quot;World&quot;</span><span class="p">,</span> <span class="s">&quot;number&quot;</span><span class="n">_a</span><span class="o">=</span><span class="mi">42</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">fmt</span><span class="o">::</span><span class="nn">literals</span><span class="p">;</span><span class="w"></span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">           </span><span class="s">&quot;name&quot;</span><span class="n">_a</span><span class="o">=</span><span class="s">&quot;World&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;number&quot;</span><span class="n">_a</span><span class="o">=</span><span class="mi">42</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
@@ -219,13 +221,13 @@ an alternative, slightly terser syntax for named arguments:</p>
 <p>The library is fully type safe, automatic memory management prevents buffer
 overflow, errors in format strings are reported using exceptions or at compile
 time. For example, the code</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">,</span> <span class="s">&quot;forty-two&quot;</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;forty-two&quot;</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>throws a <code class="docutils literal notranslate"><span class="pre">format_error</span></code> exception with description “unknown format code ‘d’ for
 string”, because the argument <code class="docutils literal notranslate"><span class="pre">&quot;forty-two&quot;</span></code> is a string while the format code
 <code class="docutils literal notranslate"><span class="pre">d</span></code> only applies to integers, while</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">format</span><span class="p">(</span><span class="n">FMT_STRING</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">),</span> <span class="s">&quot;forty-two&quot;</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">format</span><span class="p">(</span><span class="n">FMT_STRING</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;forty-two&quot;</span><span class="p">);</span><span class="w"></span>
 </pre></div>
 </div>
 <p>reports a compile-time error for the same reason on compilers that support
@@ -248,11 +250,11 @@ needed.</p>
 <h2>Compact Binary Code<a class="headerlink" href="#compact-binary-code" title="Permalink to this headline">¶</a></h2>
 <p>The library is designed to produce compact per-call compiled code. For example
 (<a class="reference external" href="https://godbolt.org/g/TZU4KF">godbolt</a>),</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fmt/core.h&gt;</span><span class="cp"></span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span><span class="cp"></span>
 
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-  <span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 <p>compiles to just</p>
@@ -290,7 +292,7 @@ maintained and only requires C++98.</p>
 <p>The output of all formatting functions is consistent across platforms. In
 particular, formatting a floating-point infinity always gives <code class="docutils literal notranslate"><span class="pre">inf</span></code> while the
 output of <code class="docutils literal notranslate"><span class="pre">printf</span></code> is platform-dependent. For example,</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">infinity</span><span class="p">());</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">infinity</span><span class="p">());</span><span class="w"></span>
 </pre></div>
 </div>
 <p>always prints <code class="docutils literal notranslate"><span class="pre">inf</span></code>.</p>
