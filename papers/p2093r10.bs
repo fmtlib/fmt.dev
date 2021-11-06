@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093
-Revision: 9
+Revision: 10
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-09-09
+Date: 2021-11-06
 Markup Shorthands: markdown yes
 </pre>
 
@@ -46,6 +46,12 @@ intuitive API achieving the following goals:
 
 Revision history {#hist}
 ================
+
+Changes since R9:
+
+* Rebased the wording onto the latest draft, most importantly adding
+    support for types that are neither const-iterable nor copyable introduced
+    by [[P2418]].
 
 Changes since R8:
 
@@ -1422,7 +1428,7 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.
 in a place that respects the table’s current alphabetic order:
 
 <pre>
-<ins>#define __cpp_lib_print  202005L **placeholder**	// also in &lt;format&gt;</ins>
+<ins>#define __cpp_lib_print 202111L **placeholder**	// also in &lt;format&gt;</ins>
 </pre>
 
 Add the header `<print>` to the "C++ library headers" table in [headers], in a
@@ -1434,14 +1440,14 @@ place that respects the table’s current alphabetic order.
 <ins>
 namespace std {
   template&lt;class... Args&gt;
-    void print(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+    void print(<i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
   template&lt;class... Args&gt;
-    void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+    void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 
   template&lt;class... Args&gt;
-    void println(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+    void println(<i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
   template&lt;class... Args&gt;
-    void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+    void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 
   void vprint_unicode(string_view fmt, format_args args);
   void vprint_unicode(FILE* stream, string_view fmt, format_args args);
@@ -1461,9 +1467,9 @@ template&lt;class charT, class traits, class T&gt;
 basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&& os, const T& x);
 <ins>
 template&lt;class... Args&gt;
-  void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 template&lt;class... Args&gt;
-  void println(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void println(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 
 void vprint_unicode(ostream& os, string_view fmt, format_args args);
 void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
@@ -1475,58 +1481,58 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void print(<i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
 <span class="parnum">1</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print(stdout, fmt, make_format_args(args...));
+  print(stdout, fmt, make_format_args(forward&lt;Args>(args)...));
 </ins>
 </pre>
 
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
 <span class="parnum">2</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(stream, fmt.str, make_format_args(args...));
+  vprint_unicode(stream, fmt.str, make_format_args(forward&lt;Args>(args)...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(stream, fmt.str, make_format_args(args...));
+  vprint_nonunicode(stream, fmt.str, make_format_args(forward&lt;Args>(args)...));
 </ins>
 </pre>
 
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void println(<i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void println(<i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
 <span class="parnum">3</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print("{}\n", format(fmt, args...));
+  print("{}\n", format(fmt, forward&lt;Args>(args)...));
 </ins>
 </pre>
 
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void println(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
 <span class="parnum">4</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print(stream, "{}\n", format(fmt, args...));
+  print(stream, "{}\n", format(fmt, forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1614,19 +1620,19 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.
 <pre>
 <ins>
 template&lt;class... Args&gt;
-  void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, const Args&... args);
+  void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
 <span class="parnum">1</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(os, fmt, make_format_args(args...));
+  vprint_unicode(os, fmt, make_format_args(forward&lt;Args>(args)...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(os, fmt, make_format_args(args...));
+  vprint_nonunicode(os, fmt, make_format_args(forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1962,8 +1968,8 @@ to the proposal.
   "FORMAT": {
     "title":
     "Working Draft, Standard for Programming Language C++, Formatting [format]",
-    "authors": ["Richard Smith"],
-    "href": "https://wg21.link/n4861#section.20.20"
+    "authors": ["Thomas Köppe"],
+    "href": "https://wg21.link/n4901#section.20.20"
   },
   "GO-FMT": {
     "title": "Go Package Documentation, Package fmt",
@@ -2025,6 +2031,11 @@ to the proposal.
     "title": "std::format improvements",
     "authors": ["Victor Zverovich"],
     "href": "https://wg21.link/p2216"
+  },
+  "P2418": {
+    "title": "Add support for std::generator-like types to std::format",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2418"
   },
   "PERL-PRINTF": {
     "title": "Perl 5 version 30.0 documentation, Language reference, printf",

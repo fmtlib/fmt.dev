@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R9: Formatted output</title>
+  <title>P2093R10: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a0ea10fcb213a2c5a2a3650873fe650604df00a5" name="document-revision">
+  <meta content="a14d8341bd4d3cdbdf781d1226201467af322004" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R9<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-09">2021-09-09</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R10<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-11-06">2021-11-06</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2145,6 +2145,13 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R9:</p>
+   <ul>
+    <li data-md>
+     <p>Rebased the wording onto the latest draft, most importantly adding
+support for types that are neither const-iterable nor copyable introduced
+by <a data-link-type="biblio" href="#biblio-p2418">[P2418]</a>.</p>
+   </ul>
    <p>Changes since R8:</p>
    <ul>
     <li data-md>
@@ -3248,21 +3255,21 @@ falls back on writing raw (not transcoded) data.</p>
    <h2 class="heading settled" data-level="16" id="wording"><span class="secno">16. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_print</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
-<pre class="highlight"><ins><c- cp>#define __cpp_lib_print  202005L **placeholder**  </c-><c- c1>// also in &lt;format></c-></ins>
+<pre class="highlight"><ins><c- cp>#define __cpp_lib_print 202111L **placeholder**  </c-><c- c1>// also in &lt;format></c-></ins>
 </pre>
    <p>Add the header <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> to the "C++ library headers" table in [headers], in a
 place that respects the table’s current alphabetic order.</p>
    <ins>29.7.? Header <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> synopsis [print.syn].</ins>
 <pre class="highlight"><ins><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>print</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>void</c-> <c- n>print</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
   <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
   <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
@@ -3277,52 +3284,52 @@ place that respects the table’s current alphabetic order.</p>
 <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>x</c-><c- p>);</c->
 <ins>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <i>​<c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <i>​<c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <i>​<c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <i>​<c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
 <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <ins>29.7.? Print functions [print.fun].</ins>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
     <span class="parnum">1</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
     <span class="parnum">2</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
     <span class="parnum">3</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
     <span class="parnum">4</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
@@ -3375,16 +3382,16 @@ its specifications. </ins>
    <p>Add subsection "Print [ostream.formatted.print]" to
 "Formatted output functions <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2">[ostream.formatted</a>]":</p>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
     <span class="parnum">1</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
@@ -3824,7 +3831,7 @@ to the proposal.</p>
    <dt id="biblio-folly">[FOLLY]
    <dd><a href="https://github.com/facebook/folly">Folly: Facebook Open-source Library</a>. URL: <a href="https://github.com/facebook/folly">https://github.com/facebook/folly</a>
    <dt id="biblio-format">[FORMAT]
-   <dd>Richard Smith. <a href="https://wg21.link/n4861#section.20.20">Working Draft, Standard for Programming Language C++, Formatting [format]</a>. URL: <a href="https://wg21.link/n4861#section.20.20">https://wg21.link/n4861#section.20.20</a>
+   <dd>Thomas Köppe. <a href="https://wg21.link/n4901#section.20.20">Working Draft, Standard for Programming Language C++, Formatting [format]</a>. URL: <a href="https://wg21.link/n4901#section.20.20">https://wg21.link/n4901#section.20.20</a>
    <dt id="biblio-go-fmt">[GO-FMT]
    <dd><a href="https://golang.org/pkg/fmt/">Go Package Documentation, Package fmt</a>. URL: <a href="https://golang.org/pkg/fmt/">https://golang.org/pkg/fmt/</a>
    <dt id="biblio-google-bench">[GOOGLE-BENCH]
@@ -3851,6 +3858,8 @@ to the proposal.</p>
    <dd>Corentin Jabot. <a href="https://wg21.link/p1885">Naming Text Encodings to Demystify Them</a>. URL: <a href="https://wg21.link/p1885">https://wg21.link/p1885</a>
    <dt id="biblio-p2216">[P2216]
    <dd>Victor Zverovich. <a href="https://wg21.link/p2216">std::format improvements</a>. URL: <a href="https://wg21.link/p2216">https://wg21.link/p2216</a>
+   <dt id="biblio-p2418">[P2418]
+   <dd>Victor Zverovich. <a href="https://wg21.link/p2418">Add support for std::generator-like types to std::format</a>. URL: <a href="https://wg21.link/p2418">https://wg21.link/p2418</a>
    <dt id="biblio-perl-printf">[PERL-PRINTF]
    <dd><a href="https://perldoc.perl.org/functions/printf.html">Perl 5 version 30.0 documentation, Language reference, printf</a>. URL: <a href="https://perldoc.perl.org/functions/printf.html">https://perldoc.perl.org/functions/printf.html</a>
    <dt id="biblio-php-printf">[PHP-PRINTF]
