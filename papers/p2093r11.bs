@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093
-Revision: 10
+Revision: 11
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-11-06
+Date: 2021-11-29
 Markup Shorthands: markdown yes
 </pre>
 
@@ -46,6 +46,23 @@ intuitive API achieving the following goals:
 
 Revision history {#hist}
 ================
+
+Changes since R10:
+
+* Moved "If invoking the (native Unicode) API requires transcoding,
+    implementations should substitute invalid code units with U+FFFD �
+    REPLACEMENT CHARACTER per The Unicode Standard Version 13.0 – Core
+    Specification, Chapter 3.9." to the <i>Recommended practice</i> clause."
+    in the definition of `vprint_unicode` per LEWG feedback.
+
+* Made the definition of the `ostream` overload of `vprint_unicode` consistent
+    with the `FILE*` overload.
+
+* Namespace-qualified the calls to `forward`.
+
+* Removed a call to `make_format_args` in [print.fun].1.
+
+* Updated The Unicode® Standard Version to 14.
 
 Changes since R9:
 
@@ -1155,8 +1172,8 @@ problematic for the following reasons:
 * It may give an unusable result when piped through standard Windows commands
     like `findstr`.
 * It transcodes into legacy encodings that are rarely used in practice nowadays.
-    For example, usage of CP1251 dropped from 4.3% to 0.8% in the last 12+ years
-    ([[ENCODING-TRENDS]]), including a 0.1% drop while the current paper was
+    For example, usage of CP1251 dropped from 4.3% to 0.6% in the last 12+ years
+    ([[ENCODING-TRENDS]]), including a 0.4% drop while the current paper was
     in review.
 
 The full listings of test programs are given in [[#lst]].
@@ -1487,7 +1504,7 @@ template&lt;class... Args&gt;
 <span class="parnum">1</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print(stdout, fmt, make_format_args(forward&lt;Args>(args)...));
+  print(stdout, fmt, std::forward&lt;Args>(args)...);
 </ins>
 </pre>
 
@@ -1500,13 +1517,13 @@ template&lt;class... Args&gt;
 <span class="parnum">2</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(stream, fmt.str, make_format_args(forward&lt;Args>(args)...));
+  vprint_unicode(stream, fmt.str, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(stream, fmt.str, make_format_args(forward&lt;Args>(args)...));
+  vprint_nonunicode(stream, fmt.str, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1519,7 +1536,7 @@ template&lt;class... Args&gt;
 <span class="parnum">3</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print("{}\n", format(fmt, forward&lt;Args>(args)...));
+  print("{}\n", format(fmt, std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1532,7 +1549,7 @@ template&lt;class... Args&gt;
 <span class="parnum">4</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print(stream, "{}\n", format(fmt, forward&lt;Args>(args)...));
+  print(stream, "{}\n", format(fmt, std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1558,10 +1575,7 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
-If invoking the API requires transcoding, implementations should substitute
-invalid code units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard
-Version 13.0 – Core Specification, Chapter 3.9. Otherwise writes `out` to
-`stream` unchanged.
+Otherwise writes `out` to `stream` unchanged.
 </ins>
 <p>
 <ins>
@@ -1583,13 +1597,20 @@ or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications.
 </ins>
+<p>
+<ins>
+<span class="parnum">8</span> *Recommended practice:* If invoking the native
+Unicode API requires transcoding, implementations should substitute invalid code
+units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
+– Core Specification, Chapter 3.9.
+</ins>
 
 <pre>
 <ins>
 void vprint_nonunicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<span class="parnum">8</span> <ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">9</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_nonunicode(stdout, fmt, args));
@@ -1602,11 +1623,11 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">9</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
+<span class="parnum">10</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
 </ins>
 <p>
 <ins>
-<span class="parnum">10</span> *Throws:* As specified in [[format.err.report](
+<span class="parnum">11</span> *Throws:* As specified in [[format.err.report](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
 or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
@@ -1626,13 +1647,13 @@ template&lt;class... Args&gt;
 <span class="parnum">1</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(os, fmt, make_format_args(forward&lt;Args>(args)...));
+  vprint_unicode(os, fmt, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(os, fmt, make_format_args(forward&lt;Args>(args)...));
+  vprint_nonunicode(os, fmt, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1642,11 +1663,12 @@ void vprint_unicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">2</span> *Effects:* Let `out = vformat(os.getloc(), fmt, args)`. If `os` is a file stream (its
-associated stream buffer is an instance of `basic_filebuf`) that refers to a
-terminal capable of displaying Unicode, writes `out` transcoded to the native
-system Unicode encoding to the terminal using the native API that preserves the
-encoding. Otherwise writes `out` to `stream` without transcoding.
+<span class="parnum">2</span> *Effects:* Let `out = vformat(os.getloc(), fmt, args)`.
+If `os` is a stream that refers to a terminal capable of displaying Unicode
+which is determined in an implementation-defined manner, writes `out` to
+the terminal using the native Unicode API; if `out` contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+Otherwise writes `out` to `stream` unchanged.
 </ins>
 <p>
 <ins>
@@ -1656,6 +1678,13 @@ or `system_error` if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications.
 </ins>
+<p>
+<ins>
+<span class="parnum">3</span> *Recommended practice:* If invoking the native
+Unicode API requires transcoding, implementations should substitute invalid code
+units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
+– Core Specification, Chapter 3.9.
+</ins>
 
 <pre>
 <ins>
@@ -1663,7 +1692,7 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">3</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)` to `os`.
+<span class="parnum">4</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)` to `os`.
 </ins>
 <p>
 <ins>
@@ -1677,7 +1706,7 @@ its specifications.
 Add to Normative references [intro.refs]:
 
 <ins>
-– The Unicode® Standard Version 13.0 – Core Specification
+– The Unicode® Standard Version 14.0 – Core Specification
 </ins>
 
 Appendix A: Unicode tests {#lst}

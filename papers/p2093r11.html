@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R10: Formatted output</title>
+  <title>P2093R11: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a14d8341bd4d3cdbdf781d1226201467af322004" name="document-revision">
+  <meta content="a9d17f5d57782d651cd74ca3c8c929e3711f69de" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R10<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-11-06">2021-11-06</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R11<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2021-11-29">2021-11-29</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2145,6 +2145,24 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R10:</p>
+   <ul>
+    <li data-md>
+     <p>Moved "If invoking the (native Unicode) API requires transcoding,
+implementations should substitute invalid code units with U+FFFD �
+REPLACEMENT CHARACTER per The Unicode Standard Version 13.0 – Core
+Specification, Chapter 3.9." to the <i>Recommended practice</i> clause."
+in the definition of <code class="highlight"><c- n>vprint_unicode</c-></code> per LEWG feedback.</p>
+    <li data-md>
+     <p>Made the definition of the <code class="highlight"><c- n>ostream</c-></code> overload of <code class="highlight"><c- n>vprint_unicode</c-></code> consistent
+with the <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> overload.</p>
+    <li data-md>
+     <p>Namespace-qualified the calls to <code class="highlight"><c- n>forward</c-></code>.</p>
+    <li data-md>
+     <p>Removed a call to <code class="highlight"><c- n>make_format_args</c-></code> in [print.fun].1.</p>
+    <li data-md>
+     <p>Updated The Unicode® Standard Version to 14.</p>
+   </ul>
    <p>Changes since R9:</p>
    <ul>
     <li data-md>
@@ -3038,8 +3056,8 @@ is redirected to a file.</p>
 like <code class="highlight"><c- n>findstr</c-></code>.</p>
     <li data-md>
      <p>It transcodes into legacy encodings that are rarely used in practice nowadays.
-For example, usage of CP1251 dropped from 4.3% to 0.8% in the last 12+ years
-(<a data-link-type="biblio" href="#biblio-encoding-trends">[ENCODING-TRENDS]</a>), including a 0.1% drop while the current paper was
+For example, usage of CP1251 dropped from 4.3% to 0.6% in the last 12+ years
+(<a data-link-type="biblio" href="#biblio-encoding-trends">[ENCODING-TRENDS]</a>), including a 0.4% drop while the current paper was
 in review.</p>
    </ul>
    <p>The full listings of test programs are given in <a href="#lst">Appendix A: Unicode tests</a>.</p>
@@ -3299,7 +3317,7 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">1</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...);</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
@@ -3308,10 +3326,10 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">2</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
@@ -3320,7 +3338,7 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">3</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
@@ -3329,7 +3347,7 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">4</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
@@ -3345,9 +3363,7 @@ place that respects the table’s current alphabetic order.</p>
 If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
 the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
-If invoking the API requires transcoding, implementations should substitute
-invalid code units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard
-Version 13.0 – Core Specification, Chapter 3.9. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
+Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
    <p>
     <ins> [ Note: On POSIX and Windows, <code class="highlight"><c- n>stream</c-></code> referring to a terminal means that,
 respectively, <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> return nonzero.
@@ -3362,19 +3378,25 @@ or <code class="highlight"><c- n>system_error</c-></code> if a call by the imple
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
+   <p>
+    <ins> <span class="parnum">8</span> <em>Recommended practice:</em> If invoking the native
+Unicode API requires transcoding, implementations should substitute invalid code
+units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
+– Core Specification, Chapter 3.9. </ins>
+   </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">8</span> 
+    <span class="parnum">9</span> 
     <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
    </p>
 <pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">9</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
+   <ins> <span class="parnum">10</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
    <p>
-    <ins> <span class="parnum">10</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
+    <ins> <span class="parnum">11</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
@@ -3388,27 +3410,34 @@ its specifications. </ins>
     <span class="parnum">1</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">2</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>os</c-></code> is a file stream (its
-associated stream buffer is an instance of <code class="highlight"><c- n>basic_filebuf</c-></code>) that refers to a
-terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> transcoded to the native
-system Unicode encoding to the terminal using the native API that preserves the
-encoding. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> without transcoding. </ins>
+   <ins> <span class="parnum">2</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
+If <code class="highlight"><c- n>os</c-></code> is a stream that refers to a terminal capable of displaying Unicode
+which is determined in an implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to
+the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
+   <p>
+    <ins> <span class="parnum">3</span> <em>Recommended practice:</em> If invoking the native
+Unicode API requires transcoding, implementations should substitute invalid code
+units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
+– Core Specification, Chapter 3.9. </ins>
+   </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">3</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
+   <ins> <span class="parnum">4</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
@@ -3416,7 +3445,7 @@ other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
    <p>Add to Normative references [intro.refs]:</p>
-   <ins> – The Unicode® Standard Version 13.0 – Core Specification </ins>
+   <ins> – The Unicode® Standard Version 14.0 – Core Specification </ins>
    <h2 class="heading settled" id="lst"><span class="content">Appendix A: Unicode tests</span><a class="self-link" href="#lst"></a></h2>
    <p>This appendix gives full listings of programs for testing Unicode handling in
 various formatting facilities as well as test commands and their output on
