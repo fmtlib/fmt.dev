@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R11: Formatted output</title>
+  <title>P2093R6: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -26,7 +26,6 @@
  *   - .figure and .caption (HTML4) and figure and figcaption (HTML5)
  *     -> .sidefigure for right-floated figures
  *   - ins/del
- *     -> ins/del.c### for candidate and proposed changes (amendments)
  *
  * Code
  *   - pre and code
@@ -35,12 +34,9 @@
  *   - .note       for informative notes             (div, p, span, aside, details)
  *   - .example    for informative examples          (div, p, pre, span)
  *   - .issue      for issues                        (div, p, span)
+ *   - .assertion  for assertions                    (div, p, span)
  *   - .advisement for loud normative statements     (div, p, strong)
  *   - .annoying-warning for spec obsoletion notices (div, aside, details)
- *   - .correction for "candidate corrections"       (div, aside, details, section)
- *   - .addition   for "candidate additions"         (div, aside, details, section)
- *   - .correction.proposed for "proposed corrections" (div, aside, details, section)
- *   - .addition.proposed   for "proposed additions"   (div, aside, details, section)
  *
  * Definition Boxes
  *   - pre.def   for WebIDL definitions
@@ -61,8 +57,6 @@
  *   - .head for the header
  *   - .copyright for the copyright
  *
- * Outdated warning for old specs
- *
  * Miscellaneous
  *   - .overlarge for things that should be as wide as possible, even if
  *     that overflows the body text area. This can be used on an item or
@@ -70,28 +64,22 @@
  *     Note that this styling basically doesn't help at all when printing,
  *     since A4 paper isn't much wider than the max-width here.
  *     It's better to design things to fit into a narrower measure if possible.
- *
  *   - js-added ToC jump links (see fixup.js)
  *
  ******************************************************************************/
 
-/* color variables included separately for reliability */
-
 /******************************************************************************/
-/*                                    Body                                    */
+/*                                   Body                                     */
 /******************************************************************************/
-
-	html {
-	}
 
 	body {
 		counter-reset: example figure issue;
 
 		/* Layout */
-		max-width: 50em;			  /* limit line length to 50em for readability   */
-		margin: 0 auto;				/* center text within page                    */
+		max-width: 50em;               /* limit line length to 50em for readability   */
+		margin: 0 auto;                /* center text within page                     */
 		padding: 1.6em 1.5em 2em 50px; /* assume 16px font size for downlevel clients */
-		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag    */
+		padding: 1.6em 1.5em 2em calc(26px + 1.5em); /* leave space for status flag     */
 
 		/* Typography */
 		line-height: 1.5;
@@ -102,10 +90,9 @@
 		overflow-wrap: break-word;
 		hyphens: auto;
 
+		/* Colors */
 		color: black;
-		color: var(--text);
 		background: white top left fixed no-repeat;
-		background: var(--bg) top left fixed no-repeat;
 		background-size: 25px auto;
 	}
 
@@ -116,7 +103,7 @@
 
 /** Header ********************************************************************/
 
-	div.head { margin-bottom: 1em; }
+	div.head { margin-bottom: 1em }
 	div.head hr { border-style: solid; }
 
 	div.head h1 {
@@ -137,13 +124,10 @@
 	.head img[src*="logos/W3C"] {
 		display: block;
 		border: solid #1a5e9a;
-		border: solid var(--logo-bg);
 		border-width: .65rem .7rem .6rem;
 		border-radius: .4rem;
 		background: #1a5e9a;
-		background: var(--logo-bg);
 		color: white;
-		color: var(--logo-text);
 		font-weight: bold;
 	}
 
@@ -154,9 +138,7 @@
 
 	.head a:active > img[src*="logos/W3C"] {
 		background: #c00;
-		background: var(--logo-active-bg);
 		border-color: #c00;
-		border-color: var(--logo-active-bg);
 	}
 
 	/* see also additional rules in Link Styling section */
@@ -164,7 +146,7 @@
 /** Copyright *****************************************************************/
 
 	p.copyright,
-	p.copyright small { font-size: small; }
+	p.copyright small { font-size: small }
 
 /** Back to Top / ToC Toggle **************************************************/
 
@@ -176,13 +158,14 @@
 	@media not print {
 		#toc-nav {
 			position: fixed;
-			z-index: 3;
+			z-index: 2;
 			bottom: 0; left: 0;
 			margin: 0;
 			min-width: 1.33em;
 			border-top-right-radius: 2rem;
 			box-shadow: 0 0 2px;
 			font-size: 1.5em;
+			color: black;
 		}
 		#toc-nav > a {
 			display: block;
@@ -192,32 +175,23 @@
 			padding: .1em 0.3em;
 			margin: 0;
 
+			background: white;
 			box-shadow: 0 0 2px;
 			border: none;
 			border-top-right-radius: 1.33em;
-
-			color: #707070;
-			color: var(--tocnav-normal-text);
 			background: white;
-			background: var(--tocnav-normal-bg);
 		}
-		#toc-nav > a:hover,
-		#toc-nav > a:focus {
-			color: black;
-			color: var(--tocnav-hover-text);
-			background: #f8f8f8;
-			background: var(--tocnav-hover-bg);
-		}
-		#toc-nav > a:active {
-			color: #c00;
-			color: var(--tocnav-active-text);
-			background: white;
-			background: var(--tocnav-active-bg);
-		}
-
 		#toc-nav > #toc-jump {
 			padding-bottom: 2em;
 			margin-bottom: -1.9em;
+		}
+
+		#toc-nav > a:hover,
+		#toc-nav > a:focus {
+			background: #f8f8f8;
+		}
+		#toc-nav > a:not(:hover):not(:focus) {
+			color: #707070;
 		}
 
 		/* statusbar gets in the way on keyboard focus; remove once browsers fix */
@@ -231,6 +205,26 @@
 		}
 		#toc-nav > a > span + span {
 			padding-right: 0.2em;
+		}
+
+		#toc-toggle-inline {
+			vertical-align: 0.05em;
+			font-size: 80%;
+			color: gray;
+			color: hsla(203,20%,40%,.7);
+			border-style: none;
+			background: transparent;
+			position: relative;
+		}
+		#toc-toggle-inline:hover:not(:active),
+		#toc-toggle-inline:focus:not(:active) {
+			text-shadow: 1px 1px silver;
+			top: -1px;
+			left: -1px;
+		}
+
+		#toc-nav :active {
+			color: #C00;
 		}
 	}
 
@@ -249,14 +243,10 @@
 			padding: 0 1em;
 			padding-left: 42px;
 			padding-left: calc(1em + 26px);
-			color: black;
-			color: var(--tocsidebar-text);
 			background: inherit;
 			background-color: #f7f8f9;
-			background-color: var(--tocsidebar-bg);
 			z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
-			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
 		}
 		body.toc-sidebar #toc h2 {
 			margin-top: .8rem;
@@ -266,7 +256,6 @@
 			font-weight: bold;
 			color: gray;
 			color: hsla(203,20%,40%,.7);
-			color: var(--tocsidebar-heading-text);
 		}
 		body.toc-sidebar #toc-jump:not(:focus) {
 			width: 0;
@@ -294,14 +283,10 @@
 			padding: 0 1em;
 			padding-left: 42px;
 			padding-left: calc(1em + 26px);
-			color: black;
-			color: var(--tocsidebar-text);
 			background: inherit;
 			background-color: #f7f8f9;
-			background-color: var(--tocsidebar-bg);
 			z-index: 1;
 			box-shadow: -.1em 0 .25em rgba(0,0,0,.1) inset;
-			box-shadow: -.1em 0 .25em var(--tocsidebar-shadow) inset;
 		}
 		body:not(.toc-inline) #toc h2 {
 			margin-top: .8rem;
@@ -311,7 +296,6 @@
 			font-weight: bold;
 			color: gray;
 			color: hsla(203,20%,40%,.7);
-			color: var(--tocsidebar-heading-text);
 		}
 
 		body:not(.toc-inline) {
@@ -343,9 +327,9 @@
 		page-break-after: avoid;
 		page-break-inside: avoid;
 		font: 100% sans-serif;   /* Reset all font styling to clear out UA styles */
-		font-family: inherit;	/* Inherit the font family. */
-		line-height: 1.2;		/* Keep wrapped headings compact */
-		hyphens: manual;		/* Hyphenated headings look weird */
+		font-family: inherit;    /* Inherit the font family. */
+		line-height: 1.2;        /* Keep wrapped headings compact */
+		hyphens: manual;         /* Hyphenated headings look weird */
 	}
 
 	h2, h3, h4, h5, h6 {
@@ -354,7 +338,7 @@
 
 	h1, h2, h3 {
 		color: #005A9C;
-		color: var(--heading-text);
+		background: transparent;
 	}
 
 	h1 { font-size: 170%; }
@@ -368,8 +352,8 @@
 /** Subheadings ***************************************************************/
 
 	h1 + h2,
-	#profile-and-date {
-		/* #profile-and-date is a subtitle in an H2 under the H1 */
+	#subtitle {
+		/* #subtitle is a subtitle in an H2 under the H1 */
 		margin-top: 0;
 	}
 	h2 + h3,
@@ -381,13 +365,11 @@
 
 /** Section divider ***********************************************************/
 
-	:not(.head) > :not(.head) + hr {
+	:not(.head) > hr {
 		font-size: 1.5em;
 		text-align: center;
 		margin: 1em auto;
 		height: auto;
-		color: black;
-		color: var(--hr-text);
 		border: transparent solid 0;
 		background: transparent;
 	}
@@ -429,51 +411,48 @@
 	/* Style for algorithms */
 	ol.algorithm ol:not(.algorithm),
 	.algorithm > ol ol:not(.algorithm) {
-	border-left: 0.5em solid #DEF;
-	border-left: 0.5em solid var(--algo-border);
+	 border-left: 0.5em solid #DEF;
 	}
 
 	/* Put nice boxes around each algorithm. */
 	[data-algorithm]:not(.heading) {
-	 padding: .5em;
-	 border: thin solid #ddd;
-	 border: thin solid var(--algo-border);
-	 border-radius: .5em;
-	 margin: .5em calc(-0.5em - 1px);
+	  padding: .5em;
+	  border: thin solid #ddd; border-radius: .5em;
+	  margin: .5em calc(-0.5em - 1px);
 	}
 	[data-algorithm]:not(.heading) > :first-child {
-	 margin-top: 0;
+	  margin-top: 0;
 	}
 	[data-algorithm]:not(.heading) > :last-child {
-	 margin-bottom: 0;
+	  margin-bottom: 0;
 	}
 
 	/* Style for switch/case <dl>s */
 	dl.switch > dd > ol.only,
 	dl.switch > dd > .only > ol {
-	margin-left: 0;
+	 margin-left: 0;
 	}
 	dl.switch > dd > ol.algorithm,
 	dl.switch > dd > .algorithm > ol {
-	margin-left: -2em;
+	 margin-left: -2em;
 	}
 	dl.switch {
-	padding-left: 2em;
+	 padding-left: 2em;
 	}
 	dl.switch > dt {
-	text-indent: -1.5em;
-	margin-top: 1em;
+	 text-indent: -1.5em;
+	 margin-top: 1em;
 	}
 	dl.switch > dt + dt {
-	margin-top: 0;
+	 margin-top: 0;
 	}
 	dl.switch > dt::before {
-	content: '\21AA';
-	padding: 0 0.5em 0 0;
-	display: inline-block;
-	width: 1em;
-	text-align: right;
-	line-height: 0.5em;
+	 content: '\21AA';
+	 padding: 0 0.5em 0 0;
+	 display: inline-block;
+	 width: 1em;
+	 text-align: right;
+	 line-height: 0.5em;
 	}
 
 /** Terminology Markup ********************************************************/
@@ -491,7 +470,7 @@
 		font-style: normal;
 	}
 	dt dfn code, code.idl {
-		font-size: inherit;
+		font-size: medium;
 	}
 	dfn var {
 		font-style: normal;
@@ -499,39 +478,8 @@
 
 /** Change Marking ************************************************************/
 
-	del {
-		color: #aa0000;
-		color: var(--del-text);
-		background: transparent;
-		background: var(--del-bg);
-		text-decoration: line-through;
-	}
-	ins {
-		color: #006100;
-		color: var(--ins-text);
-		background: transparent;
-		background: var(--ins-bg);
-		text-decoration: underline;
-	}
-
-	/* for amendments (candidate/proposed changes) */
-
-	.amendment ins, .correction ins, .addition ins,
-	ins[class^=c] {
-		text-decoration-style: dotted;
-	}
-	.amendment del, .correction del, .addition del,
-	del[class^=c] {
-		text-decoration-style: dotted;
-	}
-	.amendment.proposed ins, .correction.proposed ins, .addition.proposed ins,
-	ins[class^=c].proposed {
-		text-decoration-style: double;
-	}
-	.amendment.proposed del, .correction.proposed del, .addition.proposed del,
-	del[class^=c].proposed {
-		text-decoration-style: double;
-	}
+	del { color: red;  text-decoration: line-through; }
+	ins { color: #080; text-decoration: underline;    }
 
 /** Miscellaneous improvements to inline formatting ***************************/
 
@@ -549,14 +497,9 @@
 	pre, code, samp {
 		font-family: Menlo, Consolas, "DejaVu Sans Mono", Monaco, monospace;
 		font-size: .9em;
+		page-break-inside: avoid;
 		hyphens: none;
 		text-transform: none;
-		text-align: left;
-		text-align: start;
-		font-variant: normal;
-		orphans: 3;
-		widows: 3;
-		page-break-before: avoid;
 	}
 	pre code,
 	code code {
@@ -571,7 +514,7 @@
 
 /** Inline Code fragments *****************************************************/
 
-	/* Do something nice. */
+  /* Do something nice. */
 
 /******************************************************************************/
 /*                                    Links                                   */
@@ -582,28 +525,27 @@
 	/* We hyperlink a lot, so make it less intrusive */
 	a[href] {
 		color: #034575;
-		color: var(--a-normal-text);
-		text-decoration: underline #707070;
-		text-decoration: underline var(--a-normal-underline);
-		text-decoration-skip-ink: none;
+		text-decoration: none;
+		border-bottom: 1px solid #707070;
+		/* Need a bit of extending for it to look okay */
+		padding: 0 1px 0;
+		margin: 0 -1px 0;
 	}
 	a:visited {
-		color: #034575;
-		color: var(--a-visited-text);
-		text-decoration-color: #bbb;
-		text-decoration-color: var(--a-visited-underline);
+		border-bottom-color: #BBB;
 	}
 
-	/* Indicate interaction with the link */
+	/* Use distinguishing colors when user is interacting with the link */
 	a[href]:focus,
 	a[href]:hover {
-		text-decoration-thickness: 2px;
+		background: #f8f8f8;
+		background: rgba(75%, 75%, 75%, .25);
+		border-bottom-width: 3px;
+		margin-bottom: -2px;
 	}
 	a[href]:active {
-		color: #c00;
-		color: var(--a-active-text);
-		text-decoration-color: #c00;
-		text-decoration-color: var(--a-active-underline);
+		color: #C00;
+		border-color: #C00;
 	}
 
 	/* Backout above styling for W3C logo */
@@ -622,13 +564,8 @@
 		border-style: none;
 	}
 
-	img, svg {
-		/* Intentionally not color-scheme aware. */
-		background: white;
-	}
-
 	/* For autogen numbers, add
-	  .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
+	   .caption::before, figcaption::before { content: "Figure " counter(figure) ". "; }
 	*/
 
 	figure, .figure, .sidefigure {
@@ -636,11 +573,10 @@
 		text-align: center;
 		margin: 2.5em 0;
 	}
-	.figure img,	.sidefigure img,	figure img,
+	.figure img,    .sidefigure img,    figure img,
 	.figure object, .sidefigure object, figure object {
 		max-width: 100%;
 		margin: auto;
-		height: auto;
 	}
 	.figure pre, .sidefigure pre, figure pre {
 		text-align: left;
@@ -654,7 +590,7 @@
 		.sidefigure {
 			float: right;
 			width: 50%;
-			margin: 0 0 0.5em 0.5em;
+			margin: 0 0 0.5em 0.5em
 		}
 	}
 	.caption, figcaption, caption {
@@ -669,15 +605,13 @@
 	}
 
 	/* DL list is indented 2em, but figure inside it is not */
-	dd > .figure, dd > figure { margin-left: -2em; }
+	dd > .figure, dd > figure { margin-left: -2em }
 
 /******************************************************************************/
 /*                             Colored Boxes                                  */
 /******************************************************************************/
 
-	.issue, .note, .example, .assertion, .advisement, blockquote,
-	.amendment, .correction, .addition {
-		margin: 1em auto;
+	.issue, .note, .example, .assertion, .advisement, blockquote {
 		padding: .5em;
 		border: .5em;
 		border-left-style: solid;
@@ -688,117 +622,88 @@
 		border-right-style: solid;
 	}
 
-	blockquote > :first-child,
+	.issue,
+	.note,
+	.example,
+	.advisement,
+	.assertion,
+	blockquote {
+		margin: 1em auto;
+	}
 	.note  > p:first-child,
 	.issue > p:first-child,
-	.amendment > p:first-child,
-	.correction > p:first-child,
-	.addition > p:first-child {
+	blockquote > :first-child {
 		margin-top: 0;
 	}
-	blockquote > :last-child,
-	.note  > p:last-child,
-	.issue > p:last-child,
-	.amendment > p:last-child,
-	.correction > p:last-child,
-	.addition > p:last-child {
+	blockquote > :last-child {
 		margin-bottom: 0;
-	}
-
-
-	.issue::before, .issue > .marker,
-	.example::before, .example > .marker,
-	.note::before, .note > .marker,
-	details.note > summary > .marker,
-	.amendment::before, .amendment > .marker,
-	details.amendment > summary > .marker,
-	.addition::before, .addition > .marker,
-	addition.amendment > summary > .marker,
-	.correction::before, .correction > .marker,
-	correction.amendment > summary > .marker
-	{
-		text-transform: uppercase;
-		padding-right: 1em;
-	}
-
-	.example::before, .example > .marker {
-		display: block;
-		padding-right: 0em;
 	}
 
 /** Blockquotes ***************************************************************/
 
 	blockquote {
 		border-color: silver;
-		border-color: var(--blockquote-border);
-		background: transparent;
-		background: var(--blockquote-bg);
-		color: currentcolor;
-		color: var(--blockquote-text);
 	}
 
 /** Open issue ****************************************************************/
 
 	.issue {
-		border-color: #e05252;
-		border-color: var(--issue-border);
-		background: #fbe9e9;
-		background: var(--issue-bg);
-		color: black;
-		color: var(--issue-text);
+		border-color: #E05252;
+		background: #FBE9E9;
 		counter-increment: issue;
 		overflow: auto;
 	}
 	.issue::before, .issue > .marker {
-		color: #831616;
-		color: var(--issueheading-text);
+		text-transform: uppercase;
+		color: #AE1E1E;
+		padding-right: 1em;
+		text-transform: uppercase;
 	}
 	/* Add .issue::before { content: "Issue " counter(issue) " "; } for autogen numbers,
-	  or use class="marker" to mark up the issue number in source. */
+	   or use class="marker" to mark up the issue number in source. */
 
 /** Example *******************************************************************/
 
 	.example {
-		border-color: #e0cb52;
-		border-color: var(--example-border);
-		background: #fcfaee;
-		background: var(--example-bg);
-		color: black;
-		color: var(--example-text);
+		border-color: #E0CB52;
+		background: #FCFAEE;
 		counter-increment: example;
 		overflow: auto;
 		clear: both;
 	}
 	.example::before, .example > .marker {
-		color: #574b0f;
-		color: var(--exampleheading-text);
+		text-transform: uppercase;
+		color: #827017;
+		min-width: 7.5em;
+		display: block;
 	}
 	/* Add .example::before { content: "Example " counter(example) " "; } for autogen numbers,
-	  or use class="marker" to mark up the example number in source. */
+	   or use class="marker" to mark up the example number in source. */
 
 /** Non-normative Note ********************************************************/
 
 	.note {
-		border-color: #52e052;
-		border-color: var(--note-border);
-		background: #e9fbe9;
-		background: var(--note-bg);
-		color: black;
-		color: var(--note-text);
+		border-color: #52E052;
+		background: #E9FBE9;
 		overflow: auto;
 	}
 
 	.note::before, .note > .marker,
-	details.note > summary {
+	details.note > summary::before,
+	details.note > summary > .marker {
+		text-transform: uppercase;
+		display: block;
 		color: hsl(120, 70%, 30%);
-		color: var(--noteheading-text);
 	}
-	/* Add .note::before { content: "Note "; } for autogen label,
-	  or use class="marker" to mark up the label in source. */
+	/* Add .note::before { content: "Note"; } for autogen label,
+	   or use class="marker" to mark up the label in source. */
 
+	details.note > summary {
+		display: block;
+		color: hsl(120, 70%, 30%);
+	}
 	details.note[open] > summary {
 		border-bottom: 1px silver solid;
-		border-bottom: 1px var(--notesummary-underline) solid;
 	}
 
 /** Assertion Box *************************************************************/
@@ -806,11 +711,7 @@
 
 	.assertion {
 		border-color: #AAA;
-		border-color: var(--assertion-border);
 		background: #EEE;
-		background: var(--assertion-bg);
-		color: black;
-		color: var(--assertion-text);
 	}
 
 /** Advisement Box ************************************************************/
@@ -818,52 +719,15 @@
 
 	.advisement {
 		border-color: orange;
-		border-color: var(--advisement-border);
 		border-style: none solid;
-		background: #fec;
-		background: var(--advisement-bg);
-		color: black;
-		color: var(--advisement-text);
+		background: #FFEECC;
 	}
 	strong.advisement {
 		display: block;
 		text-align: center;
 	}
-	.advisement::before, .advisement > .marker {
-		color: #b35f00;
-		color: var(--advisementheading-text);
-	}
-
-/** Amendment Box *************************************************************/
-
-	.amendment, .correction, .addition {
-		border-color: #330099;
-		border-color: var(--amendment-border);
-		background: #F5F0FF;
-		background: var(--amendment-bg);
-		color: black;
-		color: var(--amendment-text);
-	}
-	.amendment.proposed, .correction.proposed, .addition.proposed {
-		border-style: solid;
-		border-block-width: 0.25em;
-	}
-	.amendment::before, .amendment > .marker,
-	details.amendment > summary::before, details.amendment > summary > .marker,
-	.correction::before, .correction > .marker,
-	details.correction > summary::before, details.correction > summary > .marker,
-	.addition::before, .addition > .marker,
-	details.addition > summary::before, details.addition > summary > .marker {
-		color: #220066;
-		color: var(--amendmentheading-text);
-	}
-	.amendment.proposed::before, .amendment.proposed > .marker,
-	details.amendment.proposed > summary::before, details.amendment.proposed > summary > .marker,
-	.correction.proposed::before, .correction.proposed > .marker,
-	details.correction.proposed > summary::before, details.correction.proposed > summary > .marker,
-	.addition.proposed::before, .addition.proposed > .marker,
-	details.addition.proposed > summary::before, details.addition.proposed > summary > .marker {
-		font-weight: bold;
+	.advisement > .marker {
+		color: #B35F00;
 	}
 
 /** Spec Obsoletion Notice ****************************************************/
@@ -879,16 +743,13 @@
 	.annoying-warning:not(details),
 	details.annoying-warning:not([open]) > summary,
 	details.annoying-warning[open] {
-		background: hsla(40,100%,50%,0.95);
-		background: var(--warning-bg);
-		color: black;
-		color: var(--warning-text);
+		background: #fdd;
+		color: red;
+		font-weight: bold;
 		padding: .75em 1em;
-		border: red;
-		border: var(--warning-border);
-		border-style: solid none;
-		box-shadow: 0 2px 8px black;
-		text-align: center;
+		border: thick red;
+		border-style: solid;
+		border-radius: 1em;
 	}
 	.annoying-warning :last-child {
 		margin-bottom: 0;
@@ -897,9 +758,9 @@
 @media not print {
 	details.annoying-warning[open] {
 		position: fixed;
-		left: 0;
-		right: 0;
-		bottom: 2em;
+		left: 1em;
+		right: 1em;
+		bottom: 1em;
 		z-index: 1000;
 	}
 }
@@ -912,13 +773,9 @@
 
 	.def {
 		padding: .5em 1em;
-		background: #def;
-		background: var(--def-bg);
+		background: #DEF;
 		margin: 1.2em 0;
-		border-left: 0.5em solid #8ccbf2;
-		border-left: 0.5em solid var(--def-border);
-		color: black;
-		color: var(--def-text);
+		border-left: 0.5em solid #8CCBF2;
 	}
 
 /******************************************************************************/
@@ -943,7 +800,6 @@
 		padding: 0.5em;
 		vertical-align: baseline;
 		border-bottom: 1px solid #bbd7e9;
-		border-bottom: 1px solid var(--defrow-border);
 	}
 
 	table.def > tbody > tr:last-child th,
@@ -964,10 +820,10 @@
 	}
 
 	/* A footnote at the bottom of a def table */
-	table.def td.footnote {
+	table.def           td.footnote {
 		padding-top: 0.6em;
 	}
-	table.def td.footnote::before {
+	table.def           td.footnote::before {
 		content: " ";
 		display: block;
 		height: 0.6em;
@@ -977,15 +833,15 @@
 
 /** Data tables (and properly marked-up index tables) *************************/
 	/*
-		<table class="data"> highlights structural relationships in a table
-		when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
+		 <table class="data"> highlights structural relationships in a table
+		 when correct markup is used (e.g. thead/tbody, th vs. td, scope attribute)
 
-		Use class="complex data" for particularly complicated tables --
-		(This will draw more lines: busier, but clearer.)
+		 Use class="complex data" for particularly complicated tables --
+		 (This will draw more lines: busier, but clearer.)
 
-		Use class="long" on table cells with paragraph-like contents
-		(This will adjust text alignment accordingly.)
-		Alternately use class="longlastcol" on tables, to have the last column assume "long".
+		 Use class="long" on table cells with paragraph-like contents
+		 (This will adjust text alignment accordingly.)
+		 Alternately use class="longlastcol" on tables, to have the last column assume "long".
 	*/
 
 	table {
@@ -1012,7 +868,6 @@
 		padding: 0.5em 1em;
 		border-width: 1px;
 		border-color: silver;
-		border-color: var(--datacell-border);
 		border-top-style: solid;
 	}
 
@@ -1037,7 +892,6 @@
 	table.index tbody th:first-child  {
 		border-right: 2px solid;
 		border-top: 1px solid silver;
-		border-top: 1px solid var(--datacell-border);
 		padding-right: 1em;
 	}
 
@@ -1049,14 +903,13 @@
 	table.complex.data th,
 	table.complex.data td {
 		border: 1px solid silver;
-		border: 1px solid var(--datacell-border);
 		text-align: center;
 	}
 
 	table.data.longlastcol td:last-child,
 	table.data td.long {
-		vertical-align: baseline;
-		text-align: left;
+	 vertical-align: baseline;
+	 text-align: left;
 	}
 
 	table.data img {
@@ -1109,30 +962,17 @@ Possible extra rowspan handling
 
 	.toc a {
 		/* More spacing; use padding to make it part of the click target. */
-		padding: 0.1rem 1px 0;
+		padding-top: 0.1rem;
 		/* Larger, more consistently-sized click target */
 		display: block;
-		/* Switch to using border-bottom for underlines */
-		text-decoration: none;
-		border-bottom: 1px solid;
 		/* Reverse color scheme */
 		color: black;
-		color: var(--toclink-text);
-		border-color: #3980b5;
-		border-color: var(--toclink-underline);
+		border-color: #3980B5;
+		border-bottom-width: 3px !important;
+		margin-bottom: 0px !important;
 	}
 	.toc a:visited {
-		color: black;
-		color: var(--toclink-visited-text);
 		border-color: #054572;
-		border-color: var(--toclink-visited-underline);
-	}
-	.toc a:focus,
-	.toc a:hover {
-		background: rgba(75%, 75%, 75%, .25);
-		background: var(--a-hover-bg);
-		border-bottom-width: 3px;
-		margin-bottom: -2px;
 	}
 	.toc a:not(:focus):not(:hover) {
 		/* Allow colors to cascade through from link styling */
@@ -1144,22 +984,22 @@ Possible extra rowspan handling
 		/* because generated content isn't search/selectable and markers can't do multilevel yet */
 		margin:  0;
 		padding: 0;
-	}
-	.toc {
-		line-height: 1.1em;
+		line-height: 1.1rem; /* consistent spacing */
 	}
 
 	/* ToC not indented until third level, but font style & margins show hierarchy */
-	.toc > li			{ font-weight: bold;   }
-	.toc > li li		 { font-weight: normal; }
-	.toc > li li li	  { font-size:   95%;	}
-	.toc > li li li li	{ font-size:   90%;	}
-	.toc > li li li li li { font-size:   85%;	}
+	.toc > li             { font-weight: bold;   }
+	.toc > li li          { font-weight: normal; }
+	.toc > li li li       { font-size:   95%;    }
+	.toc > li li li li    { font-size:   90%;    }
+	.toc > li li li li .secno { font-size: 85%; }
+	.toc > li li li li li { font-size:   85%;    }
+	.toc > li li li li li .secno { font-size: 100%; }
 
 	/* @supports not (display:grid) { */
-		.toc > li			{ margin: 1.5rem 0;	}
-		.toc > li li		 { margin: 0.3rem 0;	}
-		.toc > li li li	  { margin-left: 2rem;   }
+		.toc > li             { margin: 1.5rem 0;    }
+		.toc > li li          { margin: 0.3rem 0;    }
+		.toc > li li li       { margin-left: 2rem;   }
 
 		/* Section numbers in a column of their own */
 		.toc .secno {
@@ -1167,37 +1007,26 @@ Possible extra rowspan handling
 			width: 4rem;
 			white-space: nowrap;
 		}
-		.toc > li li li li .secno { font-size: 85%; }
-		.toc > li li li li li .secno { font-size: 100%; }
 
 		.toc li {
 			clear: both;
 		}
 
-		:not(li) > .toc			 { margin-left:  5rem; }
-		.toc .secno				 { margin-left: -5rem; }
-		.toc > li li li .secno	  { margin-left: -7rem; }
-		.toc > li li li li .secno	{ margin-left: -9rem; }
+		:not(li) > .toc              { margin-left:  5rem; }
+		.toc .secno                  { margin-left: -5rem; }
+		.toc > li li li .secno       { margin-left: -7rem; }
+		.toc > li li li li .secno    { margin-left: -9rem; }
 		.toc > li li li li li .secno { margin-left: -11rem; }
 
 		/* Tighten up indentation in narrow ToCs */
 		@media (max-width: 30em) {
-			:not(li) > .toc			 { margin-left:  4rem; }
-			.toc .secno				 { margin-left: -4rem; }
-			.toc > li li li			 { margin-left:  1rem; }
-			.toc > li li li .secno	  { margin-left: -5rem; }
-			.toc > li li li li .secno	{ margin-left: -6rem; }
+			:not(li) > .toc              { margin-left:  4rem; }
+			.toc .secno                  { margin-left: -4rem; }
+			.toc > li li li              { margin-left:  1rem; }
+			.toc > li li li .secno       { margin-left: -5rem; }
+			.toc > li li li li .secno    { margin-left: -6rem; }
 			.toc > li li li li li .secno { margin-left: -7rem; }
 		}
-		/* Loosen it on wide screens */
-		@media screen and (min-width: 78em) {
-			body:not(.toc-inline) :not(li) > .toc			 { margin-left:  4rem; }
-			body:not(.toc-inline) .toc .secno				 { margin-left: -4rem; }
-			body:not(.toc-inline) .toc > li li li			 { margin-left:  1rem; }
-			body:not(.toc-inline) .toc > li li li .secno	  { margin-left: -5rem; }
-			body:not(.toc-inline) .toc > li li li li .secno	{ margin-left: -6rem; }
-			body:not(.toc-inline) .toc > li li li li li .secno { margin-left: -7rem; }
-	}
 	/* } */
 
 	@supports (display:grid) and (display:contents) {
@@ -1226,7 +1055,7 @@ Possible extra rowspan handling
 		}
 		#toc > .toc > li > a > span {
 			/* The spans of the top-level list,
-			  comprising the first items of each top-level section. */
+			   comprising the first items of each top-level section. */
 			margin-top: 1.1rem;
 		}
 		#toc#toc .secno { /* Ugh, need more specificity to override base.css */
@@ -1239,12 +1068,9 @@ Possible extra rowspan handling
 			width: auto;
 			margin-right: 1rem;
 		}
-		#toc .content:hover,
-		#toc .content:focus {
+		#toc .content:hover {
 			background: rgba(75%, 75%, 75%, .25);
-			background: var(--a-hover-bg);
 			border-bottom: 3px solid #054572;
-			border-bottom: 3px solid var(--toclink-underline);
 			margin-bottom: -3px;
 		}
 		#toc li li li .content {
@@ -1259,23 +1085,22 @@ Possible extra rowspan handling
 /** Index *********************************************************************/
 
 	/* Index Lists: Layout */
-	ul.index	  { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
-	ul.index li	{ margin-left: 0; list-style: none; break-inside: avoid; }
-	ul.index li li { margin-left: 1em; }
-	ul.index dl	{ margin-top: 0; }
-	ul.index dt	{ margin: .2em 0 .2em 20px;}
-	ul.index dd	{ margin: .2em 0 .2em 40px;}
+	ul.index       { margin-left: 0; columns: 15em; text-indent: 1em hanging; }
+	ul.index li    { margin-left: 0; list-style: none; break-inside: avoid; }
+	ul.index li li { margin-left: 1em }
+	ul.index dl    { margin-top: 0; }
+	ul.index dt    { margin: .2em 0 .2em 20px;}
+	ul.index dd    { margin: .2em 0 .2em 40px;}
 	/* Index Lists: Typography */
 	ul.index ul,
 	ul.index dl { font-size: smaller; }
 	@media not print {
-		ul.index li span:not(.dfn-paneled) {
+		ul.index li span {
 			white-space: nowrap;
 			color: transparent; }
 		ul.index li a:hover + span,
 		ul.index li a:focus + span {
 			color: #707070;
-			color: var(--indexinfo-text);
 		}
 	}
 
@@ -1297,101 +1122,13 @@ Possible extra rowspan handling
 
 	table.index tr:hover td:not([rowspan]),
 	table.index tr:hover th:not([rowspan]) {
-		color: black;
-		color: var(--indextable-hover-text);
 		background: #f7f8f9;
-		background: var(--indextable-hover-bg);
 	}
 
 	/* The link in the first column in the property table (formerly a TD) */
 	table.index th:first-child a {
 		font-weight: bold;
 	}
-
-/** Outdated warning **********************************************************/
-
-.outdated-spec {
-	color: black;
-	color: var(--outdatedspec-text);
-	background-color: rgba(0,0,0,0.5);
-	background-color: var(--outdatedspec-bg);
-}
-
-.outdated-warning {
-	position: fixed;
-	bottom: 50%;
-	left: 0;
-	right: 0;
-	margin: 0 auto;
-	width: 50%;
-	background: maroon;
-	background: var(--outdated-bg);
-	color: white;
-	color: var(--outdated-text);
-	border-radius: 1em;
-	box-shadow: 0 0 1em red;
-	box-shadow: 0 0 1em var(--outdated-shadow);
-	padding: 2em;
-	text-align: center;
-	z-index: 2;
-}
-
-.outdated-warning a {
-	color: currentcolor;
-	background: transparent;
-}
-
-.edited-rec-warning {
-	background: darkorange;
-	background: var(--editedrec-bg);
-	box-shadow: 0 0 1em;
-}
-
-.outdated-warning button {
-	color: var(--outdated-text);
-	border-radius: 1em;
-	box-shadow: 0 0 1em red;
-	box-shadow: 0 0 1em var(--outdated-shadow);
-	padding: 2em;
-	text-align: center;
-	z-index: 2;
-}
-
-.outdated-warning a {
-	color: currentcolor;
-	background: transparent;
-}
-
-.edited-rec-warning {
-	background: darkorange;
-	background: var(--editedrec-bg);
-	box-shadow: 0 0 1em;
-}
-
-.outdated-warning button {
-	position: absolute;
-	top: 0;
-	right:0;
-	margin: 0;
-	border: 0;
-	padding: 0.25em 0.5em;
-	background: transparent;
-	color: white;
-	color: var(--outdated-text);
-	font:1em sans-serif;
-	text-align:center;
-}
-
-.outdated-warning span {
-	display: block;
-}
-
-.outdated-collapsed {
-	bottom: 0;
-	border-radius: 0;
-	width: 100%;
-	padding: 0;
-}
 
 /******************************************************************************/
 /*                                    Print                                   */
@@ -1406,20 +1143,17 @@ Possible extra rowspan handling
 		body {
 			font-family: serif;
 		}
-
-		.outdated-warning {
-			position: absolute;
-			border-style: solid;
-			border-color: red;
-		}
-
-		.outdated-warning input {
-			display: none;
-		}
 	}
 	@page {
 		margin: 1.5cm 1.1cm;
 	}
+
+/******************************************************************************/
+/*                                    Legacy                                  */
+/******************************************************************************/
+
+	/* This rule is inherited from past style sheets. No idea what it's for. */
+	.hide { display: none }
 
 
 
@@ -1434,13 +1168,13 @@ Possible extra rowspan handling
 		margin-right: auto;
 	}
 	.overlarge {
-		/* Magic to create good item positioning:
-		  "content column" is 50ems wide at max; less on smaller screens.
-		  Extra space (after ToC + content) is empty on the right.
+		/* Magic to create good table positioning:
+		   "content column" is 50ems wide at max; less on smaller screens.
+		   Extra space (after ToC + content) is empty on the right.
 
-		  1. When item < content column, centers item in column.
-		  2. When content < item < available, left-aligns.
-		  3. When item > available, fills available + scroll bar.
+		   1. When table < content column, centers table in column.
+		   2. When content < table < available, left-aligns.
+		   3. When table > available, fills available + scroll bar.
 		*/
 		display: grid;
 		grid-template-columns: minmax(0, 50em);
@@ -1475,13 +1209,13 @@ Possible extra rowspan handling
 		.overlarge {
 			overflow-x: auto;
 			/* See Lea Verou's explanation background-attachment:
-			* http://lea.verou.me/2012/04/background-attachment-local/
-			*
+			 * http://lea.verou.me/2012/04/background-attachment-local/
+			 *
 			background: top left  / 4em 100% linear-gradient(to right,  #ffffff, rgba(255, 255, 255, 0)) local,
-						top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
-						top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
-						top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
-						white;
+			            top right / 4em 100% linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0)) local,
+			            top left  / 1em 100% linear-gradient(to right,  #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+			            top right / 1em 100% linear-gradient(to left, #c3c3c5, rgba(195, 195, 197, 0)) scroll,
+			            white;
 			background-repeat: no-repeat;
 			*/
 		}
@@ -1560,9 +1294,9 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
+  <meta content="Bikeshed version 5f7b0e20, updated Tue Aug 18 15:46:28 2020 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d028ddf473bf80ad57f94148944c5e5ff1d1289c" name="document-revision">
+  <meta content="579aab53a6969e3ff482200012ea3f1f940e18ce" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1580,7 +1314,7 @@ Possible extra rowspan handling
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
-    color: var(--a-normal-text);
+    color: #005a9c;
     font-size: inherit;
     font-family: inherit;
 }
@@ -1639,115 +1373,6 @@ pre .property::before, pre .property::after {
 [data-link-type=biblio] {
     white-space: pre;
 }</style>
-<style>/* style-colors */
-
-/* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
-:root {
-    color-scheme: light dark;
-
-    --text: black;
-    --bg: white;
-
-    --unofficial-watermark: url(https://www.w3.org/StyleSheets/TR/2016/logos/UD-watermark);
-
-    --logo-bg: #1a5e9a;
-    --logo-active-bg: #c00;
-    --logo-text: white;
-
-    --tocnav-normal-text: #707070;
-    --tocnav-normal-bg: var(--bg);
-    --tocnav-hover-text: var(--tocnav-normal-text);
-    --tocnav-hover-bg: #f8f8f8;
-    --tocnav-active-text: #c00;
-    --tocnav-active-bg: var(--tocnav-normal-bg);
-
-    --tocsidebar-text: var(--text);
-    --tocsidebar-bg: #f7f8f9;
-    --tocsidebar-shadow: rgba(0,0,0,.1);
-    --tocsidebar-heading-text: hsla(203,20%,40%,.7);
-
-    --toclink-text: var(--text);
-    --toclink-underline: #3980b5;
-    --toclink-visited-text: var(--toclink-text);
-    --toclink-visited-underline: #054572;
-
-    --heading-text: #005a9c;
-
-    --hr-text: var(--text);
-
-    --algo-border: #def;
-
-    --del-text: red;
-    --del-bg: transparent;
-    --ins-text: #080;
-    --ins-bg: transparent;
-
-    --a-normal-text: #034575;
-    --a-normal-underline: #bbb;
-    --a-visited-text: var(--a-normal-text);
-    --a-visited-underline: #707070;
-    --a-hover-bg: rgba(75%, 75%, 75%, .25);
-    --a-active-text: #c00;
-    --a-active-underline: #c00;
-
-    --blockquote-border: silver;
-    --blockquote-bg: transparent;
-    --blockquote-text: currentcolor;
-
-    --issue-border: #e05252;
-    --issue-bg: #fbe9e9;
-    --issue-text: var(--text);
-    --issueheading-text: #831616;
-
-    --example-border: #e0cb52;
-    --example-bg: #fcfaee;
-    --example-text: var(--text);
-    --exampleheading-text: #574b0f;
-
-    --note-border: #52e052;
-    --note-bg: #e9fbe9;
-    --note-text: var(--text);
-    --noteheading-text: hsl(120, 70%, 30%);
-    --notesummary-underline: silver;
-
-    --assertion-border: #aaa;
-    --assertion-bg: #eee;
-    --assertion-text: black;
-
-    --advisement-border: orange;
-    --advisement-bg: #fec;
-    --advisement-text: var(--text);
-    --advisementheading-text: #b35f00;
-
-    --warning-border: red;
-    --warning-bg: hsla(40,100%,50%,0.95);
-    --warning-text: var(--text);
-
-    --amendment-border: #330099;
-    --amendment-bg: #F5F0FF;
-    --amendment-text: var(--text);
-    --amendmentheading-text: #220066;
-
-    --def-border: #8ccbf2;
-    --def-bg: #def;
-    --def-text: var(--text);
-    --defrow-border: #bbd7e9;
-
-    --datacell-border: silver;
-
-    --indexinfo-text: #707070;
-
-    --indextable-hover-text: black;
-    --indextable-hover-bg: #f7f8f9;
-
-    --outdatedspec-bg: rgba(0, 0, 0, .5);
-    --outdatedspec-text: black;
-    --outdated-bg: maroon;
-    --outdated-text: white;
-    --outdated-shadow: red;
-
-    --editedrec-bg: darkorange;
-}</style>
 <style>/* style-counters */
 
 body {
@@ -1789,11 +1414,6 @@ figcaption:not(.no-marker)::before {
 }</style>
 <style>/* style-selflinks */
 
-:root {
-    --selflink-text: white;
-    --selflink-bg: gray;
-    --selflink-hover-text: black;
-}
 .heading, .issue, .note, .example, li, dt {
     position: relative;
 }
@@ -1823,8 +1443,8 @@ dfn > a.self-link {
     opacity: 0;
     width: 1.5em;
     height: 1.5em;
-    background: var(--selflink-bg);
-    color: var(--selflink-text);
+    background: gray;
+    color: white;
     font-style: normal;
     transition: opacity .2s, background-color .2s, color .2s;
 }
@@ -1832,19 +1452,17 @@ dfn:hover > a.self-link {
     opacity: 1;
 }
 dfn > a.self-link:hover {
-    color: var(--selflink-hover-text);
+    color: black;
 }
 
 a.self-link::before            { content: "¶"; }
 .heading > a.self-link::before { content: "§"; }
-dfn > a.self-link::before      { content: "#"; }
-</style>
+dfn > a.self-link::before      { content: "#"; }</style>
 <style>/* style-syntax-highlighting */
 
+.highlight:not(.idl) { background: hsl(24, 20%, 95%); }
 code.highlight { padding: .1em; border-radius: .3em; }
 pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
-
-.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
 c-[a] { color: #990055 } /* Keyword.Declaration */
 c-[b] { color: #990055 } /* Keyword.Type */
 c-[c] { color: #708090 } /* Comment */
@@ -1898,199 +1516,16 @@ c-[vg] { color: #0077aa } /* Name.Variable.Global */
 c-[vi] { color: #0077aa } /* Name.Variable.Instance */
 c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 </style>
-<style>/* style-darkmode */
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --text: #ddd;
-        --bg: black;
-
-        --unofficial-watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cg fill='%23100808' transform='translate(200 200) rotate(-45) translate(-200 -200)' stroke='%23100808' stroke-width='3'%3E%3Ctext x='50%25' y='220' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EUNOFFICIAL%3C/text%3E%3Ctext x='50%25' y='305' style='font: bold 70px sans-serif; text-anchor: middle; letter-spacing: 6px;'%3EDRAFT%3C/text%3E%3C/g%3E%3C/svg%3E");
-
-        --logo-bg: #1a5e9a;
-        --logo-active-bg: #c00;
-        --logo-text: white;
-
-        --tocnav-normal-text: #999;
-        --tocnav-normal-bg: var(--bg);
-        --tocnav-hover-text: var(--tocnav-normal-text);
-        --tocnav-hover-bg: #080808;
-        --tocnav-active-text: #f44;
-        --tocnav-active-bg: var(--tocnav-normal-bg);
-
-        --tocsidebar-text: var(--text);
-        --tocsidebar-bg: #080808;
-        --tocsidebar-shadow: rgba(255,255,255,.1);
-        --tocsidebar-heading-text: hsla(203,20%,40%,.7);
-
-        --toclink-text: var(--text);
-        --toclink-underline: #6af;
-        --toclink-visited-text: var(--toclink-text);
-        --toclink-visited-underline: #054572;
-
-        --heading-text: #8af;
-
-        --hr-text: var(--text);
-
-        --algo-border: #456;
-
-        --del-text: #f44;
-        --del-bg: transparent;
-        --ins-text: #4a4;
-        --ins-bg: transparent;
-
-        --a-normal-text: #6af;
-        --a-normal-underline: #555;
-        --a-visited-text: var(--a-normal-text);
-        --a-visited-underline: var(--a-normal-underline);
-        --a-hover-bg: rgba(25%, 25%, 25%, .2);
-        --a-active-text: #f44;
-        --a-active-underline: var(--a-active-text);
-
-        --borderedblock-bg: rgba(255, 255, 255, .05);
-
-        --blockquote-border: silver;
-        --blockquote-bg: var(--borderedblock-bg);
-        --blockquote-text: currentcolor;
-
-        --issue-border: #e05252;
-        --issue-bg: var(--borderedblock-bg);
-        --issue-text: var(--text);
-        --issueheading-text: hsl(0deg, 70%, 70%);
-
-        --example-border: hsl(50deg, 90%, 60%);
-        --example-bg: var(--borderedblock-bg);
-        --example-text: var(--text);
-        --exampleheading-text: hsl(50deg, 70%, 70%);
-
-        --note-border: hsl(120deg, 100%, 35%);
-        --note-bg: var(--borderedblock-bg);
-        --note-text: var(--text);
-        --noteheading-text: hsl(120, 70%, 70%);
-        --notesummary-underline: silver;
-
-        --assertion-border: #444;
-        --assertion-bg: var(--borderedblock-bg);
-        --assertion-text: var(--text);
-
-        --advisement-border: orange;
-        --advisement-bg: #222218;
-        --advisement-text: var(--text);
-        --advisementheading-text: #f84;
-
-        --warning-border: red;
-        --warning-bg: hsla(40,100%,20%,0.95);
-        --warning-text: var(--text);
-
-        --amendment-border: #330099;
-        --amendment-bg: #080010;
-        --amendment-text: var(--text);
-        --amendmentheading-text: #cc00ff;
-
-        --def-border: #8ccbf2;
-        --def-bg: #080818;
-        --def-text: var(--text);
-        --defrow-border: #136;
-
-        --datacell-border: silver;
-
-        --indexinfo-text: #aaa;
-
-        --indextable-hover-text: var(--text);
-        --indextable-hover-bg: #181818;
-
-        --outdatedspec-bg: rgba(255, 255, 255, .5);
-        --outdatedspec-text: black;
-        --outdated-bg: maroon;
-        --outdated-text: white;
-        --outdated-shadow: red;
-
-        --editedrec-bg: darkorange;
-    }
-    /* In case a transparent-bg image doesn't expect to be on a dark bg,
-       which is quite common in practice... */
-    img { background: white; }
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --selflink-text: black;
-        --selflink-bg: silver;
-        --selflink-hover-text: white;
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    .highlight:not(.idl) { background: rgba(255, 255, 255, .05); }
-
-    c-[a] { color: #d33682 } /* Keyword.Declaration */
-    c-[b] { color: #d33682 } /* Keyword.Type */
-    c-[c] { color: #2aa198 } /* Comment */
-    c-[d] { color: #2aa198 } /* Comment.Multiline */
-    c-[e] { color: #268bd2 } /* Name.Attribute */
-    c-[f] { color: #b58900 } /* Name.Tag */
-    c-[g] { color: #cb4b16 } /* Name.Variable */
-    c-[k] { color: #d33682 } /* Keyword */
-    c-[l] { color: #657b83 } /* Literal */
-    c-[m] { color: #657b83 } /* Literal.Number */
-    c-[n] { color: #268bd2 } /* Name */
-    c-[o] { color: #657b83 } /* Operator */
-    c-[p] { color: #657b83 } /* Punctuation */
-    c-[s] { color: #6c71c4 } /* Literal.String */
-    c-[t] { color: #6c71c4 } /* Literal.String.Single */
-    c-[u] { color: #6c71c4 } /* Literal.String.Double */
-    c-[ch] { color: #2aa198 } /* Comment.Hashbang */
-    c-[cp] { color: #2aa198 } /* Comment.Preproc */
-    c-[cpf] { color: #2aa198 } /* Comment.PreprocFile */
-    c-[c1] { color: #2aa198 } /* Comment.Single */
-    c-[cs] { color: #2aa198 } /* Comment.Special */
-    c-[kc] { color: #d33682 } /* Keyword.Constant */
-    c-[kn] { color: #d33682 } /* Keyword.Namespace */
-    c-[kp] { color: #d33682 } /* Keyword.Pseudo */
-    c-[kr] { color: #d33682 } /* Keyword.Reserved */
-    c-[ld] { color: #657b83 } /* Literal.Date */
-    c-[nc] { color: #268bd2 } /* Name.Class */
-    c-[no] { color: #268bd2 } /* Name.Constant */
-    c-[nd] { color: #268bd2 } /* Name.Decorator */
-    c-[ni] { color: #268bd2 } /* Name.Entity */
-    c-[ne] { color: #268bd2 } /* Name.Exception */
-    c-[nf] { color: #268bd2 } /* Name.Function */
-    c-[nl] { color: #268bd2 } /* Name.Label */
-    c-[nn] { color: #268bd2 } /* Name.Namespace */
-    c-[py] { color: #268bd2 } /* Name.Property */
-    c-[ow] { color: #657b83 } /* Operator.Word */
-    c-[mb] { color: #657b83 } /* Literal.Number.Bin */
-    c-[mf] { color: #657b83 } /* Literal.Number.Float */
-    c-[mh] { color: #657b83 } /* Literal.Number.Hex */
-    c-[mi] { color: #657b83 } /* Literal.Number.Integer */
-    c-[mo] { color: #657b83 } /* Literal.Number.Oct */
-    c-[sa] { color: #6c71c4 } /* Literal.String.Affix */
-    c-[sb] { color: #6c71c4 } /* Literal.String.Backtick */
-    c-[sc] { color: #6c71c4 } /* Literal.String.Char */
-    c-[dl] { color: #6c71c4 } /* Literal.String.Delimiter */
-    c-[sd] { color: #6c71c4 } /* Literal.String.Doc */
-    c-[se] { color: #6c71c4 } /* Literal.String.Escape */
-    c-[sh] { color: #6c71c4 } /* Literal.String.Heredoc */
-    c-[si] { color: #6c71c4 } /* Literal.String.Interpol */
-    c-[sx] { color: #6c71c4 } /* Literal.String.Other */
-    c-[sr] { color: #6c71c4 } /* Literal.String.Regex */
-    c-[ss] { color: #6c71c4 } /* Literal.String.Symbol */
-    c-[fm] { color: #268bd2 } /* Name.Function.Magic */
-    c-[vc] { color: #cb4b16 } /* Name.Variable.Class */
-    c-[vg] { color: #cb4b16 } /* Name.Variable.Global */
-    c-[vi] { color: #cb4b16 } /* Name.Variable.Instance */
-    c-[vm] { color: #cb4b16 } /* Name.Variable.Magic */
-    c-[il] { color: #657b83 } /* Literal.Number.Integer.Long */
-}
-</style>
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R11<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-11-29">2021-11-29</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R6<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-05-13">2021-05-13</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
-     <dt class="editor">Author:
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
+     <dt>Author:
+     <dd>
+      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
      <dd>LEWG
      <dt>Project:
@@ -2105,22 +1540,21 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
-    <li><a href="#sg16-polls8"><span class="secno">3</span> <span class="content">SG16 polls (R8)</span></a>
-    <li><a href="#sg16-polls6"><span class="secno">4</span> <span class="content">SG16 polls (R6)</span></a>
-    <li><a href="#lewg-polls5"><span class="secno">5</span> <span class="content">LEWG polls (R5)</span></a>
-    <li><a href="#sg16-polls3"><span class="secno">6</span> <span class="content">SG16 polls (R3)</span></a>
-    <li><a href="#lewg-polls2"><span class="secno">7</span> <span class="content">LEWG polls (R2)</span></a>
-    <li><a href="#lewg-polls1"><span class="secno">8</span> <span class="content">LEWG polls (R1)</span></a>
-    <li><a href="#motivation"><span class="secno">9</span> <span class="content">Motivating examples</span></a>
-    <li><a href="#api"><span class="secno">10</span> <span class="content">API and naming</span></a>
-    <li><a href="#unicode"><span class="secno">11</span> <span class="content">Unicode</span></a>
-    <li><a href="#perf"><span class="secno">12</span> <span class="content">Performance</span></a>
-    <li><a href="#binary"><span class="secno">13</span> <span class="content">Binary code</span></a>
-    <li><a href="#impact"><span class="secno">14</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">15</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">16</span> <span class="content">Wording</span></a>
+    <li><a href="#sg16-polls6"><span class="secno">3</span> <span class="content">SG16 polls (R6)</span></a>
+    <li><a href="#lewg-polls5"><span class="secno">4</span> <span class="content">LEWG polls (R5)</span></a>
+    <li><a href="#sg16-polls3"><span class="secno">5</span> <span class="content">SG16 polls (R3)</span></a>
+    <li><a href="#lewg-polls2"><span class="secno">6</span> <span class="content">LEWG polls (R2)</span></a>
+    <li><a href="#lewg-polls1"><span class="secno">7</span> <span class="content">LEWG polls (R1)</span></a>
+    <li><a href="#motivation"><span class="secno">8</span> <span class="content">Motivating examples</span></a>
+    <li><a href="#api"><span class="secno">9</span> <span class="content">API and naming</span></a>
+    <li><a href="#unicode"><span class="secno">10</span> <span class="content">Unicode</span></a>
+    <li><a href="#perf"><span class="secno">11</span> <span class="content">Performance</span></a>
+    <li><a href="#binary"><span class="secno">12</span> <span class="content">Binary code</span></a>
+    <li><a href="#impact"><span class="secno">13</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">14</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">15</span> <span class="content">Wording</span></a>
     <li><a href="#lst"><span class="secno"></span> <span class="content">Appendix A: Unicode tests</span></a>
-    <li><a href="#ack"><span class="secno">17</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#ack"><span class="secno">16</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2145,73 +1579,6 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
-   <p>Changes since R10:</p>
-   <ul>
-    <li data-md>
-     <p>Moved "If invoking the (native Unicode) API requires transcoding,
-implementations should substitute invalid code units with U+FFFD �
-REPLACEMENT CHARACTER per The Unicode Standard Version 13.0 – Core
-Specification, Chapter 3.9." to the <i>Recommended practice</i> clause."
-in the definition of <code class="highlight"><c- n>vprint_unicode</c-></code> per LEWG feedback.</p>
-    <li data-md>
-     <p>Made the definition of the <code class="highlight"><c- n>ostream</c-></code> overload of <code class="highlight"><c- n>vprint_unicode</c-></code> consistent
-with the <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> overload.</p>
-    <li data-md>
-     <p>Namespace-qualified the calls to <code class="highlight"><c- n>forward</c-></code>.</p>
-    <li data-md>
-     <p>Removed a call to <code class="highlight"><c- n>make_format_args</c-></code> in [print.fun].1.</p>
-    <li data-md>
-     <p>Removed extra <code class="highlight"><c- p>)</c-></code> in the <em>Effects</em> clauses of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code>.</p>
-    <li data-md>
-     <p>Updated The Unicode® Standard Version to 14.</p>
-   </ul>
-   <p>Changes since R9:</p>
-   <ul>
-    <li data-md>
-     <p>Rebased the wording onto the latest draft, most importantly adding
-support for types that are neither const-iterable nor copyable introduced
-by <a data-link-type="biblio" href="#biblio-p2418">[P2418]</a>.</p>
-   </ul>
-   <p>Changes since R8:</p>
-   <ul>
-    <li data-md>
-     <p>Added new SG16 poll results.</p>
-    <li data-md>
-     <p>Improved wording for [print.syn].6 (previously [print.syn].31) to remove
-ambiguities per SG16 feedback.</p>
-    <li data-md>
-     <p>Fixed paragraph numbering in the wording.</p>
-    <li data-md>
-     <p>Clarified the difference from the Python’s <code class="highlight"><c- n>print</c-></code> in <a href="#api">§ 10 API and naming</a>.</p>
-   </ul>
-   <p>Changes since R7:</p>
-   <ul>
-    <li data-md>
-     <p>Added a reference to LLVM’s <code class="highlight"><c- n>raw_ostream</c-></code> that implements similar mojibake
-prevention mechanism to <a href="#impl">§ 15 Implementation</a>.</p>
-   </ul>
-   <p>Changes since R6:</p>
-   <ul>
-    <li data-md>
-     <p>Added new SG16 poll results.</p>
-    <li data-md>
-     <p>Rebased the wording onto the latest draft, most importantly adding
-compile-time checks introduced by <a data-link-type="biblio" href="#biblio-p2216">[P2216]</a>.</p>
-    <li data-md>
-     <p>Added "If <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior is undefined and
-implementations are encouraged to diagnose it."
-to the definition of <code class="highlight"><c- n>vprint_unicode</c-></code> per SG16 feedback.</p>
-    <li data-md>
-     <p>Replaced "invalid code points are substituted with U+FFFD � REPLACEMENT
-CHARACTER" with " implementations should substitute invalid code units with
-U+FFFD � REPLACEMENT CHARACTER per The Unicode® Standard Version 13.0 – Core
-Specification, Chapter 3.9" in <a href="#wording">§ 16 Wording</a> per SG16 feedback.</p>
-    <li data-md>
-     <p>Added "The Unicode® Standard Version 13.0 – Core Specification" to
-Normative references in <a href="#wording">§ 16 Wording</a>.</p>
-    <li data-md>
-     <p>Clarified the behavior when mixing encodings in <a href="#unicode">§ 11 Unicode</a>.</p>
-   </ul>
    <p>Changes since R5:</p>
    <ul>
     <li data-md>
@@ -2222,15 +1589,15 @@ Normative references in <a href="#wording">§ 16 Wording</a>.</p>
      <p>Replaced <code class="highlight"><c- o>&lt;</c-><c- n>io</c-><c- o>></c-></code> with <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> per LEWG feedback.</p>
     <li data-md>
      <p>Clarified the choice of U+FFFD � REPLACEMENT CHARACTER for transcoding errors
-in <a href="#unicode">§ 11 Unicode</a>.</p>
+in <a href="#unicode">§ 10 Unicode</a>.</p>
     <li data-md>
-     <p>Clarified the choice of literal encoding in <a href="#unicode">§ 11 Unicode</a>.</p>
+     <p>Clarified the choice of literal encoding in <a href="#unicode">§ 10 Unicode</a>.</p>
     <li data-md>
      <p>Clarified that ANSI escape codes for specifying coding systems are not
-considered a native system API that supports Unicode in <a href="#unicode">§ 11 Unicode</a>.</p>
+considered a native system API that supports Unicode in <a href="#unicode">§ 10 Unicode</a>.</p>
     <li data-md>
      <p>Added a reference to Rust’s standard output facility that implements the same
-mojibake prevention mechanism to <a href="#impl">§ 15 Implementation</a></p>
+mojibake prevention mechanism to <a href="#impl">§ 14 Implementation</a></p>
    </ul>
    <p>Changes since R4:</p>
    <ul>
@@ -2253,15 +1620,15 @@ to a terminal.</p>
    <ul>
     <li data-md>
      <p>Added better compatibility with other formatted I/O facilities as another
-advantage of using <code class="highlight"><c- n>stdout</c-></code> in <a href="#api">§ 10 API and naming</a> per SG16 feedback.</p>
+advantage of using <code class="highlight"><c- n>stdout</c-></code> in <a href="#api">§ 9 API and naming</a> per SG16 feedback.</p>
     <li data-md>
      <p>Clarified that <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> can be used for literal encoding detection per SG16
 feedback.</p>
     <li data-md>
      <p>Added comparison of Unicode handling in various languages in <a href="#lst">Appendix A: Unicode tests</a> and a
-summary in <a href="#unicode">§ 11 Unicode</a> per SG16 request.</p>
+summary in <a href="#unicode">§ 10 Unicode</a> per SG16 request.</p>
     <li data-md>
-     <p>Removed incorrect "exposition-only" in <a href="#unicode">§ 11 Unicode</a>.</p>
+     <p>Removed incorrect "exposition-only" in <a href="#unicode">§ 10 Unicode</a>.</p>
     <li data-md>
      <p>Replaced "both source and literal encodings are UTF-8, which is enabled by the <code class="highlight">/utf-8</code> compiler flag" with "the literal
 (execution) encoding is UTF-8, which is enabled by the <code class="highlight">/execution-charset:utf-8</code> compiler flag" since
@@ -2276,7 +1643,7 @@ the source encoding is irrelevant there.</p>
     <li data-md>
      <p>Moved the print functions that take <code class="highlight"><c- n>ostream</c-><c- o>&amp;</c-></code> to <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> since <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> shouldn’t depend on <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code>.</p>
     <li data-md>
-     <p>Clarified why it is useful to provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> functions in <a href="#binary">§ 13 Binary code</a>.</p>
+     <p>Clarified why it is useful to provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> functions in <a href="#binary">§ 12 Binary code</a>.</p>
     <li data-md>
      <p>Rebased the wording onto the latest working draft, N4861, in particular
 updating the <em>Throws</em> clauses to match existing wording.</p>
@@ -2291,44 +1658,8 @@ updating the <em>Throws</em> clauses to match existing wording.</p>
      <p>Clarified that adding <code class="highlight"><c- b>wchar_t</c-></code> overloads will be addressed in a separate
 paper per the UK C++ panel feedback.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="sg16-polls8"><span class="secno">3. </span><span class="content">SG16 polls (R8)</span><a class="self-link" href="#sg16-polls8"></a></h2>
-   <p><strong>Poll</strong>: Use of UTF-8 as the literal encoding is sufficient for <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities to establish encoding expectations.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>2 
-      <td>3 
-      <td>2 
-      <td>1 
-      <td>0 
-   </table>
-   <p>Consensus: Consensus in favour.</p>
-   <p><strong>Poll</strong>: Correct the P2093R8 wording for [print.syn].31 to remove ambiguities,
-and forward P2093 as revised to LEWG with a recommended ship vehicle of C++23.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>1 
-      <td>4 
-      <td>2 
-      <td>0 
-      <td>0 
-   </table>
-   <p>Consensus: Consensus in favour.</p>
-   <h2 class="heading settled" data-level="4" id="sg16-polls6"><span class="secno">4. </span><span class="content">SG16 polls (R6)</span><a class="self-link" href="#sg16-polls6"></a></h2>
-   <p><strong>Poll</strong>: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities must transcode their formatting results for
+   <h2 class="heading settled" data-level="3" id="sg16-polls6"><span class="secno">3. </span><span class="content">SG16 polls (R6)</span><a class="self-link" href="#sg16-polls6"></a></h2>
+   <p>Poll: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities must transcode their formatting results for
 display on a device, and during that process invalidly-encoded text is
 encountered, <code class="highlight"><c- n>print</c-><c- p>()</c-></code> should replace the erroneously-encoded code units with <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-> <c- n>REPLACEMENT</c-> <c- n>CHARACTER</c-></code>.</p>
    <table class="poll">
@@ -2347,7 +1678,7 @@ encountered, <code class="highlight"><c- n>print</c-><c- p>()</c-></code> should
       <td>0 
    </table>
    <p>Outcome: Consensus for the position</p>
-   <p><strong>Poll</strong>: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities need not transcode their formatting results
+   <p>Poll: When <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities need not transcode their formatting results
 for display on a device, and during that process invalidly-encoded text is
 encountered, <code class="highlight"><c- n>print</c-><c- p>()</c-></code> should nevertheless replace the erroneously-encoded code
 units with <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-> <c- n>REPLACEMENT</c-> <c- n>CHARACTER</c-></code>.</p>
@@ -2366,177 +1697,8 @@ units with <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-> <c- n
       <td>2 
       <td>3 
    </table>
-   <p>Outcome: Consensus against the direction.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities should have consistent behavior
-with respect to encoding expectations for the format string.</p>
-   <p>No objection to unanimous consent.</p>
-   <p><strong>Poll</strong>: formatters should not be sensitive to whether they are being used with a <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> or <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facility.</p>
-   <p>No objection to unanimous consent.</p>
-   <p><strong>Poll</strong>: Regardless of format string encoding assumptions, <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> facilities
-may be used to format binary data.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>5 
-      <td>1 
-      <td>1 
-      <td>0 
-      <td>0 
-   </table>
-   <p>Consensus: Strong consensus in favor.</p>
-   <p><strong>Poll</strong>: Regardless of format string encoding assumptions, <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities may
-be used to format binary data.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>2 
-      <td>1 
-      <td>3 
-      <td>1 
-      <td>0 
-   </table>
-   <p>Consensus: Weak consensus in favor.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities exhibit undefined behavior when an encoding
-expectation is present and a format string or formatter output does not match
-those expectations.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>2 
-      <td>4 
-      <td>0 
-      <td>0 
-      <td>1 
-   </table>
-   <p>Consensus: Strong consensus in favor.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities exhibit undefined behavior when an encoding
-expectation is present and a format string or formatter output does not match
-those expectations and output is directed to a device that has encoding
-expectations.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>6 
-      <td>0 
-      <td>1 
-      <td>0 
-      <td>0 
-   </table>
-   <p>Consensus: Stronger consensus in favor relative to previous poll.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facility implementors are encouraged to provide a run-time
-means for diagnosing format strings and formatter output that is not well-formed
-according to the expected encoding.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>4 
-      <td>0 
-      <td>2 
-      <td>1 
-      <td>0 
-   </table>
-   <p>Consensus: Consensus in favor.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities should have consistent behavior
-with respect to encoding expectations for the output of formatters.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>0 
-      <td>1 
-      <td>1 
-      <td>5 
-      <td>1 
-   </table>
-   <p>Consensus: Strong consensus against.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facility implementors are encouraged to substitute <code class="highlight"><c- n>U</c-><c- o>+</c-><c- n>FFFD</c-></code> replacement characters following Unicode guidance when output is directed to a
-device and transcoding is necessary.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>2 
-      <td>5 
-      <td>0 
-      <td>0 
-      <td>1 
-   </table>
-   <p>Consensus: Consensus in favor.</p>
-   <p><strong>Poll</strong>: <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities must provide an explicit program-controlled error
-handling mechanism for violations of encoding expectations.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>0 
-      <td>0 
-      <td>3 
-      <td>3 
-      <td>3 
-   </table>
-   <p><strong>Poll</strong>: Use of UTF-8 as the literal encoding is sufficient for <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> facilities to establish encoding expectations.</p>
-   <table class="poll">
-    <tbody>
-     <tr>
-      <th>SF 
-      <th>F 
-      <th>N 
-      <th>A 
-      <th>SA 
-     <tr>
-      <td>3 
-      <td>1 
-      <td>3 
-      <td>2 
-      <td>0 
-   </table>
-   <p>Consensus: Very weak consensus.</p>
-   <h2 class="heading settled" data-level="5" id="lewg-polls5"><span class="secno">5. </span><span class="content">LEWG polls (R5)</span><a class="self-link" href="#lewg-polls5"></a></h2>
+   <p>Consensus: Consensus against the direction.</p>
+   <h2 class="heading settled" data-level="4" id="lewg-polls5"><span class="secno">4. </span><span class="content">LEWG polls (R5)</span><a class="self-link" href="#lewg-polls5"></a></h2>
    <p>Poll: Block P2093 until we have a proposal for a lower level facility that can
 query tty/console and perform direct output to the console</p>
    <table class="poll">
@@ -2585,7 +1747,7 @@ query tty/console and perform direct output to the console</p>
    </table>
    <p>Outcome: both <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> have consensus, author can choose one for the
   next revision.</p>
-   <h2 class="heading settled" data-level="6" id="sg16-polls3"><span class="secno">6. </span><span class="content">SG16 polls (R3)</span><a class="self-link" href="#sg16-polls3"></a></h2>
+   <h2 class="heading settled" data-level="5" id="sg16-polls3"><span class="secno">5. </span><span class="content">SG16 polls (R3)</span><a class="self-link" href="#sg16-polls3"></a></h2>
    <p>Poll: Forward P2093R3 to LEWG.</p>
    <table class="poll">
     <tbody>
@@ -2603,7 +1765,7 @@ query tty/console and perform direct output to the console</p>
       <td>1 
    </table>
    <p>Consensus? Yes</p>
-   <h2 class="heading settled" data-level="7" id="lewg-polls2"><span class="secno">7. </span><span class="content">LEWG polls (R2)</span><a class="self-link" href="#lewg-polls2"></a></h2>
+   <h2 class="heading settled" data-level="6" id="lewg-polls2"><span class="secno">6. </span><span class="content">LEWG polls (R2)</span><a class="self-link" href="#lewg-polls2"></a></h2>
    <p>Poll: We want P2093R2 to revert moving the <code class="highlight"><c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- p>)</c-></code> overloads to the <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> header.</p>
    <table class="poll">
     <tbody>
@@ -2621,7 +1783,7 @@ query tty/console and perform direct output to the console</p>
       <td>1 
    </table>
    <p>Outcome: Keep the paper as is</p>
-   <h2 class="heading settled" data-level="8" id="lewg-polls1"><span class="secno">8. </span><span class="content">LEWG polls (R1)</span><a class="self-link" href="#lewg-polls1"></a></h2>
+   <h2 class="heading settled" data-level="7" id="lewg-polls1"><span class="secno">7. </span><span class="content">LEWG polls (R1)</span><a class="self-link" href="#lewg-polls1"></a></h2>
    <p>Poll: We prefer <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> as the default output target.</p>
    <table class="poll">
     <tbody>
@@ -2675,7 +1837,7 @@ query tty/console and perform direct output to the console</p>
    <p>Poll: We are happy with the design with regards to UTF-8 output.</p>
    <p>Unanimous consent.</p>
    <p>Attendance: 35</p>
-   <h2 class="heading settled" data-level="9" id="motivation"><span class="secno">9. </span><span class="content">Motivating examples</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="8" id="motivation"><span class="secno">8. </span><span class="content">Motivating examples</span><a class="self-link" href="#motivation"></a></h2>
    <p>Consider a common task of printing formatted text to <code class="highlight"><c- n>stdout</c-></code>:</p>
    <table width="100%">
     <tbody>
@@ -2694,7 +1856,7 @@ query tty/console and perform direct output to the console</p>
 temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code> object and calling <code class="highlight"><c- k>operator</c-><c- o>&lt;&lt;</c-></code> which performs formatted
 I/O on text that is already formatted. The number of function calls is reduced
 to one which, together with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vformat</c-></code>-like type erasure, results in much
-smaller binary code (see <a href="#binary">§ 13 Binary code</a>).</p>
+smaller binary code (see <a href="#binary">§ 12 Binary code</a>).</p>
    <p>Existing alternatives in C++20:</p>
    <table width="100%">
     <tbody>
@@ -2748,7 +1910,7 @@ code page and console settings:
    <p>This problem is independent of formatting <code class="highlight"><c- b>char8_t</c-></code> strings but the same
 solution applies there. Adding <code class="highlight"><c- n>charN_t</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code> overloads will be
 explored in a separate paper in a more general context.</p>
-   <h2 class="heading settled" data-level="10" id="api"><span class="secno">10. </span><span class="content">API and naming</span><a class="self-link" href="#api"></a></h2>
+   <h2 class="heading settled" data-level="9" id="api"><span class="secno">9. </span><span class="content">API and naming</span><a class="self-link" href="#api"></a></h2>
    <p>Many programming languages provide functions for printing text to standard
 output, often combined with formatting:</p>
    <table width="100%">
@@ -2812,7 +1974,7 @@ using <code class="highlight"><c- n>stdout</c-></code> for the following reasons
    <ul>
     <li data-md>
      <p><code class="highlight"><c- n>stdout</c-></code> is considerably faster on at least two major implementations
-(see <a href="#perf">§ 12 Performance</a>).</p>
+(see <a href="#perf">§ 11 Performance</a>).</p>
     <li data-md>
      <p>Better compatibility with other formatted I/O facilities compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-></code> and its associated <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>streambuf</c-></code> that suffer from private
 buffering, localization and conversion services that must be synchronized at
@@ -2820,14 +1982,6 @@ a lower level.</p>
     <li data-md>
      <p><code class="highlight"><c- n>print</c-></code> won’t use any formatted output functionality of <code class="highlight"><c- n>ostream</c-></code>.</p>
    </ul>
-   <p>In some languages like Python <code class="highlight"><c- n>print</c-></code> only provides the default formatting
-although some formatting control may be achieved by other means such as named
-arguments and/or doing formatting manually via <code class="highlight"><c- n>str</c-><c- p>.</c-><c- n>format</c-></code> or string
-interpolation. The current paper doesn’t propose such a default formatting
-facility. A search in a large Python codebase revealed that over 70% of <code class="highlight"><c- n>print</c-></code> calls either take a string literal or use interpolation and this doesn’t even
-account for string variables. These use cases are covered by the current
-proposal with better usability and potentially better performance because there
-are no separate formatting function calls.</p>
    <p>Since <code class="highlight"><c- n>stdout</c-></code> doesn’t have an associated
 locale we propose using the current global locale for locale-specific formatting
 which is consistent with <code class="highlight"><c- n>format</c-></code>. With <code class="highlight"><c- n>cout</c-></code> or another explicitly passed
@@ -2859,8 +2013,8 @@ formatting: <code class="highlight"><c- n>print</c-></code> in Python and Swift.
    <p>Additionally we can provide a function that appends a newline:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>println</c-><c- p>(</c-><c- s>"Hello, {}!"</c-><c- p>,</c-> <c- n>name</c-><c- p>);</c->  <c- c1>// prints a newline</c->
 </pre>
-   <p>Although <code class="highlight"><c- n>println</c-></code> doesn’t provide much usability improvement compared to <code class="highlight"><c- n>print</c-></code> with explicit <code class="highlight"><c- sc>'\n'</c-></code>, it has been an occasionally requested feature in
-the fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
+   <p>Although <code class="highlight"><c- n>println</c-></code> doesn’t provide much usability improvement compared to <code class="highlight"><c- n>print</c-></code> with explicit <code class="highlight"><c- sc>'\n'</c-></code>, it has been a frequently requested feature in the
+fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
    <p>Another question is which header non-<code class="highlight"><c- n>ostream</c-></code> overloads of formatted output
 functions should go to. Possible options:</p>
    <ul>
@@ -2886,13 +2040,13 @@ the future once a symmetric input facility becomes available. Using <code class=
    <p>It also pulls in a lot of unrelated symbols such as <code class="highlight"><c- n>ostream</c-></code> insertion
 operators, global <code class="highlight"><c- n>cout</c-></code>, <code class="highlight"><c- n>cerr</c-></code>, <code class="highlight"><c- n>clog</c-></code> variables and their <code class="highlight"><c- b>wchar_t</c-></code> counterparts.</p>
    <p><code class="highlight"><c- n>ostream</c-></code> overloads are added to the <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> header.</p>
-   <h2 class="heading settled" data-level="11" id="unicode"><span class="secno">11. </span><span class="content">Unicode</span><a class="self-link" href="#unicode"></a></h2>
+   <h2 class="heading settled" data-level="10" id="unicode"><span class="secno">10. </span><span class="content">Unicode</span><a class="self-link" href="#unicode"></a></h2>
    <p>We can prevent mojibake in the Unicode example by detecting if the string
 literal encoding is UTF-8 and dispatching to a different function that correctly
 handles Unicode, for example:</p>
-<pre class="highlight"><c- k>constexpr</c-> <c- b>bool</c-> <c- n>is_utf8</c-><c- p>()</c-> <c- p>{</c->
+<pre class="highlight"><c- k>constexpr</c-> <c- b>bool</c-> <c- nf>is_utf8</c-><c- p>()</c-> <c- p>{</c->
   <c- k>const</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- n>micro</c-><c- p>[]</c-> <c- o>=</c-> <c- s>"</c-><c- se>\u00B5</c-><c- s>"</c-><c- p>;</c->
-  <c- k>return</c-> <c- nf>sizeof</c-><c- p>(</c-><c- n>micro</c-><c- p>)</c-> <c- o>==</c-> <c- mi>3</c-> <c- o>&amp;&amp;</c-> <c- n>micro</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>==</c-> <c- mh>0xC2</c-> <c- o>&amp;&amp;</c-> <c- n>micro</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>==</c-> <c- mh>0xB5</c-><c- p>;</c->
+  <c- k>return</c-> <c- k>sizeof</c-><c- p>(</c-><c- n>micro</c-><c- p>)</c-> <c- o>==</c-> <c- mi>3</c-> <c- o>&amp;&amp;</c-> <c- n>micro</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>==</c-> <c- mh>0xC2</c-> <c- o>&amp;&amp;</c-> <c- n>micro</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>==</c-> <c- mh>0xB5</c-><c- p>;</c->
 <c- p>}</c->
 
 <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
@@ -2908,9 +2062,9 @@ native system API that supports Unicode and <code class="highlight"><c- n>vprint
 for other encodings. The latter ensures that interoperability with code using
 legacy encodings is preserved even though <code class="highlight"><c- n>print</c-></code> is a new API and it is not
 strictly necessary. If calling the system API requires transcoding we propose
-substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER
-which is consistent with the treatment of malformed UTF-8 in UTF-8-native
-terminals. For example 
+substituting invalid code units with U+FFFD � REPLACEMENT CHARACTER which is
+consistent with the treatment of malformed UTF-8 in UTF-8-native terminals.
+For example 
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;stdio.h>
 
 <c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
@@ -2932,10 +2086,7 @@ proposal.</p>
  default (<a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>) and disallows implicitly mixing encodings
  e.g. passing a narrow string into a wide <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is ill-formed.</p>
     <li data-md>
-     <p>Consistency with the encoding used for width estimation (<a data-link-type="biblio" href="#biblio-p1868">[P1868]</a>).
- The standard wording doesn’t mention the literal encoding explicitly but
- the fact that the format strings are either literals or other compile-time
- strings (<a data-link-type="biblio" href="#biblio-p2216">[P2216]</a>) makes it the only conformant option.</p>
+     <p>Consistency with the encoding used for width estimation (<a data-link-type="biblio" href="#biblio-p1868">[P1868]</a>).</p>
     <li data-md>
      <p>Safety: the result of <code class="highlight"><c- n>formatted_size</c-></code> does not depend on the global locale
  by default and a buffer allocated with this size can be passed safely to <code class="highlight"><c- n>format_to</c-></code> even if the locale has been changed in the meantime, possibly
@@ -2959,12 +2110,6 @@ proposal.</p>
    </ol>
    <p>This approach has been implemented in the fmt library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>), successfully
 tested and used on a variety of platforms.</p>
-   <p>Users can sometimes restrict the set of used characters to the common subset
-among multiple encodings (often ASCII) in which case encoding becomes mostly
-irrelevant. Such "polyglot" strings are fully supported for legacy encodings 
-and partially supported for UTF-8 by the current proposal even though mixing
-encodings in such a way is a clearly bad practice from a general software
-engineering point of view.</p>
    <p>Here’s an example output on Windows:</p>
    <p><img alt src="data:image/png;base64,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AAECnSbgoUanXRH9IUCAAAECBAgQIECAAAECBBoS8FCjISYnESBAgAABAgQIECBAgAABAp0mMKWTOtRVOju6M39Db8RlRx6KuGRhijsmd3VSd/VlnAsU77c568+NEd2wtactI5t911NRz+o5P464dtbKiJtP7m5L/SohQIAAAQIECBAgQIDARBeQqTHR7wDjJ0CAAAECBAgQIECAAAEC41SgozI1xtowv1m/9eVPR1eu6H11VLs01u23Otjx3v9Wx688AQIECBAgQIAAAQIECIyugEyN0fXWGgECBAgQIECAAAECBAgQINAmgY7K1BgsvRDD2rjwohTzIM2lkSXEcSTwzIoPR2/n5j6bSyNLiAQIECBAgAABAgQIEGiLgEyNtjCqhAABAgQIECBAgAABAgQIEBhtga5TemYP5tVGLnj4jmj/4MoVES8ZGCz3Z1/ExxZ/JuKaPZWrQ0xauin2bz68NOK8KesibrvqtIj547UNV8XX4lwVuXzx/Kn9X47zZ696PFdREYurVzTb/1rtVjTypo16/XnTqQ19bXf7eU6L1ef/taL97gPrY7vWKjJFx+unHakonzeeu2tWfM2rg7S7/7mdZmPd/nf1RZXF1UeK5easvzbOe/qz34541KH6/V8sf/T8KH70o0b7R0/wjQABAgQIECBAgAABAgSGIyBTYzhqyhAgQIAAAQIECBAgQIAAAQJjLlCRqZHfNNd6I//knH+NDhff+Bff2BczA55+7xej3KbeD0bcteiKiMWMj9j5xkeu7xfTUsZHo5ka1097OaooZpQ0Wl/OdBhvq5/kft9/+LYYf9Gr3vFGffL1qRVzO6PlV8yUuLovZRLVygQq3r87J783hpIzlWrd/4cuuzvO237zoYjFjI9aHodmLotDmx54a8Qt562MuNncGrXI7CdAgAABAgQIECBAgEBTAjI1muJyMgECBAgQIECAAAECBAgQINApAhWrnxQzNHInu9Z+J74+uuDKiJ84a23EHYW5NYoZGjvKq5ac+sLeOH93V8rUiI0R+Hjurupzfvxhb5oT4a9zZkSr5xzpi5j7NwJdGZUqJw9cHu3MveCliBuv21Jut3LOk20Pb4z9Ox/4WMR5f/pJxGLGwOsXHf94ufKOCX+c+fHoyydP/2nEb9/z29S3QiZErft3557KodS6/0/9/pNx4g9vSff/me//Syq4p7uyAlsECBAgQIAAAQIECBAgMKoCMjVGlVtjBAgQIECAAAECBAgQIECAQLsEKjI1Wq20+5WUMVDMgDgy6dGoevVHUiyVKjMJWm13rMsPzZ3QmzJFZuRFY3LHRmj1i9+fPT1amDn49ogzHtwe8VO53WIcSBkrxUyDgXXz48yLS2kVm23PPhXbXyiXb/eqL8VuDXv7XWdE0ffs2xXx3rdUv50HJv06ju89eGbEOe+OUCoVMjXKewUCBAgQIECAAAECBAgQGCcCMjXGyYXSTQIECBAgQIAAAQIECBAgQKBSoPqr7cpzSkMZAeVX21t+eVI64+TCiRN0s2f3fTHyRR9NsSZDYa6Hmuc1eODoXCX7o0S9VWWOVls9UyZnbMxNi86UiquLPPO1VVFFcXWVo/WO8rffpMyTX52RMlbO+vPh6MCOgvOkgZSaMf30V+L4/pS4Mcqd1RwBAgQIECBAgAABAgQItFtApka7RdVHgAABAgQIECBAgAABAgQIjIpAQ5kaF39uQXTmfU/cFnFR4U34qPR0FBrZvv9gtHLaRZdFPOebD0UszhEyUl1ptv08V0nfz2+JLt1/3aUR16x6vC1dHCy9EPV8t/93EZdPO361zfa/WFtezWV5/41x6JLBn0VcO2tlxOJqLafsTqu4/Ohgbxy/9saUYrK599XYzh/nrU4+l+/7Vuxa8mI5xWhyPuP4MZe/snz/zy6s+nP80o4SIECAAAECBAgQIECAwEgJyNQYKVn1EiBAgAABAgQIECBAgAABAiMqUJGp8YEVafWMvhWVbU7tTxka7Z5LoThnw/XTjlQ0/Hrp9tju60u7R3oVjsF1X4mG7rswvflf++RnU8Plz05t/9kVn48ertmQ+t3XV+mYB1Hsfz3/XK77wPr4unhhX9o1uSsfqoij7ZczSR5ZcHf0Y3r/IxH7Fg5W9Kv7QDlDY2Fl5k1xFKN9/1d00gYBAgQIECBAgAABAgQINC0gU6NpMgUIECBAgAABAgQIECBAgACBThDoOqVn9uD88hv+OevPjT7dsLWnE/qmDwTGtcChy1IGyfNX74pxLClkiozrwek8AQIECBAgQIAAAQIEOkBApkYHXARdIECAAAECBAgQIECAAAECBJoXqJhTo/niShAgUBTIc5UsvuZDcah7z2MRR2sVnWJ/bBMgQIAAAQIECBAgQOBEFZCpcaJeWeMiQIAAAQIECBAgQIAAAQInuIBMjRP8AhveyAkcmrksKt/U+5mIMyoXXSlN7V8V+9u9atDIjUjNBAgQIECAAAECBAgQGF8CMjXG1/XSWwIECBAgQIAAAQIECBAgQKAs0NXT01N4v8yGAAECBAgQIECAAAECBAgQIND5AjI1Ov8a6SEBAgQIECBAgAABAgQIECBQRcBDjSoodhEgQIAAAQIECBAgQIAAAQKdL+ChRudfIz0kQIAAAQIECBAgQIAAAQIEqgh4qFEFxS4CBAgQIECAAAECBAgQIECg8wU81Oj8a6SHBAgQIECAAAECBAgQIECAQBUBDzWqoNhFgAABAgQIECBAgAABAgQIdL6Ahxqdf430kAABAgQIECBAgAABAgQIEKgi4KFGFRS7CBAgQIAAAQIECBAgQIAAgc4X8FCj86+RHhIgQIAAAQIECBAgQIAAAQJVBDzUqIJiFwECBAgQIECAAAECBAgQIND5Ah5qdP410kMCBAgQIECAAAECBAgQIECgioCHGlVQ7CJAgAABAgQIECBAgAABAgQ6X8BDjc6/RnpIgAABAgQIECBAgAABAgQIVBHwUKMKil0ECBAgQIAAAQIECBAgQIBA5wt4qNH510gPCRAgQIAAAQIECBAgQIAAgSoCHmpUQbGLAAECBAgQIECAAAECBAgQ6HwBDzU6/xrpIQECBAgQIECAAAECBAgQIFBFwEONKih2ESBAgAABAgQIECBAgAABAp0v4KFG518jPSRAgAABAgQIECBAgAABAgSqCHioUQXFLgIECBAgQIAAAQIECBAgQKDzBTzU6PxrpIcECBAgQIAAAQIECBAgQIBAFQEPNaqg2EWAAAECBAgQIECAAAECBAh0voCHGp1/jfSQAAECBAgQIECAAAECBAgQqCLgoUYVFLsIECBAgAABAgQIECBAgACBzhfwUKPzr5EeEiBAgAABAgQIECBAgAABAlUEPNSogmIXAQIECBAgQIAAAQIECBAg0PkCHmp0/jXSQwIECBAgQIAAAQIECBAgQKCKgIcaVVDsIkCAAAECBAgQIECAAAECBDpfwEONzr9GekiAAAECBAgQIECAAAECBAhUEfBQowqKXQQIECBAgAABAgQIECBAgEDnC3io0fnXSA8JECBAgAABAgQIECBAgACBKgIealRBsYsAAQIECBAgQIAAAQIECBDofAEP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" width="100%"></p>
    <p>At the same time interoperability with legacy code is preserved when literal
@@ -3044,7 +2189,7 @@ readable output when piped through the standard <code class="highlight"><c- n>fi
 Java gave the worst results producing both mojibake and replacement characters
 in this case: "╧ЁштхЄ, ??????!". Most other languages produced valid UTF-8
 when the output of <code class="highlight"><c- n>findstr</c-></code> was redirected to a file.</p>
-   <p>The current paper proposes following C, Go, JavaScript and Rust and preserving
+   <p>The current paper proposes following C, Go, JavaScript and Rust and preserve
 the original encoding (modulo UTF conversion). The only difference compared to <code class="highlight"><c- n>printf</c-></code> is that we fix the console output on Windows. Java’s approach is
 problematic for the following reasons:</p>
    <ul>
@@ -3058,16 +2203,16 @@ is redirected to a file.</p>
 like <code class="highlight"><c- n>findstr</c-></code>.</p>
     <li data-md>
      <p>It transcodes into legacy encodings that are rarely used in practice nowadays.
-For example, usage of CP1251 dropped from 4.3% to 0.6% in the last 12+ years
-(<a data-link-type="biblio" href="#biblio-encoding-trends">[ENCODING-TRENDS]</a>), including a 0.4% drop while the current paper was
+For example, usage of CP1251 dropped from 4.3% to 0.8% in the last 12+ years
+(<a data-link-type="biblio" href="#biblio-encoding-trends">[ENCODING-TRENDS]</a>), including a 0.1% drop while the current paper was
 in review.</p>
    </ul>
    <p>The full listings of test programs are given in <a href="#lst">Appendix A: Unicode tests</a>.</p>
-   <h2 class="heading settled" data-level="12" id="perf"><span class="secno">12. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
+   <h2 class="heading settled" data-level="11" id="perf"><span class="secno">11. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>All the performance benefits of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (<a data-link-type="biblio" href="#biblio-format">[FORMAT]</a>) automatically carry
 over to this proposal. In particular, locale-independence by default reduces
 global state and makes formatting more efficient compared to stdio and
-iostreams. There are fewer function calls (see <a href="#binary">§ 13 Binary code</a>) and no shared
+iostreams. There are fewer function calls (see <a href="#binary">§ 12 Binary code</a>) and no shared
 formatting state compared to iostreams.</p>
    <p>The following benchmark compares the reference implementation of <code class="highlight"><c- n>print</c-></code> with <code class="highlight"><c- n>printf</c-></code> and <code class="highlight"><c- n>ostream</c-></code>. This benchmark formats a simple message and prints it to
 the output stream redirected to <code class="highlight"><c- o>/</c-><c- n>dev</c-><c- o>/</c-><c- n>null</c-></code>. It uses the Google Benchmark
@@ -3153,7 +2298,7 @@ print                  580 ns          572 ns      1120000
 print_cout             623 ns          614 ns      1120000
 print_cout_sync        615 ns          614 ns      1120000
 </pre>
-   <h2 class="heading settled" data-level="13" id="binary"><span class="secno">13. </span><span class="content">Binary code</span><a class="self-link" href="#binary"></a></h2>
+   <h2 class="heading settled" data-level="12" id="binary"><span class="secno">12. </span><span class="content">Binary code</span><a class="self-link" href="#binary"></a></h2>
    <p>We propose minimizing per-call binary code size by applying the type erasure
 mechanism from <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>. In this approach all the formatting and printing logic
 is implemented in a non-variadic function <code class="highlight"><c- n>vprint</c-></code>. Inline variadic <code class="highlight"><c- n>print</c-></code> function only constructs a <code class="highlight"><c- n>format_args</c-></code> object, representing an array of
@@ -3161,9 +2306,9 @@ type-erased argument references, and passes it to <code class="highlight"><c- n>
 simplified example:</p>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 
-<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- kr>inline</c-> <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
-    <c- k>return</c-> <c- nf>vprint</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+    <c- k>return</c-> <c- n>vprint</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
   <c- p>}</c->
 </pre>
    <p>We provide <code class="highlight"><c- n>vprint</c-><c- o>*</c-></code> overloads so that users can apply the same technique to
@@ -3173,9 +2318,9 @@ their own code. For example:</p>
   <c- c1>// message.</c->
 <c- p>}</c->
 
-<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- kr>inline</c-> <c- b>void</c-> <c- n>log</c-><c- p>(</c-><c- n>log_level</c-> <c- n>level</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
-    <c- k>return</c-> <c- nf>vlog</c-><c- p>(</c-><c- n>level</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+    <c- k>return</c-> <c- n>vlog</c-><c- p>(</c-><c- n>level</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
   <c- p>}</c->
 </pre>
    <p>Here <code class="highlight"><c- n>vlog</c-></code> that implements the logging logic is not parameterized on formatting
@@ -3261,35 +2406,32 @@ handling would make its code size closer to that of <code class="highlight"><c- 
     <li data-md>
      <p>Preparing the array of formatting arguments.</p>
    </ul>
-   <h2 class="heading settled" data-level="14" id="impact"><span class="secno">14. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="13" id="impact"><span class="secno">13. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>The current proposal adds new functions to the headers <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> and <code class="highlight"><c- o>&lt;</c-><c- n>ostream</c-><c- o>></c-></code> and should have no impact on existing code.</p>
-   <h2 class="heading settled" data-level="15" id="impl"><span class="secno">15. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="14" id="impl"><span class="secno">14. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>print</c-></code> function has been implemented in the open-source fmt
 library <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and has been in use for about 6 years.</p>
    <p>Rust’s standard output facility uses essentially the same approach for
 preventing mojibake when printing to console on Windows (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>).
 The main difference is that invalid code units are reported as errors in Rust.</p>
-   <p>LLVM’s <code class="highlight"><c- n>raw_ostream</c-></code> <a data-link-type="biblio" href="#biblio-llvm-ostream">[LLVM-OSTREAM]</a> also implements this approach when writing
-to console on Windows. The main difference is that in case of invalid UTF-8 it
-falls back on writing raw (not transcoded) data.</p>
-   <h2 class="heading settled" data-level="16" id="wording"><span class="secno">16. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="15" id="wording"><span class="secno">15. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_print</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
-<pre class="highlight"><ins><c- cp>#define __cpp_lib_print 202111L **placeholder**  </c-><c- c1>// also in &lt;format></c-></ins>
+<pre class="highlight"><ins><c- cp>#define __cpp_lib_print  202005L **placeholder**  </c-><c- c1>// also in &lt;format></c-></ins>
 </pre>
    <p>Add the header <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> to the "C++ library headers" table in [headers], in a
 place that respects the table’s current alphabetic order.</p>
    <ins>29.7.? Header <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> synopsis [print.syn].</ins>
 <pre class="highlight"><ins><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>print</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+    <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
   <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
   <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
@@ -3303,151 +2445,129 @@ place that respects the table’s current alphabetic order.</p>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- k>class</c-> <c- nc>T</c-><c- o>></c->
 <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>x</c-><c- p>);</c->
 <ins>
-<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <i>​<c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <i>​<c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+<c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 
 <c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <ins>29.7.? Print functions [print.fun].</ins>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">1</span> 
+    <span class="parnum">26</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...);</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">2</span> 
+    <span class="parnum">27</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
-</ins></pre>
-   <p>
-    <span class="parnum">3</span> 
-    <ins><em>Effects:</em> Equivalent to:</ins>
-   </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
-</ins></pre>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">4</span> 
+    <span class="parnum">28</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>...));</c->
+</ins></pre>
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</ins></pre>
+   <p>
+    <span class="parnum">29</span> 
+    <ins><em>Effects:</em> Equivalent to:</ins>
+   </p>
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">5</span> 
+    <span class="parnum">30</span> 
     <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">6</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
-If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
-the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
-the behavior is undefined and implementations are encouraged to diagnose it.
-Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
+   <ins> <span class="parnum">31</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
+If <code class="highlight"><c- n>stream</c-></code> refers to a terminal [ Note: On POSIX and Windows meaning that <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> return nonzero respectively. — end note ] capable of
+displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the native Unicode API.
+[ Note: On Windows this API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ]
+If this requires transcoding then invalid code points are substituted with 
+U+FFFD � REPLACEMENT CHARACTER. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
    <p>
-    <ins> [ Note: On POSIX and Windows, <code class="highlight"><c- n>stream</c-></code> referring to a terminal means that,
-respectively, <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>))</c-></code> and <code class="highlight"><c- n>GetConsoleMode</c-><c- p>(</c-><c- n>_get_osfhandle</c-><c- p>(</c-><c- n>_fileno</c-><c- p>(</c-><c- n>stream</c-><c- p>)),</c-> <c- p>...)</c-></code> return nonzero.
-— end note ] </ins>
-   </p>
-   <p>
-    <ins> [ Note: On Windows, the native Unicode API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ] </ins>
-   </p>
-   <p>
-    <ins> <span class="parnum">7</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
+    <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
-   <p>
-    <ins> <span class="parnum">8</span> <em>Recommended practice:</em> If invoking the native
-Unicode API requires transcoding, implementations should substitute invalid code
-units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
-– Core Specification, Chapter 3.9. </ins>
-   </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">9</span> 
+    <span class="parnum">32</span> 
     <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">10</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
+   <ins> <span class="parnum">33</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
    <p>
-    <ins> <span class="parnum">11</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
+    <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
    <p>Add subsection "Print [ostream.formatted.print]" to
 "Formatted output functions <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2">[ostream.formatted</a>]":</p>
-<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- k>const</c-> <c- n>Args</c-><c- o>&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
     <span class="parnum">1</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">2</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
-If <code class="highlight"><c- n>os</c-></code> is a stream that refers to a terminal capable of displaying Unicode
-which is determined in an implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to
-the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
-the behavior is undefined and implementations are encouraged to diagnose it.
-Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
+   <ins> <span class="parnum">2</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>. If <code class="highlight"><c- n>os</c-></code> is a file stream (its
+associated stream buffer is an instance of <code class="highlight"><c- n>basic_filebuf</c-></code>) that refers to a
+terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> transcoded to the native
+system Unicode encoding to the terminal using the native API that preserves the
+encoding. Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> without transcoding. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
-   </p>
-   <p>
-    <ins> <span class="parnum">3</span> <em>Recommended practice:</em> If invoking the native
-Unicode API requires transcoding, implementations should substitute invalid code
-units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
-– Core Specification, Chapter 3.9. </ins>
    </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">4</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
+   <ins> <span class="parnum">3</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
    <p>
     <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
 or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
-   <p>Add to Normative references [intro.refs]:</p>
-   <ins> – The Unicode® Standard Version 14.0 – Core Specification </ins>
    <h2 class="heading settled" id="lst"><span class="content">Appendix A: Unicode tests</span><a class="self-link" href="#lst"></a></h2>
    <p>This appendix gives full listings of programs for testing Unicode handling in
 various formatting facilities as well as test commands and their output on
@@ -3489,7 +2609,7 @@ the strings are encoded in some form of UTF as opposed to a legacy encoding.</p>
 </pre>
    <p>JavaScript / Node.js (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>js</c-></code>):</p>
 <pre class="language-js highlight">message <c- o>=</c-> <c- u>"Привет, κόσμος!"</c-><c- p>;</c->
-<c- k>if</c-> <c- p>(</c->message<c- p>.</c->charCodeAt<c- p>(</c-><c- mf>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- u>"wrong encoding"</c-><c- p>;</c->
+<c- k>if</c-> <c- p>(</c->message<c- p>.</c->charCodeAt<c- p>(</c-><c- mi>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- u>"wrong encoding"</c-><c- p>;</c->
 console<c- p>.</c->log<c- p>(</c->message<c- p>);</c->
 </pre>
    <p>Python (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>py</c-></code>):</p>
@@ -3501,38 +2621,38 @@ print<c- p>(</c-><c- n>message</c-><c- p>)</c->
    <p>Rust (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>rs</c-></code>):</p>
 <pre class="language-rust highlight"><c- k>fn</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
   <c- k>if</c-> <c- s>"Привет, κόσμος!"</c-><c- p>.</c-><c- n>chars</c-><c- p>().</c-><c- n>nth</c-><c- p>(</c-><c- mi>0</c-><c- p>).</c-><c- n>unwrap</c-><c- p>()</c-> <c- k>as</c-> <c- b>u32</c-> <c- o>!=</c-> <c- mh>0x41F</c-> <c- p>{</c->
-    panic!<c- p>();</c->
+    <c- n>panic</c-><c- o>!</c-><c- p>();</c->
   <c- p>}</c->
-  println!<c- p>(</c-><c- s>"Привет, κόσμος!"</c-><c- p>);</c->
+  <c- n>println</c-><c- o>!</c-><c- p>(</c-><c- s>"Привет, κόσμος!"</c-><c- p>);</c->
 <c- p>}</c->
 </pre>
    <p>Linux:</p>
-<pre class="highlight"><c- n>$</c-> <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
-<c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
+<pre class="highlight">$ <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
+$ <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
+$ <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>c</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 
-<c- n>$</c-> <c- n>go</c-> <c- n>build</c-> <c- o>-</c-><c- n>o</c-> <c- n>go</c-><c- o>-</c-><c- n>test</c-> <c- n>test</c-><c- p>.</c-><c- n>go</c->
-<c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>go</c-><c- o>-</c-><c- n>test</c->
+$ <c- n>go</c-> <c- n>build</c-> <c- o>-</c-><c- n>o</c-> <c- n>go</c-><c- o>-</c-><c- n>test</c-> <c- n>test</c-><c- p>.</c-><c- n>go</c->
+$ <c- p>.</c-><c- o>/</c-><c- n>go</c-><c- o>-</c-><c- n>test</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>go</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>go</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
+$ <c- p>.</c-><c- o>/</c-><c- n>go</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>go</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 
-<c- n>$</c-> <c- n>java</c-> <c- n>Test</c->
+$ <c- n>java</c-> <c- n>Test</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- n>$</c-> <c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
+$ <c- n>java</c-> <c- n>Test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>java</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 
-<c- n>$</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
+$ <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- n>$</c-> <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
+$ <c- n>node</c-> <c- n>test</c-><c- p>.</c-><c- n>js</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>js</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 
-<c- n>$</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
+$ <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- n>$</c-> <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
+$ <c- n>python3</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>py</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 
-<c- n>$</c-> <c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c->
-<c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
+$ <c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c->
+$ <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
-<c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
+$ <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 </pre>
    <p>All output files are in UTF-8:</p>
    <ul>
@@ -3663,14 +2783,14 @@ Russian</p>
     <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
   <c- n>File</c-> <c- s>"...\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
     <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
-<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8-13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
+<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
 <c- o>></c-><c- n>python</c-> <c- n>test</c-><c- p>.</c-><c- n>py</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
 <c- n>Traceback</c-> <c- p>(</c-><c- n>most</c-> <c- n>recent</c-> <c- n>call</c-> <c- n>last</c-><c- p>)</c-><c- o>:</c->
   <c- n>File</c-> <c- s>"...</c-><c- se>\t</c-><c- s>est.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>4</c-><c- p>,</c-> <c- n>in</c-> <c- o>&lt;</c-><c- k>module</c-><c- o>></c->
     <c- n>print</c-><c- p>(</c-><c- n>message</c-><c- p>)</c->
   <c- n>File</c-> <c- s>"...\Python39\lib\encodings\cp1251.py"</c-><c- p>,</c-> <c- n>line</c-> <c- mi>19</c-><c- p>,</c-> <c- n>in</c-> <c- n>encode</c->
     <c- k>return</c-> <c- n>codecs</c-><c- p>.</c-><c- n>charmap_encode</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-><c- n>self</c-><c- p>.</c-><c- n>errors</c-><c- p>,</c-><c- n>encoding_table</c-><c- p>)[</c-><c- mi>0</c-><c- p>]</c->
-<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8-13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
+<c- nl>UnicodeEncodeError</c-><c- p>:</c-> '<c- n>charmap</c->' <c- n>codec</c-> <c- n>can</c->’<c- n>t</c-> <c- n>encode</c-> <c- n>characters</c-> <c- n>in</c-> <c- n>position</c-> <c- mi>8</c-><c- o>-</c-><c- mi>13</c-><c- o>:</c-> <c- n>character</c-> <c- n>maps</c-> <c- n>to</c-> <c- o>&lt;</c-><c- n>undefined</c-><c- o>></c->
 
 <c- o>></c-><c- n>rustc</c-> <c- n>test</c-><c- p>.</c-><c- n>rs</c-> <c- o>-</c-><c- n>o</c-> <c- n>rust</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c->
 <c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c->
@@ -3713,7 +2833,7 @@ Output files:</p>
     <li data-md>
      <p>rustc: v14.15.3</p>
    </ul>
-   <h2 class="heading settled" data-level="17" id="ack"><span class="secno">17. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="16" id="ack"><span class="secno">16. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
    <p>Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
 Honermann for their feedback, support, constructive criticism and contributions
@@ -3862,7 +2982,7 @@ to the proposal.</p>
    <dt id="biblio-folly">[FOLLY]
    <dd><a href="https://github.com/facebook/folly">Folly: Facebook Open-source Library</a>. URL: <a href="https://github.com/facebook/folly">https://github.com/facebook/folly</a>
    <dt id="biblio-format">[FORMAT]
-   <dd>Thomas Köppe. <a href="https://wg21.link/n4901#section.20.20">Working Draft, Standard for Programming Language C++, Formatting [format]</a>. URL: <a href="https://wg21.link/n4901#section.20.20">https://wg21.link/n4901#section.20.20</a>
+   <dd>Richard Smith. <a href="https://wg21.link/n4861#section.20.20">Working Draft, Standard for Programming Language C++, Formatting [format]</a>. URL: <a href="https://wg21.link/n4861#section.20.20">https://wg21.link/n4861#section.20.20</a>
    <dt id="biblio-go-fmt">[GO-FMT]
    <dd><a href="https://golang.org/pkg/fmt/">Go Package Documentation, Package fmt</a>. URL: <a href="https://golang.org/pkg/fmt/">https://golang.org/pkg/fmt/</a>
    <dt id="biblio-google-bench">[GOOGLE-BENCH]
@@ -3871,8 +2991,6 @@ to the proposal.</p>
    <dd><a href="https://www.iso.org/standard/22747.html">ISO/IEC 2022 Information technology—Character code structure and extension techniques</a>. URL: <a href="https://www.iso.org/standard/22747.html">https://www.iso.org/standard/22747.html</a>
    <dt id="biblio-java-print">[JAVA-PRINT]
    <dd><a href="https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html">Java™ Platform, Standard Edition 7 API Specification, Class PrintStream</a>. URL: <a href="https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html">https://docs.oracle.com/javase/7/docs/api/java/io/PrintStream.html</a>
-   <dt id="biblio-llvm-ostream">[LLVM-OSTREAM]
-   <dd><a href="https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp">The LLVM Compiler Infrastructure repository, raw_ostream</a>. URL: <a href="https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp">https://github.com/llvm-mirror/llvm/blob/master/lib/Support/raw_ostream.cpp</a>
    <dt id="biblio-msvc-utf8">[MSVC-UTF8]
    <dd><a href="https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8">Visual C++ Documentation, /utf-8 (Set Source and Executable character sets to UTF-8)</a>. URL: <a href="https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8">https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8</a>
    <dt id="biblio-n0147">[N0147]
@@ -3887,10 +3005,6 @@ to the proposal.</p>
    <dd>Victor Zverovich; Zach Laine. <a href="https://wg21.link/p1868">🦄 width: clarifying units of width and precision in std::format</a>. URL: <a href="https://wg21.link/p1868">https://wg21.link/p1868</a>
    <dt id="biblio-p1885">[P1885]
    <dd>Corentin Jabot. <a href="https://wg21.link/p1885">Naming Text Encodings to Demystify Them</a>. URL: <a href="https://wg21.link/p1885">https://wg21.link/p1885</a>
-   <dt id="biblio-p2216">[P2216]
-   <dd>Victor Zverovich. <a href="https://wg21.link/p2216">std::format improvements</a>. URL: <a href="https://wg21.link/p2216">https://wg21.link/p2216</a>
-   <dt id="biblio-p2418">[P2418]
-   <dd>Victor Zverovich. <a href="https://wg21.link/p2418">Add support for std::generator-like types to std::format</a>. URL: <a href="https://wg21.link/p2418">https://wg21.link/p2418</a>
    <dt id="biblio-perl-printf">[PERL-PRINTF]
    <dd><a href="https://perldoc.perl.org/functions/printf.html">Perl 5 version 30.0 documentation, Language reference, printf</a>. URL: <a href="https://perldoc.perl.org/functions/printf.html">https://perldoc.perl.org/functions/printf.html</a>
    <dt id="biblio-php-printf">[PHP-PRINTF]
