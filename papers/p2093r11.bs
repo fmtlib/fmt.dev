@@ -65,6 +65,11 @@ Changes since R10:
 * Removed extra `)` in the *Effects* clauses of `vprint_unicode` and 
     `vprint_nonunicode`.
 
+* Rendered `str` in italics in `fmt.str`.
+
+* Defined the `println` overload that doesn't take a stream in terms of the one
+    that does.
+
 * Updated The Unicode® Standard Version to 14.
 
 Changes since R9:
@@ -1520,13 +1525,13 @@ template&lt;class... Args&gt;
 <span class="parnum">2</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(stream, fmt.str, make_format_args(std::forward&lt;Args>(args)...));
+  vprint_unicode(stream, fmt.<i>&#8203;str</i>, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(stream, fmt.str, make_format_args(std::forward&lt;Args>(args)...));
+  vprint_nonunicode(stream, fmt.<i>&#8203;str</i>, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1539,7 +1544,7 @@ template&lt;class... Args&gt;
 <span class="parnum">3</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print("{}\n", format(fmt, std::forward&lt;Args>(args)...));
+  println(stdout, fmt, std::forward<Args>(args)...);
 </ins>
 </pre>
 

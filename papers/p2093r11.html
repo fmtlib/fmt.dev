@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d028ddf473bf80ad57f94148944c5e5ff1d1289c" name="document-revision">
+  <meta content="f9ec99c005f823975ca5343c87d230e2bca8f9da" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2162,6 +2162,11 @@ with the <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> overload.</p
      <p>Removed a call to <code class="highlight"><c- n>make_format_args</c-></code> in [print.fun].1.</p>
     <li data-md>
      <p>Removed extra <code class="highlight"><c- p>)</c-></code> in the <em>Effects</em> clauses of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code>.</p>
+    <li data-md>
+     <p>Rendered <code class="highlight"><c- n>str</c-></code> in italics in <code class="highlight"><c- n>fmt</c-><c- p>.</c-><c- n>str</c-></code>.</p>
+    <li data-md>
+     <p>Defined the <code class="highlight"><c- n>println</c-></code> overload that doesn’t take a stream in terms of the one
+that does.</p>
     <li data-md>
      <p>Updated The Unicode® Standard Version to 14.</p>
    </ul>
@@ -3328,10 +3333,10 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">2</span> 
     <ins><em>Effects:</em> If string literal encoding is UTF-8, equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c->​<i><c- n>str</c-><c- p>,</c-></i> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
    <ins>Otherwise, equivalent to:</ins>
-<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c->​<i><c- n>str</c-><c- p>,</c-></i> <c- n>make_format_args</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c->​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
@@ -3340,8 +3345,8 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">3</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
-</ins></pre>
+<pre class="highlight"><ins>  <c- n>println</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- p>(</c-><args><c- n>args</c-><c- p>)...);</c->
+</args></ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
