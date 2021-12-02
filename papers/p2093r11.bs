@@ -70,6 +70,8 @@ Changes since R10:
 * Defined the `println` overload that doesn't take a stream in terms of the one
     that does.
 
+* Add missing `.str` to `fmt` in the `ostream` overload of `print`.
+
 * Updated The Unicode® Standard Version to 14.
 
 Changes since R9:
@@ -1655,13 +1657,13 @@ template&lt;class... Args&gt;
 <span class="parnum">1</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_unicode(os, fmt, make_format_args(std::forward&lt;Args>(args)...));
+  vprint_unicode(os, fmt.<i>&#8203;str</i>, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 <ins>Otherwise, equivalent to:</ins>
 <pre>
 <ins>
-  vprint_nonunicode(os, fmt, make_format_args(std::forward&lt;Args>(args)...));
+  vprint_nonunicode(os, fmt.<i>&#8203;str</i>, make_format_args(std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
