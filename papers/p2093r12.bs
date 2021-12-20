@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093
-Revision: 11
+Revision: 12
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2021-11-29
+Date: 2021-12-20
 Markup Shorthands: markdown yes
 </pre>
 
@@ -47,12 +47,19 @@ intuitive API achieving the following goals:
 Revision history {#hist}
 ================
 
+Changes since R11:
+
+* Corrected header names in the feature test macro definition replacing
+    "also in &lt;format&gt;" with "also in &lt;print&gt; and &lt;ostream&gt;.
+
+* Replaced `stream` with `os` in [ostream.formatted.print].2.
+
 Changes since R10:
 
 * Moved "If invoking the (native Unicode) API requires transcoding,
     implementations should substitute invalid code units with U+FFFD �
     REPLACEMENT CHARACTER per The Unicode Standard Version 13.0 – Core
-    Specification, Chapter 3.9." to the <i>Recommended practice</i> clause."
+    Specification, Chapter 3.9." to the <i>Recommended practice</i> clause
     in the definition of `vprint_unicode` per LEWG feedback.
 
 * Made the definition of the `ostream` overload of `vprint_unicode` consistent
@@ -1455,7 +1462,7 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.
 in a place that respects the table’s current alphabetic order:
 
 <pre>
-<ins>#define __cpp_lib_print 202111L **placeholder**	// also in &lt;format&gt;</ins>
+<ins>#define __cpp_lib_print 202112L **placeholder**	// also in &lt;print&gt; and &lt;ostream&gt;</ins>
 </pre>
 
 Add the header `<print>` to the "C++ library headers" table in [headers], in a
@@ -1678,7 +1685,7 @@ If `os` is a stream that refers to a terminal capable of displaying Unicode
 which is determined in an implementation-defined manner, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
-Otherwise writes `out` to `stream` unchanged.
+Otherwise writes `out` to `os` unchanged.
 </ins>
 <p>
 <ins>
