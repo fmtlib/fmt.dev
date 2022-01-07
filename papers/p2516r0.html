@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="92633723cdc18da236383923b72e210db358cfa5" name="document-revision">
+  <meta content="2a8ceaf0ee6af0f47df49951e45c6bb11f4574ab" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2093,7 +2093,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li>
      <a href="#problem"><span class="secno">2</span> <span class="content">Problems</span></a>
      <ol class="toc">
-      <li><a href="#is-vector-a-string"><span class="secno">2.1</span> <span class="content">Is vector a string?</span></a>
+      <li><a href="#is-vector-a-string"><span class="secno">2.1</span> <span class="content">Is <code class="highlight"><c- n>vector</c-></code> a string?</span></a>
       <li><a href="#type-unsafety"><span class="secno">2.2</span> <span class="content">Type unsafety</span></a>
       <li><a href="#nonexisting-practice"><span class="secno">2.3</span> <span class="content">Nonexisting practice</span></a>
      </ol>
@@ -2123,7 +2123,7 @@ whether the design is particularly sound.
 Unfortunately even a brief exposure to the actual implementation and initial
 usage experience revealed severe issues, some of which are summarized in this
 paper.</p>
-   <h3 class="heading settled" data-level="2.1" id="is-vector-a-string"><span class="secno">2.1. </span><span class="content">Is vector a string?</span><a class="self-link" href="#is-vector-a-string"></a></h3>
+   <h3 class="heading settled" data-level="2.1" id="is-vector-a-string"><span class="secno">2.1. </span><span class="content">Is <code class="highlight"><c- n>vector</c-></code> a string?</span><a class="self-link" href="#is-vector-a-string"></a></h3>
    <p>Consider the following simple example:</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-><c- n>typename</c-> <c- n>Container</c-><c- o>></c->
 <c- k>auto</c-> <c- n>print</c-><c- p>(</c-><c- k>const</c-> <c- n>Container</c-><c- o>&amp;</c-> <c- n>c</c-><c- p>)</c->
@@ -2193,8 +2193,8 @@ because <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>span</c-><c- o>
 enabling such fun examples as:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_string_view</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- p>{</c-><c- mf>42.0</c-><c- p>};</c->
 </pre>
-   <p>or, more practically, generic version of the <code class="highlight"><c- n>print</c-></code> example above where
-a contigous range of non-characters can be printed as a pseudo-string.</p>
+   <p>or, more practically, a generic version of the <code class="highlight"><c- n>print</c-></code> example above where
+a contiguous range of non-characters can be printed as a pseudo-string.</p>
    <p>This is not a theoretical problem. There were at least two bug reports in {fmt},
 an open-source formatting library (<a data-link-type="biblio" href="#biblio-fmt-bug-2585">[FMT-BUG-2585]</a>, <a data-link-type="biblio" href="#biblio-fmt-bug-2634">[FMT-BUG-2634]</a>), of
 subtle breakages related to this change even though it requires opting into an
@@ -2206,7 +2206,7 @@ type. The same is likely true for some other text processing and serialization
 use cases that need to distinguish between strings and containers.</p>
    <h3 class="heading settled" data-level="2.2" id="type-unsafety"><span class="secno">2.2. </span><span class="content">Type unsafety</span><a class="self-link" href="#type-unsafety"></a></h3>
    <p>Another problem is that <code class="highlight"><c- b>char</c-></code> has double meaning and is used as a code unit
-type or as a byte depending on the context. Additional semantical context may be
+type or as a byte depending on the context. Additional semantic context may be
 added by types built on top of <code class="highlight"><c- b>char</c-></code>, some of which may now become
 unexpectedly convertible to <code class="highlight"><c- n>string_view</c-></code>. As pointed out by users, <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code> and <code class="highlight"><c- n>span</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code> are commonly used as byte buffers and implicit
 conversions could introduce type safety problems.</p>
@@ -2221,10 +2221,10 @@ inspired <code class="highlight"><c- n>string_view</c-></code>:</p>
    </ul>
    <p>None of them provides a constructor from a contiguous range or even a vector.
 So this feature doesn’t standardize existing practice but is completely novel
-which explains why even a bried exposure to the implementation revealed a number
+which explains why even a brief exposure to the implementation revealed a number
 of issues.</p>
    <h2 class="heading settled" data-level="3" id="alternatives"><span class="secno">3. </span><span class="content">Alternatives</span><a class="self-link" href="#alternatives"></a></h2>
-   <p>The main part of the motivation of <a data-link-type="biblio" href="#biblio-p1391">[P1391]</a> is compeling:</p>
+   <p>The main part of the motivation of <a data-link-type="biblio" href="#biblio-p1391">[P1391]</a> is compelling:</p>
    <blockquote>
     <p>While P1206 gives a general motivation for range constructors, it’s especially
 important for string_view because there exist in a lot of codebases string

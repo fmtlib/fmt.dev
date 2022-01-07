@@ -38,8 +38,8 @@ Unfortunately even a brief exposure to the actual implementation and initial
 usage experience revealed severe issues, some of which are summarized in this
 paper.
 
-Is vector a string?
--------------------
+Is `vector` a string?
+---------------------
 
 Consider the following simple example:
 
@@ -137,8 +137,8 @@ enabling such fun examples as:
 std::basic_string_view s = std::vector{42.0};
 ```
 
-or, more practically, generic version of the `print` example above where
-a contigous range of non-characters can be printed as a pseudo-string.
+or, more practically, a generic version of the `print` example above where
+a contiguous range of non-characters can be printed as a pseudo-string.
 
 This is not a theoretical problem. There were at least two bug reports in {fmt},
 an open-source formatting library ([[FMT-BUG-2585]], [[FMT-BUG-2634]]), of
@@ -155,7 +155,7 @@ Type unsafety
 -------------
 
 Another problem is that `char` has double meaning and is used as a code unit
-type or as a byte depending on the context. Additional semantical context may be
+type or as a byte depending on the context. Additional semantic context may be
 added by types built on top of `char`, some of which may now become
 unexpectedly convertible to `string_view`. As pointed out by users,
 `vector<char>` and `span<char>` are commonly used as byte buffers and implicit
@@ -172,13 +172,13 @@ inspired `string_view`:
 
 None of them provides a constructor from a contiguous range or even a vector.
 So this feature doesn't standardize existing practice but is completely novel
-which explains why even a bried exposure to the implementation revealed a number
+which explains why even a brief exposure to the implementation revealed a number
 of issues.
 
 Alternatives
 ============
 
-The main part of the motivation of [[P1391]] is compeling:
+The main part of the motivation of [[P1391]] is compelling:
 
 > While P1206 gives a general motivation for range constructors, it’s especially
 > important for string_view because there exist in a lot of codebases string
