@@ -1,0 +1,235 @@
+<pre class='metadata'>
+Title: <code>string_view</code> is implicitly convertible from what?
+Shortname: P2516
+Revision: 0
+Audience: LEWG
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2021-12-31
+Markup Shorthands: markdown yes
+</pre>
+
+<!-- TODO: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2499r0.html -->
+
+<!-- https://godbolt.org/z/WqacW1fY6 -->
+
+Introduction
+============
+
+As found from usage experience, implicit conversions introduced by [[P1391]]
+have undesirable side effects and break existing use cases for `string_view` as
+a string-reference type ([[N3921]]). Moreover, [[P1391]] uses contiguity as a
+proxy for detecting if a type is string-like which appears to be conceptually
+wrong. This paper proposes removing the problematic conversions.
+
+Problems {#problem}
+========
+
+[[P1391]] made `string_view` and, more generally, `basic_string_view` implicitly
+constructible from any contiguous range of characters and, as it turned out but
+not mentioned in the paper, not just characters.
+Like `vector<bool>` this seemed like a good idea at the time even to the author
+of the current paper who didn't put too much thought into the implications or
+whether the design is particularly sound.
+Unfortunately even a brief exposure to the actual implementation and initial
+usage experience revealed severe issues, some of which are summarized in this
+paper.
+
+Is vector a string?
+-------------------
+
+Consider the following simple example:
+
+```c++
+template <typename Container>
+auto print(const Container& c)
+    -> std::enable_if_t<!std::is_convertible_v<Container, std::string_view>> {
+  std::cout << '[';
+  const char* sep = "";
+  for (const auto& item: c) {
+    std::cout << sep << item;
+    sep = ", ";
+  }
+  std::cout << ']';
+}
+
+void print(std::string_view s) {
+  std::cout << '"' << s << '"';
+}
+```
+
+The `print` function takes an argument and prints it either as a quoted string
+or as a comma-separated list of values delimited by `[]`.
+
+What will `print(std::vector{'a', 'b'})` output?
+
+Thanks to newly added implicit conversions the answer depends on the C++
+standard version. In C++17 - C++20 this prints `[a, b]` as expected while in
+the upcoming C++23 the output suddenly changes to `"ab"`.
+
+In C++17 - C++20 it was perfectly reasonable to assume that `string_view` means
+a reference to something string-like such as `std::string` or a string literal.
+Quoting [[N3921]] that introduced `string_view`:
+
+> Google, LLVM, and Bloomberg have independently implemented a string-reference
+> type to encapsulate this kind of argument. `string_view` is implicitly
+> constructible from `const char*` and `std::string`.
+
+The string nature of `string_view` is also indicated in its name, its API and
+the fact that `basic_string_view` takes character traits as a template
+parameter.
+
+The new implicit conversions broke that assumption, effectively changing the
+meaning of `string_view` to denote not a reference to a string-like type but a
+reference to an arbitrary contiguous range.
+
+Conceptually the problem with these conversions is that they confuse
+representation with semantics using contiguity as a proxy for being a string.
+Consider
+
+```
+print(std::list{'a', 'b'});
+print(std::deque{'a', 'b'});
+print(std::vector{'a', 'b'});
+```
+
+<table>
+<tr>
+<td>
+<td>C++17
+<td>C++20
+<td>C++23
+</tr>
+<tr>
+<td>Output
+<td>
+`[a, b]` <br>
+`[a, b]` <br>
+`[a, b]`
+<td>
+`[a, b]` <br>
+`[a, b]` <br>
+`[a, b]`
+<td>
+`[a, b]` <br>
+`[a, b]` <br>
+`"ab"`
+</tr>
+</table>
+
+Why is `vector` different from other containers and is it really "string-like"
+as implicit convertibility to `string_view` suggests?
+
+Of course we could change the definition of `print` to workaround the issue but
+this won't fix the underlying problem. We no longer have a string-reference
+type which invalidates the goal of [[N3921]]. Instead we have a
+contiguous-range-reference type with a misleading name and a string-like API.
+The introduction of `std::span` in C++20 makes this design look even stranger
+because `std::span<const T>` is a natural representation for the above type.
+
+If this wasn't bad enough, the same applies to non-character types as well,
+enabling such fun examples as:
+
+```c++
+std::basic_string_view s = std::vector{42.0};
+```
+
+or, more practically, generic version of the `print` example above where
+a contigous range of non-characters can be printed as a pseudo-string.
+
+This is not a theoretical problem. There were at least two bug reports in {fmt},
+an open-source formatting library ([[FMT-BUG-2585]], [[FMT-BUG-2634]]), of
+subtle breakages related to this change even though it requires opting into an
+experimental C++23 standard library implementation which is very uncommon.
+
+To solve the problem in {fmt} we'll have to indefinitely continue using a
+replacement for `std::string_view` together with a few workarounds with no
+chance of eventually converging on `std::string_view` as a string-reference
+type. The same is likely true for some other text processing and serialization
+use cases that need to distinguish between strings and containers.
+
+Type unsafety
+-------------
+
+Another problem is that `char` has double meaning and is used as a code unit
+type or as a byte depending on the context. Additional semantical context may be
+added by types built on top of `char`, some of which may now become
+unexpectedly convertible to `string_view`. As pointed out by users,
+`vector<char>` and `span<char>` are commonly used as byte buffers and implicit
+conversions could introduce type safety problems.
+
+Nonexisting practice
+--------------------
+
+Maybe [[P1391]] standardizes existing practice? Let's look at the types that
+inspired `string_view`:
+
+* LLVM's `StringRef`
+* Google's `StringPiece`
+
+None of them provides a constructor from a contiguous range or even a vector.
+So this feature doesn't standardize existing practice but is completely novel
+which explains why even a bried exposure to the implementation revealed a number
+of issues.
+
+Alternatives
+============
+
+The main part of the motivation of [[P1391]] is compeling:
+
+> While P1206 gives a general motivation for range constructors, it’s especially
+> important for string_view because there exist in a lot of codebases string
+> types that would benefit from being convertible to `string_view`.
+> For example, `llvm::StringRef`, `QByteArray`, `fbstring`,
+> `boost::container::string` ...
+
+However, the solution is overreaching and as shown above breaks the main use
+case for a string-like reference type by introducing semantically lossy implicit
+conversions.
+
+Whether a type is string-like should generally be controlled by the class
+author, not detected via some heuristic. We already have a mechanism for this
+that is used in `std::string`, namely `operator string_view`. If it is
+insufficient a proper solution would be to introduce another opt-in mechanism
+such as a trait that specifies if the type is string-like and is eligible for
+conversion into a `string_view`. The latter is not proposed by the current paper
+which only tries to mitigate the damage done by [[P1391]] before it is too late.
+
+Proposal
+========
+
+Remove wording introduced by [[P1391]] from the standard.
+
+Acknowledgements {#ack}
+================
+
+Thanks Matthias Moulin and Barry Revzin for independently bringing up this
+issue.
+
+<pre class=biblio>
+{
+  "P1391": {
+    "title": "Range constructor for std::string_view",
+    "authors": ["Corentin Jabot"],
+    "href": "https://wg21.link/p1391"
+  },
+  "N3921": {
+    "title": "string_view: a non-owning reference to a string",
+    "authors": ["Jeffrey Yasskin"],
+    "href": "http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3921.html"
+  },
+  "FMT-BUG-2585": {
+    "title": "Some ranges of char are misprinted or don't compile",
+    "authors": ["Matthias Moulin"],
+    "href": "https://github.com/fmtlib/fmt/issues/2585"
+  },
+  "FMT-BUG-2634": {
+    "title": "Some ranges of char are misprinted or don't compile",
+    "authors": ["Barry Revzin"],
+    "href": "https://github.com/fmtlib/fmt/issues/2634"
+  }
+}
+</pre>
