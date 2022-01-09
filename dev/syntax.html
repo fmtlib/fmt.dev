@@ -515,6 +515,32 @@ are valid only for <code class="docutils literal notranslate"><span class="pre">
 <p><code class="docutils literal notranslate"><span class="pre">std::tm</span></code> uses the system’s <a class="reference external" href="https://en.cppreference.com/w/cpp/chrono/c/strftime">strftime</a> so refer to its
 documentation for details on supported conversion specifiers.</p>
 </section>
+<section id="range-format-specifications">
+<h2>Range Format Specifications<a class="headerlink" href="#range-format-specifications" title="Permalink to this headline">¶</a></h2>
+<p>Format specifications for range types have the following syntax:</p>
+<dl class="simple">
+<dt>..productionlist:: sf</dt><dd><p>range_format_spec: [“:” [<code class="xref cpp cpp-any docutils literal notranslate"><span class="pre">underlying_spec</span></code>]]</p>
+</dd>
+</dl>
+<p>The <code class="xref cpp cpp-any docutils literal notranslate"><span class="pre">underlying_spec</span></code> is parsed based on the formatter of the range’s
+reference type.</p>
+<p>By default, a range of characters or strings is printed escaped and quoted. But
+if any <code class="xref cpp cpp-any docutils literal notranslate"><span class="pre">underlying_spec</span></code> is provided (even if it is empty), then the characters
+or strings are printed according to the provided specification.</p>
+<p>Examples:</p>
+<blockquote>
+<div><p>fmt::format(“{}”, std::vector{10, 20, 30});
+// Result: [10, 20, 30]
+fmt::format(“{::#x}”, std::vector{10, 20, 30});
+// Result: [0xa, 0x14, 0x13]
+fmt::format(“{}”, vector{‘h’, ‘e’, ‘l’, ‘l’, ‘o’});
+// Result: [‘h’, ‘e’, ‘l’, ‘l’, ‘o’]
+fmt::format(“{::}”, vector{‘h’, ‘e’, ‘l’, ‘l’, ‘o’});
+// Result: [h, e, l, l, o]
+fmt::format(“{::d}”, vector{‘h’, ‘e’, ‘l’, ‘l’, ‘o’});
+// Result: [104, 101, 108, 108, 111]</p>
+</div></blockquote>
+</section>
 <section id="format-examples">
 <span id="formatexamples"></span><h2>Format Examples<a class="headerlink" href="#format-examples" title="Permalink to this headline">¶</a></h2>
 <p>This section contains examples of the format syntax and comparison with
