@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6dfc527f25197d1fc6aa6f7c3376310956952964" name="document-revision">
+  <meta content="c8a6ad9148a416763d86b316447cd6f274bd8be5" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2152,6 +2152,12 @@ intuitive API achieving the following goals:</p>
     <li data-md>
      <p>Replaced "string literal encoding" with "the ordinary literal encoding
 ([lex.charset]) in [print.fun].2.</p>
+    <li data-md>
+     <p>Added missing template parameter to <code class="highlight"><c- n>forward</c-></code> in [print.fun].3.</p>
+    <li data-md>
+     <p>Replaced <code class="highlight"><c- n>Let</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> with "The function initializes an
+automatic variable via <code class="highlight"><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c-></code> in [print.fun].6
+and [ostream.formatted.print].2.</p>
    </ul>
    <p>Changes since R11:</p>
    <ul>
@@ -3369,8 +3375,8 @@ place that respects the table’s current alphabetic order.</p>
     <span class="parnum">3</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>println</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- p>(</c-><args><c- n>args</c-><c- p>)...);</c->
-</args></ins></pre>
+<pre class="highlight"><ins>  <c- n>println</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...);</c->
+</ins></pre>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> ​<i><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-></i><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
@@ -3390,8 +3396,10 @@ place that respects the table’s current alphabetic order.</p>
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">6</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
-If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
+   <ins> <span class="parnum">6</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
+<pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+</ins></pre>
+   <ins> If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
 the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. </ins>
@@ -3449,8 +3457,10 @@ its specifications. </ins>
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">2</span> <em>Effects:</em> Let <code class="highlight"><c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code>.
-If <code class="highlight"><c- n>os</c-></code> is a stream that refers to a terminal capable of displaying Unicode
+   <ins> <span class="parnum">2</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
+<pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+</ins></pre>
+   <ins> If <code class="highlight"><c- n>os</c-></code> is a stream that refers to a terminal capable of displaying Unicode
 which is determined in an implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to
 the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.

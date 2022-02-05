@@ -54,6 +54,12 @@ Changes since R12:
 * Replaced "string literal encoding" with "the ordinary literal encoding 
     ([lex.charset]) in [print.fun].2.
 
+* Added missing template parameter to `forward` in [print.fun].3.
+
+* Replaced `Let out = vformat(fmt, args)` with "The function initializes an
+    automatic variable via `string out = vformat(fmt, args);` in [print.fun].6
+    and [ostream.formatted.print].2.
+
 Changes since R11:
 
 * Corrected header names in the feature test macro definition replacing
@@ -1567,7 +1573,7 @@ template&lt;class... Args&gt;
 <span class="parnum">3</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  println(stdout, fmt, std::forward<Args>(args)...);
+  println(stdout, fmt, std::forward&lt;Args>(args)...);
 </ins>
 </pre>
 
@@ -1602,7 +1608,15 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">6</span> *Effects:* Let `out = vformat(fmt, args)`.
+<span class="parnum">6</span> *Effects:*
+The function initializes an automatic variable via
+</ins>
+<pre>
+<ins>
+string out = vformat(fmt, args);
+</ins>
+</pre>
+<ins>
 If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
@@ -1695,7 +1709,15 @@ void vprint_unicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">2</span> *Effects:* Let `out = vformat(os.getloc(), fmt, args)`.
+<span class="parnum">2</span> *Effects:*
+The function initializes an automatic variable via
+</ins>
+<pre>
+<ins>
+string out = vformat(fmt, args);
+</ins>
+</pre>
+<ins>
 If `os` is a stream that refers to a terminal capable of displaying Unicode
 which is determined in an implementation-defined manner, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
