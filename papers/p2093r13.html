@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c8a6ad9148a416763d86b316447cd6f274bd8be5" name="document-revision">
+  <meta content="3a0701337ce866ff09e6c34caa5a40a2b3ebe7e6" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2158,6 +2158,12 @@ intuitive API achieving the following goals:</p>
      <p>Replaced <code class="highlight"><c- n>Let</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> with "The function initializes an
 automatic variable via <code class="highlight"><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c-></code> in [print.fun].6
 and [ostream.formatted.print].2.</p>
+    <li data-md>
+     <p>Replaced "As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
+or" with "Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>])."
+in [print.fun].7 and [print.fun].11.</p>
+    <li data-md>
+     <p>Removed "�" from [print.fun].8 and [ostream.formatted.print].3.</p>
    </ul>
    <p>Changes since R11:</p>
    <ul>
@@ -3412,15 +3418,14 @@ respectively, <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno<
     <ins> [ Note: On Windows, the native Unicode API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ] </ins>
    </p>
    <p>
-    <ins> <span class="parnum">7</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
-or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
+    <ins> <span class="parnum">7</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
    <p>
     <ins> <span class="parnum">8</span> <em>Recommended practice:</em> If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
-units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
+units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9. </ins>
    </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
@@ -3435,8 +3440,7 @@ units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.
 </ins></pre>
    <ins> <span class="parnum">10</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
    <p>
-    <ins> <span class="parnum">11</span> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
-or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
+    <ins> <span class="parnum">11</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
@@ -3466,23 +3470,21 @@ the terminal using the native Unicode API; if <code class="highlight"><c- n>out<
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>os</c-></code> unchanged. </ins>
    <p>
-    <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
-or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
+    <ins> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
    <p>
     <ins> <span class="parnum">3</span> <em>Recommended practice:</em> If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
-units with U+FFFD � REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
+units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9. </ins>
    </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <ins> <span class="parnum">4</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code>. </ins>
    <p>
-    <ins> <em>Throws:</em> As specified in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]
-or <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
+    <ins> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
 other underlying API results in an error that prevents the function from meeting
 its specifications. </ins>
    </p>
