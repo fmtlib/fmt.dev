@@ -47,6 +47,13 @@ intuitive API achieving the following goals:
 Revision history {#hist}
 ================
 
+Changes since R12:
+
+* Changed section numbers to permalinks in the wording.
+
+* Replaced "string literal encoding" with "the ordinary literal encoding 
+    ([lex.charset]) in [print.fun].2.
+
 Changes since R11:
 
 * Corrected header names in the feature test macro definition replacing
@@ -1468,11 +1475,10 @@ in a place that respects the table’s current alphabetic order:
 Add the header `<print>` to the "C++ library headers" table in [headers], in a
 place that respects the table’s current alphabetic order.
 
-Add after subclause [iomanip.syn]
-[[iomanip.syn](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.29.7.3)]",
+Add after subsection "Header <iomanip> synopsis [[iomanip.syn](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.29.7.3)]":
 
-<ins>? Header `<print>` synopsis [print.syn]</ins>
+<ins>?.?.? Header `<print>` synopsis [print.syn]</ins>
 
 <pre>
 <ins>
@@ -1496,7 +1502,7 @@ namespace std {
 </ins>
 </pre>
 
-Modify section "Header `<ostream>` synopsis [[ostream.syn](
+Modify subsection "Header `<ostream>` synopsis [[ostream.syn](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.29.7.2)]":
 
 <pre>
@@ -1514,7 +1520,10 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 
-<ins>29.7.? Print functions [print.fun].</ins>
+Add a new subsection to "Formatting and manipulators [[iostream.format](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#section.29.7)]":
+
+<ins>?.?.? Print functions [print.fun]</ins>
 
 <pre>
 <ins>
@@ -1535,7 +1544,8 @@ template&lt;class... Args&gt;
   void print(FILE* stream, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
-<span class="parnum">2</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<span class="parnum">2</span> <ins>*Effects:* If the ordinary literal encoding 
+([lex.charset]) is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
   vprint_unicode(stream, fmt.<i>&#8203;str</i>, make_format_args(std::forward&lt;Args>(args)...));
@@ -1665,7 +1675,8 @@ template&lt;class... Args&gt;
   void print(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
 </ins>
 </pre>
-<span class="parnum">1</span> <ins>*Effects:* If string literal encoding is UTF-8, equivalent to:</ins>
+<span class="parnum">1</span> <ins>*Effects:* If the ordinary literal encoding 
+([lex.charset]) is UTF-8, equivalent to:</ins>
 <pre>
 <ins>
   vprint_unicode(os, fmt.<i>&#8203;str</i>, make_format_args(std::forward&lt;Args>(args)...));
