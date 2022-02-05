@@ -58,7 +58,7 @@ Changes since R12:
 
 * Replaced `Let out = vformat(fmt, args)` with "The function initializes an
     automatic variable via `string out = vformat(fmt, args);` in [print.fun].6
-    and [ostream.formatted.print].2.
+    and [ostream.formatted.print].3.
 
 * Replaced "As specified in [[format.err.report](
     http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]
@@ -66,7 +66,18 @@ Changes since R12:
     http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)])."
     in [print.fun].7 and [print.fun].11.
 
-* Removed "�" from [print.fun].8 and [ostream.formatted.print].3.
+* Removed "�" from [print.fun].8 and [ostream.formatted.print].4.
+
+* Clarified that writing to an output stream is done via an unformatted output
+    function in [ostream.formatted.print].3 and [ostream.formatted.print].5.
+
+* Added a missing definition of the `ostream` overload of `println`.
+
+* Moved "The Unicode® Standard Version 14.0 – Core Specification" from
+    Normative references to Bibliography per LWG request and verified that ISO
+    10646:2020 doesn't include an equivalent of "U+FFFD Substitution of Maximal
+    Subparts" section from the Unicode standard and therefore can't be
+    referenced instead.
 
 Changes since R11:
 
@@ -1715,11 +1726,25 @@ template&lt;class... Args&gt;
 
 <pre>
 <ins>
+template&lt;class... Args&gt;
+  void println(ostream& os, <i>&#8203;format-string</i>&lt;Args...> fmt, Args&&... args);
+</ins>
+</pre>
+
+<span class="parnum">2</span> <ins>*Effects:* Equivalent to:
+<pre>
+<ins>
+  print(stream, "{}\n", format(fmt, std::forward&lt;Args>(args)...));
+</ins>
+</pre>
+
+<pre>
+<ins>
 void vprint_unicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">2</span> *Effects:*
+<span class="parnum">3</span> *Effects:*
 The function initializes an automatic variable via
 </ins>
 <pre>
@@ -1732,7 +1757,7 @@ If `os` is a stream that refers to a terminal capable of displaying Unicode
 which is determined in an implementation-defined manner, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
-Otherwise writes `out` to `os` unchanged.
+Otherwise writes `out` to `os` unchanged using an unformatted output function.
 </ins>
 <p>
 <ins>
@@ -1745,7 +1770,7 @@ its specifications.
 </ins>
 <p>
 <ins>
-<span class="parnum">3</span> *Recommended practice:* If invoking the native
+<span class="parnum">4</span> *Recommended practice:* If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
 units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9.
@@ -1757,7 +1782,8 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">4</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)` to `os`.
+<span class="parnum">5</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)`
+to `os` using an unformatted output function.
 </ins>
 <p>
 <ins>
@@ -1769,7 +1795,7 @@ other underlying API results in an error that prevents the function from meeting
 its specifications.
 </ins>
 
-Add to Normative references [intro.refs]:
+Add to Bibliography:
 
 <ins>
 – The Unicode® Standard Version 14.0 – Core Specification
