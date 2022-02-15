@@ -1179,24 +1179,24 @@ specify text formatting.</p>
 user-defined types that have an overloaded insertion operator (<code class="docutils literal notranslate"><span class="pre">operator&lt;&lt;</span></code>).
 In order to make a type formattable via <code class="docutils literal notranslate"><span class="pre">std::ostream</span></code> you should provide a
 <code class="docutils literal notranslate"><span class="pre">formatter</span></code> specialization inherited from <code class="docutils literal notranslate"><span class="pre">ostream_formatter</span></code>:</p>
-<blockquote>
-<div><p>#include &lt;fmt/ostream.h&gt;</p>
-<dl>
-<dt>class date {</dt><dd><p>int <a href="#id3"><span class="problematic" id="id4">year_</span></a>, <a href="#id5"><span class="problematic" id="id6">month_</span></a>, <a href="#id7"><span class="problematic" id="id8">day_</span></a>;</p>
-</dd>
-<dt>public:</dt><dd><p>date(int year, int month, int day): year_(year), month_(month), day_(day) {}</p>
-<dl class="simple">
-<dt>friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const date&amp; d) {</dt><dd><p>return os &lt;&lt; <a href="#id9"><span class="problematic" id="id10">d.year_</span></a> &lt;&lt; ‘-’ &lt;&lt; <a href="#id11"><span class="problematic" id="id12">d.month_</span></a> &lt;&lt; ‘-’ &lt;&lt; <a href="#id13"><span class="problematic" id="id14">d.day_</span></a>;</p>
-</dd>
-</dl>
-<p>}</p>
-</dd>
-</dl>
-<p>};</p>
-<p>template &lt;&gt; struct fmt::formatter&lt;date&gt; : ostream_formatter {};</p>
-<p>std::string s = fmt::format(“The date is {}”, date(2012, 12, 9));
-// s == “The date is 2012-12-9”</p>
-</div></blockquote>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/ostream.h&gt;</span><span class="cp"></span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">date</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">year_</span><span class="p">,</span><span class="w"> </span><span class="n">month_</span><span class="p">,</span><span class="w"> </span><span class="n">day_</span><span class="p">;</span><span class="w"></span>
+<span class="k">public</span><span class="o">:</span><span class="w"></span>
+<span class="w">  </span><span class="n">date</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">day</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="n">year_</span><span class="p">(</span><span class="n">year</span><span class="p">),</span><span class="w"> </span><span class="n">month_</span><span class="p">(</span><span class="n">month</span><span class="p">),</span><span class="w"> </span><span class="n">day_</span><span class="p">(</span><span class="n">day</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+
+<span class="w">  </span><span class="k">friend</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">ostream</span><span class="o">&amp;</span><span class="w"> </span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">date</span><span class="o">&amp;</span><span class="w"> </span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">os</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">year_</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;-&#39;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">month_</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;-&#39;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">day_</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ostream_formatter</span><span class="w"> </span><span class="p">{};</span><span class="w"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The date is {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="p">));</span><span class="w"></span>
+<span class="c1">// s == &quot;The date is 2012-12-9&quot;</span>
+</pre></div>
+</div>
 <dl class="cpp function">
 <dt id="_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args">
 <span id="_CPPv3I0Dp0EN3fmt5printERNSt13basic_ostreamI4CharEERK1SDpRR4Args"></span><span id="_CPPv2I0Dp0EN3fmt5printERNSt13basic_ostreamI4CharEERK1SDpRR4Args"></span>template&lt;typename <code class="sig-name descname">S</code>, typename ...<code class="sig-name descname">Args</code>, typename <code class="sig-name descname">Char</code> = enable_if_t&lt;detail::is_string&lt;<a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::S">S</a>&gt;::value, char_t&lt;<a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::S">S</a>&gt;&gt;&gt;<br /><span class="target" id="ostream_8h_1a8e964a5eb5f076d5b526637c16965077"></span>void <code class="sig-prename descclassname">fmt<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">print</code><span class="sig-paren">(</span>std::basic_ostream&lt;<a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::Char">Char</a>&gt; &amp;<em>os</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::S">S</a> &amp;<em>format_str</em>, <a class="reference internal" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="fmt::print::Args">Args</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0Dp0EN3fmt5printEvRNSt13basic_ostreamI4CharEERK1SDpRR4Args" title="Permalink to this definition">¶</a><br /></dt>
