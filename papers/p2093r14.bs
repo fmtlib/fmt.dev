@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
 Shortname: P2093
-Revision: 13
+Revision: 14
 Audience: LWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-02-05
+Date: 2022-02-18
 Markup Shorthands: markdown yes
 </pre>
 
@@ -47,6 +47,19 @@ intuitive API achieving the following goals:
 Revision history {#hist}
 ================
 
+Changes since R13:
+
+* Updated the feature test macro.
+
+* Replaced "`system_error` if a call by the implementation to an operating
+    system or other underlying API results in an error that prevents the
+    function from meeting its specifications." with "`system_error` if writing
+    to the terminal or `stream` fails. May throw `bad_alloc`." in [print.fun].7
+    and similar changes in other Throws clauses.
+
+* Added "`stream` is not null" preconditions to `vprint_unicode` and
+    `vprint_nonunicode`.
+
 Changes since R12:
 
 * Changed section numbers to permalinks in the wording.
@@ -66,10 +79,10 @@ Changes since R12:
     http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)])."
     in [print.fun].7 and [print.fun].11.
 
-* Removed "�" from [print.fun].8 and [ostream.formatted.print].4.
+* Removed "�" from [print.fun].8 and [ostream.formatted.print].5.
 
 * Clarified that writing to an output stream is done via an unformatted output
-    function in [ostream.formatted.print].3 and [ostream.formatted.print].5.
+    function in [ostream.formatted.print].3 and [ostream.formatted.print].6.
 
 * Added a missing definition of the `ostream` overload of `println`.
 
@@ -78,6 +91,10 @@ Changes since R12:
     10646:2020 doesn't include an equivalent of "U+FFFD Substitution of Maximal
     Subparts" section from the Unicode standard and therefore can't be
     referenced instead.
+
+* Rephrased Throws clauses per LWG feedback and clarify that exceptions from
+    the underlying unformatted functions ([ostream.unformatted]) are propagated
+    in [ostream.formatted.print].4 and [ostream.formatted.print].7.
 
 Changes since R11:
 
@@ -1494,7 +1511,7 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.
 in a place that respects the table’s current alphabetic order:
 
 <pre>
-<ins>#define __cpp_lib_print 202112L **placeholder**	// also in &lt;print&gt; and &lt;ostream&gt;</ins>
+<ins>#define __cpp_lib_print 202202L **placeholder**	// also in &lt;print&gt; and &lt;ostream&gt;</ins>
 </pre>
 
 Add the header `<print>` to the "C++ library headers" table in [headers], in a
@@ -1627,7 +1644,11 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">6</span> *Effects:*
+<span class="parnum">6</span> *Preconditions:*
+`stream` is not null.
+</ins>
+<ins>
+<span class="parnum">7</span> *Effects:*
 The function initializes an automatic variable via
 </ins>
 <pre>
@@ -1655,16 +1676,14 @@ respectively, `isatty(fileno(stream))` and
 <!-- https://www.unicode.org/versions/Unicode13.0.0/ch03.pdf -->
 <p>
 <ins>
-<span class="parnum">7</span> *Throws:*
+<span class="parnum">8</span> *Throws:*
 Any exception thrown by the call to `vformat` ([[format.err.report](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]).
-`system_error` if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications.
+`system_error` if writing to the terminal or `stream` fails. May throw `bad_alloc`.
 </ins>
 <p>
 <ins>
-<span class="parnum">8</span> *Recommended practice:* If invoking the native
+<span class="parnum">9</span> *Recommended practice:* If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
 units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9.
@@ -1675,7 +1694,7 @@ units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 void vprint_nonunicode(string_view fmt, format_args args);
 </ins>
 </pre>
-<span class="parnum">9</span> <ins>*Effects:* *Equivalent to*:</ins>
+<span class="parnum">10</span> <ins>*Effects:* *Equivalent to*:</ins>
 <pre>
 <ins>
   vprint_nonunicode(stdout, fmt, args);
@@ -1688,16 +1707,18 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">10</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
+<span class="parnum">12</span> *Preconditions:*
+`stream` is not null.
+</ins>
+<ins>
+<span class="parnum">13</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
 </ins>
 <p>
 <ins>
-<span class="parnum">11</span> *Throws:*
+<span class="parnum">14</span> *Throws:*
 Any exception thrown by the call to `vformat` ([[format.err.report](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]).
-`system_error` if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications.
+`system_error` if writing to `stream` fails. May throw `bad_alloc`.
 </ins>
 
 Add subsection "Print [ostream.formatted.print]" to
@@ -1734,7 +1755,7 @@ template&lt;class... Args&gt;
 <span class="parnum">2</span> <ins>*Effects:* Equivalent to:
 <pre>
 <ins>
-  print(stream, "{}\n", format(fmt, std::forward&lt;Args>(args)...));
+  print(os, "{}\n", format(fmt, std::forward&lt;Args>(args)...));
 </ins>
 </pre>
 
@@ -1749,7 +1770,7 @@ The function initializes an automatic variable via
 </ins>
 <pre>
 <ins>
-string out = vformat(fmt, args);
+string out = vformat(os.getloc(), fmt, args);
 </ins>
 </pre>
 <ins>
@@ -1761,16 +1782,17 @@ Otherwise writes `out` to `os` unchanged using an unformatted output function.
 </ins>
 <p>
 <ins>
-*Throws:*
+<span class="parnum">4</span> *Throws:*
 Any exception thrown by the call to `vformat` ([[format.err.report](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]).
-`system_error` if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications.
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)])
+or the unformatted output function ([[ostream.unformatted](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4)]).
+`system_error` if a call by the native Unicode API results in an error that 
+prevents the function from meeting its specifications.
 </ins>
 <p>
 <ins>
-<span class="parnum">4</span> *Recommended practice:* If invoking the native
+<span class="parnum">5</span> *Recommended practice:* If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
 units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9.
@@ -1782,17 +1804,16 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
 <ins>
-<span class="parnum">5</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)`
+<span class="parnum">6</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)`
 to `os` using an unformatted output function.
 </ins>
 <p>
 <ins>
-*Throws:* 
+<span class="parnum">7</span> *Throws:* 
 Any exception thrown by the call to `vformat` ([[format.err.report](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)]).
-`system_error` if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications.
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)])
+or the unformatted output function ([[ostream.unformatted](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4)]).
 </ins>
 
 Add to Bibliography:

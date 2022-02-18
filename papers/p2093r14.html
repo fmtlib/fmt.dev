@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2093R13: Formatted output</title>
+  <title>P2093R14: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="908a7a283dd5cbe4082fee6c7acb5df6f70bbc75" name="document-revision">
+  <meta content="9d5bff340bdcef01fd6a510d77ca1cd99b8261bb" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2093R13<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-02-05">2022-02-05</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R14<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2022-02-18">2022-02-18</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2145,6 +2145,17 @@ intuitive API achieving the following goals:</p>
      <p>Small binary footprint</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R13:</p>
+   <ul>
+    <li data-md>
+     <p>Updated the feature test macro.</p>
+    <li data-md>
+     <p>Replaced "<code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating
+system or other underlying API results in an error that prevents the
+function from meeting its specifications." with "<code class="highlight"><c- n>system_error</c-></code> if writing
+to the terminal or <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>." in [print.fun].7
+and similar changes in other Throws clauses.</p>
+   </ul>
    <p>Changes since R12:</p>
    <ul>
     <li data-md>
@@ -2163,10 +2174,10 @@ and [ostream.formatted.print].3.</p>
 or" with "Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>])."
 in [print.fun].7 and [print.fun].11.</p>
     <li data-md>
-     <p>Removed "�" from [print.fun].8 and [ostream.formatted.print].4.</p>
+     <p>Removed "�" from [print.fun].8 and [ostream.formatted.print].5.</p>
     <li data-md>
      <p>Clarified that writing to an output stream is done via an unformatted output
-function in [ostream.formatted.print].3 and [ostream.formatted.print].5.</p>
+function in [ostream.formatted.print].3 and [ostream.formatted.print].6.</p>
     <li data-md>
      <p>Added a missing definition of the <code class="highlight"><c- n>ostream</c-></code> overload of <code class="highlight"><c- n>println</c-></code>.</p>
     <li data-md>
@@ -2175,6 +2186,10 @@ Normative references to Bibliography per LWG request and verified that ISO
 10646:2020 doesn’t include an equivalent of "U+FFFD Substitution of Maximal
 Subparts" section from the Unicode standard and therefore can’t be
 referenced instead.</p>
+    <li data-md>
+     <p>Rephrased Throws clauses per LWG feedback and clarify that exceptions from
+the underlying unformatted functions ([ostream.unformatted]) are propagated
+in [ostream.formatted.print].4 and [ostream.formatted.print].7.</p>
    </ul>
    <p>Changes since R11:</p>
    <ul>
@@ -3321,7 +3336,7 @@ falls back on writing raw (not transcoded) data.</p>
    <h2 class="heading settled" data-level="16" id="wording"><span class="secno">16. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_print</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
-<pre class="highlight"><ins><c- cp>#define __cpp_lib_print 202112L **placeholder**  </c-><c- c1>// also in &lt;print> and &lt;ostream></c-></ins>
+<pre class="highlight"><ins><c- cp>#define __cpp_lib_print 202202L **placeholder**  </c-><c- c1>// also in &lt;print> and &lt;ostream></c-></ins>
 </pre>
    <p>Add the header <code class="highlight"><c- o>&lt;</c-><c- n>print</c-><c- o>></c-></code> to the "C++ library headers" table in [headers], in a
 place that respects the table’s current alphabetic order.</p>
@@ -3413,7 +3428,8 @@ place that respects the table’s current alphabetic order.</p>
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">6</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
+   <ins> <span class="parnum">6</span> <em>Preconditions:</em> <code class="highlight"><c- n>stream</c-></code> is not null. </ins>
+   <ins> <span class="parnum">7</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
 <pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <ins> If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
@@ -3429,12 +3445,10 @@ respectively, <code class="highlight"><c- n>isatty</c-><c- p>(</c-><c- n>fileno<
     <ins> [ Note: On Windows, the native Unicode API is <code class="highlight"><c- n>WriteConsoleW</c-></code>. — end note ] </ins>
    </p>
    <p>
-    <ins> <span class="parnum">7</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications. </ins>
+    <ins> <span class="parnum">8</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if writing to the terminal or <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>. </ins>
    </p>
    <p>
-    <ins> <span class="parnum">8</span> <em>Recommended practice:</em> If invoking the native
+    <ins> <span class="parnum">9</span> <em>Recommended practice:</em> If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
 units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9. </ins>
@@ -3442,18 +3456,17 @@ units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <p>
-    <span class="parnum">9</span> 
+    <span class="parnum">10</span> 
     <ins><em>Effects:</em> <em>Equivalent to</em>:</ins>
    </p>
 <pre class="highlight"><ins>  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stdout</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">10</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
+   <ins> <span class="parnum">12</span> <em>Preconditions:</em> <code class="highlight"><c- n>stream</c-></code> is not null. </ins>
+   <ins> <span class="parnum">13</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
    <p>
-    <ins> <span class="parnum">11</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications. </ins>
+    <ins> <span class="parnum">14</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if writing to <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>. </ins>
    </p>
    <p>Add subsection "Print [ostream.formatted.print]" to
 "Formatted output functions <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2">[ostream.formatted</a>]":</p>
@@ -3477,12 +3490,12 @@ its specifications. </ins>
     <span class="parnum">2</span> 
     <ins><em>Effects:</em> Equivalent to:</ins>
    </p>
-<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
+<pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <ins> <span class="parnum">3</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
-<pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+<pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
    <ins> If <code class="highlight"><c- n>os</c-></code> is a stream that refers to a terminal capable of displaying Unicode
 which is determined in an implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to
@@ -3490,23 +3503,22 @@ the terminal using the native Unicode API; if <code class="highlight"><c- n>out<
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>os</c-></code> unchanged using an unformatted output function. </ins>
    <p>
-    <ins> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications. </ins>
+    <ins> <span class="parnum">4</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>])
+or the unformatted output function (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4">[ostream.unformatted</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the native Unicode API results in an error that 
+prevents the function from meeting its specifications. </ins>
    </p>
    <p>
-    <ins> <span class="parnum">4</span> <em>Recommended practice:</em> If invoking the native
+    <ins> <span class="parnum">5</span> <em>Recommended practice:</em> If invoking the native
 Unicode API requires transcoding, implementations should substitute invalid code
 units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 – Core Specification, Chapter 3.9. </ins>
    </p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">5</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code> using an unformatted output function. </ins>
+   <ins> <span class="parnum">6</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code> using an unformatted output function. </ins>
    <p>
-    <ins> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the implementation to an operating system or
-other underlying API results in an error that prevents the function from meeting
-its specifications. </ins>
+    <ins> <span class="parnum">7</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>])
+or the unformatted output function (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4">[ostream.unformatted</a>]). </ins>
    </p>
    <p>Add to Bibliography:</p>
    <ins> – The Unicode® Standard Version 14.0 – Core Specification </ins>
