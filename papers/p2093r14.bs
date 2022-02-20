@@ -60,6 +60,9 @@ Changes since R13:
 * Added "`stream` is not null" preconditions to `FILE*` overloads of
     `vprint_unicode` and `vprint_nonunicode`.
 
+* Revised the wording for `ostream` overaloads of `vprint_unicode` and
+    `vprint_nonunicode` per suggestions from Tim Song.
+
 Changes since R12:
 
 * Changed section numbers to permalinks in the wording.
@@ -1762,11 +1765,21 @@ template&lt;class... Args&gt;
 <pre>
 <ins>
 void vprint_unicode(ostream& os, string_view fmt, format_args args);
+void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 </ins>
 </pre>
+
 <ins>
 <span class="parnum">3</span> *Effects:*
-The function initializes an automatic variable via
+Behaves as a formatted output function
+([[ostream.formatted.reqmts](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2)])
+of `os`, except that failure to generate
+output is reported as specified below, and except that any exceptions
+thrown by the call to `vformat` is propagated without regard to the
+value of `os.exceptions()` and without turning on `ios_base::badbit` in
+the error state of `os`. After constructing a `sentry` object, the
+function initializes an automatic variable via
 </ins>
 <pre>
 <ins>
@@ -1774,46 +1787,30 @@ string out = vformat(os.getloc(), fmt, args);
 </ins>
 </pre>
 <ins>
-If `os` is a stream that refers to a terminal capable of displaying Unicode
-which is determined in an implementation-defined manner, writes `out` to
-the terminal using the native Unicode API; if `out` contains invalid code units,
-the behavior is undefined and implementations are encouraged to diagnose it.
-Otherwise writes `out` to `os` unchanged using an unformatted output function.
+If the function is `vprint_unicode` and `os` is a stream that refers to a
+terminal capable of displaying Unicode which is determined in an
+implementation-defined manner, writes `out` to the terminal using the
+native Unicode API; if `out` contains invalid code units, the behavior
+is undefined and implementations are encouraged to diagnose it.
 </ins>
 <p>
 <ins>
-<span class="parnum">4</span> *Throws:*
-Any exception thrown by the call to `vformat` ([[format.err.report](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)])
-or the unformatted output function ([[ostream.unformatted](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4)]).
-`system_error` if a call by the native Unicode API results in an error that 
-prevents the function from meeting its specifications.
+Otherwise (if `os` is not such a stream or the function is
+`vprint_nonunicode`), inserts the character sequence `[out.begin(),
+out.end())` into `os`.
 </ins>
 <p>
 <ins>
-<span class="parnum">5</span> *Recommended practice:* If invoking the native
-Unicode API requires transcoding, implementations should substitute invalid code
-units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
-– Core Specification, Chapter 3.9.
-</ins>
-
-<pre>
-<ins>
-void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
-</ins>
-</pre>
-<ins>
-<span class="parnum">6</span> *Effects:* Writes the result of `vformat(os.getloc(), fmt, args)`
-to `os` using an unformatted output function.
+If writing to the terminal or inserting into `os` fails, calls
+`os.setstate(ios_base::badbit`) (which may throw `ios_base::failure`).
 </ins>
 <p>
 <ins>
-<span class="parnum">7</span> *Throws:* 
-Any exception thrown by the call to `vformat` ([[format.err.report](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3)])
-or the unformatted output function ([[ostream.unformatted](
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4)]).
+<span class="parnum">4</span> *Recommended practice:* 
+For `vprint_unicode`, if invoking the native
+Unicode API requires transcoding, implementations should substitute
+invalid code units with U+FFFD REPLACEMENT CHARACTER per The Unicode
+Standard Version 14.0 – Core Specification, Chapter 3.9.
 </ins>
 
 Add to Bibliography:
@@ -2085,6 +2082,8 @@ Thanks to Corentin Jabot for his work on text encodings in C++ and in particular
 Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
 Honermann for their feedback, support, constructive criticism and contributions
 to the proposal.
+
+Thanks to Tim Song for substantial improvements to the wording.
 
 <pre class=biblio>
 {

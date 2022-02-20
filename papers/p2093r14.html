@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9d5bff340bdcef01fd6a510d77ca1cd99b8261bb" name="document-revision">
+  <meta content="4876b17af0da9690d4a5c54386d6e6fd8cf73ec1" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2155,6 +2155,10 @@ system or other underlying API results in an error that prevents the
 function from meeting its specifications." with "<code class="highlight"><c- n>system_error</c-></code> if writing
 to the terminal or <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>." in [print.fun].7
 and similar changes in other Throws clauses.</p>
+    <li data-md>
+     <p>Added "<code class="highlight"><c- n>stream</c-></code> is not null" preconditions to <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> overloads of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code>.</p>
+    <li data-md>
+     <p>Revised the wording for <code class="highlight"><c- n>ostream</c-></code> overaloads of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code> per suggestions from Tim Song.</p>
    </ul>
    <p>Changes since R12:</p>
    <ul>
@@ -3493,32 +3497,34 @@ units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 <pre class="highlight"><ins>  <c- n>print</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c->
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+<c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">3</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
+   <ins> <span class="parnum">3</span> <em>Effects:</em> Behaves as a formatted output function
+(<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2">[ostream.formatted.reqmts</a>])
+of <code class="highlight"><c- n>os</c-></code>, except that failure to generate
+output is reported as specified below, and except that any exceptions
+thrown by the call to <code class="highlight"><c- n>vformat</c-></code> is propagated without regard to the
+value of <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>exceptions</c-><c- p>()</c-></code> and without turning on <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-></code> in
+the error state of <code class="highlight"><c- n>os</c-></code>. After constructing a <code class="highlight"><c- n>sentry</c-></code> object, the
+function initializes an automatic variable via </ins>
 <pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> If <code class="highlight"><c- n>os</c-></code> is a stream that refers to a terminal capable of displaying Unicode
-which is determined in an implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to
-the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
-the behavior is undefined and implementations are encouraged to diagnose it.
-Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>os</c-></code> unchanged using an unformatted output function. </ins>
+   <ins> If the function is <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>os</c-></code> is a stream that refers to a
+terminal capable of displaying Unicode which is determined in an
+implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the
+native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior
+is undefined and implementations are encouraged to diagnose it. </ins>
    <p>
-    <ins> <span class="parnum">4</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>])
-or the unformatted output function (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4">[ostream.unformatted</a>]). <code class="highlight"><c- n>system_error</c-></code> if a call by the native Unicode API results in an error that 
-prevents the function from meeting its specifications. </ins>
+    <ins> Otherwise (if <code class="highlight"><c- n>os</c-></code> is not such a stream or the function is <code class="highlight"><c- n>vprint_nonunicode</c-></code>), inserts the character sequence <code class="highlight"><c- p>[</c-><c- n>out</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>out</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> into <code class="highlight"><c- n>os</c-></code>. </ins>
    </p>
    <p>
-    <ins> <span class="parnum">5</span> <em>Recommended practice:</em> If invoking the native
-Unicode API requires transcoding, implementations should substitute invalid code
-units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
-– Core Specification, Chapter 3.9. </ins>
+    <ins> If writing to the terminal or inserting into <code class="highlight"><c- n>os</c-></code> fails, calls <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>setstate</c-><c- p>(</c-><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-></code>) (which may throw <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>failure</c-></code>). </ins>
    </p>
-<pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
-</ins></pre>
-   <ins> <span class="parnum">6</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>os</c-></code> using an unformatted output function. </ins>
    <p>
-    <ins> <span class="parnum">7</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>])
-or the unformatted output function (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.4">[ostream.unformatted</a>]). </ins>
+    <ins> <span class="parnum">4</span> <em>Recommended practice:</em> For <code class="highlight"><c- n>vprint_unicode</c-></code>, if invoking the native
+Unicode API requires transcoding, implementations should substitute
+invalid code units with U+FFFD REPLACEMENT CHARACTER per The Unicode
+Standard Version 14.0 – Core Specification, Chapter 3.9. </ins>
    </p>
    <p>Add to Bibliography:</p>
    <ins> – The Unicode® Standard Version 14.0 – Core Specification </ins>
@@ -3792,6 +3798,7 @@ Output files:</p>
    <p>Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
 Honermann for their feedback, support, constructive criticism and contributions
 to the proposal.</p>
+   <p>Thanks to Tim Song for substantial improvements to the wording.</p>
   </main>
 <script>
 (function() {
