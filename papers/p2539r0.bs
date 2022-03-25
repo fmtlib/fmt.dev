@@ -30,10 +30,10 @@ Markup Shorthands: markdown yes
 # Discussion
 
 To prevent mojibake `std::print` may use a native Unicode API when writing to
-a terminal bypassing the stream buffer. During the review of [[P2093]] Formatted
-output Tim Song suggested that synchronizing `std::print` with the underlying
-stream may be beneficial for gradual adoption. This paper discusses the two
-options.
+a terminal bypassing the stream buffer. During the review of [[P2093]]
+"Formatted output" Tim Song suggested that synchronizing `std::print` with the
+underlying stream may be beneficial for gradual adoption. This paper briefly
+discusses this option.
 
 Consider the following example:
 
@@ -62,7 +62,7 @@ because of buffering in `printf` but not `std::print`.
 
 It is possible to prevent reordering by flushing the buffer before writing to a
 terminal in `std::print` making this case less surprising. This will incur
-additional cost but only for the terminal transcoding case.
+additional cost but only for the terminal case and when transcoding is needed.
 
 Neither {fmt} ([[FMT]]) nor Rust ([[RUST-STDIO]]) do such synchronization in
 their implementations of `print`.

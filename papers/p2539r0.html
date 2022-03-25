@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0333dd858117b4e3fdf44f8ccd17c2367f420436" name="document-revision">
+  <meta content="0c15cea55d04ed34d60da3d8001fdcaf61898a06" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2115,10 +2115,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <h2 class="heading settled" data-level="1" id="discussion"><span class="secno">1. </span><span class="content">Discussion</span><a class="self-link" href="#discussion"></a></h2>
    <p>To prevent mojibake <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> may use a native Unicode API when writing to
-a terminal bypassing the stream buffer. During the review of <a data-link-type="biblio" href="#biblio-p2093">[P2093]</a> Formatted
-output Tim Song suggested that synchronizing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> with the underlying
-stream may be beneficial for gradual adoption. This paper discusses the two
-options.</p>
+a terminal bypassing the stream buffer. During the review of <a data-link-type="biblio" href="#biblio-p2093">[P2093]</a> "Formatted output" Tim Song suggested that synchronizing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> with the
+underlying stream may be beneficial for gradual adoption. This paper briefly
+discusses this option.</p>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"first</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"second</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
@@ -2135,7 +2134,7 @@ options.</p>
    <p>because of buffering in <code class="highlight"><c- n>printf</c-></code> but not <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>.</p>
    <p>It is possible to prevent reordering by flushing the buffer before writing to a
 terminal in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> making this case less surprising. This will incur
-additional cost but only for the terminal transcoding case.</p>
+additional cost but only for the terminal case and when transcoding is needed.</p>
    <p>Neither {fmt} (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) nor Rust (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>) do such synchronization in
 their implementations of <code class="highlight"><c- n>print</c-></code>.</p>
    <h2 class="heading settled" data-level="2" id="references"><span class="secno">2. </span><span class="content">References</span><a class="self-link" href="#references"></a></h2>
