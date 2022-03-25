@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D2093R14: Formatted output</title>
+  <title>P2093R14: Formatted output</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b312113b1fcb58b85f31b18316b858229e61b120" name="document-revision">
+  <meta content="983aa79654d64574e5eb1a6c3af4ba740700a63f" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D2093R14<br>Formatted output</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2022-02-18">2022-02-18</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2093R14<br>Formatted output</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-03-25">2022-03-25</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2156,7 +2156,7 @@ function from meeting its specifications." with "<code class="highlight"><c- n>s
 to the terminal or <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>." in [print.fun].8
 and similar changes in other Throws clauses.</p>
     <li data-md>
-     <p>Added "<code class="highlight"><c- n>stream</c-></code> is not null" preconditions to <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> overloads of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code>.</p>
+     <p>Added "<code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream" preconditions to <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code> overloads of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code>.</p>
     <li data-md>
      <p>Revised the wording for <code class="highlight"><c- n>ostream</c-></code> overaloads of <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>vprint_nonunicode</c-></code> per suggestions from Tim Song.</p>
    </ul>
@@ -3432,7 +3432,7 @@ place that respects the table’s current alphabetic order.</p>
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">6</span> <em>Preconditions:</em> <code class="highlight"><c- n>stream</c-></code> is not null. </ins>
+   <ins> <span class="parnum">6</span> <em>Preconditions:</em> <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream. </ins>
    <ins> <span class="parnum">7</span> <em>Effects:</em> The function initializes an automatic variable via </ins>
 <pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
@@ -3467,7 +3467,7 @@ units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 </ins></pre>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">11</span> <em>Preconditions:</em> <code class="highlight"><c- n>stream</c-></code> is not null. </ins>
+   <ins> <span class="parnum">11</span> <em>Preconditions:</em> <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream. </ins>
    <ins> <span class="parnum">12</span> <em>Effects:</em> Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>. </ins>
    <p>
     <ins> <span class="parnum">13</span> <em>Throws:</em> Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsection.20.20.3">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if writing to <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>. </ins>
@@ -3499,41 +3499,46 @@ units with U+FFFD REPLACEMENT CHARACTER per The Unicode Standard Version 14.0
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> <span class="parnum">3</span> <em>Effects:</em> Behaves as a formatted output function
+   <ins>
+     <span class="parnum">3</span> <em>Effects:</em> Behaves as a formatted output function
 (<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2">[ostream.formatted.reqmts</a>])
-of <code class="highlight"><c- n>os</c-></code>, except that failure to generate
-output is reported as specified below, and except that any exception
-thrown by the call to <code class="highlight"><c- n>vformat</c-></code> is propagated without regard to the
-value of <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>exceptions</c-><c- p>()</c-></code> and without turning on <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-></code> in
-the error state of <code class="highlight"><c- n>os</c-></code>. After constructing a <code class="highlight"><c- n>sentry</c-></code> object, the
-function initializes an automatic variable via </ins>
+of <code class="highlight"><c- n>os</c-></code>, except that: 
+    <ul>
+     <li>failure to generate output is reported as specified below, and 
+     <li>
+       any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> is propagated without regard to
+  the value of <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>exceptions</c-><c- p>()</c-></code> and without turning on <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-></code> in
+  the error state of <code class="highlight"><c- n>os</c-></code>. 
+      <ul>
+       <p>After constructing a <code class="highlight"><c- n>sentry</c-></code> object, the
+function initializes an automatic variable via</p>
 <pre class="highlight"><ins><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
 </ins></pre>
-   <ins> If the function is <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>os</c-></code> is a stream that refers to a
+       <ins> If the function is <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>os</c-></code> is a stream that refers to a
 terminal capable of displaying Unicode which is determined in an
 implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the
 native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior
 is undefined and implementations are encouraged to diagnose it. </ins>
-   <p>
-    <ins> Otherwise (if <code class="highlight"><c- n>os</c-></code> is not such a stream or the function is <code class="highlight"><c- n>vprint_nonunicode</c-></code>), inserts the character sequence <code class="highlight"><c- p>[</c-><c- n>out</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>out</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> into <code class="highlight"><c- n>os</c-></code>. </ins>
-   </p>
-   <p>
-    <ins> If writing to the terminal or inserting into <code class="highlight"><c- n>os</c-></code> fails, calls <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>setstate</c-><c- p>(</c-><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-><c- p>)</c-></code> (which may throw <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>failure</c-></code>). </ins>
-   </p>
-   <p>
-    <ins> <span class="parnum">4</span> <em>Recommended practice:</em> For <code class="highlight"><c- n>vprint_unicode</c-></code>, if invoking the native
+       <p>
+        <ins> Otherwise (if <code class="highlight"><c- n>os</c-></code> is not such a stream or the function is <code class="highlight"><c- n>vprint_nonunicode</c-></code>), inserts the character sequence <code class="highlight"><c- p>[</c-><c- n>out</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>out</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> into <code class="highlight"><c- n>os</c-></code>. </ins>
+       </p>
+       <p>
+        <ins> If writing to the terminal or inserting into <code class="highlight"><c- n>os</c-></code> fails, calls <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>setstate</c-><c- p>(</c-><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-><c- p>)</c-></code> (which may throw <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>failure</c-></code>). </ins>
+       </p>
+       <p>
+        <ins> <span class="parnum">4</span> <em>Recommended practice:</em> For <code class="highlight"><c- n>vprint_unicode</c-></code>, if invoking the native
 Unicode API requires transcoding, implementations should substitute
 invalid code units with U+FFFD REPLACEMENT CHARACTER per The Unicode
 Standard Version 14.0 – Core Specification, Chapter 3.9. </ins>
-   </p>
-   <p>Add to Bibliography:</p>
-   <ins> – The Unicode® Standard Version 14.0 – Core Specification </ins>
-   <h2 class="heading settled" id="lst"><span class="content">Appendix A: Unicode tests</span><a class="self-link" href="#lst"></a></h2>
-   <p>This appendix gives full listings of programs for testing Unicode handling in
+       </p>
+       <p>Add to Bibliography:</p>
+       <ins> – The Unicode® Standard Version 14.0 – Core Specification </ins>
+       <h2 class="heading settled" id="lst"><span class="content">Appendix A: Unicode tests</span><a class="self-link" href="#lst"></a></h2>
+       <p>This appendix gives full listings of programs for testing Unicode handling in
 various formatting facilities as well as test commands and their output on
 different platforms. The code contains additional sanity checks to ensure that
 the strings are encoded in some form of UTF as opposed to a legacy encoding.</p>
-   <p>C (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>c</c-></code>):</p>
+       <p>C (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>c</c-></code>):</p>
 <pre class="language-c highlight"><c- cp>#include</c-> &lt;stdio.h>
 <c- cp>#include</c-> &lt;stdlib.h>
 
@@ -3544,7 +3549,7 @@ the strings are encoded in some form of UTF as opposed to a legacy encoding.</p>
   <c- n>printf</c-><c- p>(</c-><c- n>message</c-><c- p>);</c->
 <c- p>}</c->
 </pre>
-   <p>Go (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>go</c-></code>):</p>
+       <p>Go (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>go</c-></code>):</p>
 <pre class="language-go highlight"><c- kn>package</c-> main
 
 <c- kn>import</c-> <c- s>"fmt"</c->
@@ -3558,7 +3563,7 @@ the strings are encoded in some form of UTF as opposed to a legacy encoding.</p>
   fmt<c- p>.</c->Println<c- p>(</c->message<c- p>)</c->
 <c- p>}</c->
 </pre>
-   <p>Java (<code class="highlight"><c- n>Test</c-><c- p>.</c-><c- n>java</c-></code>):</p>
+       <p>Java (<code class="highlight"><c- n>Test</c-><c- p>.</c-><c- n>java</c-></code>):</p>
 <pre class="language-java highlight"><c- a>class</c-> <c- nc>Test</c-> <c- p>{</c->
   <c- a>public</c-> <c- a>static</c-> <c- b>void</c-> <c- nf>main</c-><c- p>(</c-><c- n>String</c-><c- o>[]</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
     <c- n>String</c-> <c- n>message</c-> <c- o>=</c-> <c- s>"Привет, κόσμος!\n"</c-><c- p>;</c->
@@ -3567,18 +3572,18 @@ the strings are encoded in some form of UTF as opposed to a legacy encoding.</p>
   <c- p>}</c->
 <c- p>}</c->
 </pre>
-   <p>JavaScript / Node.js (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>js</c-></code>):</p>
+       <p>JavaScript / Node.js (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>js</c-></code>):</p>
 <pre class="language-js highlight">message <c- o>=</c-> <c- u>"Привет, κόσμος!"</c-><c- p>;</c->
 <c- k>if</c-> <c- p>(</c->message<c- p>.</c->charCodeAt<c- p>(</c-><c- mf>0</c-><c- p>)</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>)</c-> <c- k>throw</c-> <c- u>"wrong encoding"</c-><c- p>;</c->
 console<c- p>.</c->log<c- p>(</c->message<c- p>);</c->
 </pre>
-   <p>Python (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>py</c-></code>):</p>
+       <p>Python (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>py</c-></code>):</p>
 <pre class="language-python highlight"><c- n>message</c-> <c- o>=</c-> <c- u>"Привет, κόσμος!"</c->
 <c- k>if</c-> ord<c- p>(</c-><c- n>message</c-><c- p>[</c-><c- mi>0</c-><c- p>])</c-> <c- o>!=</c-> <c- mh>0x41F</c-><c- p>:</c->
     <c- k>raise</c-> <c- ne>Exception</c-><c- p>()</c->
 print<c- p>(</c-><c- n>message</c-><c- p>)</c->
 </pre>
-   <p>Rust (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>rs</c-></code>):</p>
+       <p>Rust (<code class="highlight"><c- n>test</c-><c- p>.</c-><c- n>rs</c-></code>):</p>
 <pre class="language-rust highlight"><c- k>fn</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
   <c- k>if</c-> <c- s>"Привет, κόσμος!"</c-><c- p>.</c-><c- n>chars</c-><c- p>().</c-><c- n>nth</c-><c- p>(</c-><c- mi>0</c-><c- p>).</c-><c- n>unwrap</c-><c- p>()</c-> <c- k>as</c-> <c- b>u32</c-> <c- o>!=</c-> <c- mh>0x41F</c-> <c- p>{</c->
     panic!<c- p>();</c->
@@ -3586,7 +3591,7 @@ print<c- p>(</c-><c- n>message</c-><c- p>)</c->
   println!<c- p>(</c-><c- s>"Привет, κόσμος!"</c-><c- p>);</c->
 <c- p>}</c->
 </pre>
-   <p>Linux:</p>
+       <p>Linux:</p>
 <pre class="highlight"><c- n>$</c-> <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
 <c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
@@ -3614,39 +3619,39 @@ print<c- p>(</c-><c- n>message</c-><c- p>)</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
 <c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>linux</c-><c- p>.</c-><c- n>txt</c->
 </pre>
-   <p>All output files are in UTF-8:</p>
-   <ul>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-linux.txt">out-c-linux.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-linux.txt">out-go-linux.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-linux.txt">out-java-linux.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-linux.txt">out-js-linux.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-linux.txt">out-py-linux.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-linux.txt">out-rust-linux.txt</a></p>
-   </ul>
-   <p>Linux configuration:</p>
-   <ul>
-    <li data-md>
-     <p>Ubuntu Focal 20.04 with the ru_RU.UTF-8 locale</p>
-    <li data-md>
-     <p>cc: gcc 9.3.0</p>
-    <li data-md>
-     <p>go: go1.13.8</p>
-    <li data-md>
-     <p>java: openjdk 11.0.9.1</p>
-    <li data-md>
-     <p>node: v14.5.0</p>
-    <li data-md>
-     <p>python3: 3.7.5</p>
-    <li data-md>
-     <p>rustc: 1.47.0</p>
-   </ul>
-   <p>macOS:</p>
+       <p>All output files are in UTF-8:</p>
+       <ul>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-linux.txt">out-c-linux.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-linux.txt">out-go-linux.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-linux.txt">out-java-linux.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-linux.txt">out-js-linux.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-linux.txt">out-py-linux.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-linux.txt">out-rust-linux.txt</a></p>
+       </ul>
+       <p>Linux configuration:</p>
+       <ul>
+        <li data-md>
+         <p>Ubuntu Focal 20.04 with the ru_RU.UTF-8 locale</p>
+        <li data-md>
+         <p>cc: gcc 9.3.0</p>
+        <li data-md>
+         <p>go: go1.13.8</p>
+        <li data-md>
+         <p>java: openjdk 11.0.9.1</p>
+        <li data-md>
+         <p>node: v14.5.0</p>
+        <li data-md>
+         <p>python3: 3.7.5</p>
+        <li data-md>
+         <p>rustc: 1.47.0</p>
+       </ul>
+       <p>macOS:</p>
 <pre class="highlight"><c- o>%</c-> <c- n>cc</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c-> <c- o>-</c-><c- n>o</c-> <c- n>c</c-><c- o>-</c-><c- n>test</c->
 <c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
@@ -3674,40 +3679,40 @@ print<c- p>(</c-><c- n>message</c-><c- p>)</c->
 Привет<c- p>,</c-> κόσμος<c- o>!</c->
 <c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>></c-> <c- n>out</c-><c- o>-</c-><c- n>rust</c-><c- o>-</c-><c- n>macos</c-><c- p>.</c-><c- n>txt</c->
 </pre>
-   <p>All output files are in UTF-8:</p>
-   <ul>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt">out-c-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-macos.txt">out-go-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt">out-java-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt">out-js-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt">out-py-macos.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt">out-rust-macos.txt</a></p>
-   </ul>
-   <p>macOS configuration:</p>
-   <ul>
-    <li data-md>
-     <p>macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
+       <p>All output files are in UTF-8:</p>
+       <ul>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-macos.txt">out-c-macos.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-macos.txt">out-go-macos.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-macos.txt">out-java-macos.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-macos.txt">out-js-macos.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-macos.txt">out-py-macos.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-macos.txt">out-rust-macos.txt</a></p>
+       </ul>
+       <p>macOS configuration:</p>
+       <ul>
+        <li data-md>
+         <p>macOS Catalina 10.15.7 with the ru_RU.UTF-8 locale which is the default for
 Russian</p>
-    <li data-md>
-     <p>cc: Apple clang version 12.0.0 (clang-1200.0.32.27)</p>
-    <li data-md>
-     <p>go: go1.15.5</p>
-    <li data-md>
-     <p>java: openjdk 14.0.1</p>
-    <li data-md>
-     <p>node: v14.5.0</p>
-    <li data-md>
-     <p>python3: 3.7.5</p>
-    <li data-md>
-     <p>rustc: 1.47.0</p>
-   </ul>
-   <p>Windows:</p>
+        <li data-md>
+         <p>cc: Apple clang version 12.0.0 (clang-1200.0.32.27)</p>
+        <li data-md>
+         <p>go: go1.15.5</p>
+        <li data-md>
+         <p>java: openjdk 14.0.1</p>
+        <li data-md>
+         <p>node: v14.5.0</p>
+        <li data-md>
+         <p>python3: 3.7.5</p>
+        <li data-md>
+         <p>rustc: 1.47.0</p>
+       </ul>
+       <p>Windows:</p>
 <pre class="highlight"><c- o>></c-><c- n>cl</c-> <c- o>/</c-><c- nl>Fe</c-><c- p>:</c-><c- n>c</c-><c- o>-</c-><c- n>test</c-><c- p>.</c-><c- n>exe</c-> <c- n>test</c-><c- p>.</c-><c- n>c</c->
 <c- p>...</c->
 <c- o>></c-><c- n>c</c-><c- o>-</c-><c- n>test</c->
@@ -3759,46 +3764,49 @@ Russian</p>
 <c- o>></c-><c- n>rust</c-><c- o>-</c-><c- n>test</c-> <c- o>|</c-> <c- n>findstr</c-> <c- p>,</c->
 ╨Я╤А╨╕╨▓╨╡╤В<c- p>,</c-> ╬║╧М╧Г╬╝╬┐╧В<c- o>!</c->
 </pre>
-   <p>C, JavaScript (node.js), Rust and Go produced valid UTF-8 when the output was
+       <p>C, JavaScript (node.js), Rust and Go produced valid UTF-8 when the output was
 redirected to files. Java produced a file in the legacy CP1251 encoding with <code class="highlight"><c- o>?</c-></code> for non-representable code points. Python failed on transcoding to CP1251.
 Output files:</p>
-   <ul>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt">out-c-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-windows.txt">out-go-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt">out-java-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt">out-js-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt">out-py-windows.txt</a></p>
-    <li data-md>
-     <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt">out-rust-windows.txt</a></p>
-   </ul>
-   <p>Windows configuration:</p>
-   <ul>
-    <li data-md>
-     <p>Windows 10 10.0.19041 with Russian Region and Language settings</p>
-    <li data-md>
-     <p>cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335</p>
-    <li data-md>
-     <p>go: go1.15.6</p>
-    <li data-md>
-     <p>java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)</p>
-    <li data-md>
-     <p>node: v14.15.3</p>
-    <li data-md>
-     <p>python: 3.9.1</p>
-    <li data-md>
-     <p>rustc: v14.15.3</p>
-   </ul>
-   <h2 class="heading settled" data-level="17" id="ack"><span class="secno">17. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
-   <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
-   <p>Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
+       <ul>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-c-windows.txt">out-c-windows.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-go-windows.txt">out-go-windows.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-java-windows.txt">out-java-windows.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-js-windows.txt">out-js-windows.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-py-windows.txt">out-py-windows.txt</a></p>
+        <li data-md>
+         <p><a href="https://raw.githubusercontent.com/vitaut/unicode-test/main/out-rust-windows.txt">out-rust-windows.txt</a></p>
+       </ul>
+       <p>Windows configuration:</p>
+       <ul>
+        <li data-md>
+         <p>Windows 10 10.0.19041 with Russian Region and Language settings</p>
+        <li data-md>
+         <p>cl: Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29335</p>
+        <li data-md>
+         <p>go: go1.15.6</p>
+        <li data-md>
+         <p>java: Java HotSpot(TM) 64-Bit Server VM (build 15.0.1+9-18)</p>
+        <li data-md>
+         <p>node: v14.15.3</p>
+        <li data-md>
+         <p>python: 3.9.1</p>
+        <li data-md>
+         <p>rustc: v14.15.3</p>
+       </ul>
+       <h2 class="heading settled" data-level="17" id="ack"><span class="secno">17. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+       <p>Thanks to Corentin Jabot for his work on text encodings in C++ and in particular <a data-link-type="biblio" href="#biblio-p1885">[P1885]</a> that will simplify implementation of the current proposal.</p>
+       <p>Thanks to Roger Orr, Peter Brett, Hubert Tong, the BSI C++ panel and Tom
 Honermann for their feedback, support, constructive criticism and contributions
 to the proposal.</p>
-   <p>Thanks to Tim Song for substantial improvements to the wording.</p>
+       <p>Thanks to Tim Song for substantial improvements to the wording.</p>
+      </ul>
+    </ul>
+   </ins>
   </main>
 <script>
 (function() {
