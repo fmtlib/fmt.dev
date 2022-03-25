@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatted output
-Shortname: D2093
+Shortname: P2093
 Revision: 14
 Audience: LWG
-Status: D
+Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-02-18
+Date: 2022-03-25
 Markup Shorthands: markdown yes
 </pre>
 
@@ -57,8 +57,8 @@ Changes since R13:
     to the terminal or `stream` fails. May throw `bad_alloc`." in [print.fun].8
     and similar changes in other Throws clauses.
 
-* Added "`stream` is not null" preconditions to `FILE*` overloads of
-    `vprint_unicode` and `vprint_nonunicode`.
+* Added "`stream` is a valid pointer to an output C stream" preconditions to
+    `FILE*` overloads of `vprint_unicode` and `vprint_nonunicode`.
 
 * Revised the wording for `ostream` overaloads of `vprint_unicode` and
     `vprint_nonunicode` per suggestions from Tim Song.
@@ -1648,7 +1648,7 @@ void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 </pre>
 <ins>
 <span class="parnum">6</span> *Preconditions:*
-`stream` is not null.
+`stream` is a valid pointer to an output C stream.
 </ins>
 <ins>
 <span class="parnum">7</span> *Effects:*
@@ -1711,7 +1711,7 @@ void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 </pre>
 <ins>
 <span class="parnum">11</span> *Preconditions:*
-`stream` is not null.
+`stream` is a valid pointer to an output C stream.
 </ins>
 <ins>
 <span class="parnum">12</span> *Effects:* Writes the result of `vformat(fmt, args)` to `stream`.
@@ -1774,11 +1774,17 @@ void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
 Behaves as a formatted output function
 ([[ostream.formatted.reqmts](
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2)])
-of `os`, except that failure to generate
-output is reported as specified below, and except that any exception
-thrown by the call to `vformat` is propagated without regard to the
-value of `os.exceptions()` and without turning on `ios_base::badbit` in
-the error state of `os`. After constructing a `sentry` object, the
+of `os`, except that:
+
+<ul>
+<li>failure to generate output is reported as specified below, and 
+<li>
+  any exception thrown by the call to `vformat` is propagated without regard to
+  the value of `os.exceptions()` and without turning on `ios_base::badbit` in
+  the error state of `os`.
+<ul>
+
+After constructing a `sentry` object, the
 function initializes an automatic variable via
 </ins>
 <pre>
