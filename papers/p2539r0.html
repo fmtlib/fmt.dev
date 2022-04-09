@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2539R0: Should the output of std::print to a terminal be synchronized with the underlying stream?</title>
+  <title>P2539R1: Should the output of std::print to a terminal be synchronized with the underlying stream?</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0c15cea55d04ed34d60da3d8001fdcaf61898a06" name="document-revision">
+  <meta content="32c4850720e12253118a42808cb602587f7525ce" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2539R0<br>Should the output of std::print to a terminal be synchronized with the underlying stream?</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-02-05">2022-02-05</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2539R1<br>Should the output of std::print to a terminal be synchronized with the underlying stream?</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-04-09">2022-04-09</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2126,12 +2126,14 @@ discusses this option.</p>
 <pre class="highlight"><c- n>first</c->
 <c- n>second</c->
 </pre>
-   <p>because <code class="highlight"><c- n>stdout</c-></code> is line buffered by default.</p>
-   <p>However, this may reorder the output:</p>
+   <p>because <code class="highlight"><c- n>stdout</c-></code> is at least line buffered by default.</p>
+   <p>However, in theory this may reorder the output:</p>
 <pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"first"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"second"</c-><c- p>);</c->
 </pre>
-   <p>because of buffering in <code class="highlight"><c- n>printf</c-></code> but not <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>.</p>
+   <p>because of buffering in <code class="highlight"><c- n>printf</c-></code> but not <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>. Testing on Windows 10
+with MSVC 19.28 showed that the order is preserved in this case as well
+which suggests that <code class="highlight"><c- n>stdout</c-></code> is completely unbuffered by default there.</p>
    <p>It is possible to prevent reordering by flushing the buffer before writing to a
 terminal in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> making this case less surprising. This will incur
 additional cost but only for the terminal case and when transcoding is needed.</p>

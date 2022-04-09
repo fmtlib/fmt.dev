@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Should the output of std::print to a terminal be synchronized with the underlying stream?
 Shortname: P2539
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-02-05
+Date: 2022-04-09
 Markup Shorthands: markdown yes
 </pre>
 
@@ -49,16 +49,18 @@ first
 second
 ```
 
-because `stdout` is line buffered by default.
+because `stdout` is at least line buffered by default.
 
-However, this may reorder the output:
+However, in theory this may reorder the output:
 
 ```c++
 printf("first");
 std::print("second");
 ```
 
-because of buffering in `printf` but not `std::print`.
+because of buffering in `printf` but not `std::print`. Testing on Windows 10
+with MSVC 19.28 showed that the order is preserved in this case as well
+which suggests that `stdout` is completely unbuffered by default there.
 
 It is possible to prevent reordering by flushing the buffer before writing to a
 terminal in `std::print` making this case less surprising. This will incur
