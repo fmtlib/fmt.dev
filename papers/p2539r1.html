@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="32c4850720e12253118a42808cb602587f7525ce" name="document-revision">
+  <meta content="12a3b7ab1607db4fc5ec56ed429a272c53ad30ce" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2103,8 +2103,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#discussion"><span class="secno">1</span> <span class="content">Discussion</span></a>
-    <li><a href="#references"><span class="secno">2</span> <span class="content">References</span></a>
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
+    <li><a href="#examples"><span class="secno">3</span> <span class="content">Motivating examples</span></a>
+    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
+    <li><a href="#proposal①"><span class="secno">5</span> <span class="content">Wording</span></a>
+    <li><a href="#references"><span class="secno">6</span> <span class="content">References</span></a>
     <li>
      <a href="#references①"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2113,11 +2117,24 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="discussion"><span class="secno">1. </span><span class="content">Discussion</span><a class="self-link" href="#discussion"></a></h2>
+   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p>To prevent mojibake <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> may use a native Unicode API when writing to
 a terminal bypassing the stream buffer. During the review of <a data-link-type="biblio" href="#biblio-p2093">[P2093]</a> "Formatted output" Tim Song suggested that synchronizing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> with the
-underlying stream may be beneficial for gradual adoption. This paper briefly
-discusses this option.</p>
+underlying stream may be beneficial for gradual adoption. This paper presents
+motivating examples, observes that this problem doesn’t normally happen in
+practice and proposes a minor update to the wording to provide a synchronization
+guarantee.</p>
+   <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R0:</p>
+   <ul>
+    <li data-md>
+     <p>Added another motivating example.</p>
+    <li data-md>
+     <p>Split Discussion into multiple sections.</p>
+    <li data-md>
+     <p>Added the wording.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="examples"><span class="secno">3. </span><span class="content">Motivating examples</span><a class="self-link" href="#examples"></a></h2>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"first</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"second</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
@@ -2132,14 +2149,88 @@ discusses this option.</p>
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"second"</c-><c- p>);</c->
 </pre>
    <p>because of buffering in <code class="highlight"><c- n>printf</c-></code> but not <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>. Testing on Windows 10
-with MSVC 19.28 showed that the order is preserved in this case as well
-which suggests that <code class="highlight"><c- n>stdout</c-></code> is completely unbuffered by default there.</p>
-   <p>It is possible to prevent reordering by flushing the buffer before writing to a
-terminal in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> making this case less surprising. This will incur
-additional cost but only for the terminal case and when transcoding is needed.</p>
-   <p>Neither {fmt} (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) nor Rust (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>) do such synchronization in
-their implementations of <code class="highlight"><c- n>print</c-></code>.</p>
-   <h2 class="heading settled" data-level="2" id="references"><span class="secno">2. </span><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+with MSVC 19.28 and {fmt}'s implementation of <code class="highlight"><c- n>print</c-></code> (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) showed that the
+order is preserved in this case as well. This suggests that <code class="highlight"><c- n>stdout</c-></code> is
+completely unbuffered by default on this system. This is also confirmed in <a data-link-type="biblio" href="#biblio-ms-crt">[MS-CRT]</a>:</p>
+   <blockquote>
+    <p>The <code class="highlight"><c- n>stdout</c-></code> and <code class="highlight"><c- n>stderr</c-></code> functions are flushed whenever they are full or, if
+you are writing to a character device, after each library call.</p>
+   </blockquote>
+   <p>On other systems the order is
+preserved too because the output goes through the stream buffer in both cases.</p>
+   <p>Consider, another example that involves iostreams:</p>
+<pre class="language-c++ highlight"><c- k>struct</c-> <c- nc>A</c-> <c- p>{</c->
+  <c- b>int</c-> <c- n>a</c-><c- p>;</c->
+  <c- b>int</c-> <c- n>b</c-><c- p>;</c->
+
+  <c- n>friend</c-> <c- n>std</c-><c- o>::</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- k>const</c-> <c- n>A</c-><c- o>&amp;</c-> <c- n>a</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- s>"{{a={}, b={}}}"</c-><c- p>,</c-> <c- n>a</c-><c- p>.</c-><c- n>a</c-><c- p>,</c-> <c- n>a</c-><c- p>.</c-><c- n>b</c-><c- p>);</c->
+    <c- k>return</c-> <c- n>os</c-><c- p>;</c->
+  <c- p>}</c->
+<c- p>};</c->
+
+<c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
+  <c- n>A</c-> <c- n>a</c-> <c- o>=</c-> <c- p>{</c-><c- mi>2</c-><c- p>,</c-> <c- mi>4</c-><c- p>};</c->
+  <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"A is "</c-> <c- o>&lt;&lt;</c-> <c- n>a</c-> <c- o>&lt;&lt;</c-> <c- sc>'\n'</c-><c- p>;</c->
+<c- p>}</c->
+</pre>
+   <p>We updated the implementation of <code class="highlight"><c- n>print</c-></code> for <code class="highlight"><c- n>ostream</c-></code> in {fmt} to use the
+native Unicode API and verified that there is no reordering in this example
+either on the same test platform.</p>
+   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p>Althought the issue appears to be mostly theoretical, it might still be
+beneficial to clarify in the standard that synchronization is desired.
+It is possible to guarantee the desired output ordering by flushing the buffer
+before writing to a terminal in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>.
+This will incur additional cost but only for the terminal case and when
+transcoding is needed. Platforms that don’t buffer the output like the one we
+tested should be able to avoid a call to flush.</p>
+   <p>Neither {fmt} (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) nor Rust (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>) do any attempt to provide such
+synchronization in their implementations of <code class="highlight"><c- n>print</c-></code>. However, in practice this
+synchronization appears to be a noop on tested platforms.</p>
+   <h2 class="heading settled" data-level="5" id="proposal①"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#proposal①"></a></h2>
+   <p>Modify subsection "Print functions [print.fun]":</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>...</p>
+   <p><em>Effects:</em> The function initializes an automatic variable via</p>
+<pre class="highlight"><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
+the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged.</p>
+   <ins> If the native Unicode API is used and the terminal output is buffered by
+default, the function flushes the <code class="highlight"><c- n>stream</c-></code>'s   buffer before writing <code class="highlight"><c- n>out</c-></code>. </ins>
+   <p>Modify subsection "Print [ostream.formatted.print]":</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+<c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects:</em> Behaves as a formatted output function
+(<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2">[ostream.formatted.reqmts</a>])
+of <code class="highlight"><c- n>os</c-></code>, except that:</p>
+   <ul>
+    <li>failure to generate output is reported as specified below, and 
+    <li> any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> is propagated without regard to
+  the value of <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>exceptions</c-><c- p>()</c-></code> and without turning on <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-></code> in
+  the error state of <code class="highlight"><c- n>os</c-></code>. 
+   </ul>
+   <p>After constructing a <code class="highlight"><c- n>sentry</c-></code> object, the
+function initializes an automatic variable via</p>
+<pre class="highlight"><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>os</c-><c- p>.</c-><c- n>getloc</c-><c- p>(),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>
+    If the function is <code class="highlight"><c- n>vprint_unicode</c-></code> and <code class="highlight"><c- n>os</c-></code> is a stream that refers to a
+terminal capable of displaying Unicode which is determined in an
+implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the
+native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior
+is undefined and implementations are encouraged to diagnose it. 
+    <ins> If the terminal output is buffered by default, the function flushes the <code class="highlight"><c- n>stream</c-></code>'s buffer before writing <code class="highlight"><c- n>out</c-></code>.</ins>
+   </p>
+   <p> Otherwise (if <code class="highlight"><c- n>os</c-></code> is not such a stream or the function is <code class="highlight"><c- n>vprint_nonunicode</c-></code>), inserts the character sequence <code class="highlight"><c- p>[</c-><c- n>out</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>out</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> into <code class="highlight"><c- n>os</c-></code>. </p>
+   <p> If writing to the terminal or inserting into <code class="highlight"><c- n>os</c-></code> fails, calls <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>setstate</c-><c- p>(</c-><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-><c- p>)</c-></code> (which may throw <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>failure</c-></code>). </p>
+   <p></p>
+   <h2 class="heading settled" data-level="6" id="references"><span class="secno">6. </span><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   </main>
 <script>
 (function() {
@@ -2275,6 +2366,8 @@ their implementations of <code class="highlight"><c- n>print</c-></code>.</p>
   <dl>
    <dt id="biblio-fmt">[FMT]
    <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt">The fmt library</a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dt id="biblio-ms-crt">[MS-CRT]
+   <dd><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/stream-i-o">C runtime library (CRT) reference, Stream I/O</a>. URL: <a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/stream-i-o">https://docs.microsoft.com/en-us/cpp/c-runtime-library/stream-i-o</a>
    <dt id="biblio-p2093">[P2093]
    <dd>Victor Zverovich. <a href="https://wg21.link/p2093">Formatted output</a>. URL: <a href="https://wg21.link/p2093">https://wg21.link/p2093</a>
    <dt id="biblio-rust-stdio">[RUST-STDIO]

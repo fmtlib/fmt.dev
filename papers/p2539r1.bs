@@ -27,13 +27,28 @@ Markup Shorthands: markdown yes
   }
 </style>
 
-# Discussion
+Introduction {#intro}
+============
 
 To prevent mojibake `std::print` may use a native Unicode API when writing to
 a terminal bypassing the stream buffer. During the review of [[P2093]]
 "Formatted output" Tim Song suggested that synchronizing `std::print` with the
-underlying stream may be beneficial for gradual adoption. This paper briefly
-discusses this option.
+underlying stream may be beneficial for gradual adoption. This paper presents
+motivating examples, observes that this problem doesn't normally happen in
+practice and proposes a minor update to the wording to provide a synchronization
+guarantee.
+
+Revision history {#hist}
+================
+
+Changes since R0:
+
+* Added another motivating example.
+* Split Discussion into multiple sections.
+* Added the wording.
+
+Motivating examples {#examples}
+===================
 
 Consider the following example:
 
@@ -59,20 +74,131 @@ std::print("second");
 ```
 
 because of buffering in `printf` but not `std::print`. Testing on Windows 10
-with MSVC 19.28 showed that the order is preserved in this case as well
-which suggests that `stdout` is completely unbuffered by default there.
+with MSVC 19.28 and {fmt}'s implementation of `print` ([[FMT]]) showed that the
+order is preserved in this case as well. This suggests that `stdout` is
+completely unbuffered by default on this system. This is also confirmed in
+[[MS-CRT]]:
 
-It is possible to prevent reordering by flushing the buffer before writing to a
-terminal in `std::print` making this case less surprising. This will incur
-additional cost but only for the terminal case and when transcoding is needed.
+> The `stdout` and `stderr` functions are flushed whenever they are full or, if
+> you are writing to a character device, after each library call.
 
-Neither {fmt} ([[FMT]]) nor Rust ([[RUST-STDIO]]) do such synchronization in
-their implementations of `print`.
+On other systems the order is
+preserved too because the output goes through the stream buffer in both cases.
 
-# References
+Consider, another example that involves iostreams:
+
+```c++
+struct A {
+  int a;
+  int b;
+
+  friend std::ostream& operator<<(std::ostream& os, const A& a) {
+    std::print(os, "{{a={}, b={}}}", a.a, a.b);
+    return os;
+  }
+};
+
+int main() {
+  A a = {2, 4};
+  std::cout << "A is " << a << '\n';
+}
+```
+
+We updated the implementation of `print` for `ostream` in {fmt} to use the
+native Unicode API and verified that there is no reordering in this example
+either on the same test platform.
+
+Proposal {#proposal}
+========
+
+Althought the issue appears to be mostly theoretical, it might still be
+beneficial to clarify in the standard that synchronization is desired.
+It is possible to guarantee the desired output ordering by flushing the buffer
+before writing to a terminal in `std::print`.
+This will incur additional cost but only for the terminal case and when
+transcoding is needed. Platforms that don't buffer the output like the one we
+tested should be able to avoid a call to flush.
+
+Neither {fmt} ([[FMT]]) nor Rust ([[RUST-STDIO]]) do any attempt to provide such
+synchronization in their implementations of `print`. However, in practice this
+synchronization appears to be a noop on tested platforms.
+
+Wording {#proposal}
+=======
+
+Modify subsection "Print functions [print.fun]":
+
+<pre>
+void vprint_unicode(FILE* stream, string_view fmt, format_args args);
+</pre>
+...
+
+*Effects:*
+The function initializes an automatic variable via
+<pre>
+string out = vformat(fmt, args);
+</pre>
+If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
+the terminal using the native Unicode API; if `out` contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+Otherwise writes `out` to `stream` unchanged.
+<ins>
+If the native Unicode API is used and the terminal output is buffered by
+default, the function flushes the `stream`'s   buffer before writing `out`.
+</ins>
+
+Modify subsection "Print [ostream.formatted.print]":
+
+<pre>
+void vprint_unicode(ostream& os, string_view fmt, format_args args);
+void vprint_nonunicode(ostream& os, string_view fmt, format_args args);
+</pre>
+
+*Effects:*
+Behaves as a formatted output function
+([[ostream.formatted.reqmts](
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4861.pdf#subsubsection.29.7.5.2)])
+of `os`, except that:
+
+<ul>
+<li>failure to generate output is reported as specified below, and
+<li>
+  any exception thrown by the call to `vformat` is propagated without regard to
+  the value of `os.exceptions()` and without turning on `ios_base::badbit` in
+  the error state of `os`.
+</ul>
+
+After constructing a `sentry` object, the
+function initializes an automatic variable via
+<pre>
+string out = vformat(os.getloc(), fmt, args);
+</pre>
+If the function is `vprint_unicode` and `os` is a stream that refers to a
+terminal capable of displaying Unicode which is determined in an
+implementation-defined manner, writes `out` to the terminal using the
+native Unicode API; if `out` contains invalid code units, the behavior
+is undefined and implementations are encouraged to diagnose it. <ins>
+If the terminal output is buffered by default, the function flushes the
+`stream`'s buffer before writing `out`.
+</ins>
+<p>
+Otherwise (if `os` is not such a stream or the function is
+`vprint_nonunicode`), inserts the character sequence `[out.begin(),
+out.end())` into `os`.
+<p>
+If writing to the terminal or inserting into `os` fails, calls
+`os.setstate(ios_base::badbit)` (which may throw `ios_base::failure`).
+<p>
+
+References
+==========
 
 <pre class=biblio>
 {
+  "MS-CRT": {
+    "title": "C runtime library (CRT) reference, Stream I/O",
+    "href": "https://docs.microsoft.com/en-us/cpp/c-runtime-library/stream-i-o"
+  },
   "FMT": {
     "title": "The fmt library",
     "authors": ["Victor Zverovich"],
