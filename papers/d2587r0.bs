@@ -1,0 +1,132 @@
+<pre class='metadata'>
+Title: <code>to_string</code> or not <code>to_string</code>
+Shortname: P2587
+Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2022-05-11
+Markup Shorthands: markdown yes
+</pre>
+
+<p style="text-align: right">
+"Though this be madness, yet there is method in ’t."
+― Polonius
+</p>
+
+Introduction
+============
+
+C++11 introduced a set of `std::to_string` overloads for integral and
+floating-point types. Fortunately for integral and unfortunately for
+floating-point overloads they are defined in terms of `sprintf` inconsistently
+with C++ formatted I/O functions. Additionally the choice of the floating-point
+format makes `std::to_string` of very limited use in practice. This paper
+proposes fixing these issues while retaining existing semantics of integral
+overloads.
+
+Examples
+========
+
+Consider the following example:
+
+```c++
+std::cout.imbue(std::locale("uk_UA.UTF-8"));
+
+std::cout << "\niostreams\n";
+std::cout << 1234 << "\n";
+std::cout << 1234.5 << "\n";
+
+std::cout << "\nto_string\n";
+std::cout << std::to_string(1234) << "\n";
+std::cout << std::to_string(1234.5) << "\n";
+
+setlocale(LC_ALL, "uk_UA.UTF-8");
+
+std::cout << "\nto_string (C locale)\n";
+std::cout << std::to_string(1234) << "\n";
+std::cout << std::to_string(1234.5) << "\n";
+```
+
+It prints:
+
+```
+iostreams:
+1 234
+1 234,5
+
+to_string:
+1234
+1234.500000
+
+to_string (C locale):
+1234
+1234,500000
+```
+
+Since `std::to_string` uses the C locale the integral overloads are effectively
+unlocalized. The output of floating-point overloads is inconsistent with the
+output of iostreams because the former takes the decimal point from the C locale
+and doesn't do grouping.
+
+Additionally, due to an unfortunate choice of the fixed format floating-point
+overloads are only useful for numbers in a limited exponent range. For example:
+
+<!-- https://godbolt.org/z/rv9hbsoE4 -->
+```c++
+std::cout << std::to_string(std::numeric_limits<double>::max());
+```
+
+prints
+
+```
+1797693134862315708145274237317043567980705675258449965989174768031572607800285
+3876058955863276687817154045895351438246423432132688946418276846754670353751698
+6049910576551282076245490090389328944075868508455133942304583236903222948165808
+559332123348274797826204144723168738177180919299881250404026184124858368.000000
+```
+(line breaks inserted for readability)
+
+Here only the first 17 digits are meaningful, the next 292 are so-called
+"garbage" digits ([[DRAGON]]). And finally we have 6 meaningless zeros after a
+possibly localized decimal point.
+
+Formatting of small floating-point numbers is even less useful. For example:
+
+```c++
+std::cout << std::to_string(-1e-7);
+```
+
+prints
+
+```
+-0.000000
+```
+
+Proposal
+========
+
+Redefine `std::to_string` in terms of `std::to_chars` or `std::format` making
+more explicit the fact that integral overloads are effectively unlocalized and
+changing the format of floating-point overloads to shortest decimal
+representation.
+
+TODO: before / after
+
+Implementation
+==============
+
+{fmt} implements proposed changes in `fmt::to_string`.
+
+<pre class=biblio>
+{
+  "DRAGON": {
+    "title": "How to Print Floating-Point Numbers Accurately",
+    "authors": ["Guy L. Steele Jr.", "Jon L White"],
+    "href": "https://fmt.dev/papers/p372-steele.pdf"
+  }
+}
+</pre>
