@@ -22,11 +22,11 @@ Introduction
 
 C++11 introduced a set of `std::to_string` overloads for integral and
 floating-point types. Fortunately for integral and unfortunately for
-floating-point overloads they are defined in terms of `sprintf` inconsistently
-with C++ formatted I/O functions. Additionally the choice of the floating-point
-format makes `std::to_string` of very limited use in practice. This paper
-proposes fixing these issues while retaining existing semantics of integral
-overloads.
+floating-point overloads they are all defined in terms of `sprintf`
+inconsistently with C++ formatted I/O functions. Additionally the choice of the
+floating-point format makes `std::to_string` of very limited use in practice.
+This paper proposes fixing these issues while retaining existing semantics of
+integral overloads.
 
 Examples
 ========
@@ -67,13 +67,14 @@ to_string (C locale):
 1234,500000
 ```
 
-Since `std::to_string` uses the C locale the integral overloads are effectively
-unlocalized. The output of floating-point overloads is inconsistent with the
-output of iostreams because the former takes the decimal point from the C locale
-and doesn't do grouping.
+Since `std::to_string` uses the C locale and no grouping the integral overloads
+are effectively unlocalized. The output of floating-point overloads is
+inconsistent with that of iostreams because the former takes the decimal
+point from the C locale and doesn't do grouping.
 
-Additionally, due to an unfortunate choice of the fixed format floating-point
-overloads are only useful for numbers in a limited exponent range. For example:
+Additionally, due to an unfortunate choice of the fixed format in the
+floating-point overloads they are only useful for numbers in a limited exponent
+range. For example:
 
 <!-- https://godbolt.org/z/rv9hbsoE4 -->
 ```c++
@@ -110,9 +111,9 @@ Proposal
 ========
 
 Redefine `std::to_string` in terms of `std::to_chars` or `std::format` making
-more explicit the fact that integral overloads are effectively unlocalized and
-changing the format of floating-point overloads to shortest decimal
-representation.
+more explicit the fact that integral overloads are unlocalized and changing the
+format of floating-point overloads to also be unlocalized and use the shortest
+decimal representation.
 
 TODO: before / after
 
