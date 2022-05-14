@@ -3,7 +3,7 @@ Title: <code>to_string</code> or not <code>to_string</code>
 Shortname: P2587
 Revision: 0
 Audience: LEWG
-Status: D
+Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
@@ -23,10 +23,10 @@ Introduction
 C++11 introduced a set of `std::to_string` overloads for integral and
 floating-point types. Fortunately for integral and unfortunately for
 floating-point overloads they are all defined in terms of `sprintf`
-inconsistently with C++ formatted I/O functions. Additionally the choice of the
-floating-point format makes `std::to_string` of very limited use in practice.
-This paper proposes fixing these issues while retaining existing semantics of
-integral overloads.
+inconsistently with C++ formatted output functions ([[N4910]]). Additionally,
+the choice of the floating-point format makes `std::to_string` of very limited
+use in practice. This paper proposes fixing these issues while retaining
+existing semantics of integral overloads.
 
 Examples
 ========
@@ -34,33 +34,35 @@ Examples
 Consider the following example:
 
 ```c++
-std::cout.imbue(std::locale("uk_UA.UTF-8"));
+auto loc = std::locale("uk_UA.UTF-8");
+std::locale::global(loc);
+std::cout.imbue(loc);
 
-std::cout << "\niostreams\n";
+std::cout << "iostreams:\n";
 std::cout << 1234 << "\n";
 std::cout << 1234.5 << "\n";
 
-std::cout << "\nto_string\n";
+std::cout << "\nto_string:\n";
 std::cout << std::to_string(1234) << "\n";
 std::cout << std::to_string(1234.5) << "\n";
 
 setlocale(LC_ALL, "uk_UA.UTF-8");
 
-std::cout << "\nto_string (C locale)\n";
+std::cout << "\nto_string (C locale):\n";
 std::cout << std::to_string(1234) << "\n";
 std::cout << std::to_string(1234.5) << "\n";
 ```
 
 It prints:
 
-```
+```text
 iostreams:
 1 234
 1 234,5
 
 to_string:
 1234
-1234.500000
+1234,500000
 
 to_string (C locale):
 1234
@@ -110,12 +112,88 @@ prints
 Proposal
 ========
 
-Redefine `std::to_string` in terms of `std::to_chars` or `std::format` making
-more explicit the fact that integral overloads are unlocalized and changing the
-format of floating-point overloads to also be unlocalized and use the shortest
-decimal representation.
+Redefine `std::to_string` in terms of `std::format` which in turn uses
+`std::to_chars` making more explicit the fact that integral overloads are
+unlocalized and changing the format of floating-point overloads to also be
+unlocalized and use the shortest decimal representation.
 
-TODO: before / after
+The following table shows the changes in output for the following code:
+<!-- https://godbolt.org/z/5ec5s5KdM -->
+
+```
+auto output = std::to_string(input);
+```
+<table style="text-align: right;">
+<thead>
+<tr>
+<td>`input`
+<td colspan="2">`output`
+</tr>
+<tr>
+<td>
+<td>**before**
+<td>**after**
+</tr>
+</thead>
+<tr>
+  <td>42
+  <td>42
+  <td>42
+</tr>
+<tr>
+  <td>0.42
+  <td>0.420000
+  <td>0.42
+</tr>
+<tr>
+  <td>-1e-7
+  <td>-0.000000
+  <td>-1e-7
+</tr>
+<tr>
+  <td>1.7976931348623157e+308
+  <td style="max-width: 200px; word-wrap: break-word;">179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.000000
+  <td>1.7976931348623157e+308
+</tr>
+</table>
+
+and similarly with the C locale set:
+```
+setlocale(LC_ALL, "uk_UA.UTF-8");
+auto output = std::to_string(input);
+```
+
+<table style="text-align: right;">
+<thead>
+<tr>
+<td>`input`
+<td colspan="2">`output`
+</tr>
+<tr>
+<td>
+<td>**before**
+<td>**after**
+</tr>
+</thead>
+<tr>
+  <td>12345
+  <td>12345
+  <td>12345
+</tr>
+<tr>
+  <td>1234.5
+  <td>1234,500000
+  <td>1234.5
+</tr>
+</table>
+
+Impact on existing code {#impact}
+=======================
+
+This change will affect the output of `std::to_string` with floating-point
+arguments. In most cases it will result in a more precise and/or shorter output.
+In cases where the C locale is explicitly set the decimal point will no longer
+be localized.
 
 Implementation
 ==============
@@ -124,6 +202,12 @@ Implementation
 
 <pre class=biblio>
 {
+  "N4910": {
+    "title":
+    "Working Draft, Standard for Programming Language C++",
+    "authors": ["Thomas Köppe"],
+    "href": "https://wg21.link/n4910"
+  },
   "DRAGON": {
     "title": "How to Print Floating-Point Numbers Accurately",
     "authors": ["Guy L. Steele Jr.", "Jon L White"],
