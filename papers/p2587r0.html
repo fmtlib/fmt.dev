@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="782069bdd3ec3eddd4c1e5c22d15417b1bb5bb6e" name="document-revision">
+  <meta content="d5864e76106ee27cb004d7c087e0f8e1c525bb90" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2089,11 +2089,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#examples"><span class="secno">2</span> <span class="content">Examples</span></a>
     <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
     <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#implementation"><span class="secno">5</span> <span class="content">Implementation</span></a>
+    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2104,7 +2105,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <p style="text-align: right"> "Though this be madness, yet there is method in ’t."
 ― Polonius </p>
-   <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
+   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p>C++11 introduced a set of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> overloads for integral and
 floating-point types. Fortunately for integral and unfortunately for
 floating-point overloads they are all defined in terms of <code class="highlight"><c- n>sprintf</c-></code> inconsistently with C++ formatted output functions (<a data-link-type="biblio" href="#biblio-n4910">[N4910]</a>). Additionally,
@@ -2145,10 +2146,10 @@ to_string (uk_UA.UTF-8 C locale):
 1234
 1234,500000
 </pre>
-   <p>Since <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> uses the C locale and no grouping the integral overloads
-are effectively unlocalized. The output of floating-point overloads is
+   <p>Since <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> uses the global C locale and no grouping the integral
+overloads are effectively unlocalized. The output of floating-point overloads is
 inconsistent with that of iostreams because the former takes the decimal
-point from the C locale and doesn’t do grouping.</p>
+point from the global C locale and doesn’t do grouping.</p>
    <p>Additionally, due to an unfortunate choice of the fixed format in the
 floating-point overloads they are only useful for numbers in a limited exponent
 range. For example:</p>
@@ -2175,7 +2176,8 @@ possibly localized decimal point.</p>
 unlocalized and changing the format of floating-point overloads to also be
 unlocalized and use the shortest decimal representation.</p>
    <p>The following table shows the changes in output for the following code:</p>
-<pre class="highlight"><c- k>auto</c-> <c- n>output</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>input</c-><c- p>);</c->
+<pre class="highlight"><c- n>setlocale</c-><c- p>(</c-><c- n>LC_ALL</c-><c- p>,</c-> <c- s>"C"</c-><c- p>);</c->
+<c- k>auto</c-> <c- n>output</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>input</c-><c- p>);</c->
 </pre>
    <table style="text-align: right;">
     <thead>
@@ -2204,7 +2206,7 @@ unlocalized and use the shortest decimal representation.</p>
       <td style="max-width: 200px; word-wrap: break-word;">179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.000000 
       <td>1.7976931348623157e+308 
    </table>
-   <p>and similarly with the C locale set:</p>
+   <p>and similarly with the global C locale set:</p>
 <pre class="highlight"><c- n>setlocale</c-><c- p>(</c-><c- n>LC_ALL</c-><c- p>,</c-> <c- s>"uk_UA.UTF-8"</c-><c- p>);</c->
 <c- k>auto</c-> <c- n>output</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>input</c-><c- p>);</c->
 </pre>
@@ -2232,8 +2234,25 @@ unlocalized and use the shortest decimal representation.</p>
 arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
 be localized.</p>
-   <h2 class="heading settled" data-level="5" id="implementation"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>{fmt} implements proposed changes in <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
+   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Modify subsection "Print functions <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4910.pdf#subsection.23.4.5">[string.conversions</a>]"":</p>
+<pre class="highlight"><c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- b>long</c-> <c- b>long</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>float</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>double</c-> <c- n>val</c-><c- p>);</c->
+<c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>long</c-> <c- b>double</c-> <c- n>val</c-><c- p>);</c->
+</pre>
+   <del> 7 <em>Returns:</em> Each function returns a string object holding the character
+representation of the value of its argument that would be generated by calling <code class="highlight"><c- n>sprintf</c-><c- p>(</c-><c- n>buf</c-><c- p>,</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code> with a format specifier of <code class="highlight"><c- s>"%d"</c-></code>, <code class="highlight"><c- s>"%u"</c-></code>, <code class="highlight"><c- s>"%ld"</c-></code>, <code class="highlight"><c- s>"%lu"</c-></code>, <code class="highlight"><c- s>"%lld"</c-></code>, <code class="highlight"><c- s>"%llu"</c-></code>, <code class="highlight"><c- s>"%f"</c-></code>, <code class="highlight"><c- s>"%f"</c-></code>, or <code class="highlight"><c- s>"%Lf"</c-></code>, respectively, where <code class="highlight"><c- n>buf</c-></code> designates an internal character buffer of sufficient size. </del>
+   <p>
+    <ins> 7 <em>Returns:</em> <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>val</c-><c- p>)</c-></code>. </ins>
+   </p>
   </main>
 <script>
 (function() {
