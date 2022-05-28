@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2587R0: &lt;code>to_string&lt;/code> or not &lt;code>to_string&lt;/code></title>
+  <title>P2587R1: &lt;code>to_string&lt;/code> or not &lt;code>to_string&lt;/code></title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d09e5dcecee2b9b00f3c8fcdba7e91b3626c95e0" name="document-revision">
+  <meta content="a73c75f10294865e3ff43c6dc33f16e791c47f1b" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2071,8 +2071,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2587R0<br><code class="highlight"><c- n>to_string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-05-14">2022-05-14</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2587R1<br><code class="highlight"><c- n>to_string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2022-05-28">2022-05-28</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2090,11 +2090,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#examples"><span class="secno">2</span> <span class="content">Examples</span></a>
-    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
-    <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
+    <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
+    <li><a href="#examples"><span class="secno">3</span> <span class="content">Examples</span></a>
+    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
+    <li><a href="#impact"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2112,7 +2113,13 @@ floating-point overloads they are all defined in terms of <code class="highlight
 the choice of the floating-point format makes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> of very limited
 use in practice. This paper proposes fixing these issues while retaining
 existing semantics of integral overloads.</p>
-   <h2 class="heading settled" data-level="2" id="examples"><span class="secno">2. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
+   <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R0:</p>
+   <ul>
+    <li data-md>
+     <p>Added an entry to Annex C.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="examples"><span class="secno">3. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>loc</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"uk_UA.UTF-8"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>loc</c-><c- p>);</c->
@@ -2171,7 +2178,7 @@ possibly localized decimal point.</p>
    <p>prints</p>
 <pre class="highlight"><c- mf>-0.000000</c->
 </pre>
-   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Redefine <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> which in turn uses <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> making more explicit the fact that integral overloads are
 unlocalized and changing the format of floating-point overloads to also be
 unlocalized and use the shortest decimal representation.</p>
@@ -2229,14 +2236,14 @@ unlocalized and use the shortest decimal representation.</p>
       <td>1234,500000 
       <td>1234.5 
    </table>
-   <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impact"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This change will affect the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> with floating-point
 arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
 be localized.</p>
-   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>{fmt} implements proposed changes in <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
-   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify subsection "Numeric conversions <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4910.pdf#subsection.23.4.5">[string.conversions</a>]":</p>
 <pre class="highlight"><c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>int</c-> <c- n>val</c-><c- p>);</c->
 <c- n>string</c-> <c- nf>to_string</c-><c- p>(</c-><c- b>unsigned</c-> <c- n>val</c-><c- p>);</c->
