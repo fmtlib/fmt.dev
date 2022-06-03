@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ea4daba0f0277b7e7beef83dd1c2137f4efc2db2" name="document-revision">
+  <meta content="95ad90022d219a067a45e47af7037c70d11060ca" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2182,6 +2182,13 @@ possibly localized decimal point.</p>
    <p>prints</p>
 <pre class="highlight"><c- mf>-0.000000</c->
 </pre>
+   <p>Almost half of floating-point numbers are formatted as zero and there is
+precision loss in many other cases.</p>
+   <p>Unfortunately issues with floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> have not
+been discussed in the papers that proposed this facility (<a data-link-type="biblio" href="#biblio-n1803">[N1803]</a>, <a data-link-type="biblio" href="#biblio-n2408">[N2408]</a>).
+However, they been brought up as early as 2015 in a mailing list discussion
+(<a data-link-type="biblio" href="#biblio-std_discussion">[STD_DISCUSSION]</a>) which proposed deprecating floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> but no paper came out of that.</p>
+   <p>https://groups.google.com/a/isocpp.org/g/std-discussion/c/6xhWgsEuvPo</p>
    <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Redefine <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> which in turn uses <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> making more explicit the fact that integral overloads are
 unlocalized and changing the format of floating-point overloads to also be
@@ -2440,6 +2447,12 @@ take floating-point arguments may produce a different output. For example: </ins
   <dl>
    <dt id="biblio-dragon">[DRAGON]
    <dd>Guy L. Steele Jr.; Jon L White. <a href="https://fmt.dev/papers/p372-steele.pdf">How to Print Floating-Point Numbers Accurately</a>. URL: <a href="https://fmt.dev/papers/p372-steele.pdf">https://fmt.dev/papers/p372-steele.pdf</a>
+   <dt id="biblio-n1803">[N1803]
+   <dd>Pete Becker. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1803.html">Simple Numeric Access</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1803.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1803.html</a>
+   <dt id="biblio-n2408">[N2408]
+   <dd>Pete Becker. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2408.html">Simple Numeric Access Revision 2</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2408.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2408.html</a>
    <dt id="biblio-n4910">[N4910]
    <dd>Thomas Köppe. <a href="https://wg21.link/n4910">Working Draft, Standard for Programming Language C++</a>. URL: <a href="https://wg21.link/n4910">https://wg21.link/n4910</a>
+   <dt id="biblio-std_discussion">[STD_DISCUSSION]
+   <dd><a href="https://groups.google.com/a/isocpp.org/g/std-discussion/c/6xhWgsEuvPo">Deprecate to_string() for floating point types?</a>. URL: <a href="https://groups.google.com/a/isocpp.org/g/std-discussion/c/6xhWgsEuvPo">https://groups.google.com/a/isocpp.org/g/std-discussion/c/6xhWgsEuvPo</a>
   </dl>
