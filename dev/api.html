@@ -138,6 +138,7 @@ for <code class="docutils literal notranslate"><span class="pre">char</span></co
 formatting functions and locale support</p></li>
 <li><p><a class="reference internal" href="#ranges-api"><span class="std std-ref">fmt/ranges.h</span></a>: formatting of ranges and tuples</p></li>
 <li><p><a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a>: date and time formatting</p></li>
+<li><p><a class="reference internal" href="#std-api"><span class="std std-ref">fmt/std.h</span></a>: formatters for standard library types</p></li>
 <li><p><a class="reference internal" href="#compile-api"><span class="std std-ref">fmt/compile.h</span></a>: format string compilation</p></li>
 <li><p><a class="reference internal" href="#color-api"><span class="std std-ref">fmt/color.h</span></a>: terminal color and text style</p></li>
 <li><p><a class="reference internal" href="#os-api"><span class="std std-ref">fmt/os.h</span></a>: system APIs</p></li>
@@ -592,8 +593,9 @@ functions and locale support.</p>
 <span id="udt"></span><h3>Formatting User-defined Types<a class="headerlink" href="#formatting-user-defined-types" title="Permalink to this headline">¶</a></h3>
 <p>The {fmt} library provides formatters for many standard C++ types.
 See <a class="reference internal" href="#ranges-api"><span class="std std-ref">fmt/ranges.h</span></a> for ranges and tuples including standard
-containers such as <code class="docutils literal notranslate"><span class="pre">std::vector</span></code> and <a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a> for date
-and time formatting.</p>
+containers such as <code class="docutils literal notranslate"><span class="pre">std::vector</span></code>, <a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a> for date
+and time formatting and <a class="reference internal" href="#std-api"><span class="std std-ref">fmt/std.h</span></a> for filesystem and variant
+formatting.</p>
 <p>To make a user-defined type formattable, specialize the <code class="docutils literal notranslate"><span class="pre">formatter&lt;T&gt;</span></code> struct
 template and implement <code class="docutils literal notranslate"><span class="pre">parse</span></code> and <code class="docutils literal notranslate"><span class="pre">format</span></code> methods:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span><span class="cp"></span>
@@ -1071,6 +1073,32 @@ non-default floating-point formatting that occasionally falls back on
 <p>Unlike <code class="docutils literal notranslate"><span class="pre">std::gmtime</span></code>, this function is thread-safe on most platforms. </p>
 </dd></dl>
 
+</section>
+<section id="standard-library-types-formatting">
+<span id="std-api"></span><h2>Standard Library Types Formatting<a class="headerlink" href="#standard-library-types-formatting" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fmt/std.h</span></code> provides formatters for:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="std::filesystem::path">std::filesystem::path</a></p></li>
+<li><p><a class="reference external" href="https://en.cppreference.com/w/cpp/thread/thread/id">std::thread::id</a></p></li>
+<li><p><a class="reference external" href="https://en.cppreference.com/w/cpp/utility/variant/monostate">std::monostate</a></p></li>
+<li><p><a class="reference external" href="https://en.cppreference.com/w/cpp/utility/variant/variant">std::variant</a></p></li>
+</ul>
+<section id="formatting-variants">
+<h3>Formatting Variants<a class="headerlink" href="#formatting-variants" title="Permalink to this headline">¶</a></h3>
+<p>A <code class="docutils literal notranslate"><span class="pre">std::variant</span></code> is only formattable if every variant alternative is formattable, and requires the
+<code class="docutils literal notranslate"><span class="pre">__cpp_lib_variant</span></code> <a class="reference external" href="https://en.cppreference.com/w/cpp/feature_test">library feature</a>.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/std.h&gt;</span><span class="cp"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">variant</span><span class="o">&lt;</span><span class="kt">char</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v0</span><span class="p">{</span><span class="sc">&#39;x&#39;</span><span class="p">};</span><span class="w"></span>
+<span class="c1">// Prints &quot;variant(&#39;x&#39;)&quot;</span>
+<span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">v0</span><span class="p">);</span><span class="w"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">variant</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">monostate</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">&gt;</span><span class="w"> </span><span class="n">v1</span><span class="p">;</span><span class="w"></span>
+<span class="c1">// Prints &quot;variant(monostate)&quot;</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="format-string-compilation">
 <span id="compile-api"></span><h2>Format string compilation<a class="headerlink" href="#format-string-compilation" title="Permalink to this headline">¶</a></h2>
