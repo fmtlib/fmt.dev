@@ -272,7 +272,7 @@ output to the file <code class="docutils literal notranslate"><span class="pre">
 <dd></dd></dl>
 
 <section id="compile-time-format-string-checks">
-<h3>Compile-time Format String Checks<a class="headerlink" href="#compile-time-format-string-checks" title="Permalink to this headline">¶</a></h3>
+<h3>Compile-Time Format String Checks<a class="headerlink" href="#compile-time-format-string-checks" title="Permalink to this headline">¶</a></h3>
 <p>Compile-time checks are enabled when using <code class="docutils literal notranslate"><span class="pre">FMT_STRING</span></code>. They support built-in
 and string types as well as user-defined types with <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> <code class="docutils literal notranslate"><span class="pre">parse</span></code>
 functions in their <code class="docutils literal notranslate"><span class="pre">formatter</span></code> specializations.
@@ -590,11 +590,11 @@ locale:</p>
 <p><code class="docutils literal notranslate"><span class="pre">fmt/format.h</span></code> defines the full format API providing additional formatting
 functions and locale support.</p>
 <section id="formatting-user-defined-types">
-<span id="udt"></span><h3>Formatting User-defined Types<a class="headerlink" href="#formatting-user-defined-types" title="Permalink to this headline">¶</a></h3>
+<span id="udt"></span><h3>Formatting User-Defined Types<a class="headerlink" href="#formatting-user-defined-types" title="Permalink to this headline">¶</a></h3>
 <p>The {fmt} library provides formatters for many standard C++ types.
 See <a class="reference internal" href="#ranges-api"><span class="std std-ref">fmt/ranges.h</span></a> for ranges and tuples including standard
 containers such as <code class="docutils literal notranslate"><span class="pre">std::vector</span></code>, <a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a> for date
-and time formatting and <a class="reference internal" href="#std-api"><span class="std std-ref">fmt/std.h</span></a> for filesystem and variant
+and time formatting and <a class="reference internal" href="#std-api"><span class="std std-ref">fmt/std.h</span></a> for path and variant
 formatting.</p>
 <p>To make a user-defined type formattable, specialize the <code class="docutils literal notranslate"><span class="pre">formatter&lt;T&gt;</span></code> struct
 template and implement <code class="docutils literal notranslate"><span class="pre">parse</span></code> and <code class="docutils literal notranslate"><span class="pre">format</span></code> methods:</p>
@@ -711,9 +711,28 @@ all string format specifications, for example</p>
 <p>If a type provides both a <code class="docutils literal notranslate"><span class="pre">formatter</span></code> specialization and an implicit
 conversion to a formattable type, the specialization takes precedence over the
 conversion.</p>
+<p>For scoped enums (enum classes) {fmt} also provides the <code class="docutils literal notranslate"><span class="pre">format_as</span></code> extension
+API. To format an enum via this API define <code class="docutils literal notranslate"><span class="pre">format_as</span></code> that takes this enum
+and converts it to the underlying type. <code class="docutils literal notranslate"><span class="pre">format_as</span></code> should be defined in the
+same namespace as the enum.</p>
+<p>Example (<a class="reference external" href="https://godbolt.org/z/r7vvGE1v7">https://godbolt.org/z/r7vvGE1v7</a>):</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span><span class="cp"></span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">kevin_namespacy</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">enum</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">film</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">house_of_cards</span><span class="p">,</span><span class="w"> </span><span class="n">american_beauty</span><span class="p">,</span><span class="w"> </span><span class="n">se7en</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
+<span class="k">auto</span><span class="w"> </span><span class="n">format_as</span><span class="p">(</span><span class="n">film</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">underlying</span><span class="p">(</span><span class="n">f</span><span class="p">);</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kevin_namespacy</span><span class="o">::</span><span class="n">film</span><span class="o">::</span><span class="n">se7en</span><span class="p">);</span><span class="w"> </span><span class="c1">// prints &quot;7&quot;</span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
 </section>
 <section id="literal-based-api">
-<h3>Literal-based API<a class="headerlink" href="#literal-based-api" title="Permalink to this headline">¶</a></h3>
+<h3>Literal-Based API<a class="headerlink" href="#literal-based-api" title="Permalink to this headline">¶</a></h3>
 <p>The following user-defined literals are defined in <code class="docutils literal notranslate"><span class="pre">fmt/format.h</span></code>.</p>
 <dl class="cpp function">
 <dt id="_CPPv4I_N15detail_exported12fixed_stringEEN3fmtli2_aEDav">
@@ -1010,8 +1029,8 @@ non-default floating-point formatting that occasionally falls back on
 <code class="docutils literal notranslate"><span class="pre">sprintf</span></code>.</p>
 </section>
 </section>
-<section id="ranges-and-tuple-formatting">
-<span id="ranges-api"></span><h2>Ranges and Tuple Formatting<a class="headerlink" href="#ranges-and-tuple-formatting" title="Permalink to this headline">¶</a></h2>
+<section id="range-and-tuple-formatting">
+<span id="ranges-api"></span><h2>Range and Tuple Formatting<a class="headerlink" href="#range-and-tuple-formatting" title="Permalink to this headline">¶</a></h2>
 <p>The library also supports convenient formatting of ranges and tuples:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/ranges.h&gt;</span><span class="cp"></span>
 
@@ -1101,7 +1120,7 @@ non-default floating-point formatting that occasionally falls back on
 </section>
 </section>
 <section id="format-string-compilation">
-<span id="compile-api"></span><h2>Format string compilation<a class="headerlink" href="#format-string-compilation" title="Permalink to this headline">¶</a></h2>
+<span id="compile-api"></span><h2>Format String Compilation<a class="headerlink" href="#format-string-compilation" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">fmt/compile.h</span></code> provides format string compilation enabled via the
 <code class="docutils literal notranslate"><span class="pre">FMT_COMPILE</span></code> macro or the <code class="docutils literal notranslate"><span class="pre">_cf</span></code> user-defined literal. Format strings
 marked with <code class="docutils literal notranslate"><span class="pre">FMT_COMPILE</span></code> or <code class="docutils literal notranslate"><span class="pre">_cf</span></code> are parsed, checked and converted into
@@ -1133,7 +1152,7 @@ compile time and converted into efficient formatting code. Requires C++17
 
 </section>
 <section id="terminal-color-and-text-style">
-<span id="color-api"></span><h2>Terminal color and text style<a class="headerlink" href="#terminal-color-and-text-style" title="Permalink to this headline">¶</a></h2>
+<span id="color-api"></span><h2>Terminal Color and Text Style<a class="headerlink" href="#terminal-color-and-text-style" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">fmt/color.h</span></code> provides support for terminal color and text style output.</p>
 <dl class="cpp function">
 <dt id="_CPPv4I0DpEN3fmt5printEvRK10text_styleRK1SDpRK4Args">
