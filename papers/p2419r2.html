@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2419R1: Clarify handling of encodings in localized formatting of chrono types</title>
+  <title>P2419R2: Clarify handling of encodings in localized formatting of chrono types</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="eedc75180f7fed6ee8748bfe88c94266ece8f5cb" name="document-revision">
+  <meta content="deb314a0a6c217d11eda0f2baf6efa23498d7ee3" name="document-revision">
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2071,8 +2071,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2419R1<br>Clarify handling of encodings in localized formatting of chrono types</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2021-09-19">2021-09-19</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2419R2<br>Clarify handling of encodings in localized formatting of chrono types</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-07-15">2022-07-15</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Authors:
@@ -2091,11 +2091,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#proposal"><span class="secno">1</span> <span class="content">Proposal</span></a>
-    <li><a href="#changes"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#polls"><span class="secno">3</span> <span class="content">SG16 polls</span></a>
-    <li><a href="#impl"><span class="secno">4</span> <span class="content">Implementation experience</span></a>
-    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
-    <li><a href="#ack"><span class="secno">6</span> <span class="content">Acknowledgement</span></a>
+    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes"><span class="secno">3</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">4</span> <span class="content">SG16 polls</span></a>
+    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">7</span> <span class="content">Acknowledgement</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2133,12 +2134,17 @@ result is in a consistent encoding.</p>
    <p>This issue is not resolved by <a data-link-type="biblio" href="#biblio-lwg3547">[LWG3547]</a> / <a data-link-type="biblio" href="#biblio-p2372">[P2372]</a>, the latter only
 reduces the scope of the problem to format strings with the <code class="highlight"><c- n>L</c-></code> specifier only.
 The resolution proposed here is compatible with <a data-link-type="biblio" href="#biblio-p2372">[P2372]</a>.</p>
-   <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes2"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Replaced "transcoded" with "converted" in the wording per LWG feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes"></a></h2>
    <ul>
     <li data-md>
      <p>Added more SG16 poll results.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">SG16 polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">SG16 polls</span><a class="self-link" href="#polls"></a></h2>
    <p>SG16 Unicode reviewed <a data-link-type="biblio" href="#biblio-lwg3547">[LWG3547]</a> and there was a strong support for the
 direction of this paper. SG16 poll results:</p>
    <p>Require implementations to make <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-></code> substitutions with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> as if transcoded to UTF-8 when the literal encoding E associated with the format
@@ -2213,11 +2219,11 @@ and with a recommended ship vehicle of C++23.</p>
       <td>0 
    </table>
    <p>Consensus: Strong consensus in favour.</p>
-   <h2 class="heading settled" data-level="4" id="impl"><span class="secno">4. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposal has been implemented in the open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>)
 which includes chrono formatting facilities and tested on a variety of
 platforms.</p>
-   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>All wording is relative to the C++ working draft <a data-link-type="biblio" href="#biblio-n4892">[N4892]</a>.</p>
    <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_format</c-></code> to the date of
 adoption in <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/n4892.pdf#page=504">[version.syn]</a>:</p>
@@ -2231,12 +2237,12 @@ latter takes one, or the global locale otherwise.
     <ins>If the string literal
 encoding is a Unicode encoding form and the locale is among an
 implementation-defined set of locales, each replacement that depends on
-the locale is performed as if the replacement character sequence is transcoded
+the locale is performed as if the replacement character sequence is converted
 to the string literal encoding.</ins>
      If the formatted object does not contain the information the conversion
 specifier refers to, an exception of type <code class="highlight"><c- n>format_error</c-></code> is thrown.
    </p>
-   <h2 class="heading settled" data-level="6" id="ack"><span class="secno">6. </span><span class="content">Acknowledgement</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgement</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks Hubert Tong for bringing up this issue during the discussion of <a data-link-type="biblio" href="#biblio-p2093">[P2093]</a>.</p>
   </main>
 <script>
