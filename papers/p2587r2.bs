@@ -1,21 +1,36 @@
 <pre class='metadata'>
 Title: <code>to_string</code> or not <code>to_string</code>
 Shortname: D2587
-Revision: 1
+Revision: 2
 Audience: LEWG
 Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-06-03
+Date: 2022-07-24
 Markup Shorthands: markdown yes
 </pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+	ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+		text-align: right;
+    width: 20%;
+	}
+</style>
 
 <p style="text-align: right">
 "Though this be madness, yet there is method in ’t."
 ― Polonius
 </p>
+
+<!-- TODO: give an example of fixing a latent bug -->
 
 Introduction {#intro}
 ============
@@ -31,11 +46,45 @@ existing semantics of integral overloads.
 Revision history {#hist}
 ================
 
+Changes since R1:
+
+* Added poll results.
+* Mentioned that the current proposal enables future extension to other types
+    via `std::format`.
+
 Changes since R0:
 
 * Added an entry to Annex C.
 * Added a feature test macro.
 * Applied the same changes to `to_wstring` in the wording.
+* Added a reference to [[STD_DISCUSSION]] which proposed deprecating
+    floating-point overloads of `std::to_string`.
+
+LEWG Polls {#polls}
+==========
+
+<!-- https://wiki.edg.com/bin/view/Wg21telecons2022/P2587#Library-Evolution-2022-06-28 -->
+
+Poll: Fix `to_string` as proposed by P2587R1 (`to-string` or not `to_string`).
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>4
+  <td>9
+  <td>3
+  <td>2
+  <td>1
+</tr>
+</table>
+
+Outcome: Weak consensus
 
 Examples {#examples}
 ========
@@ -124,7 +173,7 @@ a precision loss or garbage digit output in many other cases.
 
 Unfortunately issues with floating-point overloads of `std::to_string` have not
 been discussed in the paper that proposed this facility ([[N1803]], [[N2408]]).
-However, they been brought up as early as 2015 in a mailing list discussion
+However, they were brought up as early as 2015 in a mailing list discussion
 ([[STD_DISCUSSION]]) which proposed deprecating floating-point overloads of
 `std::to_string` but no paper came out of that.
 
@@ -207,6 +256,10 @@ auto output = std::to_string(input);
 </tr>
 </table>
 
+In addition to fixing the broken behavior for floating point this proposal
+enables an easy and natural extension of `std::to_string` to other types via
+`std::format` (not proposed in this paper).
+
 Impact on existing code {#impact}
 =======================
 
@@ -214,6 +267,12 @@ This change will affect the output of `std::to_string` with floating-point
 arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
 be localized.
+
+As a mitigation mechanism we could provide `to_string_localized` with the old
+behavior which provides a simple migration path.
+
+In order to estimate the practical impact on existing code we looked at code
+search results for `std::to_string`.
 
 Implementation {#impl}
 ==============
@@ -318,6 +377,538 @@ auto s = std::to_string(1e-7); // "1e-7"
                                // changed according to the global C locale
 </ins>
 </pre>
+
+Appendix A: Sample of code search results for `to_string` {#sample}
+=========================================================
+
+<div class="head">
+<p>Searching for <code>`std::to_string`</code>...</p>
+<p>2489599 source files searched.</p>
+<p><b>11408 matches</b> found.</p>
+<p>Here is a random sample of matches...</p>
+<hr/>
+
+<!-- int value -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp</a>:339
+<p><pre>        if(!ui-&gt;checkBoxShowSpeed-&gt;isChecked())<br/>            return;<br/>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"value: "+std::to_string(value));<br/>        switch(value)<br/>        {<br/></pre></p>
+<hr/>
+
+<!-- uint64_t max -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/r/re2/re2_20190101+dfsg-2/re2/testing/re2_test.cc">actcd19/main/r/re2/re2_20190101+dfsg-2/re2/testing/re2_test.cc</a>:870
+<p><pre>        ASSERT_TRUE(RE2::FullMatch("-100", "(-?\\d+)", &amp;v2)); ASSERT_EQ(v2, -100);<br/>    <br/>        str = std::to_string(max);<br/>        ASSERT_TRUE(RE2::FullMatch(str,    "(-?\\d+)", &amp;v)); ASSERT_EQ(v, max);<br/>    <br/></pre></p>
+<hr/>
+
+<!-- int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp">actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp</a>:2683
+<p><pre>                dims[0] = 1;<br/>                dims[1] = static_cast&lt;int&gt;(path.size());<br/>                writeIntegerMatrix6(node, std::to_string(i).data(), H5T_NATIVE_INT32, "32", 2, dims, path.data());<br/>            }<br/>        }<br/></pre></p>
+<hr/>
+
+<!-- int tonality -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/r/rosegarden/rosegarden_18.12-1/src/sound/MidiEvent.cpp">actcd19/main/r/rosegarden/rosegarden_18.12-1/src/sound/MidiEvent.cpp</a>:181
+<p><pre>                    sharpflat = std::to_string(-tonality) + " flat";<br/>                } else {<br/>                    sharpflat = std::to_string(tonality);<br/>                    sharpflat += " sharp";<br/>                }<br/></pre></p>
+<hr/>
+
+<!-- uint64_t limit -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/n/nheko/nheko_0.6.3-1/mtxclient/lib/http/client.cpp">actcd19/main/n/nheko/nheko_0.6.3-1/mtxclient/lib/http/client.cpp</a>:137
+<p><pre>    {<br/>            std::map&lt;std::string, std::string&gt; params;<br/>            params.emplace("limit", std::to_string(limit));<br/>    <br/>            get&lt;mtx::responses::Notifications&gt;(<br/></pre></p>
+<hr/>
+
+<!-- int id -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/WriteThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/WriteThread.cpp</a>:72
+<p><pre>        if(stopIt)<br/>        {<br/>            ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"["+std::to_string(id)+"] close because stopIt is at true");<br/>            emit closed();<br/>            return false;<br/></pre></p>
+<hr/>
+
+<!-- int newpos
+     uint16_t minOffset -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdns/pdns_4.1.6-1/pdns/dnsname.cc">actcd19/main/p/pdns/pdns_4.1.6-1/pdns/dnsname.cc</a>:125
+<p><pre>          if(newpos &lt; offset) {<br/>            if(newpos &lt; (int) minOffset)<br/>              throw std::range_error("Invalid label position during decompression ("+std::to_string(newpos)+ " &lt; "+std::to_string(minOffset)+")");<br/>            if (++depth &gt; 100)<br/>              throw std::range_error("Abort label decompression after 100 redirects");<br/></pre></p>
+<hr/>
+
+<!-- int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/chrome/browser/ui/search/local_ntp_browsertest.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/chrome/browser/ui/search/local_ntp_browsertest.cc</a>:637
+<p><pre>      for (int i = kDefaultMostVisitedItemCount; i &lt; kDefaultCustomLinkMaxCount;<br/>           ++i) {<br/>        std::string rid = std::to_string(i + 100);<br/>        std::string url = "https://" + rid + ".com";<br/>        std::string title = "url for " + rid;<br/></pre></p>
+<hr/>
+
+<!-- aid_t worker_pid (aid_t is an alias for long) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/docs/source/tuto_s4u/master-workers-lab4.cpp">actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/docs/source/tuto_s4u/master-workers-lab4.cpp</a>:62
+<p><pre>        /* - Select a worker in a round-robin way */<br/>        aid_t worker_pid                 = actors.at(task_id % actors.size())-&gt;get_pid();<br/>        std::string mailbox_name         = std::string("worker-") + std::to_string(worker_pid);<br/>        simgrid::s4u::MailboxPtr mailbox = simgrid::s4u::Mailbox::by_name(mailbox_name);<br/>    <br/></pre></p>
+<hr/>
+
+<!-- size_t m_inactive_frameworks.size() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/mesos.cpp">actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/mesos.cpp</a>:618
+<p><pre>    								if(m_inactive_frameworks.size())<br/>    								{<br/>    									g_logger.log("Collection detected " + std::to_string(m_inactive_frameworks.size()) + " inactive frameworks",<br/>    												 sinsp_logger::SEV_DEBUG);<br/>    								}<br/></pre></p>
+<hr/>
+
+<!-- size_t offset -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/d/dnsdist/dnsdist_1.3.3-2/dns.cc">actcd19/main/d/dnsdist/dnsdist_1.3.3-2/dns.cc</a>:88
+<p><pre>        if(offset &lt; d_length)<br/>          return d_ptr[offset];<br/>        throw runtime_error("out of bounds: "+std::to_string(offset)+" &gt;= " + std::to_string(d_length));<br/>      }<br/>    private:  <br/></pre></p>
+<hr/>
+
+<!-- uint16_t port -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/extensions/browser/api/display_source/display_source_apitestbase.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/extensions/browser/api/display_source/display_source_apitestbase.cc</a>:487
+<p><pre>        net_result = socket_-&gt;Bind(local_point);<br/>        if (net_result == net::OK) {<br/>          udp_port_ = std::to_string(port);<br/>          // When we got an udp socket established and udp port is known<br/>          // Change sink's status to connected and proceed with the test.<br/></pre></p>
+<hr/>
+
+<!-- uint8_t DSRecordContent::d_digesttype -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdns/pdns_4.1.6-1/pdns/validate.cc">actcd19/main/p/pdns/pdns_4.1.6-1/pdns/validate.cc</a>:1054
+<p><pre>    <br/>      if (!DNSCryptoKeyEngine::isDigestSupported(ds.d_digesttype)) {<br/>        LOG("Discarding DS "&lt;&lt;ds.d_tag&lt;&lt;" because we don't support digest number "&lt;&lt;std::to_string(ds.d_digesttype)&lt;&lt;endl);<br/>        return false;<br/>      }<br/></pre></p>
+<hr/>
+
+<!-- fstrm_res res (enum) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/d/dnsdist/dnsdist_1.3.3-2/fstrm_logger.cc">actcd19/main/d/dnsdist/dnsdist_1.3.3-2/fstrm_logger.cc</a>:24
+<p><pre>        res = fstrm_writer_options_add_content_type(d_fwopt, DNSTAP_CONTENT_TYPE, sizeof(DNSTAP_CONTENT_TYPE) - 1);<br/>        if (res != fstrm_res_success) {<br/>          throw std::runtime_error("FrameStreamLogger: fstrm_writer_options_add_content_type failed: " + std::to_string(res));<br/>        }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- float Trim::value -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp">actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp</a>:127
+<p><pre>        if (Trim.set)<br/>            comments.push_back(leader + Trim.name + " " +<br/>                std::to_string(Trim.value));<br/>        if (Smooth.set)<br/>            comments.push_back(leader + IslandAreaRatio.name + " " +<br/></pre></p>
+<hr/>
+
+<!-- int x
+     int y -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pybind11/pybind11_2.2.4-2/tests/test_kwargs_and_defaults.cpp">actcd19/main/p/pybind11/pybind11_2.2.4-2/tests/test_kwargs_and_defaults.cpp</a>:15
+<p><pre>    <br/>    TEST_SUBMODULE(kwargs_and_defaults, m) {<br/>        auto kw_func = [](int x, int y) { return "x=" + std::to_string(x) + ", y=" + std::to_string(y); };<br/>    <br/>        // test_named_arguments<br/></pre></p>
+<hr/>
+
+<!-- uint32_t d_notyouroffset
+     size_t d_length -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/dnsparser.cc">actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/dnsparser.cc</a>:652
+<p><pre>        if(d_notyouroffset &gt; d_length)<br/>          throw std::out_of_range("dns packet out of range: "+std::to_string(d_notyouroffset) +" &gt; " <br/>          + std::to_string(d_length) );<br/>      }<br/>      void rewindOffset(uint16_t by)<br/></pre></p>
+<hr/>
+
+<!-- generic test instantiated for int types -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/rtc_base/string_to_number_unittest.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/rtc_base/string_to_number_unittest.cc</a>:47
+<p><pre>      constexpr T zero_value = 0;<br/>      const std::string min_string = std::to_string(min_value);<br/>      const std::string max_string = std::to_string(max_value);<br/>      EXPECT_EQ(min_value, StringToNumber&lt;T&gt;(min_string));<br/>      EXPECT_EQ(min_value, StringToNumber&lt;T&gt;(min_string.c_str()));<br/></pre></p>
+<hr/>
+
+<!-- uint32_t IPC::Message::type -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/.pc/disable/tracing.patch/content/browser/browser_child_process_host_impl.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/.pc/disable/tracing.patch/content/browser/browser_child_process_host_impl.cc</a>:415
+<p><pre>      std::string log_message = "Bad message received of type: ";<br/>      if (message.IsValid()) {<br/>        log_message += std::to_string(message.type());<br/>      } else {<br/>        log_message += "unknown";<br/></pre></p>
+<hr/>
+
+<!-- SizeT Id (aliast to uint32_t) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/third_party/subzero/src/IceInst.cpp">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/third_party/subzero/src/IceInst.cpp</a>:603
+<p><pre>            Ctx, ".L" + FuncName.toString() + "$jumptable$__" + std::to_string(Id));<br/>      return GlobalString::createWithString(<br/>          Ctx, "$J" + std::to_string(FuncName.getID()) + "_" + std::to_string(Id));<br/>    }<br/>    } // end of anonymous namespace<br/></pre></p>
+<hr/>
+
+<!-- int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/r/rocksdb/rocksdb_5.17.2-3/examples/compact_files_example.cc">actcd19/main/r/rocksdb/rocksdb_5.17.2-3/examples/compact_files_example.cc</a>:155
+<p><pre>      // because of options.level0_stop_writes_trigger<br/>      for (int i = 1000; i &lt; 99999; ++i) {<br/>        db-&gt;Put(WriteOptions(), std::to_string(i),<br/>                                std::string(500, 'a' + (i % 26)));<br/>      }<br/></pre></p>
+<hr/>
+
+<!-- int step -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/seacas/libraries/ioss/src/xdmf/Ioxf_DatabaseIO.C">actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/seacas/libraries/ioss/src/xdmf/Ioxf_DatabaseIO.C</a>:1054
+<p><pre>    <br/>            std::string FinalName(hdfname.tailname().c_str());<br/>            FinalName += ":/" + block_name + "/Iteration " + std::to_string(step) + "/" + var_name;<br/>            XdmfArray *ScalarArray = new XdmfArray();<br/>            if (sizeof(double) == 8)<br/></pre></p>
+<hr/>
+
+<!-- int value -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/src/OpenGL/compiler/preprocessor/Macro.cpp">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/src/OpenGL/compiler/preprocessor/Macro.cpp</a>:40
+<p><pre>    	Token token;<br/>    	token.type = Token::CONST_INT;<br/>    	token.text = std::to_string(value);<br/>    <br/>    	std::shared_ptr&lt;Macro&gt; macro = std::make_shared&lt;Macro&gt;();<br/></pre></p>
+<hr/>
+
+<!-- double DLL_wide_bw_values.at(config_idx) 
+     int FLAGS_test_satellite_PRN -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc</a>:916
+<p><pre>                                                                g5.disablescreen();<br/>                                                            }<br/>                                                        g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");<br/>                                                        g5.set_grid();<br/>                                                        g5.set_xlabel("Time [s]");<br/></pre></p>
+<hr/>
+
+<!-- int i
+     size_t s -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/a/antlr4-cpp-runtime/antlr4-cpp-runtime_4.7.2+dfsg-1/runtime/src/atn/ATNSerializer.cpp">actcd19/main/a/antlr4-cpp-runtime/antlr4-cpp-runtime_4.7.2+dfsg-1/runtime/src/atn/ATNSerializer.cpp</a>:475
+<p><pre>        size_t s = data[p++];<br/>        buf.append("mode ")<br/>        .append(std::to_string(i))<br/>        .append(":")<br/>        .append(std::to_string(s))<br/></pre></p>
+<hr/>
+
+<!-- int EnumValueDescriptor::number -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/perfetto/src/protozero/protoc_plugin/protozero_generator.cc">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/perfetto/src/protozero/protoc_plugin/protozero_generator.cc</a>:322
+<p><pre>          stub_h_-&gt;Print("$name$ = $number$,\n", "name",<br/>                         value_name_prefix + value-&gt;name(), "number",<br/>                         std::to_string(value-&gt;number()));<br/>        }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- uint32_t d_channel -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/tracking/gnuradio_blocks/glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/tracking/gnuradio_blocks/glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc</a>:559
+<p><pre>                        try<br/>                            {<br/>                                d_dump_filename.append(std::to_string(d_channel));<br/>                                d_dump_filename.append(".dat");<br/>                                d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);<br/></pre></p>
+<hr/>
+
+<!-- int ReadThread::id -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ReadThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ReadThread.cpp</a>:623
+<p><pre>    bool ReadThread::internalReopen()<br/>    {<br/>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"["+std::to_string(id)+"] start");<br/>        stopIt=false;<br/>        if(file.isOpen())<br/></pre></p>
+<hr/>
+
+<!-- int width
+     int height -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/modules/video_coding/codecs/test/videocodec_test_mediacodec.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/modules/video_coding/codecs/test/videocodec_test_mediacodec.cc</a>:137
+<p><pre>          const int width = std::get&lt;0&gt;(resolution);<br/>          const int height = std::get&lt;1&gt;(resolution);<br/>          config.filename = std::string("foreman_") + std::to_string(width) + "x" +<br/>                            std::to_string(height);<br/>          config.filepath = ResourcePath(config.filename, "yuv");<br/></pre></p>
+<hr/>
+
+<!-- CoordType start_ (uint64_t)
+     CoordType end_ -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/b/bedops/bedops_2.4.35+dfsg-1/interfaces/general-headers/data/bed/Bed.hpp">actcd19/main/b/bedops/bedops_2.4.35+dfsg-1/interfaces/general-headers/data/bed/Bed.hpp</a>:389
+<p><pre>    <br/>          static const std::string tab = "\t";<br/>          return std::string(chrom_) + tab + std::to_string(start_) + tab + std::to_string(end_) + tab<br/>                   + std::string(id_);<br/>        }<br/></pre></p>
+<hr/>
+
+<!-- int ID -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_block_factory.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_block_factory.cc</a>:189
+<p><pre>                if (ID != -1)<br/>                    {<br/>                        role = "SignalSource" + std::to_string(ID);<br/>                    }<br/>            }<br/></pre></p>
+<hr/>
+
+<!-- uint64_t target_file_size_base
+     int target_file_size_multiplier
+     uint64_t max_bytes_for_level_base -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/mariadb-10.3/mariadb-10.3_10.3.13-1/storage/rocksdb/rdb_i_s.cc">actcd19/main/m/mariadb-10.3/mariadb-10.3_10.3.13-1/storage/rocksdb/rdb_i_s.cc</a>:498
+<p><pre>            {"TARGET_FILE_SIZE_BASE", std::to_string(opts.target_file_size_base)},<br/>            {"TARGET_FILE_SIZE_MULTIPLIER",<br/>             std::to_string(opts.target_file_size_multiplier)},<br/>            {"MAX_BYTES_FOR_LEVEL_BASE",<br/>             std::to_string(opts.max_bytes_for_level_base)},<br/></pre></p>
+<hr/>
+
+<!-- int cmVersion::GetMajorVersion()
+     int cmVersion::GetMinorVersion()
+     int cmVersion::GetPatchVersion() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/cmake/cmake_3.12.3-3/Source/cmStateSnapshot.cxx">actcd19/main/c/cmake/cmake_3.12.3-3/Source/cmStateSnapshot.cxx</a>:338
+<p><pre>                          std::to_string(cmVersion::GetMajorVersion()));<br/>      this-&gt;SetDefinition("CMAKE_MINOR_VERSION",<br/>                          std::to_string(cmVersion::GetMinorVersion()));<br/>      this-&gt;SetDefinition("CMAKE_PATCH_VERSION",<br/>                          std::to_string(cmVersion::GetPatchVersion()));<br/></pre></p>
+<hr/>
+
+<!-- int m_readStartPos
+     int m_readEndPos
+     int m_refStartPos;
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/unicycler/unicycler_0.4.7+dfsg-2/unicycler/src/scoredalignment.cpp">actcd19/main/u/unicycler/unicycler_0.4.7+dfsg-2/unicycler/src/scoredalignment.cpp</a>:148
+<p><pre>        return m_refName + "," + <br/>               revCompStr + "," + <br/>               std::to_string(m_readStartPos) + "," + <br/>               std::to_string(m_readEndPos) + "," + <br/>               std::to_string(m_refStartPos) + "," + <br/></pre></p>
+<hr/>
+
+<!-- CK_SLOT_ID slot (unsigned long) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdns/pdns_4.1.6-1/pdns/pkcs11signers.cc">actcd19/main/p/pdns/pdns_4.1.6-1/pdns/pkcs11signers.cc</a>:234
+<p><pre>          } else {<br/>            logError("C_GetTokenInfo");<br/>            throw PDNSException("Cannot get token info for slot " + std::to_string(slot));<br/>          }<br/>        }<br/></pre></p>
+<hr/>
+
+<!-- int32_t d_channel -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l2c_telemetry_decoder_cc.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l2c_telemetry_decoder_cc.cc</a>:112
+<p><pre>                            {<br/>                                d_dump_filename = "telemetry_L2CM_";<br/>                                d_dump_filename.append(std::to_string(d_channel));<br/>                                d_dump_filename.append(".dat");<br/>                                d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);<br/></pre></p>
+<hr/>
+
+<!-- int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp">actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp</a>:984
+<p><pre>            int col = 0;<br/>            int* path = nullptr;<br/>            getHandleIntVector(node, std::to_string(i).data(), &amp;row, &amp;col, &amp;path);<br/>            std::vector&lt;int&gt; res(row * col);<br/>            for (int j = 0; j &lt; row * col; ++j)<br/></pre></p>
+<hr/>
+
+<!-- size_t std::vector<char>::size() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdal/pdal_1.7.2-2/vendor/arbiter/arbiter.cpp">actcd19/main/p/pdal/pdal_1.7.2-2/vendor/arbiter/arbiter.cpp</a>:1447
+<p><pre>        if (!headers.count("Content-Length"))<br/>        {<br/>            headers["Content-Length"] = std::to_string(data.size());<br/>        }<br/>        return m_pool.acquire().post(typedPath(path), data, headers, query);<br/></pre></p>
+<hr/>
+
+<!-- int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/core/fwCommand/test/tu/src/UndoRedoManagerTest.cpp">actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/core/fwCommand/test/tu/src/UndoRedoManagerTest.cpp</a>:229
+<p><pre>        {<br/>            BogusCommand::sptr testCmdI =<br/>                std::make_shared&lt;BogusCommand&gt;(BogusCommand("testCmd" + std::to_string(i), log, CMDSIZE));<br/>    <br/>            undoRedoManager.enqueue(testCmdI);<br/></pre></p>
+<hr/>
+
+<!-- int m_socket
+     int get_local_port() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h">actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h</a>:1229
+<p><pre>    									 sinsp_logger::SEV_INFO);<br/>    						g_logger.log("Socket handler (" + m_id + "): "<br/>    									 "SSL socket=" + std::to_string(m_socket) + ", "<br/>    									 "local port=" + std::to_string(get_local_port()),<br/>    									 sinsp_logger::SEV_DEBUG);<br/></pre></p>
+<hr/>
+
+<!-- double ConfigItem::f() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc">actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc</a>:310
+<p><pre>    		else if (type == "int") entryNode-&gt;set_attribute("value",std::to_string(item.i()));<br/>    		else if (type == "bool") entryNode-&gt;set_attribute("value", item.b() ? "true" : "false");<br/>    		else if (type == "float") entryNode-&gt;set_attribute("value",std::to_string(item.f()));<br/>    		else if (item.get_type() == "string") xmlpp::add_child_element(entryNode, "stringvalue")-&gt;add_child_text(item.s());<br/>    		else if (item.get_type() == "string_list") {<br/></pre></p>
+<hr/>
+
+<!-- unsigned int ch_index -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_flowgraph.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_flowgraph.cc</a>:1238
+<p><pre>                        try<br/>                            {<br/>                                sat_ = configuration_-&gt;property("Channel" + std::to_string(ch_index) + ".satellite", 0);<br/>                            }<br/>                        catch (const std::exception&amp; e)<br/></pre></p>
+<hr/>
+
+<!-- ClientSpecificId kEmbedTreeWindowId (uint16_t) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/services/ui/ws/window_tree_unittest.cc">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/services/ui/ws/window_tree_unittest.cc</a>:1539
+<p><pre>      // would be reset to 0 before sending back to clients.<br/>      EXPECT_EQ("OnCaptureChanged new_window=0," +<br/>                    std::to_string(kEmbedTreeWindowId) +<br/>                    " old_window=" + kNextWindowClientIdString + "," +<br/>                    std::to_string(embed_child_window_id.sink_id()),<br/></pre></p>
+<hr/>
+
+<!-- unsigned int _index -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gazebo/gazebo_9.6.0-1/gazebo/physics/dart/DARTScrewJoint.cc">actcd19/main/g/gazebo/gazebo_9.6.0-1/gazebo/physics/dart/DARTScrewJoint.cc</a>:95
+<p><pre>      {<br/>        return this-&gt;dataPtr-&gt;GetCached&lt;ignition::math::Vector3d&gt;(<br/>              "Axis" + std::to_string(_index));<br/>      }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- ASN1_Tag type_tag (enum) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/q/qtcreator/qtcreator_4.8.2-1/src/libs/3rdparty/botan/src/lib/asn1/asn1_obj.cpp">actcd19/main/q/qtcreator/qtcreator_4.8.2-1/src/libs/3rdparty/botan/src/lib/asn1/asn1_obj.cpp</a>:48
+<p><pre>             else<br/>                {<br/>                msg &lt;&lt; std::to_string(type_tag);<br/>                }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- unsigned FunctionAlignment -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/l/llvm-toolchain-7/llvm-toolchain-7_7.0.1-8/.pc/kfreebsd/kfreebsd-triple-clang.diff/clang/lib/Driver/ToolChains/Clang.cpp">actcd19/main/l/llvm-toolchain-7/llvm-toolchain-7_7.0.1-8/.pc/kfreebsd/kfreebsd-triple-clang.diff/clang/lib/Driver/ToolChains/Clang.cpp</a>:3358
+<p><pre>      if (FunctionAlignment) {<br/>        CmdArgs.push_back("-function-alignment");<br/>        CmdArgs.push_back(Args.MakeArgString(std::to_string(FunctionAlignment)));<br/>      }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- uint32_t(* pfnGetPerfTag) (...) -->
+<a href ="http://codesearch.isocpp.org/actcd19/non-free/i/intel-media-driver-non-free/intel-media-driver-non-free_18.4.0+ds1-1/media_driver/agnostic/common/os/mos_os.c">actcd19/non-free/i/intel-media-driver-non-free/intel-media-driver-non-free_18.4.0+ds1-1/media_driver/agnostic/common/os/mos_os.c</a>:639
+<p><pre>        auto &amp;cmdResInfoPtrs = GetCmdResPtrs(pOsInterface);<br/>    <br/>        outputFile &lt;&lt; "--PerfTag: " &lt;&lt; std::to_string(pOsInterface-&gt;pfnGetPerfTag(pOsInterface)) &lt;&lt; " --Cmd Num: "<br/>            &lt;&lt; cmdResInfoPtrs.size() &lt;&lt; " --Dump Count: " &lt;&lt; ++m_cnt &lt;&lt; endl;<br/>    <br/></pre></p>
+<hr/>
+
+<!-- object_id_type OSMObject::id() (int64_t) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/o/osm2pgsql/osm2pgsql_0.96.0+ds-2/middle-pgsql.cpp">actcd19/main/o/osm2pgsql/osm2pgsql_0.96.0+ds-2/middle-pgsql.cpp</a>:267
+<p><pre>        };<br/>    <br/>        copy_buffer = std::to_string(node.id());<br/>        copy_buffer += delim;<br/>    <br/></pre></p>
+<hr/>
+
+<!-- uint8_t goal -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/l/lizardfs/lizardfs_3.12.0+dfsg-3/src/master/chunk_goal_counters.cc">actcd19/main/l/lizardfs/lizardfs_3.12.0+dfsg-3/src/master/chunk_goal_counters.cc</a>:63
+<p><pre>    	if (it == counters_.end() || it-&gt;goal != goal) {<br/>    		throw ChunkGoalCounters::InvalidOperation(<br/>    				"Trying to remove non-existent goal: " + std::to_string(goal));<br/>    	}<br/>    	it-&gt;count--;<br/></pre></p>
+<hr/>
+
+<!-- size_t get_width() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/cbmc/cbmc_5.10-5/src/solvers/smt2/smt2_conv.cpp">actcd19/main/c/cbmc/cbmc_5.10-5/src/solvers/smt2/smt2_conv.cpp</a>:802
+<p><pre>      else if(type.id()==ID_unsignedbv)<br/>      {<br/>        return "u"+std::to_string(to_unsignedbv_type(type).get_width());<br/>      }<br/>      else if(type.id()==ID_c_bool)<br/></pre></p>
+<hr/>
+
+<!-- #define SVN_REV 0 -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/plugins/cdvdGigaherz/src/CDVD.cpp">actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/plugins/cdvdGigaherz/src/CDVD.cpp</a>:51
+<p><pre>    <br/>    #ifndef PCSX2_DEBUG<br/>    static std::string s_libname("cdvdGigaherz " + std::to_string(SVN_REV));<br/>    #else<br/>    static std::string s_libname("cdvdGigaherz Debug " + std::to_string(SVN_REV));<br/></pre></p>
+<hr/>
+
+<!-- float zero -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc</a>:229
+<p><pre>        config-&gt;set_property("SignalSource.sampling_frequency", std::to_string(sampling_rate_internal));<br/>        config-&gt;set_property("SignalSource.item_type", "ibyte");<br/>        config-&gt;set_property("SignalSource.samples", std::to_string(zero));<br/>    <br/>        // Set the Signal Conditioner<br/></pre></p>
+<hr/>
+
+<!--  #define __CPROVER_JSA_MAX_PRED_SIZE 1u (unsigned) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/cbmc/cbmc_5.6-1/src/cegis/jsa/genetic/jsa_source_provider.cpp">actcd19/main/c/cbmc/cbmc_5.6-1/src/cegis/jsa/genetic/jsa_source_provider.cpp</a>:55
+<p><pre>      result+=std::to_string(__CPROVER_JSA_MAX_QUERY_SIZE);<br/>      result+="\n#define __CPROVER_JSA_MAX_PRED_SIZE ";<br/>      result+=std::to_string(__CPROVER_JSA_MAX_PRED_SIZE);<br/>      result+="\n#define __CPROVER_JSA_NUM_PRED_OPS ";<br/>      result+=std::to_string(__CPROVER_JSA_NUM_PRED_OPS);<br/></pre></p>
+<hr/>
+
+<!-- u32 pc (unsigned) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/common/src/Utilities/Perf.cpp">actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/common/src/Utilities/Perf.cpp</a>:141
+<p><pre>        ml.method_name = m_prefix;<br/>    #else<br/>        std::string name = std::string(m_prefix) + "_" + std::to_string(pc);<br/>        ml.method_id = iJIT_GetNewMethodID();<br/>        ml.method_name = (char *)name.c_str();<br/></pre></p>
+<hr/>
+
+<!-- int id
+     bool writeIsOpeningVariable
+     bool writeIsOpenVariable
+     bool writeIsReadyVariable
+     bool writeIsFinishVariable
+     bool writeIsClosedVariable
+  -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp</a>:1808
+<p><pre>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"["+std::to_string(id)+"] start with stat: "+std::to_string(transfer_stat));<br/>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"["+std::to_string(id)+"] readIsOpeningVariable: "+std::to_string(readIsOpeningVariable)+", readIsOpenVariable: "+std::to_string(readIsOpenVariable)+", readIsReadyVariable: "+std::to_string(readIsReadyVariable)+", readIsFinishVariable: "+std::to_string(readIsFinishVariable)+", readIsClosedVariable: "+std::to_string(readIsClosedVariable));<br/>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"["+std::to_string(id)+"] writeIsOpeningVariable: "+std::to_string(writeIsOpeningVariable)+", writeIsOpenVariable: "+std::to_string(writeIsOpenVariable)+", writeIsReadyVariable: "+std::to_string(writeIsReadyVariable)+", writeIsFinishVariable: "+std::to_string(writeIsFinishVariable)+", writeIsClosedVariable: "+std::to_string(writeIsClosedVariable));<br/>        switch(transfer_stat)<br/>        {<br/></pre></p>
+<hr/>
+
+<!-- int num[9] -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/modsecurity/modsecurity_3.0.3-1/src/operators/verify_ssn.cc">actcd19/main/m/modsecurity/modsecurity_3.0.3-1/src/operators/verify_ssn.cc</a>:80
+<p><pre>    <br/>        str_area.append(std::to_string(num[0]) + std::to_string(num[1]) +<br/>            std::to_string(num[2]));<br/>    <br/>        str_grp.append(std::to_string(num[3]) + std::to_string(num[4]));<br/></pre></p>
+<hr/>
+
+<!-- size_t inputs_size -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/monero/monero_0.13.0.4-2/src/device/device_ledger.cpp">actcd19/main/m/monero/monero_0.13.0.4-2/src/device/device_ledger.cpp</a>:1234
+<p><pre>            this-&gt;controle_device-&gt;mlsag_prehash(blob_x, inputs_size_x, outputs_size_x, hashes_x, outPk_x, prehash_x);<br/>            if (inputs_size) {<br/>              log_message("mlsag_prehash", (std::string("inputs_size not null: ") +  std::to_string(inputs_size)).c_str());<br/>            }<br/>            this-&gt;key_map.log();<br/></pre></p>
+<hr/>
+
+<!-- unsigned int channel_ -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc</a>:225
+<p><pre>            {<br/>                bool cboc = configuration_-&gt;property(<br/>                    "Acquisition" + std::to_string(channel_) + ".cboc", false);<br/>    <br/>                char signal[3];<br/></pre></p>
+<hr/>
+
+<!-- size_t iter
+     double omega -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc">actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc</a>:131
+<p><pre>        bool doubles_converged = true;<br/>        for(size_t iter=0; iter &lt; parameters.iter_max_6D; iter++){<br/>          output_subsection("Mactoiteration " + std::to_string(iter) + " with excitation energy " + std::to_string(omega));<br/>          CC_Timer timer_iter_all(world,"Macroiteration " + stringify(iter));<br/>    <br/></pre></p>
+<hr/>
+
+<!-- int send_size -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/src/instr/instr_private.hpp">actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/src/instr/instr_private.hpp</a>:162
+<p><pre>        return stream.str();<br/>      }<br/>      std::string display_size() override { return std::to_string(send_size); }<br/>    };<br/>    <br/></pre></p>
+<hr/>
+
+<!-- unsigned int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/h/horizon-eda/horizon-eda_0.20181108-1/src/gen-pkg/gen-pkg.cpp">actcd19/main/h/horizon-eda/horizon-eda_0.20181108-1/src/gen-pkg/gen-pkg.cpp</a>:163
+<p><pre>            auto &amp;pad = pkg.pads.emplace(std::piecewise_construct, std::forward_as_tuple(uu), std::forward_as_tuple(uu, ps))<br/>                                .first-&gt;second;<br/>            pad.name = std::to_string(i + 1);<br/>            pad.placement.shift.y = y0 - i * pitch;<br/>            pad.parameter_set[ParameterID::HOLE_DIAMETER] = 1_mm;<br/></pre></p>
+<hr/>
+
+<!-- std::size_t pending_reqs -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h">actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h</a>:1522
+<p><pre>    		if(pending_reqs)<br/>    		{<br/>    			g_logger.log("Socket handler: number of pending DNS cancellation requests is " + std::to_string(pending_reqs),<br/>    						 (pending_reqs &gt; 10) ? sinsp_logger::SEV_WARNING : sinsp_logger::SEV_TRACE);<br/>    		}<br/></pre></p>
+<hr/>
+
+<!-- int ret -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/libf/libfreesrp/libfreesrp_0.3.0-2/src/freesrp_impl.cpp">actcd19/main/libf/libfreesrp/libfreesrp_0.3.0-2/src/freesrp_impl.cpp</a>:85
+<p><pre>    		libusb_close(_freesrp_handle);<br/>    		_freesrp_handle = nullptr;<br/>    		throw ConnectionError("libusb could not read FreeSRP serial number: error " + std::to_string(ret));<br/>    	    }<br/>    	    else<br/></pre></p>
+<hr/>
+
+<!-- int* number -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/supertux/supertux_0.6.0-1/src/gui/item_intfield.cpp">actcd19/main/s/supertux/supertux_0.6.0-1/src/gui/item_intfield.cpp</a>:84
+<p><pre>        *number = new_number;<br/>      } catch (...) {<br/>        input = std::to_string(*number);<br/>      }<br/>    }<br/></pre></p>
+<hr/>
+
+<!-- std::uint32_t id -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/libc/libcereal/libcereal_1.2.2-3/include/cereal/cereal.hpp">actcd19/main/libc/libcereal/libcereal_1.2.2-3/include/cereal/cereal.hpp</a>:679
+<p><pre>            auto iter = itsSharedPointerMap.find( id );<br/>            if(iter == itsSharedPointerMap.end())<br/>              throw Exception("Error while trying to deserialize a smart pointer. Could not find id " + std::to_string(id));<br/>    <br/>            return iter-&gt;second;<br/></pre></p>
+<hr/>
+
+<!-- static_cast< uint32_t >(expected_return_value) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/b/botan/botan_2.9.0-2/src/tests/test_pkcs11_low_level.cpp">actcd19/main/b/botan/botan_2.9.0-2/src/tests/test_pkcs11_low_level.cpp</a>:214
+<p><pre>       else<br/>          {<br/>          result.test_rc_fail(name, "return value should be: " + std::to_string(static_cast&lt; uint32_t &gt;(expected_return_value)),<br/>                              static_cast&lt; uint32_t &gt;(rv));<br/>          }<br/></pre></p>
+<hr/>
+
+<!-- int m_recipient_empire -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/freeorion/freeorion_0.4.8-1/Empire/Diplomacy.cpp">actcd19/main/f/freeorion/freeorion_0.4.8-1/Empire/Diplomacy.cpp</a>:29
+<p><pre>        std::string retval;<br/>        retval += "Dimplomatic message from : " + std::to_string(m_sender_empire) +<br/>                  " to: " + std::to_string(m_recipient_empire) + " about: ";<br/>        switch (m_type) {<br/>        case WAR_DECLARATION:           retval += "War Declaration";            break;<br/></pre></p>
+<hr/>
+
+<!-- static_cast<int32_t>(f) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/a/android-platform-frameworks-native/android-platform-frameworks-native_8.1.0+r23-2/libs/hwc2on1adapter/HWC2On1Adapter.cpp">actcd19/main/a/android-platform-frameworks-native/android-platform-frameworks-native_8.1.0+r23-2/libs/hwc2on1adapter/HWC2On1Adapter.cpp</a>:1391
+<p><pre>    static std::string approximateFloatString(float f) {<br/>        if (static_cast&lt;int32_t&gt;(f) == f) {<br/>            return std::to_string(static_cast&lt;int32_t&gt;(f));<br/>        }<br/>        int32_t truncated = static_cast&lt;int32_t&gt;(f * 10);<br/></pre></p>
+<hr/>
+
+<!-- uint8_t i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/r/rocksdb/rocksdb_5.17.2-3/table/data_block_hash_index_test.cc">actcd19/main/r/rocksdb/rocksdb_5.17.2-3/table/data_block_hash_index_test.cc</a>:182
+<p><pre>      ASSERT_EQ(original_size, map_offset);<br/>      for (uint8_t i = 0; i &lt; 100; i++) {<br/>        std::string key("key" + std::to_string(i));<br/>        uint8_t restart_point = i;<br/>        ASSERT_TRUE(<br/></pre></p>
+<hr/>
+
+<!-- enum CopyMode mode
+     https://github.com/alphaonex86/Ultracopier/blob/f3a90d26ba762f6deb1558b4102f324d5e5a55cc/StructEnumDefinition.h -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ScanFileOrFolder.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ScanFileOrFolder.cpp</a>:198
+<p><pre>    {<br/>        stopped=false;<br/>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"start the listing with destination: "+destination+", mode: "+std::to_string(mode));<br/>        destination=resolvDestination(QString::fromStdString(destination)).absoluteFilePath().toStdString();<br/>        if(stopIt)<br/></pre></p>
+<hr/>
+
+<!-- size_t delcounter -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/d/dnsdist/dnsdist_1.3.3-3/test-dnsdistpacketcache_cc.cc">actcd19/main/d/dnsdist/dnsdist_1.3.3-3/test-dnsdistpacketcache_cc.cc</a>:78
+<p><pre>        size_t delcounter=0;<br/>        for(delcounter=0; delcounter &lt; counter/1000; ++delcounter) {<br/>          DNSName a=DNSName(std::to_string(delcounter))+DNSName(" hello");<br/>          vector&lt;uint8_t&gt; query;<br/>          DNSPacketWriter pwQ(query, a, QType::A, QClass::IN, 0);<br/></pre></p>
+<hr/>
+
+<!-- enum ESM::PartReferenceType type -->
+<a href ="http://codesearch.isocpp.org/actcd19/contrib/o/openmw/openmw_0.45.0-2/components/esm/mappings.cpp">actcd19/contrib/o/openmw/openmw_0.45.0-2/components/esm/mappings.cpp</a>:57
+<p><pre>                default:<br/>                    throw std::runtime_error("PartReferenceType " +<br/>                        std::to_string(type) + " not associated with a mesh part");<br/>            }<br/>        }<br/></pre></p>
+<hr/>
+
+<!-- PROsfd h (__int64) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/t/thunderbird/thunderbird_60.5.1-1/ipc/glue/GeckoChildProcessHost.cpp">actcd19/main/t/thunderbird/thunderbird_60.5.1-1/ipc/glue/GeckoChildProcessHost.cpp</a>:1025
+<p><pre>    #endif  // defined(MOZ_SANDBOX)<br/>        mLaunchOptions-&gt;handles_to_inherit.push_back(reinterpret_cast&lt;HANDLE&gt;(h));<br/>        std::string hStr = std::to_string(h);<br/>        cmdLine.AppendLooseValue(UTF8ToWide(hStr));<br/>      }<br/></pre></p>
+<hr/>
+
+<!-- size_t obj.size() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/.pc/build-i386-json.patch/library/forms/jsonview.cpp">actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/.pc/build-i386-json.patch/library/forms/jsonview.cpp</a>:432
+<p><pre>              auto newNode = (updateMode) ? node : node-&gt;add_child();<br/>              generateTree(objectName.empty() ? jv : obj[objectName], 0, newNode);<br/>              newNode-&gt;set_string(0, objectName + "{" + std::to_string(obj.size()) + "}");<br/>              newNode-&gt;set_tag(objectName);<br/>              _dataChanged(false);<br/></pre></p>
+<hr/>
+
+<!-- ssize_t limit_rows_count -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/backend/wbprivate/sqlide/wb_live_schema_tree.cpp">actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/backend/wbprivate/sqlide/wb_live_schema_tree.cpp</a>:1520
+<p><pre>                limit_rows = false;<br/>              if (limit_rows)<br/>                caption += _(" - Limit ") + std::to_string(limit_rows_count);<br/>            }<br/>            view_item.caption = caption;<br/></pre></p>
+<hr/>
+
+<!-- size_t get_id() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/spades/spades_3.13.0+dfsg2-2/src/common/assembly_graph/core/graph_iterators.hpp">actcd19/main/s/spades/spades_3.13.0+dfsg2-2/src/common/assembly_graph/core/graph_iterators.hpp</a>:173
+<p><pre>                            Comparator(), bool canonical_only = false)<br/>                : SmartIterator&lt;Graph, VertexId, Comparator&gt;(<br/>                    g, "SmartVertexIterator " + std::to_string(get_id()), true,<br/>                    comparator, canonical_only) {<br/>            this-&gt;insert(g.begin(), g.end());<br/></pre></p>
+<hr/>
+
+<!-- unsigned i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/flang/flang_20181226-2/flang-driver/unittests/Tooling/ExecutionTest.cpp">actcd19/main/f/flang/flang_20181226-2/flang-driver/unittests/Tooling/ExecutionTest.cpp</a>:271
+<p><pre>      for (unsigned i = 1; i &lt;= NumFiles; ++i) {<br/>        std::string File = "f" + std::to_string(i) + ".cc";<br/>        std::string Symbol = "looong_function_name_" + std::to_string(i);<br/>        Files.push_back(File);<br/>        FileToContent[File] = "void " + Symbol + "() {}";<br/></pre></p>
+<hr/>
+
+<!-- Cost cost (short or int) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/t/toulbar2/toulbar2_1.0.0+dfsg3-2/src/utils/tb2reader.cpp">actcd19/main/t/toulbar2/toulbar2_1.0.0+dfsg3-2/src/utils/tb2reader.cpp</a>:1513
+<p><pre>                    exit(EXIT_FAILURE);<br/>                }<br/>                streamContentVec.push_back(std::make_pair(GCFTemplate[i], std::to_string(cost)));<br/>            }<br/>            // ---------- Read variable and add it to stream<br/></pre></p>
+<hr/>
+
+<!-- size_t type_string.size() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/v8/src/torque/declarations.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/v8/src/torque/declarations.cc</a>:278
+<p><pre>      for (auto type : specialized_types) {<br/>        std::string type_string = type-&gt;MangledName();<br/>        result += std::to_string(type_string.size()) + type_string;<br/>      }<br/>      return result;<br/></pre></p>
+<hr/>
+
+<!-- int FFMS_AudioProperties::Channels -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/ffms2/ffms2_2.23-3/src/core/ffms.cpp">actcd19/main/f/ffms2/ffms2_2.23-3/src/core/ffms.cpp</a>:354
+<p><pre>    	ReplaceString(s, "%samplerate%", std::to_string(AP-&gt;SampleRate));<br/>    	ReplaceString(s, "%channels%", std::to_string(AP-&gt;Channels));<br/>    	ReplaceString(s, "%bps%", std::to_string(AP-&gt;BitsPerSample));<br/>    	ReplaceString(s, "%delay%", std::to_string(static_cast&lt;int&gt;(AP-&gt;FirstTime)));<br/>    <br/></pre></p>
+<hr/>
+
+<!-- int ClientApp::EmpireID() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/freeorion/freeorion_0.4.8-1/UI/TechTreeWnd.cpp">actcd19/main/f/freeorion/freeorion_0.4.8-1/UI/TechTreeWnd.cpp</a>:1704
+<p><pre>            cost_btn-&gt;SetText(cost_str + just_pad + just_pad);<br/>    <br/>        std::string time_str = std::to_string(this_row_tech-&gt;ResearchTime(client_empire_id));<br/>        if (GG::Button* time_btn = dynamic_cast&lt;GG::Button*&gt;((size() &gt;= 4) ? at(3) : nullptr))<br/>            time_btn-&gt;SetText(time_str + just_pad + just_pad);<br/></pre></p>
+<hr/>
+
+<!-- custom to_string: https://codesearch.isocpp.org/actcd19/main/b/biboumi/biboumi_8.3-1/src/irc/iid.hpp -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/b/biboumi/biboumi_8.3-1/src/bridge/bridge.cpp">actcd19/main/b/biboumi/biboumi_8.3-1/src/bridge/bridge.cpp</a>:550
+<p><pre>              {<br/>                auto&amp; list = channel_list_cache[iid.get_server()];<br/>                const auto res = this-&gt;send_matching_channel_list(list, rs_info, iq_id, to_jid, std::to_string(iid));<br/>                return res;<br/>              }<br/></pre></p>
+<hr/>
+
+<!-- int32_t currentSpeed -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp</a>:449
+<p><pre>                    currentSpeed=1024*64;<br/>                    if(optionsEngine!=NULL)<br/>                        optionsEngine-&gt;setOptionValue("currentSpeed",std::to_string(currentSpeed));<br/>                    else<br/>                        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Critical,"internal error, crash prevented");<br/></pre></p>
+<hr/>
+
+<!-- size_t strides.size() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/ui/ozone/platform/wayland/wayland_buffer_manager.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/ui/ozone/platform/wayland/wayland_buffer_manager.cc</a>:253
+<p><pre>      if (planes_count != strides.size() || planes_count != offsets.size() ||<br/>          planes_count != modifiers.size()) {<br/>        reason = "Number of strides(" + std::to_string(strides.size()) +<br/>                 ")/offsets(" + std::to_string(offsets.size()) + ")/modifiers(" +<br/>                 std::to_string(modifiers.size()) +<br/></pre></p>
+<hr/>
+
+<!-- int thread_rank -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libqt/timer.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libqt/timer.cc</a>:603
+<p><pre>                                    str += key_;<br/>                                    str += " on thread ";<br/>                                    str += std::to_string(thread_rank);<br/>                                    str += " are on and cannot be merged.";<br/>                                    throw PsiException(str, __FILE__, __LINE__);<br/></pre></p>
+<hr/>
+
+<!-- generic to_string wrapper, no specific type -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/libf/libfilezilla/libfilezilla_0.15.1-1/lib/libfilezilla/string.hpp">actcd19/main/libf/libfilezilla/libfilezilla_0.15.1-1/lib/libfilezilla/string.hpp</a>:194
+<p><pre>    inline typename std::enable_if&lt;std::is_arithmetic&lt;std::decay_t&lt;Arg&gt;&gt;::value, std::string&gt;::type to_string(Arg &amp;&amp; arg)<br/>    {<br/>    	return std::to_string(std::forward&lt;Arg&gt;(arg));<br/>    }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- int id_ -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/examples/s4u/dht-chord/s4u-dht-chord-node.cpp">actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/examples/s4u/dht-chord/s4u-dht-chord-node.cpp</a>:134
+<p><pre>    <br/>        try {<br/>          simgrid::s4u::Mailbox::by_name(std::to_string(pred_id_))-&gt;put(succ_msg, 10, timeout);<br/>        } catch (simgrid::TimeoutError&amp; e) {<br/>          XBT_DEBUG("Timeout expired when sending a 'SUCCESSOR_LEAVING' to my predecessor %d", pred_id_);<br/></pre></p>
+<hr/>
+
+<!-- unsigned int integration_time_ms -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc</a>:417
+<p><pre>        config-&gt;set_property("Acquisition_5X.item_type", "gr_complex");<br/>        config-&gt;set_property("Acquisition_5X.coherent_integration_time_ms",<br/>            std::to_string(integration_time_ms));<br/>        config-&gt;set_property("Acquisition_5X.max_dwells", "1");<br/>        config-&gt;set_property("Acquisition_5X.implementation", "Galileo_E5a_PCPS_Acquisition");<br/></pre></p>
+<hr/>
+
+<!-- unsigned ndim -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/o/ompl/ompl_1.4.2+ds1-1/demos/HypercubeBenchmark.cpp">actcd19/main/o/ompl/ompl_1.4.2+ds1-1/demos/HypercubeBenchmark.cpp</a>:110
+<p><pre>        ompl::tools::Benchmark::Request request(runtime_limit, memory_limit, run_count);<br/>        ompl::tools::Benchmark b(ss, "HyperCube");<br/>        b.addExperimentParameter("num_dims", "INTEGER", std::to_string(ndim));<br/>    <br/>        addPlanner(b, std::make_shared&lt;ompl::geometric::STRIDE&gt;(ss.getSpaceInformation()), range);<br/></pre></p>
+<hr/>
+
+<!-- DWORD GetLastError() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/dawn/src/common/DynamicLib.cpp">actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/dawn/src/common/DynamicLib.cpp</a>:87
+<p><pre>    <br/>        if (proc == nullptr &amp;&amp; error != nullptr) {<br/>            *error = "Windows Error: " + std::to_string(GetLastError());<br/>        }<br/>    #elif DAWN_PLATFORM_POSIX<br/></pre></p>
+<hr/>
+
+<!-- float std::fabs(com.coef) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc</a>:312
+<p><pre>    <br/>            name += com.coef &gt; 0.0 ? "+" : "-";<br/>            name += std::to_string(std::fabs(com.coef)) + " ";<br/>            name += molecule_-&gt;label(com.atom);<br/>            if (com.xyz == 0)<br/></pre></p>
+<hr/>
+
+<!-- int TransferThread::id -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp</a>:767
+<p><pre>    void TransferThread::tryCopyDirectly()<br/>    {<br/>        ULTRACOPIER_DEBUGCONSOLE(Ultracopier::DebugLevel_Notice,"["+std::to_string(id)+"] "+QStringLiteral("need copied directly: %1 to %2").arg(source.absoluteFilePath()).arg(destination.absoluteFilePath()).toStdString());<br/>    <br/>        sended_state_readStopped	= false;<br/></pre></p>
+<hr/>
+
+<!-- uint32_t highest_scale_ -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/w/widelands/widelands_19+repack-6/src/wui/plot_area.cc">actcd19/main/w/widelands/widelands_19+repack-6/src/wui/plot_area.cc</a>:438
+<p><pre>     */<br/>    void WuiPlotArea::draw(RenderTarget&amp; dst) {<br/>    	draw_plot(dst, get_inner_h() - kSpaceBottom, std::to_string(highest_scale_), highest_scale_);<br/>    }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- int i -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/detci/params.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/detci/params.cc</a>:604
+<p><pre>          if (i &lt; 1 || i &gt; Parameters_-&gt;num_roots) {<br/>              std::string str = "Invalid number of states to average (";<br/>              str += std::to_string(i);<br/>              str += ")";<br/>              throw PsiException(str, __FILE__, __LINE__);<br/></pre></p>
+<hr/>
+
+<!-- uint8_t* bytes -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/filterpo.cc">actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/filterpo.cc</a>:347
+<p><pre>      if (addr.isIPv4()) {<br/>        const uint8_t* bytes = reinterpret_cast&lt;const uint8_t*&gt;(&amp;addr.sin4.sin_addr.s_addr);<br/>        res += DNSName(std::to_string(bytes[3]) + "." + std::to_string(bytes[2]) + "." + std::to_string(bytes[1]) + "." + std::to_string(bytes[0]));<br/>      }<br/>      else {<br/></pre></p>
+<hr/>
+
+<!-- double SimdScalarDoubleHybrid::scalar() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp">actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp</a>:268
+<p><pre>    <br/>      virtual std::string get_input_vals(int i) const override {<br/>        return std::to_string(x.scalar(i))+" "+std::to_string(y.scalar(i));<br/>      }<br/>    };<br/></pre></p>
+<hr/>
+
+<!-- int linenumber -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/performous/performous_1.1+git20181118-2/game/3dobject.cc">actcd19/main/p/performous/performous_1.1+git20181118-2/game/3dobject.cc</a>:83
+<p><pre>    				m_faces.push_back(f);<br/>    			} else {<br/>    				throw std::runtime_error("Invalid face in "+filepath.string()+":"+std::to_string(linenumber));<br/>    			}<br/>    		}<br/></pre></p>
+<hr/>
+
+<!-- int DesignID() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/freeorion/freeorion_0.4.8-1/util/SitRepEntry.cpp">actcd19/main/f/freeorion/freeorion_0.4.8-1/util/SitRepEntry.cpp</a>:227
+<p><pre>                    UserStringNop("SITREP_SHIP_DAMAGED_AT_SYSTEM_LABEL"), true);<br/>            sitrep.AddVariable(VarText::SHIP_ID_TAG,       std::to_string(object_id));<br/>            sitrep.AddVariable(VarText::DESIGN_ID_TAG,     std::to_string(ship-&gt;DesignID()));<br/>    <br/>        } else if (auto planet = std::dynamic_pointer_cast&lt;const Planet&gt;(obj)) {<br/></pre></p>
+<hr/>
+
+<!-- 0 -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/o/opensurgsim/opensurgsim_0.7.0-8/SurgSim/Devices/LabJack/UnitTests/LabJackDeviceTest.cpp">actcd19/main/o/opensurgsim/opensurgsim_0.7.0-8/SurgSim/Devices/LabJack/UnitTests/LabJackDeviceTest.cpp</a>:158
+<p><pre>    <br/>    	EXPECT_TRUE(consumer-&gt;m_lastReceivedInput.scalars().hasEntry(SurgSim::DataStructures::Names::TIMER_INPUT_PREFIX +<br/>    		std::to_string(0))); // The LabJackDevice provides entries for timer input lines 0 - 6.<br/>    }<br/>    <br/></pre></p>
+<hr/>
+
+<!-- size_t count -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/patch/fwMDSemanticPatch/src/fwMDSemanticPatch/V09ALA/V10/fwData/Image.cpp">actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/patch/fwMDSemanticPatch/src/fwMDSemanticPatch/V09ALA/V10/fwData/Image.cpp</a>:109
+<p><pre>                if (label.empty())<br/>                {<br/>                    label = "label_" + std::to_string(count++);<br/>                }<br/>    <br/></pre></p>
+</div>
 
 <pre class=biblio>
 {

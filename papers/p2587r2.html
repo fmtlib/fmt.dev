@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D2587R1: &lt;code>to_string&lt;/code> or not &lt;code>to_string&lt;/code></title>
+  <title>D2587R2: &lt;code>to_string&lt;/code> or not &lt;code>to_string&lt;/code></title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,19 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b9f38d2a0736caaf4b3dab94992468197f8e62b5" name="document-revision">
+  <meta content="96dad42c37e8459d43785bec5bc2f602c76f2586" name="document-revision">
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+	ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+		text-align: right;
+    width: 20%;
+	}
+</style>
 <style>/* style-autolinks */
 
 .css.css, .property.property, .descriptor.descriptor {
@@ -2071,8 +2083,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D2587R1<br><code class="highlight"><c- n>to_string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2022-06-03">2022-06-03</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2587R2<br><code class="highlight"><c- n>to_string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2022-07-24">2022-07-24</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2091,11 +2103,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
-    <li><a href="#examples"><span class="secno">3</span> <span class="content">Examples</span></a>
-    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
-    <li><a href="#impact"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
+    <li><a href="#polls"><span class="secno">3</span> <span class="content">LEWG Polls</span></a>
+    <li><a href="#examples"><span class="secno">4</span> <span class="content">Examples</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
+    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#sample"><span class="secno"></span> <span class="content">Appendix A: Sample of code search results for <code class="highlight"><c- n>to_string</c-></code></span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2114,6 +2128,14 @@ the choice of the floating-point format makes <code class="highlight"><c- n>std<
 use in practice. This paper proposes fixing these issues while retaining
 existing semantics of integral overloads.</p>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R1:</p>
+   <ul>
+    <li data-md>
+     <p>Added poll results.</p>
+    <li data-md>
+     <p>Mentioned that the current proposal enables future extension to other types
+via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+   </ul>
    <p>Changes since R0:</p>
    <ul>
     <li data-md>
@@ -2122,8 +2144,29 @@ existing semantics of integral overloads.</p>
      <p>Added a feature test macro.</p>
     <li data-md>
      <p>Applied the same changes to <code class="highlight"><c- n>to_wstring</c-></code> in the wording.</p>
+    <li data-md>
+     <p>Added a reference to <a data-link-type="biblio" href="#biblio-std_discussion">[STD_DISCUSSION]</a> which proposed deprecating
+floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="examples"><span class="secno">3. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
+   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG Polls</span><a class="self-link" href="#polls"></a></h2>
+   <p>Poll: Fix <code class="highlight"><c- n>to_string</c-></code> as proposed by P2587R1 (<code class="highlight"><c- n>to</c-><c- o>-</c-><c- n>string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code>).</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>4 
+      <td>9 
+      <td>3 
+      <td>2 
+      <td>1 
+   </table>
+   <p>Outcome: Weak consensus</p>
+   <h2 class="heading settled" data-level="4" id="examples"><span class="secno">4. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>loc</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"uk_UA.UTF-8"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>loc</c-><c- p>);</c->
@@ -2186,9 +2229,9 @@ possibly localized decimal point.</p>
 a precision loss or garbage digit output in many other cases.</p>
    <p>Unfortunately issues with floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> have not
 been discussed in the paper that proposed this facility (<a data-link-type="biblio" href="#biblio-n1803">[N1803]</a>, <a data-link-type="biblio" href="#biblio-n2408">[N2408]</a>).
-However, they been brought up as early as 2015 in a mailing list discussion
+However, they were brought up as early as 2015 in a mailing list discussion
 (<a data-link-type="biblio" href="#biblio-std_discussion">[STD_DISCUSSION]</a>) which proposed deprecating floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> but no paper came out of that.</p>
-   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Redefine <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> which in turn uses <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> making more explicit the fact that integral overloads are
 unlocalized and changing the format of floating-point overloads to also be
 unlocalized and use the shortest decimal representation.</p>
@@ -2246,14 +2289,18 @@ unlocalized and use the shortest decimal representation.</p>
       <td>1234,500000 
       <td>1234.5 
    </table>
-   <h2 class="heading settled" data-level="5" id="impact"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <p>In addition to fixing the broken behavior for floating point this proposal
+enables an easy and natural extension of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> to other types via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (not proposed in this paper).</p>
+   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This change will affect the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> with floating-point
 arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
 be localized.</p>
-   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <p>As a mitigation mechanism we could provide <code class="highlight"><c- n>to_string_localized</c-></code> with the old
+behavior which provides a simple migration path.</p>
+   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>{fmt} implements proposed changes in <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_to_string</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4910.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
 <pre class="highlight"><ins><c- cp>#define __cpp_lib_to_string **placeholder**  </c-><c- c1>// also in &lt;string></c-></ins>
@@ -2311,6 +2358,508 @@ take floating-point arguments may produce a different output. For example: </ins
                                <c- c1>// previously "0.000000" with '.' possibly</c->
                                <c- c1>// changed according to the global C locale</c->
 </ins></pre>
+   <h2 class="heading settled" id="sample"><span class="content">Appendix A: Sample of code search results for <code class="highlight"><c- n>to_string</c-></code></span><a class="self-link" href="#sample"></a></h2>
+   <div class="head">
+    <p>Searching for <code class="highlight"><code class="highlight"><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>to_string</c-></c-></code></code>...</p>
+    <p>2489599 source files searched.</p>
+    <p><b>11408 matches</b> found.</p>
+    <p>Here is a random sample of matches...</p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp</a>:339</p>
+    <p></p>
+<pre class="highlight">        <c- k>if</c-><c- p>(</c-><c- o>!</c-><c- n>ui</c-><c- o>-></c-><c- n>checkBoxShowSpeed</c-><c- o>-></c-><c- n>isChecked</c-><c- p>())</c->    <br>            <c- k>return</c-><c- p>;</c->    <br>        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"value: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>value</c-><c- p>));</c->    <br>        <c- k>switch</c-><c- p>(</c-><c- n>value</c-><c- p>)</c->    <br>        <c- p>{</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/r/re2/re2_20190101+dfsg-2/re2/testing/re2_test.cc">actcd19/main/r/re2/re2_20190101+dfsg-2/re2/testing/re2_test.cc</a>:870</p>
+    <p></p>
+<pre class="highlight">        <c- n>ASSERT_TRUE</c-><c- p>(</c-><c- n>RE2</c-><c- o>::</c-><c- n>FullMatch</c-><c- p>(</c-><c- s>"-100"</c-><c- p>,</c-> <c- s>"(-?</c-><c- se>\\</c-><c- s>d+)"</c-><c- p>,</c-> <c- o>&amp;</c-><c- n>v2</c-><c- p>));</c-> <c- n>ASSERT_EQ</c-><c- p>(</c-><c- n>v2</c-><c- p>,</c-> <c- mi>-100</c-><c- p>);</c->    <br>        <br>        <c- n>str</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>max</c-><c- p>);</c->    <br>        <c- n>ASSERT_TRUE</c-><c- p>(</c-><c- n>RE2</c-><c- o>::</c-><c- n>FullMatch</c-><c- p>(</c-><c- n>str</c-><c- p>,</c->    <c- s>"(-?</c-><c- se>\\</c-><c- s>d+)"</c-><c- p>,</c-> <c- o>&amp;</c-><c- n>v</c-><c- p>));</c-> <c- n>ASSERT_EQ</c-><c- p>(</c-><c- n>v</c-><c- p>,</c-> <c- n>max</c-><c- p>);</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp">actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp</a>:2683</p>
+    <p></p>
+<pre class="highlight">                <c- n>dims</c-><c- p>[</c-><c- mi>0</c-><c- p>]</c-> <c- o>=</c-> <c- mi>1</c-><c- p>;</c->    <br>                <c- n>dims</c-><c- p>[</c-><c- mi>1</c-><c- p>]</c-> <c- o>=</c-> <c- k>static_cast</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- n>path</c-><c- p>.</c-><c- n>size</c-><c- p>());</c->    <br>                <c- n>writeIntegerMatrix6</c-><c- p>(</c-><c- n>node</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>).</c-><c- n>data</c-><c- p>(),</c-> <c- n>H5T_NATIVE_INT32</c-><c- p>,</c-> <c- s>"32"</c-><c- p>,</c-> <c- mi>2</c-><c- p>,</c-> <c- n>dims</c-><c- p>,</c-> <c- n>path</c-><c- p>.</c-><c- n>data</c-><c- p>());</c->    <br>            <c- p>}</c->    <br>        <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/r/rosegarden/rosegarden_18.12-1/src/sound/MidiEvent.cpp">actcd19/main/r/rosegarden/rosegarden_18.12-1/src/sound/MidiEvent.cpp</a>:181</p>
+    <p></p>
+<pre class="highlight">                    <c- n>sharpflat</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- o>-</c-><c- n>tonality</c-><c- p>)</c-> <c- o>+</c-> <c- s>" flat"</c-><c- p>;</c->    <br>                <c- p>}</c-> <c- k>else</c-> <c- p>{</c->    <br>                    <c- n>sharpflat</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>tonality</c-><c- p>);</c->    <br>                    <c- n>sharpflat</c-> <c- o>+=</c-> <c- s>" sharp"</c-><c- p>;</c->    <br>                <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/n/nheko/nheko_0.6.3-1/mtxclient/lib/http/client.cpp">actcd19/main/n/nheko/nheko_0.6.3-1/mtxclient/lib/http/client.cpp</a>:137</p>
+    <p></p>
+<pre class="highlight">    <c- p>{</c->    <br>            <c- n>std</c-><c- o>::</c-><c- n>map</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- n>params</c-><c- p>;</c->    <br>            <c- n>params</c-><c- p>.</c-><c- n>emplace</c-><c- p>(</c-><c- s>"limit"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>limit</c-><c- p>));</c->    <br>        <br>            <c- n>get</c-><c- o>&lt;</c-><c- n>mtx</c-><c- o>::</c-><c- n>responses</c-><c- o>::</c-><c- n>Notifications</c-><c- o>></c-><c- p>(</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/WriteThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/WriteThread.cpp</a>:72</p>
+    <p></p>
+<pre class="highlight">        <c- k>if</c-><c- p>(</c-><c- n>stopIt</c-><c- p>)</c->    <br>        <c- p>{</c->    <br>            <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"["</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>)</c-><c- o>+</c-><c- s>"] close because stopIt is at true"</c-><c- p>);</c->    <br>            <c- n>emit</c-> <c- nf>closed</c-><c- p>();</c->    <br>            <c- k>return</c-> false<c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdns/pdns_4.1.6-1/pdns/dnsname.cc">actcd19/main/p/pdns/pdns_4.1.6-1/pdns/dnsname.cc</a>:125</p>
+    <p></p>
+<pre class="highlight">          <c- k>if</c-><c- p>(</c-><c- n>newpos</c-> <c- o>&lt;</c-> <c- n>offset</c-><c- p>)</c-> <c- p>{</c->    <br>            <c- k>if</c-><c- p>(</c-><c- n>newpos</c-> <c- o>&lt;</c-> <c- p>(</c-><c- b>int</c-><c- p>)</c-> <c- n>minOffset</c-><c- p>)</c->    <br>              <c- k>throw</c-> <c- n>std</c-><c- o>::</c-><c- n>range_error</c-><c- p>(</c-><c- s>"Invalid label position during decompression ("</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>newpos</c-><c- p>)</c-><c- o>+</c-> <c- s>" &lt; "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>minOffset</c-><c- p>)</c-><c- o>+</c-><c- s>")"</c-><c- p>);</c->    <br>            <c- k>if</c-> <c- p>(</c-><c- o>++</c-><c- n>depth</c-> <c- o>></c-> <c- mi>100</c-><c- p>)</c->    <br>              <c- k>throw</c-> <c- n>std</c-><c- o>::</c-><c- n>range_error</c-><c- p>(</c-><c- s>"Abort label decompression after 100 redirects"</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/chrome/browser/ui/search/local_ntp_browsertest.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/chrome/browser/ui/search/local_ntp_browsertest.cc</a>:637</p>
+    <p></p>
+<pre class="highlight">      <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- n>kDefaultMostVisitedItemCount</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- n>kDefaultCustomLinkMaxCount</c-><c- p>;</c->    <br>           <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>rid</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-> <c- o>+</c-> <c- mi>100</c-><c- p>);</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>url</c-> <c- o>=</c-> <c- s>"https://"</c-> <c- o>+</c-> <c- n>rid</c-> <c- o>+</c-> <c- s>".com"</c-><c- p>;</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>title</c-> <c- o>=</c-> <c- s>"url for "</c-> <c- o>+</c-> <c- n>rid</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/docs/source/tuto_s4u/master-workers-lab4.cpp">actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/docs/source/tuto_s4u/master-workers-lab4.cpp</a>:62</p>
+    <p></p>
+<pre class="highlight">        <c- d>/* - Select a worker in a round-robin way */</c->    <br>        <c- n>aid_t</c-> <c- n>worker_pid</c->                 <c- o>=</c-> <c- n>actors</c-><c- p>.</c-><c- n>at</c-><c- p>(</c-><c- n>task_id</c-> <c- o>%</c-> <c- n>actors</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-><c- o>-></c-><c- n>get_pid</c-><c- p>();</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>mailbox_name</c->         <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- s>"worker-"</c-><c- p>)</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>worker_pid</c-><c- p>);</c->    <br>        <c- n>simgrid</c-><c- o>::</c-><c- n>s4u</c-><c- o>::</c-><c- n>MailboxPtr</c-> <c- n>mailbox</c-> <c- o>=</c-> <c- n>simgrid</c-><c- o>::</c-><c- n>s4u</c-><c- o>::</c-><c- n>Mailbox</c-><c- o>::</c-><c- n>by_name</c-><c- p>(</c-><c- n>mailbox_name</c-><c- p>);</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/mesos.cpp">actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/mesos.cpp</a>:618</p>
+    <p></p>
+<pre class="highlight">    								<c- k>if</c-><c- p>(</c-><c- n>m_inactive_frameworks</c-><c- p>.</c-><c- n>size</c-><c- p>())</c->    <br>    								<c- p>{</c->    <br>    									<c- n>g_logger</c-><c- p>.</c-><c- n>log</c-><c- p>(</c-><c- s>"Collection detected "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>m_inactive_frameworks</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- o>+</c-> <c- s>" inactive frameworks"</c-><c- p>,</c->    <br>    												 <c- n>sinsp_logger</c-><c- o>::</c-><c- n>SEV_DEBUG</c-><c- p>);</c->    <br>    								<c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/d/dnsdist/dnsdist_1.3.3-2/dns.cc">actcd19/main/d/dnsdist/dnsdist_1.3.3-2/dns.cc</a>:88</p>
+    <p></p>
+<pre class="highlight">        <c- k>if</c-><c- p>(</c-><c- n>offset</c-> <c- o>&lt;</c-> <c- n>d_length</c-><c- p>)</c->    <br>          <c- k>return</c-> <c- n>d_ptr</c-><c- p>[</c-><c- n>offset</c-><c- p>];</c->    <br>        <c- k>throw</c-> <c- nf>runtime_error</c-><c- p>(</c-><c- s>"out of bounds: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>offset</c-><c- p>)</c-><c- o>+</c-><c- s>" >= "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>d_length</c-><c- p>));</c->    <br>      <c- p>}</c->    <br>    <c- k>private</c-><c- o>:</c->      <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/extensions/browser/api/display_source/display_source_apitestbase.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/extensions/browser/api/display_source/display_source_apitestbase.cc</a>:487</p>
+    <p></p>
+<pre class="highlight">        <c- n>net_result</c-> <c- o>=</c-> <c- n>socket_</c-><c- o>-></c-><c- n>Bind</c-><c- p>(</c-><c- n>local_point</c-><c- p>);</c->    <br>        <c- k>if</c-> <c- p>(</c-><c- n>net_result</c-> <c- o>==</c-> <c- n>net</c-><c- o>::</c-><c- n>OK</c-><c- p>)</c-> <c- p>{</c->    <br>          <c- n>udp_port_</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>port</c-><c- p>);</c->    <br>          <c- c1>// When we got an udp socket established and udp port is known</c->    <br><c- c1>          // Change sink’s status to connected and proceed with the test.</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdns/pdns_4.1.6-1/pdns/validate.cc">actcd19/main/p/pdns/pdns_4.1.6-1/pdns/validate.cc</a>:1054</p>
+    <p></p>
+<pre class="highlight">        <br>      <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>DNSCryptoKeyEngine</c-><c- o>::</c-><c- n>isDigestSupported</c-><c- p>(</c-><c- n>ds</c-><c- p>.</c-><c- n>d_digesttype</c-><c- p>))</c-> <c- p>{</c->    <br>        <c- n>LOG</c-><c- p>(</c-><c- s>"Discarding DS "</c-><c- o>&lt;&lt;</c-><c- n>ds</c-><c- p>.</c-><c- n>d_tag</c-><c- o>&lt;&lt;</c-><c- s>" because we don’t support digest number "</c-><c- o>&lt;&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>ds</c-><c- p>.</c-><c- n>d_digesttype</c-><c- p>)</c-><c- o>&lt;&lt;</c-><c- n>endl</c-><c- p>);</c->    <br>        <c- k>return</c-> false<c- p>;</c->    <br>      <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/d/dnsdist/dnsdist_1.3.3-2/fstrm_logger.cc">actcd19/main/d/dnsdist/dnsdist_1.3.3-2/fstrm_logger.cc</a>:24</p>
+    <p></p>
+<pre class="highlight">        <c- n>res</c-> <c- o>=</c-> <c- n>fstrm_writer_options_add_content_type</c-><c- p>(</c-><c- n>d_fwopt</c-><c- p>,</c-> <c- n>DNSTAP_CONTENT_TYPE</c-><c- p>,</c-> <c- k>sizeof</c-><c- p>(</c-><c- n>DNSTAP_CONTENT_TYPE</c-><c- p>)</c-> <c- o>-</c-> <c- mi>1</c-><c- p>);</c->    <br>        <c- k>if</c-> <c- p>(</c-><c- n>res</c-> <c- o>!=</c-> <c- n>fstrm_res_success</c-><c- p>)</c-> <c- p>{</c->    <br>          <c- k>throw</c-> <c- n>std</c-><c- o>::</c-><c- n>runtime_error</c-><c- p>(</c-><c- s>"FrameStreamLogger: fstrm_writer_options_add_content_type failed: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>res</c-><c- p>));</c->    <br>        <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp">actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp</a>:127</p>
+    <p></p>
+<pre class="highlight">        <c- k>if</c-> <c- p>(</c-><c- n>Trim</c-><c- p>.</c-><c- n>set</c-><c- p>)</c->    <br>            <c- n>comments</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>leader</c-> <c- o>+</c-> <c- n>Trim</c-><c- p>.</c-><c- n>name</c-> <c- o>+</c-> <c- s>" "</c-> <c- o>+</c->    <br>                <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>Trim</c-><c- p>.</c-><c- n>value</c-><c- p>));</c->    <br>        <c- k>if</c-> <c- p>(</c-><c- n>Smooth</c-><c- p>.</c-><c- n>set</c-><c- p>)</c->    <br>            <c- n>comments</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>leader</c-> <c- o>+</c-> <c- n>IslandAreaRatio</c-><c- p>.</c-><c- n>name</c-> <c- o>+</c-> <c- s>" "</c-> <c- o>+</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pybind11/pybind11_2.2.4-2/tests/test_kwargs_and_defaults.cpp">actcd19/main/p/pybind11/pybind11_2.2.4-2/tests/test_kwargs_and_defaults.cpp</a>:15</p>
+    <p></p>
+<pre class="highlight">        <br>    <c- n>TEST_SUBMODULE</c-><c- p>(</c-><c- n>kwargs_and_defaults</c-><c- p>,</c-> <c- n>m</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- k>auto</c-> <c- n>kw_func</c-> <c- o>=</c-> <c- p>[](</c-><c- b>int</c-> <c- n>x</c-><c- p>,</c-> <c- b>int</c-> <c- n>y</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- s>"x="</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>x</c-><c- p>)</c-> <c- o>+</c-> <c- s>", y="</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>y</c-><c- p>);</c-> <c- p>};</c->    <br>        <br>        <c- c1>// test_named_arguments</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/dnsparser.cc">actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/dnsparser.cc</a>:652</p>
+    <p></p>
+<pre class="highlight">        <c- k>if</c-><c- p>(</c-><c- n>d_notyouroffset</c-> <c- o>></c-> <c- n>d_length</c-><c- p>)</c->    <br>          <c- k>throw</c-> <c- n>std</c-><c- o>::</c-><c- n>out_of_range</c-><c- p>(</c-><c- s>"dns packet out of range: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>d_notyouroffset</c-><c- p>)</c-> <c- o>+</c-><c- s>" > "</c->     <br>          <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>d_length</c-><c- p>)</c-> <c- p>);</c->    <br>      <c- p>}</c->    <br>      <c- b>void</c-> <c- n>rewindOffset</c-><c- p>(</c-><c- b>uint16_t</c-> <c- n>by</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/rtc_base/string_to_number_unittest.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/rtc_base/string_to_number_unittest.cc</a>:47</p>
+    <p></p>
+<pre class="highlight">      <c- k>constexpr</c-> <c- n>T</c-> <c- n>zero_value</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->    <br>      <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>min_string</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>min_value</c-><c- p>);</c->    <br>      <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>max_string</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>max_value</c-><c- p>);</c->    <br>      <c- n>EXPECT_EQ</c-><c- p>(</c-><c- n>min_value</c-><c- p>,</c-> <c- n>StringToNumber</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>(</c-><c- n>min_string</c-><c- p>));</c->    <br>      <c- n>EXPECT_EQ</c-><c- p>(</c-><c- n>min_value</c-><c- p>,</c-> <c- n>StringToNumber</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>(</c-><c- n>min_string</c-><c- p>.</c-><c- n>c_str</c-><c- p>()));</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/.pc/disable/tracing.patch/content/browser/browser_child_process_host_impl.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/.pc/disable/tracing.patch/content/browser/browser_child_process_host_impl.cc</a>:415</p>
+    <p></p>
+<pre class="highlight">      <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>log_message</c-> <c- o>=</c-> <c- s>"Bad message received of type: "</c-><c- p>;</c->    <br>      <c- k>if</c-> <c- p>(</c-><c- n>message</c-><c- p>.</c-><c- n>IsValid</c-><c- p>())</c-> <c- p>{</c->    <br>        <c- n>log_message</c-> <c- o>+=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>message</c-><c- p>.</c-><c- n>type</c-><c- p>());</c->    <br>      <c- p>}</c-> <c- k>else</c-> <c- p>{</c->    <br>        <c- n>log_message</c-> <c- o>+=</c-> <c- s>"unknown"</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/third_party/subzero/src/IceInst.cpp">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/third_party/subzero/src/IceInst.cpp</a>:603</p>
+    <p></p>
+<pre class="highlight">            <c- n>Ctx</c-><c- p>,</c-> <c- s>".L"</c-> <c- o>+</c-> <c- n>FuncName</c-><c- p>.</c-><c- n>toString</c-><c- p>()</c-> <c- o>+</c-> <c- s>"$jumptable$__"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>Id</c-><c- p>));</c->    <br>      <c- k>return</c-> <c- n>GlobalString</c-><c- o>::</c-><c- n>createWithString</c-><c- p>(</c->    <br>          <c- n>Ctx</c-><c- p>,</c-> <c- s>"$J"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>FuncName</c-><c- p>.</c-><c- n>getID</c-><c- p>())</c-> <c- o>+</c-> <c- s>"_"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>Id</c-><c- p>));</c->    <br>    <c- p>}</c->    <br>    <c- p>}</c-> <c- c1>// end of anonymous namespace</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/r/rocksdb/rocksdb_5.17.2-3/examples/compact_files_example.cc">actcd19/main/r/rocksdb/rocksdb_5.17.2-3/examples/compact_files_example.cc</a>:155</p>
+    <p></p>
+<pre class="highlight">      <c- c1>// because of options.level0_stop_writes_trigger</c->    <br><c- c1>      for (int i = 1000; i &lt; 99999; ++i) {</c->    <br><c- c1>        db->Put(WriteOptions(), std::to_string(i),</c->    <br><c- c1>                                std::string(500, 'a' + (i % 26)));</c->    <br><c- c1>      }</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/seacas/libraries/ioss/src/xdmf/Ioxf_DatabaseIO.C">actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/seacas/libraries/ioss/src/xdmf/Ioxf_DatabaseIO.C</a>:1054</p>
+    <p></p>
+<pre class="highlight">        <br>            <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>FinalName</c-><c- p>(</c-><c- n>hdfname</c-><c- p>.</c-><c- n>tailname</c-><c- p>().</c-><c- n>c_str</c-><c- p>());</c->    <br>            <c- n>FinalName</c-> <c- o>+=</c-> <c- s>":/"</c-> <c- o>+</c-> <c- n>block_name</c-> <c- o>+</c-> <c- s>"/Iteration "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>step</c-><c- p>)</c-> <c- o>+</c-> <c- s>"/"</c-> <c- o>+</c-> <c- n>var_name</c-><c- p>;</c->    <br>            <c- n>XdmfArray</c-> <c- o>*</c-><c- n>ScalarArray</c-> <c- o>=</c-> <c- k>new</c-> <c- n>XdmfArray</c-><c- p>();</c->    <br>            <c- k>if</c-> <c- p>(</c-><c- k>sizeof</c-><c- p>(</c-><c- b>double</c-><c- p>)</c-> <c- o>==</c-> <c- mi>8</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/src/OpenGL/compiler/preprocessor/Macro.cpp">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/swiftshader/src/OpenGL/compiler/preprocessor/Macro.cpp</a>:40</p>
+    <p></p>
+<pre class="highlight">    	<c- n>Token</c-> <c- n>token</c-><c- p>;</c->    <br>    	<c- n>token</c-><c- p>.</c-><c- n>type</c-> <c- o>=</c-> <c- n>Token</c-><c- o>::</c-><c- n>CONST_INT</c-><c- p>;</c->    <br>    	<c- n>token</c-><c- p>.</c-><c- n>text</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>value</c-><c- p>);</c->    <br>        <br>    	<c- n>std</c-><c- o>::</c-><c- n>shared_ptr</c-><c- o>&lt;</c-><c- n>Macro</c-><c- o>></c-> <c- n>macro</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>make_shared</c-><c- o>&lt;</c-><c- n>Macro</c-><c- o>></c-><c- p>();</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc</a>:916</p>
+    <p></p>
+<pre class="highlight">                                                                <c- n>g5</c-><c- p>.</c-><c- n>disablescreen</c-><c- p>();</c->    <br>                                                            <c- p>}</c->    <br>                                                        <c- n>g5</c-><c- p>.</c-><c- n>set_title</c-><c- p>(</c-><c- s>"Code delay error, PLL/DLL BW: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>PLL_wide_bw_values</c-><c- p>.</c-><c- n>at</c-><c- p>(</c-><c- n>config_idx</c-><c- p>))</c-> <c- o>+</c-> <c- s>","</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>DLL_wide_bw_values</c-><c- p>.</c-><c- n>at</c-><c- p>(</c-><c- n>config_idx</c-><c- p>))</c-> <c- o>+</c-> <c- s>" Hz (PRN #"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>FLAGS_test_satellite_PRN</c-><c- p>)</c-> <c- o>+</c-> <c- s>")"</c-><c- p>);</c->    <br>                                                        <c- n>g5</c-><c- p>.</c-><c- n>set_grid</c-><c- p>();</c->    <br>                                                        <c- n>g5</c-><c- p>.</c-><c- n>set_xlabel</c-><c- p>(</c-><c- s>"Time [s]"</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/a/antlr4-cpp-runtime/antlr4-cpp-runtime_4.7.2+dfsg-1/runtime/src/atn/ATNSerializer.cpp">actcd19/main/a/antlr4-cpp-runtime/antlr4-cpp-runtime_4.7.2+dfsg-1/runtime/src/atn/ATNSerializer.cpp</a>:475</p>
+    <p></p>
+<pre class="highlight">        <c- b>size_t</c-> <c- n>s</c-> <c- o>=</c-> <c- n>data</c-><c- p>[</c-><c- n>p</c-><c- o>++</c-><c- p>];</c->    <br>        <c- n>buf</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- s>"mode "</c-><c- p>)</c->    <br>        <c- p>.</c-><c- n>append</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>))</c->    <br>        <c- p>.</c-><c- n>append</c-><c- p>(</c-><c- s>":"</c-><c- p>)</c->    <br>        <c- p>.</c-><c- n>append</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>s</c-><c- p>))</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/perfetto/src/protozero/protoc_plugin/protozero_generator.cc">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/third_party/perfetto/src/protozero/protoc_plugin/protozero_generator.cc</a>:322</p>
+    <p></p>
+<pre class="highlight">          <c- n>stub_h_</c-><c- o>-></c-><c- n>Print</c-><c- p>(</c-><c- s>"$name$ = $number$,</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- s>"name"</c-><c- p>,</c->    <br>                         <c- n>value_name_prefix</c-> <c- o>+</c-> <c- n>value</c-><c- o>-></c-><c- n>name</c-><c- p>(),</c-> <c- s>"number"</c-><c- p>,</c->    <br>                         <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>value</c-><c- o>-></c-><c- n>number</c-><c- p>()));</c->    <br>        <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/tracking/gnuradio_blocks/glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/tracking/gnuradio_blocks/glonass_l2_ca_dll_pll_c_aid_tracking_sc.cc</a>:559</p>
+    <p></p>
+<pre class="highlight">                        <c- k>try</c->    <br>                            <c- p>{</c->    <br>                                <c- n>d_dump_filename</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>d_channel</c-><c- p>));</c->    <br>                                <c- n>d_dump_filename</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- s>".dat"</c-><c- p>);</c->    <br>                                <c- n>d_dump_file</c-><c- p>.</c-><c- n>exceptions</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>ifstream</c-><c- o>::</c-><c- n>failbit</c-> <c- o>|</c-> <c- n>std</c-><c- o>::</c-><c- n>ifstream</c-><c- o>::</c-><c- n>badbit</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ReadThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ReadThread.cpp</a>:623</p>
+    <p></p>
+<pre class="highlight">    <c- b>bool</c-> <c- n>ReadThread</c-><c- o>::</c-><c- n>internalReopen</c-><c- p>()</c->    <br>    <c- p>{</c->    <br>        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"["</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>)</c-><c- o>+</c-><c- s>"] start"</c-><c- p>);</c->    <br>        <c- n>stopIt</c-><c- o>=</c->false<c- p>;</c->    <br>        <c- k>if</c-><c- p>(</c-><c- n>file</c-><c- p>.</c-><c- n>isOpen</c-><c- p>())</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/modules/video_coding/codecs/test/videocodec_test_mediacodec.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/webrtc/modules/video_coding/codecs/test/videocodec_test_mediacodec.cc</a>:137</p>
+    <p></p>
+<pre class="highlight">          <c- k>const</c-> <c- b>int</c-> <c- n>width</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>get</c-><c- o>&lt;</c-><c- mi>0</c-><c- o>></c-><c- p>(</c-><c- n>resolution</c-><c- p>);</c->    <br>          <c- k>const</c-> <c- b>int</c-> <c- n>height</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>get</c-><c- o>&lt;</c-><c- mi>1</c-><c- o>></c-><c- p>(</c-><c- n>resolution</c-><c- p>);</c->    <br>          <c- n>config</c-><c- p>.</c-><c- n>filename</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- s>"foreman_"</c-><c- p>)</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>width</c-><c- p>)</c-> <c- o>+</c-> <c- s>"x"</c-> <c- o>+</c->    <br>                            <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>height</c-><c- p>);</c->    <br>          <c- n>config</c-><c- p>.</c-><c- n>filepath</c-> <c- o>=</c-> <c- n>ResourcePath</c-><c- p>(</c-><c- n>config</c-><c- p>.</c-><c- n>filename</c-><c- p>,</c-> <c- s>"yuv"</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/b/bedops/bedops_2.4.35+dfsg-1/interfaces/general-headers/data/bed/Bed.hpp">actcd19/main/b/bedops/bedops_2.4.35+dfsg-1/interfaces/general-headers/data/bed/Bed.hpp</a>:389</p>
+    <p></p>
+<pre class="highlight">        <br>          <c- k>static</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>tab</c-> <c- o>=</c-> <c- s>"</c-><c- se>\t</c-><c- s>"</c-><c- p>;</c->    <br>          <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- n>chrom_</c-><c- p>)</c-> <c- o>+</c-> <c- n>tab</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>start_</c-><c- p>)</c-> <c- o>+</c-> <c- n>tab</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>end_</c-><c- p>)</c-> <c- o>+</c-> <c- n>tab</c->    <br>                   <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- n>id_</c-><c- p>);</c->    <br>        <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_block_factory.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_block_factory.cc</a>:189</p>
+    <p></p>
+<pre class="highlight">                <c- k>if</c-> <c- p>(</c-><c- n>ID</c-> <c- o>!=</c-> <c- mi>-1</c-><c- p>)</c->    <br>                    <c- p>{</c->    <br>                        <c- n>role</c-> <c- o>=</c-> <c- s>"SignalSource"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>ID</c-><c- p>);</c->    <br>                    <c- p>}</c->    <br>            <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/mariadb-10.3/mariadb-10.3_10.3.13-1/storage/rocksdb/rdb_i_s.cc">actcd19/main/m/mariadb-10.3/mariadb-10.3_10.3.13-1/storage/rocksdb/rdb_i_s.cc</a>:498</p>
+    <p></p>
+<pre class="highlight">            <c- p>{</c-><c- s>"TARGET_FILE_SIZE_BASE"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>opts</c-><c- p>.</c-><c- n>target_file_size_base</c-><c- p>)},</c->    <br>            <c- p>{</c-><c- s>"TARGET_FILE_SIZE_MULTIPLIER"</c-><c- p>,</c->    <br>             <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>opts</c-><c- p>.</c-><c- n>target_file_size_multiplier</c-><c- p>)},</c->    <br>            <c- p>{</c-><c- s>"MAX_BYTES_FOR_LEVEL_BASE"</c-><c- p>,</c->    <br>             <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>opts</c-><c- p>.</c-><c- n>max_bytes_for_level_base</c-><c- p>)},</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/cmake/cmake_3.12.3-3/Source/cmStateSnapshot.cxx">actcd19/main/c/cmake/cmake_3.12.3-3/Source/cmStateSnapshot.cxx</a>:338</p>
+    <p></p>
+<pre class="highlight">                          <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>cmVersion</c-><c- o>::</c-><c- n>GetMajorVersion</c-><c- p>()));</c->    <br>      <c- k>this</c-><c- o>-></c-><c- n>SetDefinition</c-><c- p>(</c-><c- s>"CMAKE_MINOR_VERSION"</c-><c- p>,</c->    <br>                          <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>cmVersion</c-><c- o>::</c-><c- n>GetMinorVersion</c-><c- p>()));</c->    <br>      <c- k>this</c-><c- o>-></c-><c- n>SetDefinition</c-><c- p>(</c-><c- s>"CMAKE_PATCH_VERSION"</c-><c- p>,</c->    <br>                          <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>cmVersion</c-><c- o>::</c-><c- n>GetPatchVersion</c-><c- p>()));</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdns/pdns_4.1.6-1/pdns/pkcs11signers.cc">actcd19/main/p/pdns/pdns_4.1.6-1/pdns/pkcs11signers.cc</a>:234</p>
+    <p></p>
+<pre class="highlight">          <c- p>}</c-> <c- k>else</c-> <c- p>{</c->    <br>            <c- n>logError</c-><c- p>(</c-><c- s>"C_GetTokenInfo"</c-><c- p>);</c->    <br>            <c- k>throw</c-> <c- nf>PDNSException</c-><c- p>(</c-><c- s>"Cannot get token info for slot "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>slot</c-><c- p>));</c->    <br>          <c- p>}</c->    <br>        <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l2c_telemetry_decoder_cc.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/telemetry_decoder/gnuradio_blocks/gps_l2c_telemetry_decoder_cc.cc</a>:112</p>
+    <p></p>
+<pre class="highlight">                            <c- p>{</c->    <br>                                <c- n>d_dump_filename</c-> <c- o>=</c-> <c- s>"telemetry_L2CM_"</c-><c- p>;</c->    <br>                                <c- n>d_dump_filename</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>d_channel</c-><c- p>));</c->    <br>                                <c- n>d_dump_filename</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- s>".dat"</c-><c- p>);</c->    <br>                                <c- n>d_dump_file</c-><c- p>.</c-><c- n>exceptions</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>ifstream</c-><c- o>::</c-><c- n>failbit</c-> <c- o>|</c-> <c- n>std</c-><c- o>::</c-><c- n>ifstream</c-><c- o>::</c-><c- n>badbit</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp">actcd19/main/s/scilab/scilab_6.0.1-7/modules/hdf5/src/cpp/handle_properties.cpp</a>:984</p>
+    <p></p>
+<pre class="highlight">            <c- b>int</c-> <c- n>col</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->    <br>            <c- b>int</c-><c- o>*</c-> <c- n>path</c-> <c- o>=</c-> <c- k>nullptr</c-><c- p>;</c->    <br>            <c- n>getHandleIntVector</c-><c- p>(</c-><c- n>node</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>).</c-><c- n>data</c-><c- p>(),</c-> <c- o>&amp;</c-><c- n>row</c-><c- p>,</c-> <c- o>&amp;</c-><c- n>col</c-><c- p>,</c-> <c- o>&amp;</c-><c- n>path</c-><c- p>);</c->    <br>            <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- n>res</c-><c- p>(</c-><c- n>row</c-> <c- o>*</c-> <c- n>col</c-><c- p>);</c->    <br>            <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>j</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>j</c-> <c- o>&lt;</c-> <c- n>row</c-> <c- o>*</c-> <c- n>col</c-><c- p>;</c-> <c- o>++</c-><c- n>j</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdal/pdal_1.7.2-2/vendor/arbiter/arbiter.cpp">actcd19/main/p/pdal/pdal_1.7.2-2/vendor/arbiter/arbiter.cpp</a>:1447</p>
+    <p></p>
+<pre class="highlight">        <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>headers</c-><c- p>.</c-><c- n>count</c-><c- p>(</c-><c- s>"Content-Length"</c-><c- p>))</c->    <br>        <c- p>{</c->    <br>            <c- n>headers</c-><c- p>[</c-><c- s>"Content-Length"</c-><c- p>]</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>data</c-><c- p>.</c-><c- n>size</c-><c- p>());</c->    <br>        <c- p>}</c->    <br>        <c- k>return</c-> <c- n>m_pool</c-><c- p>.</c-><c- n>acquire</c-><c- p>().</c-><c- n>post</c-><c- p>(</c-><c- n>typedPath</c-><c- p>(</c-><c- n>path</c-><c- p>),</c-> <c- n>data</c-><c- p>,</c-> <c- n>headers</c-><c- p>,</c-> <c- n>query</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/core/fwCommand/test/tu/src/UndoRedoManagerTest.cpp">actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/core/fwCommand/test/tu/src/UndoRedoManagerTest.cpp</a>:229</p>
+    <p></p>
+<pre class="highlight">        <c- p>{</c->    <br>            <c- n>BogusCommand</c-><c- o>::</c-><c- n>sptr</c-> <c- n>testCmdI</c-> <c- o>=</c->    <br>                <c- n>std</c-><c- o>::</c-><c- n>make_shared</c-><c- o>&lt;</c-><c- n>BogusCommand</c-><c- o>></c-><c- p>(</c-><c- n>BogusCommand</c-><c- p>(</c-><c- s>"testCmd"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>),</c-> <c- n>log</c-><c- p>,</c-> <c- n>CMDSIZE</c-><c- p>));</c->    <br>        <br>            <c- n>undoRedoManager</c-><c- p>.</c-><c- n>enqueue</c-><c- p>(</c-><c- n>testCmdI</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h">actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h</a>:1229</p>
+    <p></p>
+<pre class="highlight">    									 <c- n>sinsp_logger</c-><c- o>::</c-><c- n>SEV_INFO</c-><c- p>);</c->    <br>    						<c- n>g_logger</c-><c- p>.</c-><c- n>log</c-><c- p>(</c-><c- s>"Socket handler ("</c-> <c- o>+</c-> <c- n>m_id</c-> <c- o>+</c-> <c- s>"): "</c->    <br>    									 <c- s>"SSL socket="</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>m_socket</c-><c- p>)</c-> <c- o>+</c-> <c- s>", "</c->    <br>    									 <c- s>"local port="</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>get_local_port</c-><c- p>()),</c->    <br>    									 <c- n>sinsp_logger</c-><c- o>::</c-><c- n>SEV_DEBUG</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc">actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc</a>:310</p>
+    <p></p>
+<pre class="highlight">    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>type</c-> <c- o>==</c-> <c- s>"int"</c-><c- p>)</c-> <c- n>entryNode</c-><c- o>-></c-><c- n>set_attribute</c-><c- p>(</c-><c- s>"value"</c-><c- p>,</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>i</c-><c- p>()));</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>type</c-> <c- o>==</c-> <c- s>"bool"</c-><c- p>)</c-> <c- n>entryNode</c-><c- o>-></c-><c- n>set_attribute</c-><c- p>(</c-><c- s>"value"</c-><c- p>,</c-> <c- n>item</c-><c- p>.</c-><c- n>b</c-><c- p>()</c-> <c- o>?</c-> <c- s>"true"</c-> <c- o>:</c-> <c- s>"false"</c-><c- p>);</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>type</c-> <c- o>==</c-> <c- s>"float"</c-><c- p>)</c-> <c- n>entryNode</c-><c- o>-></c-><c- n>set_attribute</c-><c- p>(</c-><c- s>"value"</c-><c- p>,</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>f</c-><c- p>()));</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>get_type</c-><c- p>()</c-> <c- o>==</c-> <c- s>"string"</c-><c- p>)</c-> <c- n>xmlpp</c-><c- o>::</c-><c- n>add_child_element</c-><c- p>(</c-><c- n>entryNode</c-><c- p>,</c-> <c- s>"stringvalue"</c-><c- p>)</c-><c- o>-></c-><c- n>add_child_text</c-><c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>s</c-><c- p>());</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>get_type</c-><c- p>()</c-> <c- o>==</c-> <c- s>"string_list"</c-><c- p>)</c-> <c- p>{</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_flowgraph.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/core/receiver/gnss_flowgraph.cc</a>:1238</p>
+    <p></p>
+<pre class="highlight">                        <c- k>try</c->    <br>                            <c- p>{</c->    <br>                                <c- n>sat_</c-> <c- o>=</c-> <c- n>configuration_</c-><c- o>-></c-><c- n>property</c-><c- p>(</c-><c- s>"Channel"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>ch_index</c-><c- p>)</c-> <c- o>+</c-> <c- s>".satellite"</c-><c- p>,</c-> <c- mi>0</c-><c- p>);</c->    <br>                            <c- p>}</c->    <br>                        <c- k>catch</c-> <c- p>(</c-><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>exception</c-><c- o>&amp;</c-> <c- n>e</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/services/ui/ws/window_tree_unittest.cc">actcd19/main/q/qtwebengine-opensource-src/qtwebengine-opensource-src_5.11.3+dfsg-2/src/3rdparty/chromium/services/ui/ws/window_tree_unittest.cc</a>:1539</p>
+    <p></p>
+<pre class="highlight">      <c- c1>// would be reset to 0 before sending back to clients.</c->    <br><c- c1>      EXPECT_EQ("OnCaptureChanged new_window=0," +</c->    <br><c- c1>                    std::to_string(kEmbedTreeWindowId) +</c->    <br><c- c1>                    " old_window=" + kNextWindowClientIdString + "," +</c->    <br><c- c1>                    std::to_string(embed_child_window_id.sink_id()),</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gazebo/gazebo_9.6.0-1/gazebo/physics/dart/DARTScrewJoint.cc">actcd19/main/g/gazebo/gazebo_9.6.0-1/gazebo/physics/dart/DARTScrewJoint.cc</a>:95</p>
+    <p></p>
+<pre class="highlight">      <c- p>{</c->    <br>        <c- k>return</c-> <c- k>this</c-><c- o>-></c-><c- n>dataPtr</c-><c- o>-></c-><c- n>GetCached</c-><c- o>&lt;</c-><c- n>ignition</c-><c- o>::</c-><c- n>math</c-><c- o>::</c-><c- n>Vector3d</c-><c- o>></c-><c- p>(</c->    <br>              <c- s>"Axis"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>_index</c-><c- p>));</c->    <br>      <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/q/qtcreator/qtcreator_4.8.2-1/src/libs/3rdparty/botan/src/lib/asn1/asn1_obj.cpp">actcd19/main/q/qtcreator/qtcreator_4.8.2-1/src/libs/3rdparty/botan/src/lib/asn1/asn1_obj.cpp</a>:48</p>
+    <p></p>
+<pre class="highlight">             <c- k>else</c->    <br>                <c- p>{</c->    <br>                <c- n>msg</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>type_tag</c-><c- p>);</c->    <br>                <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/l/llvm-toolchain-7/llvm-toolchain-7_7.0.1-8/.pc/kfreebsd/kfreebsd-triple-clang.diff/clang/lib/Driver/ToolChains/Clang.cpp">actcd19/main/l/llvm-toolchain-7/llvm-toolchain-7_7.0.1-8/.pc/kfreebsd/kfreebsd-triple-clang.diff/clang/lib/Driver/ToolChains/Clang.cpp</a>:3358</p>
+    <p></p>
+<pre class="highlight">      <c- k>if</c-> <c- p>(</c-><c- n>FunctionAlignment</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- n>CmdArgs</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- s>"-function-alignment"</c-><c- p>);</c->    <br>        <c- n>CmdArgs</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>Args</c-><c- p>.</c-><c- n>MakeArgString</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>FunctionAlignment</c-><c- p>)));</c->    <br>      <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/non-free/i/intel-media-driver-non-free/intel-media-driver-non-free_18.4.0+ds1-1/media_driver/agnostic/common/os/mos_os.c">actcd19/non-free/i/intel-media-driver-non-free/intel-media-driver-non-free_18.4.0+ds1-1/media_driver/agnostic/common/os/mos_os.c</a>:639</p>
+    <p></p>
+<pre class="highlight">        <c- k>auto</c-> <c- o>&amp;</c-><c- n>cmdResInfoPtrs</c-> <c- o>=</c-> <c- n>GetCmdResPtrs</c-><c- p>(</c-><c- n>pOsInterface</c-><c- p>);</c->    <br>        <br>        <c- n>outputFile</c-> <c- o>&lt;&lt;</c-> <c- s>"--PerfTag: "</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>pOsInterface</c-><c- o>-></c-><c- n>pfnGetPerfTag</c-><c- p>(</c-><c- n>pOsInterface</c-><c- p>))</c-> <c- o>&lt;&lt;</c-> <c- s>" --Cmd Num: "</c->    <br>            <c- o>&lt;&lt;</c-> <c- n>cmdResInfoPtrs</c-><c- p>.</c-><c- n>size</c-><c- p>()</c-> <c- o>&lt;&lt;</c-> <c- s>" --Dump Count: "</c-> <c- o>&lt;&lt;</c-> <c- o>++</c-><c- n>m_cnt</c-> <c- o>&lt;&lt;</c-> <c- n>endl</c-><c- p>;</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/o/osm2pgsql/osm2pgsql_0.96.0+ds-2/middle-pgsql.cpp">actcd19/main/o/osm2pgsql/osm2pgsql_0.96.0+ds-2/middle-pgsql.cpp</a>:267</p>
+    <p></p>
+<pre class="highlight">        <c- p>};</c->    <br>        <br>        <c- n>copy_buffer</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>node</c-><c- p>.</c-><c- n>id</c-><c- p>());</c->    <br>        <c- n>copy_buffer</c-> <c- o>+=</c-> <c- n>delim</c-><c- p>;</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/l/lizardfs/lizardfs_3.12.0+dfsg-3/src/master/chunk_goal_counters.cc">actcd19/main/l/lizardfs/lizardfs_3.12.0+dfsg-3/src/master/chunk_goal_counters.cc</a>:63</p>
+    <p></p>
+<pre class="highlight">    	<c- k>if</c-> <c- p>(</c-><c- n>it</c-> <c- o>==</c-> <c- n>counters_</c-><c- p>.</c-><c- n>end</c-><c- p>()</c-> <c- o>||</c-> <c- n>it</c-><c- o>-></c-><c- n>goal</c-> <c- o>!=</c-> <c- n>goal</c-><c- p>)</c-> <c- p>{</c->    <br>    		<c- k>throw</c-> <c- n>ChunkGoalCounters</c-><c- o>::</c-><c- n>InvalidOperation</c-><c- p>(</c->    <br>    				<c- s>"Trying to remove non-existent goal: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>goal</c-><c- p>));</c->    <br>    	<c- p>}</c->    <br>    	<c- n>it</c-><c- o>-></c-><c- n>count</c-><c- o>--</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/cbmc/cbmc_5.10-5/src/solvers/smt2/smt2_conv.cpp">actcd19/main/c/cbmc/cbmc_5.10-5/src/solvers/smt2/smt2_conv.cpp</a>:802</p>
+    <p></p>
+<pre class="highlight">      <c- k>else</c-> <c- nf>if</c-><c- p>(</c-><c- n>type</c-><c- p>.</c-><c- n>id</c-><c- p>()</c-><c- o>==</c-><c- n>ID_unsignedbv</c-><c- p>)</c->    <br>      <c- p>{</c->    <br>        <c- k>return</c-> <c- s>"u"</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>to_unsignedbv_type</c-><c- p>(</c-><c- n>type</c-><c- p>).</c-><c- n>get_width</c-><c- p>());</c->    <br>      <c- p>}</c->    <br>      <c- k>else</c-> <c- k>if</c-><c- p>(</c-><c- n>type</c-><c- p>.</c-><c- n>id</c-><c- p>()</c-><c- o>==</c-><c- n>ID_c_bool</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/plugins/cdvdGigaherz/src/CDVD.cpp">actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/plugins/cdvdGigaherz/src/CDVD.cpp</a>:51</p>
+    <p></p>
+<pre class="highlight">        <br>    <c- cp>#ifndef PCSX2_DEBUG</c->    <br><c- cp>    static std::string s_libname("cdvdGigaherz " + std::to_string(SVN_REV));</c->    <br><c- cp>    #else</c->    <br><c- cp>    static std::string s_libname("cdvdGigaherz Debug " + std::to_string(SVN_REV));</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc</a>:229</p>
+    <p></p>
+<pre class="highlight">        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"SignalSource.sampling_frequency"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>sampling_rate_internal</c-><c- p>));</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"SignalSource.item_type"</c-><c- p>,</c-> <c- s>"ibyte"</c-><c- p>);</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"SignalSource.samples"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>zero</c-><c- p>));</c->    <br>        <br>        <c- c1>// Set the Signal Conditioner</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/cbmc/cbmc_5.6-1/src/cegis/jsa/genetic/jsa_source_provider.cpp">actcd19/main/c/cbmc/cbmc_5.6-1/src/cegis/jsa/genetic/jsa_source_provider.cpp</a>:55</p>
+    <p></p>
+<pre class="highlight">      <c- n>result</c-><c- o>+=</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>__CPROVER_JSA_MAX_QUERY_SIZE</c-><c- p>);</c->    <br>      <c- n>result</c-><c- o>+=</c-><c- s>"</c-><c- se>\n</c-><c- s>#define __CPROVER_JSA_MAX_PRED_SIZE "</c-><c- p>;</c->    <br>      <c- n>result</c-><c- o>+=</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>__CPROVER_JSA_MAX_PRED_SIZE</c-><c- p>);</c->    <br>      <c- n>result</c-><c- o>+=</c-><c- s>"</c-><c- se>\n</c-><c- s>#define __CPROVER_JSA_NUM_PRED_OPS "</c-><c- p>;</c->    <br>      <c- n>result</c-><c- o>+=</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>__CPROVER_JSA_NUM_PRED_OPS</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/common/src/Utilities/Perf.cpp">actcd19/main/p/pcsx2/pcsx2_1.5.0~gfc1d9aef0+dfsg-1/common/src/Utilities/Perf.cpp</a>:141</p>
+    <p></p>
+<pre class="highlight">        <c- n>ml</c-><c- p>.</c-><c- n>method_name</c-> <c- o>=</c-> <c- n>m_prefix</c-><c- p>;</c->    <br>    #<c- k>else</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>name</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- n>m_prefix</c-><c- p>)</c-> <c- o>+</c-> <c- s>"_"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>pc</c-><c- p>);</c->    <br>        <c- n>ml</c-><c- p>.</c-><c- n>method_id</c-> <c- o>=</c-> <c- n>iJIT_GetNewMethodID</c-><c- p>();</c->    <br>        <c- n>ml</c-><c- p>.</c-><c- n>method_name</c-> <c- o>=</c-> <c- p>(</c-><c- b>char</c-> <c- o>*</c-><c- p>)</c-><c- n>name</c-><c- p>.</c-><c- n>c_str</c-><c- p>();</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp</a>:1808</p>
+    <p></p>
+<pre class="highlight">        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"["</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>)</c-><c- o>+</c-><c- s>"] start with stat: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>transfer_stat</c-><c- p>));</c->    <br>        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"["</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>)</c-><c- o>+</c-><c- s>"] readIsOpeningVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>readIsOpeningVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", readIsOpenVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>readIsOpenVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", readIsReadyVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>readIsReadyVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", readIsFinishVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>readIsFinishVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", readIsClosedVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>readIsClosedVariable</c-><c- p>));</c->    <br>        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"["</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>)</c-><c- o>+</c-><c- s>"] writeIsOpeningVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>writeIsOpeningVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", writeIsOpenVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>writeIsOpenVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", writeIsReadyVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>writeIsReadyVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", writeIsFinishVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>writeIsFinishVariable</c-><c- p>)</c-><c- o>+</c-><c- s>", writeIsClosedVariable: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>writeIsClosedVariable</c-><c- p>));</c->    <br>        <c- k>switch</c-><c- p>(</c-><c- n>transfer_stat</c-><c- p>)</c->    <br>        <c- p>{</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/modsecurity/modsecurity_3.0.3-1/src/operators/verify_ssn.cc">actcd19/main/m/modsecurity/modsecurity_3.0.3-1/src/operators/verify_ssn.cc</a>:80</p>
+    <p></p>
+<pre class="highlight">        <br>        <c- n>str_area</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>num</c-><c- p>[</c-><c- mi>0</c-><c- p>])</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>num</c-><c- p>[</c-><c- mi>1</c-><c- p>])</c-> <c- o>+</c->    <br>            <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>num</c-><c- p>[</c-><c- mi>2</c-><c- p>]));</c->    <br>        <br>        <c- n>str_grp</c-><c- p>.</c-><c- n>append</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>num</c-><c- p>[</c-><c- mi>3</c-><c- p>])</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>num</c-><c- p>[</c-><c- mi>4</c-><c- p>]));</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/monero/monero_0.13.0.4-2/src/device/device_ledger.cpp">actcd19/main/m/monero/monero_0.13.0.4-2/src/device/device_ledger.cpp</a>:1234</p>
+    <p></p>
+<pre class="highlight">            <c- k>this</c-><c- o>-></c-><c- n>controle_device</c-><c- o>-></c-><c- n>mlsag_prehash</c-><c- p>(</c-><c- n>blob_x</c-><c- p>,</c-> <c- n>inputs_size_x</c-><c- p>,</c-> <c- n>outputs_size_x</c-><c- p>,</c-> <c- n>hashes_x</c-><c- p>,</c-> <c- n>outPk_x</c-><c- p>,</c-> <c- n>prehash_x</c-><c- p>);</c->    <br>            <c- k>if</c-> <c- p>(</c-><c- n>inputs_size</c-><c- p>)</c-> <c- p>{</c->    <br>              <c- n>log_message</c-><c- p>(</c-><c- s>"mlsag_prehash"</c-><c- p>,</c-> <c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- s>"inputs_size not null: "</c-><c- p>)</c-> <c- o>+</c->  <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>inputs_size</c-><c- p>)).</c-><c- n>c_str</c-><c- p>());</c->    <br>            <c- p>}</c->    <br>            <c- k>this</c-><c- o>-></c-><c- n>key_map</c-><c- p>.</c-><c- n>log</c-><c- p>();</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/algorithms/acquisition/adapters/galileo_e1_pcps_cccwsr_ambiguous_acquisition.cc</a>:225</p>
+    <p></p>
+<pre class="highlight">            <c- p>{</c->    <br>                <c- b>bool</c-> <c- n>cboc</c-> <c- o>=</c-> <c- n>configuration_</c-><c- o>-></c-><c- n>property</c-><c- p>(</c->    <br>                    <c- s>"Acquisition"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>channel_</c-><c- p>)</c-> <c- o>+</c-> <c- s>".cboc"</c-><c- p>,</c-> false<c- p>);</c->    <br>        <br>                <c- b>char</c-> <c- n>signal</c-><c- p>[</c-><c- mi>3</c-><c- p>];</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc">actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc</a>:131</p>
+    <p></p>
+<pre class="highlight">        <c- b>bool</c-> <c- n>doubles_converged</c-> <c- o>=</c-> true<c- p>;</c->    <br>        <c- k>for</c-><c- p>(</c-><c- b>size_t</c-> <c- n>iter</c-><c- o>=</c-><c- mi>0</c-><c- p>;</c-> <c- n>iter</c-> <c- o>&lt;</c-> <c- n>parameters</c-><c- p>.</c-><c- n>iter_max_6D</c-><c- p>;</c-> <c- n>iter</c-><c- o>++</c-><c- p>){</c->    <br>          <c- n>output_subsection</c-><c- p>(</c-><c- s>"Mactoiteration "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>iter</c-><c- p>)</c-> <c- o>+</c-> <c- s>" with excitation energy "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>omega</c-><c- p>));</c->    <br>          <c- n>CC_Timer</c-> <c- nf>timer_iter_all</c-><c- p>(</c-><c- n>world</c-><c- p>,</c-><c- s>"Macroiteration "</c-> <c- o>+</c-> <c- n>stringify</c-><c- p>(</c-><c- n>iter</c-><c- p>));</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/src/instr/instr_private.hpp">actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/src/instr/instr_private.hpp</a>:162</p>
+    <p></p>
+<pre class="highlight">        <c- k>return</c-> <c- n>stream</c-><c- p>.</c-><c- n>str</c-><c- p>();</c->    <br>      <c- p>}</c->    <br>      <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>display_size</c-><c- p>()</c-> <c- k>override</c-> <c- p>{</c-> <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>send_size</c-><c- p>);</c-> <c- p>}</c->    <br>    <c- p>};</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/h/horizon-eda/horizon-eda_0.20181108-1/src/gen-pkg/gen-pkg.cpp">actcd19/main/h/horizon-eda/horizon-eda_0.20181108-1/src/gen-pkg/gen-pkg.cpp</a>:163</p>
+    <p></p>
+<pre class="highlight">            <c- k>auto</c-> <c- o>&amp;</c-><c- n>pad</c-> <c- o>=</c-> <c- n>pkg</c-><c- p>.</c-><c- n>pads</c-><c- p>.</c-><c- n>emplace</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>piecewise_construct</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward_as_tuple</c-><c- p>(</c-><c- n>uu</c-><c- p>),</c-> <c- n>std</c-><c- o>::</c-><c- n>forward_as_tuple</c-><c- p>(</c-><c- n>uu</c-><c- p>,</c-> <c- n>ps</c-><c- p>))</c->    <br>                                <c- p>.</c-><c- n>first</c-><c- o>-></c-><c- n>second</c-><c- p>;</c->    <br>            <c- n>pad</c-><c- p>.</c-><c- n>name</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-> <c- o>+</c-> <c- mi>1</c-><c- p>);</c->    <br>            <c- n>pad</c-><c- p>.</c-><c- n>placement</c-><c- p>.</c-><c- n>shift</c-><c- p>.</c-><c- n>y</c-> <c- o>=</c-> <c- n>y0</c-> <c- o>-</c-> <c- n>i</c-> <c- o>*</c-> <c- n>pitch</c-><c- p>;</c->    <br>            <c- n>pad</c-><c- p>.</c-><c- n>parameter_set</c-><c- p>[</c-><c- n>ParameterID</c-><c- o>::</c-><c- n>HOLE_DIAMETER</c-><c- p>]</c-> <c- o>=</c-> <c- mi>1</c-><c- n>_mm</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h">actcd19/main/s/sysdig/sysdig_0.22.0-1/userspace/libsinsp/socket_handler.h</a>:1522</p>
+    <p></p>
+<pre class="highlight">    		<c- k>if</c-><c- p>(</c-><c- n>pending_reqs</c-><c- p>)</c->    <br>    		<c- p>{</c->    <br>    			<c- n>g_logger</c-><c- p>.</c-><c- n>log</c-><c- p>(</c-><c- s>"Socket handler: number of pending DNS cancellation requests is "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>pending_reqs</c-><c- p>),</c->    <br>    						 <c- p>(</c-><c- n>pending_reqs</c-> <c- o>></c-> <c- mi>10</c-><c- p>)</c-> <c- o>?</c-> <c- n>sinsp_logger</c-><c- o>::</c-><c- nl>SEV_WARNING</c-> <c- p>:</c-> <c- n>sinsp_logger</c-><c- o>::</c-><c- n>SEV_TRACE</c-><c- p>);</c->    <br>    		<c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/libf/libfreesrp/libfreesrp_0.3.0-2/src/freesrp_impl.cpp">actcd19/main/libf/libfreesrp/libfreesrp_0.3.0-2/src/freesrp_impl.cpp</a>:85</p>
+    <p></p>
+<pre class="highlight">    		<c- n>libusb_close</c-><c- p>(</c-><c- n>_freesrp_handle</c-><c- p>);</c->    <br>    		<c- n>_freesrp_handle</c-> <c- o>=</c-> <c- k>nullptr</c-><c- p>;</c->    <br>    		<c- k>throw</c-> <c- nf>ConnectionError</c-><c- p>(</c-><c- s>"libusb could not read FreeSRP serial number: error "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>ret</c-><c- p>));</c->    <br>    	    <c- p>}</c->    <br>    	    <c- k>else</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/supertux/supertux_0.6.0-1/src/gui/item_intfield.cpp">actcd19/main/s/supertux/supertux_0.6.0-1/src/gui/item_intfield.cpp</a>:84</p>
+    <p></p>
+<pre class="highlight">        <c- o>*</c-><c- n>number</c-> <c- o>=</c-> <c- n>new_number</c-><c- p>;</c->    <br>      <c- p>}</c-> <c- k>catch</c-> <c- p>(...)</c-> <c- p>{</c->    <br>        <c- n>input</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- o>*</c-><c- n>number</c-><c- p>);</c->    <br>      <c- p>}</c->    <br>    <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/libc/libcereal/libcereal_1.2.2-3/include/cereal/cereal.hpp">actcd19/main/libc/libcereal/libcereal_1.2.2-3/include/cereal/cereal.hpp</a>:679</p>
+    <p></p>
+<pre class="highlight">            <c- k>auto</c-> <c- n>iter</c-> <c- o>=</c-> <c- n>itsSharedPointerMap</c-><c- p>.</c-><c- n>find</c-><c- p>(</c-> <c- n>id</c-> <c- p>);</c->    <br>            <c- k>if</c-><c- p>(</c-><c- n>iter</c-> <c- o>==</c-> <c- n>itsSharedPointerMap</c-><c- p>.</c-><c- n>end</c-><c- p>())</c->    <br>              <c- k>throw</c-> <c- n>Exception</c-><c- p>(</c-><c- s>"Error while trying to deserialize a smart pointer. Could not find id "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>));</c->    <br>        <br>            <c- k>return</c-> <c- n>iter</c-><c- o>-></c-><c- n>second</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/b/botan/botan_2.9.0-2/src/tests/test_pkcs11_low_level.cpp">actcd19/main/b/botan/botan_2.9.0-2/src/tests/test_pkcs11_low_level.cpp</a>:214</p>
+    <p></p>
+<pre class="highlight">       <c- k>else</c->    <br>          <c- p>{</c->    <br>          <c- n>result</c-><c- p>.</c-><c- n>test_rc_fail</c-><c- p>(</c-><c- n>name</c-><c- p>,</c-> <c- s>"return value should be: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-> <c- b>uint32_t</c-> <c- o>></c-><c- p>(</c-><c- n>expected_return_value</c-><c- p>)),</c->    <br>                              <c- k>static_cast</c-><c- o>&lt;</c-> <c- b>uint32_t</c-> <c- o>></c-><c- p>(</c-><c- n>rv</c-><c- p>));</c->    <br>          <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/freeorion/freeorion_0.4.8-1/Empire/Diplomacy.cpp">actcd19/main/f/freeorion/freeorion_0.4.8-1/Empire/Diplomacy.cpp</a>:29</p>
+    <p></p>
+<pre class="highlight">        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>retval</c-><c- p>;</c->    <br>        <c- n>retval</c-> <c- o>+=</c-> <c- s>"Dimplomatic message from : "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>m_sender_empire</c-><c- p>)</c-> <c- o>+</c->    <br>                  <c- s>" to: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>m_recipient_empire</c-><c- p>)</c-> <c- o>+</c-> <c- s>" about: "</c-><c- p>;</c->    <br>        <c- k>switch</c-> <c- p>(</c-><c- n>m_type</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- k>case</c-> <c- nl>WAR_DECLARATION</c-><c- p>:</c->           <c- n>retval</c-> <c- o>+=</c-> <c- s>"War Declaration"</c-><c- p>;</c->            <c- k>break</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/a/android-platform-frameworks-native/android-platform-frameworks-native_8.1.0+r23-2/libs/hwc2on1adapter/HWC2On1Adapter.cpp">actcd19/main/a/android-platform-frameworks-native/android-platform-frameworks-native_8.1.0+r23-2/libs/hwc2on1adapter/HWC2On1Adapter.cpp</a>:1391</p>
+    <p></p>
+<pre class="highlight">    <c- k>static</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>approximateFloatString</c-><c- p>(</c-><c- b>float</c-> <c- n>f</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- k>if</c-> <c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- b>int32_t</c-><c- o>></c-><c- p>(</c-><c- n>f</c-><c- p>)</c-> <c- o>==</c-> <c- n>f</c-><c- p>)</c-> <c- p>{</c->    <br>            <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- b>int32_t</c-><c- o>></c-><c- p>(</c-><c- n>f</c-><c- p>));</c->    <br>        <c- p>}</c->    <br>        <c- b>int32_t</c-> <c- n>truncated</c-> <c- o>=</c-> <c- k>static_cast</c-><c- o>&lt;</c-><c- b>int32_t</c-><c- o>></c-><c- p>(</c-><c- n>f</c-> <c- o>*</c-> <c- mi>10</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/r/rocksdb/rocksdb_5.17.2-3/table/data_block_hash_index_test.cc">actcd19/main/r/rocksdb/rocksdb_5.17.2-3/table/data_block_hash_index_test.cc</a>:182</p>
+    <p></p>
+<pre class="highlight">      <c- n>ASSERT_EQ</c-><c- p>(</c-><c- n>original_size</c-><c- p>,</c-> <c- n>map_offset</c-><c- p>);</c->    <br>      <c- k>for</c-> <c- p>(</c-><c- b>uint8_t</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>100</c-><c- p>;</c-> <c- n>i</c-><c- o>++</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>key</c-><c- p>(</c-><c- s>"key"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>));</c->    <br>        <c- b>uint8_t</c-> <c- n>restart_point</c-> <c- o>=</c-> <c- n>i</c-><c- p>;</c->    <br>        <c- n>ASSERT_TRUE</c-><c- p>(</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ScanFileOrFolder.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/ScanFileOrFolder.cpp</a>:198</p>
+    <p></p>
+<pre class="highlight">    <c- p>{</c->    <br>        <c- n>stopped</c-><c- o>=</c->false<c- p>;</c->    <br>        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"start the listing with destination: "</c-><c- o>+</c-><c- n>destination</c-><c- o>+</c-><c- s>", mode: "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>mode</c-><c- p>));</c->    <br>        <c- n>destination</c-><c- o>=</c-><c- n>resolvDestination</c-><c- p>(</c-><c- n>QString</c-><c- o>::</c-><c- n>fromStdString</c-><c- p>(</c-><c- n>destination</c-><c- p>)).</c-><c- n>absoluteFilePath</c-><c- p>().</c-><c- n>toStdString</c-><c- p>();</c->    <br>        <c- k>if</c-><c- p>(</c-><c- n>stopIt</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/d/dnsdist/dnsdist_1.3.3-3/test-dnsdistpacketcache_cc.cc">actcd19/main/d/dnsdist/dnsdist_1.3.3-3/test-dnsdistpacketcache_cc.cc</a>:78</p>
+    <p></p>
+<pre class="highlight">        <c- b>size_t</c-> <c- n>delcounter</c-><c- o>=</c-><c- mi>0</c-><c- p>;</c->    <br>        <c- k>for</c-><c- p>(</c-><c- n>delcounter</c-><c- o>=</c-><c- mi>0</c-><c- p>;</c-> <c- n>delcounter</c-> <c- o>&lt;</c-> <c- n>counter</c-><c- o>/</c-><c- mi>1000</c-><c- p>;</c-> <c- o>++</c-><c- n>delcounter</c-><c- p>)</c-> <c- p>{</c->    <br>          <c- n>DNSName</c-> <c- n>a</c-><c- o>=</c-><c- n>DNSName</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>delcounter</c-><c- p>))</c-><c- o>+</c-><c- n>DNSName</c-><c- p>(</c-><c- s>" hello"</c-><c- p>);</c->    <br>          <c- n>vector</c-><c- o>&lt;</c-><c- b>uint8_t</c-><c- o>></c-> <c- n>query</c-><c- p>;</c->    <br>          <c- n>DNSPacketWriter</c-> <c- nf>pwQ</c-><c- p>(</c-><c- n>query</c-><c- p>,</c-> <c- n>a</c-><c- p>,</c-> <c- n>QType</c-><c- o>::</c-><c- n>A</c-><c- p>,</c-> <c- n>QClass</c-><c- o>::</c-><c- n>IN</c-><c- p>,</c-> <c- mi>0</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/contrib/o/openmw/openmw_0.45.0-2/components/esm/mappings.cpp">actcd19/contrib/o/openmw/openmw_0.45.0-2/components/esm/mappings.cpp</a>:57</p>
+    <p></p>
+<pre class="highlight">                <c- k>default</c-><c- o>:</c->    <br>                    <c- k>throw</c-> <c- n>std</c-><c- o>::</c-><c- n>runtime_error</c-><c- p>(</c-><c- s>"PartReferenceType "</c-> <c- o>+</c->    <br>                        <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>type</c-><c- p>)</c-> <c- o>+</c-> <c- s>" not associated with a mesh part"</c-><c- p>);</c->    <br>            <c- p>}</c->    <br>        <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/t/thunderbird/thunderbird_60.5.1-1/ipc/glue/GeckoChildProcessHost.cpp">actcd19/main/t/thunderbird/thunderbird_60.5.1-1/ipc/glue/GeckoChildProcessHost.cpp</a>:1025</p>
+    <p></p>
+<pre class="highlight">    <c- cp>#endif  </c-><c- c1>// defined(MOZ_SANDBOX)</c->    <br><c- c1>        mLaunchOptions->handles_to_inherit.push_back(reinterpret_cast&lt;HANDLE>(h));</c->    <br><c- c1>        std::string hStr = std::to_string(h);</c->    <br><c- c1>        cmdLine.AppendLooseValue(UTF8ToWide(hStr));</c->    <br><c- c1>      }</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/.pc/build-i386-json.patch/library/forms/jsonview.cpp">actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/.pc/build-i386-json.patch/library/forms/jsonview.cpp</a>:432</p>
+    <p></p>
+<pre class="highlight">              <c- k>auto</c-> <c- n>newNode</c-> <c- o>=</c-> <c- p>(</c-><c- n>updateMode</c-><c- p>)</c-> <c- o>?</c-> <c- nl>node</c-> <c- p>:</c-> <c- n>node</c-><c- o>-></c-><c- n>add_child</c-><c- p>();</c->    <br>              <c- n>generateTree</c-><c- p>(</c-><c- n>objectName</c-><c- p>.</c-><c- n>empty</c-><c- p>()</c-> <c- o>?</c-> <c- nl>jv</c-> <c- p>:</c-> <c- n>obj</c-><c- p>[</c-><c- n>objectName</c-><c- p>],</c-> <c- mi>0</c-><c- p>,</c-> <c- n>newNode</c-><c- p>);</c->    <br>              <c- n>newNode</c-><c- o>-></c-><c- n>set_string</c-><c- p>(</c-><c- mi>0</c-><c- p>,</c-> <c- n>objectName</c-> <c- o>+</c-> <c- s>"{"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>obj</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- o>+</c-> <c- s>"}"</c-><c- p>);</c->    <br>              <c- n>newNode</c-><c- o>-></c-><c- n>set_tag</c-><c- p>(</c-><c- n>objectName</c-><c- p>);</c->    <br>              <c- n>_dataChanged</c-><c- p>(</c->false<c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/backend/wbprivate/sqlide/wb_live_schema_tree.cpp">actcd19/main/m/mysql-workbench/mysql-workbench_6.3.10+dfsg-3/backend/wbprivate/sqlide/wb_live_schema_tree.cpp</a>:1520</p>
+    <p></p>
+<pre class="highlight">                <c- n>limit_rows</c-> <c- o>=</c-> false<c- p>;</c->    <br>              <c- k>if</c-> <c- p>(</c-><c- n>limit_rows</c-><c- p>)</c->    <br>                <c- n>caption</c-> <c- o>+=</c-> <c- n>_</c-><c- p>(</c-><c- s>" - Limit "</c-><c- p>)</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>limit_rows_count</c-><c- p>);</c->    <br>            <c- p>}</c->    <br>            <c- n>view_item</c-><c- p>.</c-><c- n>caption</c-> <c- o>=</c-> <c- n>caption</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/spades/spades_3.13.0+dfsg2-2/src/common/assembly_graph/core/graph_iterators.hpp">actcd19/main/s/spades/spades_3.13.0+dfsg2-2/src/common/assembly_graph/core/graph_iterators.hpp</a>:173</p>
+    <p></p>
+<pre class="highlight">                            <c- n>Comparator</c-><c- p>(),</c-> <c- b>bool</c-> <c- n>canonical_only</c-> <c- o>=</c-> false<c- p>)</c->    <br>                <c- o>:</c-> <c- n>SmartIterator</c-><c- o>&lt;</c-><c- n>Graph</c-><c- p>,</c-> <c- n>VertexId</c-><c- p>,</c-> <c- n>Comparator</c-><c- o>></c-><c- p>(</c->    <br>                    <c- n>g</c-><c- p>,</c-> <c- s>"SmartVertexIterator "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>get_id</c-><c- p>()),</c-> true<c- p>,</c->    <br>                    <c- n>comparator</c-><c- p>,</c-> <c- n>canonical_only</c-><c- p>)</c-> <c- p>{</c->    <br>            <c- k>this</c-><c- o>-></c-><c- n>insert</c-><c- p>(</c-><c- n>g</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>g</c-><c- p>.</c-><c- n>end</c-><c- p>());</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/flang/flang_20181226-2/flang-driver/unittests/Tooling/ExecutionTest.cpp">actcd19/main/f/flang/flang_20181226-2/flang-driver/unittests/Tooling/ExecutionTest.cpp</a>:271</p>
+    <p></p>
+<pre class="highlight">      <c- k>for</c-> <c- p>(</c-><c- b>unsigned</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>1</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;=</c-> <c- n>NumFiles</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>File</c-> <c- o>=</c-> <c- s>"f"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>)</c-> <c- o>+</c-> <c- s>".cc"</c-><c- p>;</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>Symbol</c-> <c- o>=</c-> <c- s>"looong_function_name_"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>);</c->    <br>        <c- n>Files</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>File</c-><c- p>);</c->    <br>        <c- n>FileToContent</c-><c- p>[</c-><c- n>File</c-><c- p>]</c-> <c- o>=</c-> <c- s>"void "</c-> <c- o>+</c-> <c- n>Symbol</c-> <c- o>+</c-> <c- s>"() {}"</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/t/toulbar2/toulbar2_1.0.0+dfsg3-2/src/utils/tb2reader.cpp">actcd19/main/t/toulbar2/toulbar2_1.0.0+dfsg3-2/src/utils/tb2reader.cpp</a>:1513</p>
+    <p></p>
+<pre class="highlight">                    <c- n>exit</c-><c- p>(</c-><c- n>EXIT_FAILURE</c-><c- p>);</c->    <br>                <c- p>}</c->    <br>                <c- n>streamContentVec</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>make_pair</c-><c- p>(</c-><c- n>GCFTemplate</c-><c- p>[</c-><c- n>i</c-><c- p>],</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>cost</c-><c- p>)));</c->    <br>            <c- p>}</c->    <br>            <c- c1>// ---------- Read variable and add it to stream</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/v8/src/torque/declarations.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/v8/src/torque/declarations.cc</a>:278</p>
+    <p></p>
+<pre class="highlight">      <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- nl>type</c-> <c- p>:</c-> <c- n>specialized_types</c-><c- p>)</c-> <c- p>{</c->    <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>type_string</c-> <c- o>=</c-> <c- n>type</c-><c- o>-></c-><c- n>MangledName</c-><c- p>();</c->    <br>        <c- n>result</c-> <c- o>+=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>type_string</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- o>+</c-> <c- n>type_string</c-><c- p>;</c->    <br>      <c- p>}</c->    <br>      <c- k>return</c-> <c- n>result</c-><c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/ffms2/ffms2_2.23-3/src/core/ffms.cpp">actcd19/main/f/ffms2/ffms2_2.23-3/src/core/ffms.cpp</a>:354</p>
+    <p></p>
+<pre class="highlight">    	<c- n>ReplaceString</c-><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- s>"%samplerate%"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>AP</c-><c- o>-></c-><c- n>SampleRate</c-><c- p>));</c->    <br>    	<c- n>ReplaceString</c-><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- s>"%channels%"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>AP</c-><c- o>-></c-><c- n>Channels</c-><c- p>));</c->    <br>    	<c- n>ReplaceString</c-><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- s>"%bps%"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>AP</c-><c- o>-></c-><c- n>BitsPerSample</c-><c- p>));</c->    <br>    	<c- n>ReplaceString</c-><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- s>"%delay%"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- n>AP</c-><c- o>-></c-><c- n>FirstTime</c-><c- p>)));</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/freeorion/freeorion_0.4.8-1/UI/TechTreeWnd.cpp">actcd19/main/f/freeorion/freeorion_0.4.8-1/UI/TechTreeWnd.cpp</a>:1704</p>
+    <p></p>
+<pre class="highlight">            <c- n>cost_btn</c-><c- o>-></c-><c- n>SetText</c-><c- p>(</c-><c- n>cost_str</c-> <c- o>+</c-> <c- n>just_pad</c-> <c- o>+</c-> <c- n>just_pad</c-><c- p>);</c->    <br>        <br>        <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>time_str</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>this_row_tech</c-><c- o>-></c-><c- n>ResearchTime</c-><c- p>(</c-><c- n>client_empire_id</c-><c- p>));</c->    <br>        <c- k>if</c-> <c- p>(</c-><c- n>GG</c-><c- o>::</c-><c- n>Button</c-><c- o>*</c-> <c- n>time_btn</c-> <c- o>=</c-> <c- k>dynamic_cast</c-><c- o>&lt;</c-><c- n>GG</c-><c- o>::</c-><c- n>Button</c-><c- o>*></c-><c- p>((</c-><c- n>size</c-><c- p>()</c-> <c- o>>=</c-> <c- mi>4</c-><c- p>)</c-> <c- o>?</c-> <c- n>at</c-><c- p>(</c-><c- mi>3</c-><c- p>)</c-> <c- o>:</c-> <c- k>nullptr</c-><c- p>))</c->    <br>            <c- n>time_btn</c-><c- o>-></c-><c- n>SetText</c-><c- p>(</c-><c- n>time_str</c-> <c- o>+</c-> <c- n>just_pad</c-> <c- o>+</c-> <c- n>just_pad</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/b/biboumi/biboumi_8.3-1/src/bridge/bridge.cpp">actcd19/main/b/biboumi/biboumi_8.3-1/src/bridge/bridge.cpp</a>:550</p>
+    <p></p>
+<pre class="highlight">              <c- p>{</c->    <br>                <c- k>auto</c-><c- o>&amp;</c-> <c- n>list</c-> <c- o>=</c-> <c- n>channel_list_cache</c-><c- p>[</c-><c- n>iid</c-><c- p>.</c-><c- n>get_server</c-><c- p>()];</c->    <br>                <c- k>const</c-> <c- k>auto</c-> <c- n>res</c-> <c- o>=</c-> <c- k>this</c-><c- o>-></c-><c- n>send_matching_channel_list</c-><c- p>(</c-><c- n>list</c-><c- p>,</c-> <c- n>rs_info</c-><c- p>,</c-> <c- n>iq_id</c-><c- p>,</c-> <c- n>to_jid</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>iid</c-><c- p>));</c->    <br>                <c- k>return</c-> <c- n>res</c-><c- p>;</c->    <br>              <c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/Themes/Oxygen/ThemesFactory.cpp</a>:449</p>
+    <p></p>
+<pre class="highlight">                    <c- n>currentSpeed</c-><c- o>=</c-><c- mi>1024</c-><c- o>*</c-><c- mi>64</c-><c- p>;</c->    <br>                    <c- k>if</c-><c- p>(</c-><c- n>optionsEngine</c-><c- o>!=</c->NULL<c- p>)</c->    <br>                        <c- n>optionsEngine</c-><c- o>-></c-><c- n>setOptionValue</c-><c- p>(</c-><c- s>"currentSpeed"</c-><c- p>,</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>currentSpeed</c-><c- p>));</c->    <br>                    <c- k>else</c->    <br>                        <c- nf>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Critical</c-><c- p>,</c-><c- s>"internal error, crash prevented"</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/ui/ozone/platform/wayland/wayland_buffer_manager.cc">actcd19/main/c/chromium/chromium_72.0.3626.121-1/ui/ozone/platform/wayland/wayland_buffer_manager.cc</a>:253</p>
+    <p></p>
+<pre class="highlight">      <c- k>if</c-> <c- p>(</c-><c- n>planes_count</c-> <c- o>!=</c-> <c- n>strides</c-><c- p>.</c-><c- n>size</c-><c- p>()</c-> <c- o>||</c-> <c- n>planes_count</c-> <c- o>!=</c-> <c- n>offsets</c-><c- p>.</c-><c- n>size</c-><c- p>()</c-> <c- o>||</c->    <br>          <c- n>planes_count</c-> <c- o>!=</c-> <c- n>modifiers</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- p>{</c->    <br>        <c- n>reason</c-> <c- o>=</c-> <c- s>"Number of strides("</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>strides</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- o>+</c->    <br>                 <c- s>")/offsets("</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>offsets</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- o>+</c-> <c- s>")/modifiers("</c-> <c- o>+</c->    <br>                 <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>modifiers</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- o>+</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libqt/timer.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libqt/timer.cc</a>:603</p>
+    <p></p>
+<pre class="highlight">                                    <c- n>str</c-> <c- o>+=</c-> <c- n>key_</c-><c- p>;</c->    <br>                                    <c- n>str</c-> <c- o>+=</c-> <c- s>" on thread "</c-><c- p>;</c->    <br>                                    <c- n>str</c-> <c- o>+=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>thread_rank</c-><c- p>);</c->    <br>                                    <c- n>str</c-> <c- o>+=</c-> <c- s>" are on and cannot be merged."</c-><c- p>;</c->    <br>                                    <c- k>throw</c-> <c- nf>PsiException</c-><c- p>(</c-><c- n>str</c-><c- p>,</c-> <c- n>__FILE__</c-><c- p>,</c-> <c- n>__LINE__</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/libf/libfilezilla/libfilezilla_0.15.1-1/lib/libfilezilla/string.hpp">actcd19/main/libf/libfilezilla/libfilezilla_0.15.1-1/lib/libfilezilla/string.hpp</a>:194</p>
+    <p></p>
+<pre class="highlight">    <c- kr>inline</c-> <c- k>typename</c-> <c- nc>std</c-><c- o>::</c-><c- n>enable_if</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>is_arithmetic</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>decay_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>>::</c-><c- n>value</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>>::</c-><c- n>type</c-> <c- n>to_string</c-><c- p>(</c-><c- n>Arg</c-> <c- o>&amp;&amp;</c-> <c- n>arg</c-><c- p>)</c->    <br>    <c- p>{</c->    <br>    	<c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>></c-><c- p>(</c-><c- n>arg</c-><c- p>));</c->    <br>    <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/examples/s4u/dht-chord/s4u-dht-chord-node.cpp">actcd19/main/s/simgrid/simgrid_3.21+dfsg-4/examples/s4u/dht-chord/s4u-dht-chord-node.cpp</a>:134</p>
+    <p></p>
+<pre class="highlight">        <br>        <c- k>try</c-> <c- p>{</c->    <br>          <c- n>simgrid</c-><c- o>::</c-><c- n>s4u</c-><c- o>::</c-><c- n>Mailbox</c-><c- o>::</c-><c- n>by_name</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>pred_id_</c-><c- p>))</c-><c- o>-></c-><c- n>put</c-><c- p>(</c-><c- n>succ_msg</c-><c- p>,</c-> <c- mi>10</c-><c- p>,</c-> <c- n>timeout</c-><c- p>);</c->    <br>        <c- p>}</c-> <c- k>catch</c-> <c- p>(</c-><c- n>simgrid</c-><c- o>::</c-><c- n>TimeoutError</c-><c- o>&amp;</c-> <c- n>e</c-><c- p>)</c-> <c- p>{</c->    <br>          <c- n>XBT_DEBUG</c-><c- p>(</c-><c- s>"Timeout expired when sending a 'SUCCESSOR_LEAVING' to my predecessor %d"</c-><c- p>,</c-> <c- n>pred_id_</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/acquisition/galileo_e5a_pcps_acquisition_gsoc2014_gensource_test.cc</a>:417</p>
+    <p></p>
+<pre class="highlight">        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"Acquisition_5X.item_type"</c-><c- p>,</c-> <c- s>"gr_complex"</c-><c- p>);</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"Acquisition_5X.coherent_integration_time_ms"</c-><c- p>,</c->    <br>            <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>integration_time_ms</c-><c- p>));</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"Acquisition_5X.max_dwells"</c-><c- p>,</c-> <c- s>"1"</c-><c- p>);</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"Acquisition_5X.implementation"</c-><c- p>,</c-> <c- s>"Galileo_E5a_PCPS_Acquisition"</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/o/ompl/ompl_1.4.2+ds1-1/demos/HypercubeBenchmark.cpp">actcd19/main/o/ompl/ompl_1.4.2+ds1-1/demos/HypercubeBenchmark.cpp</a>:110</p>
+    <p></p>
+<pre class="highlight">        <c- n>ompl</c-><c- o>::</c-><c- n>tools</c-><c- o>::</c-><c- n>Benchmark</c-><c- o>::</c-><c- n>Request</c-> <c- n>request</c-><c- p>(</c-><c- n>runtime_limit</c-><c- p>,</c-> <c- n>memory_limit</c-><c- p>,</c-> <c- n>run_count</c-><c- p>);</c->    <br>        <c- n>ompl</c-><c- o>::</c-><c- n>tools</c-><c- o>::</c-><c- n>Benchmark</c-> <c- n>b</c-><c- p>(</c-><c- n>ss</c-><c- p>,</c-> <c- s>"HyperCube"</c-><c- p>);</c->    <br>        <c- n>b</c-><c- p>.</c-><c- n>addExperimentParameter</c-><c- p>(</c-><c- s>"num_dims"</c-><c- p>,</c-> <c- s>"INTEGER"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>ndim</c-><c- p>));</c->    <br>        <br>        <c- n>addPlanner</c-><c- p>(</c-><c- n>b</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>make_shared</c-><c- o>&lt;</c-><c- n>ompl</c-><c- o>::</c-><c- n>geometric</c-><c- o>::</c-><c- n>STRIDE</c-><c- o>></c-><c- p>(</c-><c- n>ss</c-><c- p>.</c-><c- n>getSpaceInformation</c-><c- p>()),</c-> <c- n>range</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/dawn/src/common/DynamicLib.cpp">actcd19/main/c/chromium/chromium_72.0.3626.121-1/third_party/dawn/src/common/DynamicLib.cpp</a>:87</p>
+    <p></p>
+<pre class="highlight">        <br>        <c- k>if</c-> <c- p>(</c-><c- n>proc</c-> <c- o>==</c-> <c- k>nullptr</c-> <c- o>&amp;&amp;</c-> <c- n>error</c-> <c- o>!=</c-> <c- k>nullptr</c-><c- p>)</c-> <c- p>{</c->    <br>            <c- o>*</c-><c- n>error</c-> <c- o>=</c-> <c- s>"Windows Error: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>GetLastError</c-><c- p>());</c->    <br>        <c- p>}</c->    <br>    #<c- n>elif</c-> <c- n>DAWN_PLATFORM_POSIX</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc</a>:312</p>
+    <p></p>
+<pre class="highlight">        <br>            <c- n>name</c-> <c- o>+=</c-> <c- n>com</c-><c- p>.</c-><c- n>coef</c-> <c- o>></c-> <c- mf>0.0</c-> <c- o>?</c-> <c- s>"+"</c-> <c- o>:</c-> <c- s>"-"</c-><c- p>;</c->    <br>            <c- n>name</c-> <c- o>+=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>fabs</c-><c- p>(</c-><c- n>com</c-><c- p>.</c-><c- n>coef</c-><c- p>))</c-> <c- o>+</c-> <c- s>" "</c-><c- p>;</c->    <br>            <c- n>name</c-> <c- o>+=</c-> <c- n>molecule_</c-><c- o>-></c-><c- n>label</c-><c- p>(</c-><c- n>com</c-><c- p>.</c-><c- n>atom</c-><c- p>);</c->    <br>            <c- k>if</c-> <c- p>(</c-><c- n>com</c-><c- p>.</c-><c- n>xyz</c-> <c- o>==</c-> <c- mi>0</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp">actcd19/main/u/ultracopier/ultracopier_1.6.1.3-1/plugins/CopyEngine/Ultracopier/TransferThread.cpp</a>:767</p>
+    <p></p>
+<pre class="highlight">    <c- b>void</c-> <c- n>TransferThread</c-><c- o>::</c-><c- n>tryCopyDirectly</c-><c- p>()</c->    <br>    <c- p>{</c->    <br>        <c- n>ULTRACOPIER_DEBUGCONSOLE</c-><c- p>(</c-><c- n>Ultracopier</c-><c- o>::</c-><c- n>DebugLevel_Notice</c-><c- p>,</c-><c- s>"["</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>id</c-><c- p>)</c-><c- o>+</c-><c- s>"] "</c-><c- o>+</c-><c- n>QStringLiteral</c-><c- p>(</c-><c- s>"need copied directly: %1 to %2"</c-><c- p>).</c-><c- n>arg</c-><c- p>(</c-><c- n>source</c-><c- p>.</c-><c- n>absoluteFilePath</c-><c- p>()).</c-><c- n>arg</c-><c- p>(</c-><c- n>destination</c-><c- p>.</c-><c- n>absoluteFilePath</c-><c- p>()).</c-><c- n>toStdString</c-><c- p>());</c->    <br>        <br>        <c- n>sended_state_readStopped</c->	<c- o>=</c-> false<c- p>;</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/w/widelands/widelands_19+repack-6/src/wui/plot_area.cc">actcd19/main/w/widelands/widelands_19+repack-6/src/wui/plot_area.cc</a>:438</p>
+    <p></p>
+<pre class="highlight">     <c- o>*/</c->    <br>    <c- b>void</c-> <c- n>WuiPlotArea</c-><c- o>::</c-><c- n>draw</c-><c- p>(</c-><c- n>RenderTarget</c-><c- o>&amp;</c-> <c- n>dst</c-><c- p>)</c-> <c- p>{</c->    <br>    	<c- n>draw_plot</c-><c- p>(</c-><c- n>dst</c-><c- p>,</c-> <c- n>get_inner_h</c-><c- p>()</c-> <c- o>-</c-> <c- n>kSpaceBottom</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>highest_scale_</c-><c- p>),</c-> <c- n>highest_scale_</c-><c- p>);</c->    <br>    <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/detci/params.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/detci/params.cc</a>:604</p>
+    <p></p>
+<pre class="highlight">          <c- k>if</c-> <c- p>(</c-><c- n>i</c-> <c- o>&lt;</c-> <c- mi>1</c-> <c- o>||</c-> <c- n>i</c-> <c- o>></c-> <c- n>Parameters_</c-><c- o>-></c-><c- n>num_roots</c-><c- p>)</c-> <c- p>{</c->    <br>              <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>str</c-> <c- o>=</c-> <c- s>"Invalid number of states to average ("</c-><c- p>;</c->    <br>              <c- n>str</c-> <c- o>+=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>i</c-><c- p>);</c->    <br>              <c- n>str</c-> <c- o>+=</c-> <c- s>")"</c-><c- p>;</c->    <br>              <c- k>throw</c-> <c- nf>PsiException</c-><c- p>(</c-><c- n>str</c-><c- p>,</c-> <c- n>__FILE__</c-><c- p>,</c-> <c- n>__LINE__</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/filterpo.cc">actcd19/main/p/pdns-recursor/pdns-recursor_4.1.11-1/filterpo.cc</a>:347</p>
+    <p></p>
+<pre class="highlight">      <c- k>if</c-> <c- p>(</c-><c- n>addr</c-><c- p>.</c-><c- n>isIPv4</c-><c- p>())</c-> <c- p>{</c->    <br>        <c- k>const</c-> <c- b>uint8_t</c-><c- o>*</c-> <c- n>bytes</c-> <c- o>=</c-> <c- k>reinterpret_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>uint8_t</c-><c- o>*></c-><c- p>(</c-><c- o>&amp;</c-><c- n>addr</c-><c- p>.</c-><c- n>sin4</c-><c- p>.</c-><c- n>sin_addr</c-><c- p>.</c-><c- n>s_addr</c-><c- p>);</c->    <br>        <c- n>res</c-> <c- o>+=</c-> <c- n>DNSName</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>bytes</c-><c- p>[</c-><c- mi>3</c-><c- p>])</c-> <c- o>+</c-> <c- s>"."</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>bytes</c-><c- p>[</c-><c- mi>2</c-><c- p>])</c-> <c- o>+</c-> <c- s>"."</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>bytes</c-><c- p>[</c-><c- mi>1</c-><c- p>])</c-> <c- o>+</c-> <c- s>"."</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>bytes</c-><c- p>[</c-><c- mi>0</c-><c- p>]));</c->    <br>      <c- p>}</c->    <br>      <c- k>else</c-> <c- p>{</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp">actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp</a>:268</p>
+    <p></p>
+<pre class="highlight">        <br>      <c- k>virtual</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>get_input_vals</c-><c- p>(</c-><c- b>int</c-> <c- n>i</c-><c- p>)</c-> <c- k>const</c-> <c- k>override</c-> <c- p>{</c->    <br>        <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>x</c-><c- p>.</c-><c- n>scalar</c-><c- p>(</c-><c- n>i</c-><c- p>))</c-><c- o>+</c-><c- s>" "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>y</c-><c- p>.</c-><c- n>scalar</c-><c- p>(</c-><c- n>i</c-><c- p>));</c->    <br>      <c- p>}</c->    <br>    <c- p>};</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/p/performous/performous_1.1+git20181118-2/game/3dobject.cc">actcd19/main/p/performous/performous_1.1+git20181118-2/game/3dobject.cc</a>:83</p>
+    <p></p>
+<pre class="highlight">    				<c- n>m_faces</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>f</c-><c- p>);</c->    <br>    			<c- p>}</c-> <c- k>else</c-> <c- p>{</c->    <br>    				<c- k>throw</c-> <c- n>std</c-><c- o>::</c-><c- n>runtime_error</c-><c- p>(</c-><c- s>"Invalid face in "</c-><c- o>+</c-><c- n>filepath</c-><c- p>.</c-><c- n>string</c-><c- p>()</c-><c- o>+</c-><c- s>":"</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>linenumber</c-><c- p>));</c->    <br>    			<c- p>}</c->    <br>    		<c- p>}</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/freeorion/freeorion_0.4.8-1/util/SitRepEntry.cpp">actcd19/main/f/freeorion/freeorion_0.4.8-1/util/SitRepEntry.cpp</a>:227</p>
+    <p></p>
+<pre class="highlight">                    <c- n>UserStringNop</c-><c- p>(</c-><c- s>"SITREP_SHIP_DAMAGED_AT_SYSTEM_LABEL"</c-><c- p>),</c-> true<c- p>);</c->    <br>            <c- n>sitrep</c-><c- p>.</c-><c- n>AddVariable</c-><c- p>(</c-><c- n>VarText</c-><c- o>::</c-><c- n>SHIP_ID_TAG</c-><c- p>,</c->       <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>object_id</c-><c- p>));</c->    <br>            <c- n>sitrep</c-><c- p>.</c-><c- n>AddVariable</c-><c- p>(</c-><c- n>VarText</c-><c- o>::</c-><c- n>DESIGN_ID_TAG</c-><c- p>,</c->     <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>ship</c-><c- o>-></c-><c- n>DesignID</c-><c- p>()));</c->    <br>        <br>        <c- p>}</c-> <c- k>else</c-> <c- k>if</c-> <c- p>(</c-><c- k>auto</c-> <c- n>planet</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>dynamic_pointer_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>Planet</c-><c- o>></c-><c- p>(</c-><c- n>obj</c-><c- p>))</c-> <c- p>{</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/o/opensurgsim/opensurgsim_0.7.0-8/SurgSim/Devices/LabJack/UnitTests/LabJackDeviceTest.cpp">actcd19/main/o/opensurgsim/opensurgsim_0.7.0-8/SurgSim/Devices/LabJack/UnitTests/LabJackDeviceTest.cpp</a>:158</p>
+    <p></p>
+<pre class="highlight">        <br>    	<c- n>EXPECT_TRUE</c-><c- p>(</c-><c- n>consumer</c-><c- o>-></c-><c- n>m_lastReceivedInput</c-><c- p>.</c-><c- n>scalars</c-><c- p>().</c-><c- n>hasEntry</c-><c- p>(</c-><c- n>SurgSim</c-><c- o>::</c-><c- n>DataStructures</c-><c- o>::</c-><c- n>Names</c-><c- o>::</c-><c- n>TIMER_INPUT_PREFIX</c-> <c- o>+</c->    <br>    		<c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- mi>0</c-><c- p>)));</c-> <c- c1>// The LabJackDevice provides entries for timer input lines 0 - 6.</c->    <br><c- c1>    }</c->    <br><c- c1>    </c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/patch/fwMDSemanticPatch/src/fwMDSemanticPatch/V09ALA/V10/fwData/Image.cpp">actcd19/main/f/fw4spl/fw4spl_17.2.0-2/SrcLib/patch/fwMDSemanticPatch/src/fwMDSemanticPatch/V09ALA/V10/fwData/Image.cpp</a>:109</p>
+    <p></p>
+<pre class="highlight">                <c- k>if</c-> <c- p>(</c-><c- n>label</c-><c- p>.</c-><c- n>empty</c-><c- p>())</c->    <br>                <c- p>{</c->    <br>                    <c- n>label</c-> <c- o>=</c-> <c- s>"label_"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>count</c-><c- o>++</c-><c- p>);</c->    <br>                <c- p>}</c->    <br>        <br></pre>
+    <p></p>
+   </div>
   </main>
 <script>
 (function() {
