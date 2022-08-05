@@ -133,7 +133,7 @@
 <p>The {fmt} library API consists of the following parts:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#core-api"><span class="std std-ref">fmt/core.h</span></a>: the core API providing main formatting functions
-for <code class="docutils literal notranslate"><span class="pre">char</span></code>/UTF-8 with compile-time checks and minimal dependencies</p></li>
+for <code class="docutils literal notranslate"><span class="pre">char</span></code>/UTF-8 with C++20 compile-time checks and minimal dependencies</p></li>
 <li><p><a class="reference internal" href="#format-api"><span class="std std-ref">fmt/format.h</span></a>: the full format API providing additional
 formatting functions and locale support</p></li>
 <li><p><a class="reference internal" href="#ranges-api"><span class="std std-ref">fmt/ranges.h</span></a>: formatting of ranges and tuples</p></li>
@@ -150,10 +150,10 @@ formatting functions and locale support</p></li>
 macros have prefix <code class="docutils literal notranslate"><span class="pre">FMT_</span></code>.</p>
 <section id="core-api">
 <span id="id1"></span><h2>Core API<a class="headerlink" href="#core-api" title="Permalink to this headline">¶</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">fmt/core.h</span></code> defines the core API which provides main formatting functions for
-<code class="docutils literal notranslate"><span class="pre">char</span></code>/UTF-8 with compile-time checks. It has minimal include dependencies for
-better compile times. This header is only beneficial when using {fmt} as a
-library and not in the header-only mode.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fmt/core.h</span></code> defines the core API which provides main formatting functions
+for <code class="docutils literal notranslate"><span class="pre">char</span></code>/UTF-8 with C++20 compile-time checks. It has minimal include
+dependencies for better compile times. This header is only beneficial when
+using {fmt} as a library and not in the header-only mode.</p>
 <p>The following functions use <a class="reference internal" href="syntax.html#syntax"><span class="std std-ref">format string syntax</span></a>
 similar to that of Python’s <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.format">str.format</a>.
 They take <em>fmt</em> and <em>args</em> as arguments.</p>
@@ -273,10 +273,9 @@ output to the file <code class="docutils literal notranslate"><span class="pre">
 
 <section id="compile-time-format-string-checks">
 <h3>Compile-Time Format String Checks<a class="headerlink" href="#compile-time-format-string-checks" title="Permalink to this headline">¶</a></h3>
-<p>Compile-time checks are enabled when using <code class="docutils literal notranslate"><span class="pre">FMT_STRING</span></code>. They support built-in
-and string types as well as user-defined types with <code class="docutils literal notranslate"><span class="pre">constexpr</span></code> <code class="docutils literal notranslate"><span class="pre">parse</span></code>
-functions in their <code class="docutils literal notranslate"><span class="pre">formatter</span></code> specializations.
-Requires C++14 and is a no-op in C++11.</p>
+<p>Compile-time checks are enabled by default on compilers that support C++20
+<code class="docutils literal notranslate"><span class="pre">consteval</span></code>. On older compilers you can use the <code class="docutils literal notranslate"><span class="pre">FMT_STRING</span></code> macro defined
+in <code class="docutils literal notranslate"><span class="pre">fmt/format.h</span></code> instead. It requires C++14 and is a no-op in C++11.</p>
 <dl class="cpp macro">
 <dt id="c.FMT_STRING">
 <span class="target" id="format_8h_1a09119ad072f708d17b88704fa898aff0"></span><code class="sig-name descname">FMT_STRING</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#c.FMT_STRING" title="Permalink to this definition">¶</a><br /></dt>
@@ -290,10 +289,10 @@ Requires C++14 and is a no-op in C++11.</p>
  </p>
 </dd></dl>
 
-<p>To force the use of compile-time checks, define the preprocessor variable
+<p>To force the use of legacy compile-time checks, define the preprocessor variable
 <code class="docutils literal notranslate"><span class="pre">FMT_ENFORCE_COMPILE_STRING</span></code>. When set, functions accepting <code class="docutils literal notranslate"><span class="pre">FMT_STRING</span></code>
-will fail to compile with regular strings. Runtime-checked
-formatting is still possible using <code class="docutils literal notranslate"><span class="pre">fmt::vformat</span></code>, <code class="docutils literal notranslate"><span class="pre">fmt::vprint</span></code>, etc.</p>
+will fail to compile with regular strings. Runtime-checked formatting is still
+possible using <code class="docutils literal notranslate"><span class="pre">fmt::vformat</span></code>, <code class="docutils literal notranslate"><span class="pre">fmt::vprint</span></code>, etc.</p>
 <dl class="cpp class">
 <dt id="_CPPv4I0DpEN3fmt19basic_format_stringE">
 <span id="_CPPv3I0DpEN3fmt19basic_format_stringE"></span><span id="_CPPv2I0DpEN3fmt19basic_format_stringE"></span>template&lt;typename <code class="sig-name descname">Char</code>, typename ...<code class="sig-name descname">Args</code>&gt;<br /><span class="target" id="classfmt_1_1basic__format__string"></span><em class="property">class </em><code class="sig-name descname">basic_format_string</code><a class="headerlink" href="#_CPPv4I0DpEN3fmt19basic_format_stringE" title="Permalink to this definition">¶</a><br /></dt>
