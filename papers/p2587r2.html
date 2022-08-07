@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="96dad42c37e8459d43785bec5bc2f602c76f2586" name="document-revision">
+  <meta content="2195adeb613e2ae72bc47ac64e46138bc58fef15" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2135,6 +2135,8 @@ existing semantics of integral overloads.</p>
     <li data-md>
      <p>Mentioned that the current proposal enables future extension to other types
 via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+    <li data-md>
+     <p>Added an analysis of codesearch results to <a href="#impact">§ 6 Impact on existing code</a>.</p>
    </ul>
    <p>Changes since R0:</p>
    <ul>
@@ -2289,7 +2291,7 @@ unlocalized and use the shortest decimal representation.</p>
       <td>1234,500000 
       <td>1234.5 
    </table>
-   <p>In addition to fixing the broken behavior for floating point this proposal
+   <p>In addition to fixing the broken behavior for floating point, this proposal
 enables an easy and natural extension of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> to other types via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (not proposed in this paper).</p>
    <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This change will affect the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> with floating-point
@@ -2298,6 +2300,69 @@ In cases where the C locale is explicitly set the decimal point will no longer
 be localized.</p>
    <p>As a mitigation mechanism we could provide <code class="highlight"><c- n>to_string_localized</c-></code> with the old
 behavior which provides a simple migration path.</p>
+   <p>In order to estimate the practical impact on existing code we looked at <a data-link-type="biblio" href="#biblio-codesearch">[CODESEARCH]</a> results for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>. 876 million lines of code
+contained only ~11 thousand calls to this function. For comparison, there
+are ~20 thousand uses of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>stringstream</c-></code> and ~390 thousand calls to <code class="highlight"><c- n>sprintf</c-></code>. We further analyzed a random sample of 100 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> invocations listed in <a href="#sample">Appendix A</a>. 91 of them are called with
+integral arguments and only 7 contain calls with floating-point arguments.
+Note that some of these 7 results contain calls with integral and FP arguments
+on the same line. The two remaining cases are a generic wrapper around <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> and an overload for a user-defined type.</p>
+   <p>Three of the seven FP calls are in test code with one of them used to format
+zero:</p>
+   <div class="head">
+     <a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc</a>:916 
+    <p></p>
+<pre class="highlight">                                                                <c- n>g5</c-><c- p>.</c-><c- n>disablescreen</c-><c- p>();</c->    <br>                                                            <c- p>}</c->    <br>                                                        <c- n>g5</c-><c- p>.</c-><c- n>set_title</c-><c- p>(</c-><c- s>"Code delay error, PLL/DLL BW: "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>PLL_wide_bw_values</c-><c- p>.</c-><c- n>at</c-><c- p>(</c-><c- n>config_idx</c-><c- p>))</c-> <c- o>+</c-> <c- s>","</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>DLL_wide_bw_values</c-><c- p>.</c-><c- n>at</c-><c- p>(</c-><c- n>config_idx</c-><c- p>))</c-> <c- o>+</c-> <c- s>" Hz (PRN #"</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>FLAGS_test_satellite_PRN</c-><c- p>)</c-> <c- o>+</c-> <c- s>")"</c-><c- p>);</c->    <br>                                                        <c- n>g5</c-><c- p>.</c-><c- n>set_grid</c-><c- p>();</c->    <br>                                                        <c- n>g5</c-><c- p>.</c-><c- n>set_xlabel</c-><c- p>(</c-><c- s>"Time [s]"</c-><c- p>);</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc</a>:229</p>
+    <p></p>
+<pre class="highlight">        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"SignalSource.sampling_frequency"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>sampling_rate_internal</c-><c- p>));</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"SignalSource.item_type"</c-><c- p>,</c-> <c- s>"ibyte"</c-><c- p>);</c->    <br>        <c- n>config</c-><c- o>-></c-><c- n>set_property</c-><c- p>(</c-><c- s>"SignalSource.samples"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>zero</c-><c- p>));</c->    <br>        <br>        <c- c1>// Set the Signal Conditioner</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp">actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp</a>:268</p>
+    <p></p>
+<pre class="highlight">        <br>      <c- k>virtual</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>get_input_vals</c-><c- p>(</c-><c- b>int</c-> <c- n>i</c-><c- p>)</c-> <c- k>const</c-> <c- k>override</c-> <c- p>{</c->    <br>        <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>x</c-><c- p>.</c-><c- n>scalar</c-><c- p>(</c-><c- n>i</c-><c- p>))</c-><c- o>+</c-><c- s>" "</c-><c- o>+</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>y</c-><c- p>.</c-><c- n>scalar</c-><c- p>(</c-><c- n>i</c-><c- p>));</c->    <br>      <c- p>}</c->    <br>    <c- p>};</c->    <br></pre>
+    <p></p>
+   </div>
+   <p>Two of the calls are used for informational messages (writing a comment to a
+file and printing status):</p>
+   <div class="head">
+     <a href="http://codesearch.isocpp.org/actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp">actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp</a>:127 
+    <p></p>
+<pre class="highlight">        <c- k>if</c-> <c- p>(</c-><c- n>Trim</c-><c- p>.</c-><c- n>set</c-><c- p>)</c->    <br>            <c- n>comments</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>leader</c-> <c- o>+</c-> <c- n>Trim</c-><c- p>.</c-><c- n>name</c-> <c- o>+</c-> <c- s>" "</c-> <c- o>+</c->    <br>                <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>Trim</c-><c- p>.</c-><c- n>value</c-><c- p>));</c->    <br>        <c- k>if</c-> <c- p>(</c-><c- n>Smooth</c-><c- p>.</c-><c- n>set</c-><c- p>)</c->    <br>            <c- n>comments</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>leader</c-> <c- o>+</c-> <c- n>IslandAreaRatio</c-><c- p>.</c-><c- n>name</c-> <c- o>+</c-> <c- s>" "</c-> <c- o>+</c->    <br></pre>
+    <p></p>
+    <hr>
+    <p><a href="http://codesearch.isocpp.org/actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc">actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc</a>:131</p>
+    <p></p>
+<pre class="highlight">        <c- b>bool</c-> <c- n>doubles_converged</c-> <c- o>=</c-> true<c- p>;</c->    <br>        <c- k>for</c-><c- p>(</c-><c- b>size_t</c-> <c- n>iter</c-><c- o>=</c-><c- mi>0</c-><c- p>;</c-> <c- n>iter</c-> <c- o>&lt;</c-> <c- n>parameters</c-><c- p>.</c-><c- n>iter_max_6D</c-><c- p>;</c-> <c- n>iter</c-><c- o>++</c-><c- p>){</c->    <br>          <c- n>output_subsection</c-><c- p>(</c-><c- s>"Mactoiteration "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>iter</c-><c- p>)</c-> <c- o>+</c-> <c- s>" with excitation energy "</c-> <c- o>+</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>omega</c-><c- p>));</c->    <br>          <c- n>CC_Timer</c-> <c- nf>timer_iter_all</c-><c- p>(</c-><c- n>world</c-><c- p>,</c-><c- s>"Macroiteration "</c-> <c- o>+</c-> <c- n>stringify</c-><c- p>(</c-><c- n>iter</c-><c- p>));</c->    <br>        <br></pre>
+    <p></p>
+    <hr>
+   </div>
+   <p>In one case <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> is used to write an FP value to a config file.
+It is likely a latent bug because writing a config in one locale may render it
+unreadable in a different one unless special measures are taken to fix the
+locale.</p>
+   <div class="head">
+     <a href="http://codesearch.isocpp.org/actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc">actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc</a>:310 
+    <p></p>
+<pre class="highlight">    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>type</c-> <c- o>==</c-> <c- s>"int"</c-><c- p>)</c-> <c- n>entryNode</c-><c- o>-></c-><c- n>set_attribute</c-><c- p>(</c-><c- s>"value"</c-><c- p>,</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>i</c-><c- p>()));</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>type</c-> <c- o>==</c-> <c- s>"bool"</c-><c- p>)</c-> <c- n>entryNode</c-><c- o>-></c-><c- n>set_attribute</c-><c- p>(</c-><c- s>"value"</c-><c- p>,</c-> <c- n>item</c-><c- p>.</c-><c- n>b</c-><c- p>()</c-> <c- o>?</c-> <c- s>"true"</c-> <c- o>:</c-> <c- s>"false"</c-><c- p>);</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>type</c-> <c- o>==</c-> <c- s>"float"</c-><c- p>)</c-> <c- n>entryNode</c-><c- o>-></c-><c- n>set_attribute</c-><c- p>(</c-><c- s>"value"</c-><c- p>,</c-><c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>f</c-><c- p>()));</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>get_type</c-><c- p>()</c-> <c- o>==</c-> <c- s>"string"</c-><c- p>)</c-> <c- n>xmlpp</c-><c- o>::</c-><c- n>add_child_element</c-><c- p>(</c-><c- n>entryNode</c-><c- p>,</c-> <c- s>"stringvalue"</c-><c- p>)</c-><c- o>-></c-><c- n>add_child_text</c-><c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>s</c-><c- p>());</c->    <br>    		<c- k>else</c-> <c- nf>if</c-> <c- p>(</c-><c- n>item</c-><c- p>.</c-><c- n>get_type</c-><c- p>()</c-> <c- o>==</c-> <c- s>"string_list"</c-><c- p>)</c-> <c- p>{</c->    <br></pre>
+    <p></p>
+    <hr>
+   </div>
+   <p>The last call is used to generate a human-readable name for some object,
+possibly for debug purposes. We haven’t found any uses of the enclosing function
+though.</p>
+   <div class="head">
+     <a href="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc</a>:312 
+    <p></p>
+<pre class="highlight">        <br>            <c- n>name</c-> <c- o>+=</c-> <c- n>com</c-><c- p>.</c-><c- n>coef</c-> <c- o>></c-> <c- mf>0.0</c-> <c- o>?</c-> <c- s>"+"</c-> <c- o>:</c-> <c- s>"-"</c-><c- p>;</c->    <br>            <c- n>name</c-> <c- o>+=</c-> <c- n>std</c-><c- o>::</c-><c- n>to_string</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>fabs</c-><c- p>(</c-><c- n>com</c-><c- p>.</c-><c- n>coef</c-><c- p>))</c-> <c- o>+</c-> <c- s>" "</c-><c- p>;</c->    <br>            <c- n>name</c-> <c- o>+=</c-> <c- n>molecule_</c-><c- o>-></c-><c- n>label</c-><c- p>(</c-><c- n>com</c-><c- p>.</c-><c- n>atom</c-><c- p>);</c->    <br>            <c- k>if</c-> <c- p>(</c-><c- n>com</c-><c- p>.</c-><c- n>xyz</c-> <c- o>==</c-> <c- mi>0</c-><c- p>)</c->    <br></pre>
+    <p></p>
+    <hr>
+   </div>
+   <p>In summary, the number of uses of <code class="highlight"><c- n>to_string</c-></code> with floating point arguments
+turned out to be very low and the cases that we analyzed are mostly non-critical
+such as tests and debugging/logging use cases. Some of them may even contain
+latent bugs because the use of the locale is unintentional.</p>
    <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>{fmt} implements proposed changes in <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
    <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
@@ -2350,7 +2415,7 @@ size <code class="highlight"><c- n>buffsz</c-></code>. </del>
     <ins> <strong>C.?.1 Clause 23: strings library</strong> [diff.cpp23.strings] </ins>
    </p>
    <p>
-    <ins> <strong>Affected subclauses:</strong> 23.4<br> <strong>Change:</strong> Output of floating-point overloads of <code class="highlight"><c- n>to_string</c-></code> and <code class="highlight"><c- n>to_wstring</c-></code>.<br> <strong>Rationale:</strong> Prevent loss of information and improve consistentcy with other
+    <ins> <strong>Affected subclauses:</strong> 23.4<br> <strong>Change:</strong> Output of floating-point overloads of <code class="highlight"><c- n>to_string</c-></code> and <code class="highlight"><c- n>to_wstring</c-></code>.<br> <strong>Rationale:</strong> Prevent loss of information and improve consistency with other
 formatting facilities.<br> <strong>Effect on original feature:</strong> <code class="highlight"><c- n>to_string</c-></code> and <code class="highlight"><c- n>to_wstring</c-></code> function calls that
 take floating-point arguments may produce a different output. For example: </ins>
    </p>
@@ -2993,6 +3058,8 @@ take floating-point arguments may produce a different output. For example: </ins
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-codesearch">[CODESEARCH]
+   <dd>Andrew Tomazos. <a href="https://codesearch.isocpp.org">Code search engine website</a>. URL: <a href="https://codesearch.isocpp.org">https://codesearch.isocpp.org</a>
    <dt id="biblio-dragon">[DRAGON]
    <dd>Guy L. Steele Jr.; Jon L White. <a href="https://fmt.dev/papers/p372-steele.pdf">How to Print Floating-Point Numbers Accurately</a>. URL: <a href="https://fmt.dev/papers/p372-steele.pdf">https://fmt.dev/papers/p372-steele.pdf</a>
    <dt id="biblio-n1803">[N1803]

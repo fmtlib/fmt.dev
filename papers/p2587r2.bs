@@ -51,6 +51,7 @@ Changes since R1:
 * Added poll results.
 * Mentioned that the current proposal enables future extension to other types
     via `std::format`.
+* Added an analysis of codesearch results to [[#impact]].
 
 Changes since R0:
 
@@ -256,7 +257,7 @@ auto output = std::to_string(input);
 </tr>
 </table>
 
-In addition to fixing the broken behavior for floating point this proposal
+In addition to fixing the broken behavior for floating point, this proposal
 enables an easy and natural extension of `std::to_string` to other types via
 `std::format` (not proposed in this paper).
 
@@ -271,8 +272,80 @@ be localized.
 As a mitigation mechanism we could provide `to_string_localized` with the old
 behavior which provides a simple migration path.
 
-In order to estimate the practical impact on existing code we looked at code
-search results for `std::to_string`.
+In order to estimate the practical impact on existing code we looked at
+[[CODESEARCH]] results for `std::to_string`. 876 million lines of code
+contained only ~11 thousand calls to this function. For comparison, there
+are ~20 thousand uses of `std::stringstream` and ~390 thousand calls to
+`sprintf`. We further analyzed a random sample of 100 `std::to_string`
+invocations listed in [[#sample|Appendix A]]. 91 of them are called with
+integral arguments and only 7 contain calls with floating-point arguments.
+Note that some of these 7 results contain calls with integral and FP arguments
+on the same line. The two remaining cases are a generic wrapper around
+`std::to_string` and an overload for a user-defined type.
+
+Three of the seven FP calls are in test code with one of them used to format
+zero:
+
+<div class="head">
+<!-- double DLL_wide_bw_values.at(config_idx) 
+     int FLAGS_test_satellite_PRN -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.10-4/src/tests/unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc</a>:916
+<p><pre>                                                                g5.disablescreen();<br/>                                                            }<br/>                                                        g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");<br/>                                                        g5.set_grid();<br/>                                                        g5.set_xlabel("Time [s]");<br/></pre></p>
+<hr/>
+
+<!-- float zero -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc">actcd19/main/g/gnss-sdr/gnss-sdr_0.0.9-5/src/tests/system-tests/obs_gps_l1_system_test.cc</a>:229
+<p><pre>        config-&gt;set_property("SignalSource.sampling_frequency", std::to_string(sampling_rate_internal));<br/>        config-&gt;set_property("SignalSource.item_type", "ibyte");<br/>        config-&gt;set_property("SignalSource.samples", std::to_string(zero));<br/>    <br/>        // Set the Signal Conditioner<br/></pre></p>
+<hr/>
+
+<!-- double SimdScalarDoubleHybrid::scalar() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp">actcd19/main/t/trilinos/trilinos_12.12.1-7/packages/stk/stk_simd/unit_tests/SimdFixture.hpp</a>:268
+<p><pre>    <br/>      virtual std::string get_input_vals(int i) const override {<br/>        return std::to_string(x.scalar(i))+" "+std::to_string(y.scalar(i));<br/>      }<br/>    };<br/></pre></p>
+</div>
+
+Two of the calls are used for informational messages (writing a comment to a
+file and printing status):
+
+<div class="head">
+<!-- float Trim::value -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp">actcd19/main/p/pdal/pdal_1.7.2-2/vendor/kazhdan/SurfaceTrimmerMain.cpp</a>:127
+<p><pre>        if (Trim.set)<br/>            comments.push_back(leader + Trim.name + " " +<br/>                std::to_string(Trim.value));<br/>        if (Smooth.set)<br/>            comments.push_back(leader + IslandAreaRatio.name + " " +<br/></pre></p>
+<hr/>
+
+<!-- size_t iter
+     double omega -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc">actcd19/main/m/madness/madness_0.10.1~gite4aa500e-3/src/apps/chem/CC2.cc</a>:131
+<p><pre>        bool doubles_converged = true;<br/>        for(size_t iter=0; iter &lt; parameters.iter_max_6D; iter++){<br/>          output_subsection("Mactoiteration " + std::to_string(iter) + " with excitation energy " + std::to_string(omega));<br/>          CC_Timer timer_iter_all(world,"Macroiteration " + stringify(iter));<br/>    <br/></pre></p>
+<hr/>
+</div>
+
+In one case `std::to_string` is used to write an FP value to a config file.
+It is likely a latent bug because writing a config in one locale may render it
+unreadable in a different one unless special measures are taken to fix the
+locale.
+
+<div class="head">
+<!-- double ConfigItem::f() -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc">actcd19/main/p/performous/performous_1.1+git20181118-2/game/configuration.cc</a>:310
+<p><pre>    		else if (type == "int") entryNode-&gt;set_attribute("value",std::to_string(item.i()));<br/>    		else if (type == "bool") entryNode-&gt;set_attribute("value", item.b() ? "true" : "false");<br/>    		else if (type == "float") entryNode-&gt;set_attribute("value",std::to_string(item.f()));<br/>    		else if (item.get_type() == "string") xmlpp::add_child_element(entryNode, "stringvalue")-&gt;add_child_text(item.s());<br/>    		else if (item.get_type() == "string_list") {<br/></pre></p>
+<hr/>
+</div>
+
+The last call is used to generate a human-readable name for some object,
+possibly for debug purposes. We haven't found any uses of the enclosing function
+though.
+
+<div class="head">
+<!-- float std::fabs(com.coef) -->
+<a href ="http://codesearch.isocpp.org/actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc">actcd19/main/p/psi4/psi4_1.2.1-2/psi4/src/psi4/libmints/cdsalclist.cc</a>:312
+<p><pre>    <br/>            name += com.coef &gt; 0.0 ? "+" : "-";<br/>            name += std::to_string(std::fabs(com.coef)) + " ";<br/>            name += molecule_-&gt;label(com.atom);<br/>            if (com.xyz == 0)<br/></pre></p>
+<hr/>
+</div>
+
+In summary, the number of uses of `to_string` with floating point arguments
+turned out to be very low and the cases that we analyzed are mostly non-critical
+such as tests and debugging/logging use cases. Some of them may even contain
+latent bugs because the use of the locale is unintentional.
 
 Implementation {#impl}
 ==============
@@ -365,7 +438,7 @@ This subclause lists the differences between C++ and ISO C++ 2023 (ISO/IEC
 <ins>
 **Affected subclauses:** 23.4<br>
 **Change:** Output of floating-point overloads of `to_string` and `to_wstring`.<br>
-**Rationale:** Prevent loss of information and improve consistentcy with other
+**Rationale:** Prevent loss of information and improve consistency with other
 formatting facilities.<br>
 **Effect on original feature:** `to_string` and `to_wstring` function calls that
 take floating-point arguments may produce a different output. For example:
@@ -936,6 +1009,11 @@ Appendix A: Sample of code search results for `to_string` {#sample}
     "title": "How to Print Floating-Point Numbers Accurately",
     "authors": ["Guy L. Steele Jr.", "Jon L White"],
     "href": "https://fmt.dev/papers/p372-steele.pdf"
+  },
+  "CODESEARCH": {
+	  "title": "Code search engine website",
+	  "authors": ["Andrew Tomazos"],
+	  "href": "https://codesearch.isocpp.org"
   }
 }
 </pre>
