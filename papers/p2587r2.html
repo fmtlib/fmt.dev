@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2195adeb613e2ae72bc47ac64e46138bc58fef15" name="document-revision">
+  <meta content="9f2bfe367a4389fff1718c0f9e63b02a659db6b6" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2298,8 +2298,6 @@ enables an easy and natural extension of <code class="highlight"><c- n>std</c-><
 arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
 be localized.</p>
-   <p>As a mitigation mechanism we could provide <code class="highlight"><c- n>to_string_localized</c-></code> with the old
-behavior which provides a simple migration path.</p>
    <p>In order to estimate the practical impact on existing code we looked at <a data-link-type="biblio" href="#biblio-codesearch">[CODESEARCH]</a> results for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>. 876 million lines of code
 contained only ~11 thousand calls to this function. For comparison, there
 are ~20 thousand uses of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>stringstream</c-></code> and ~390 thousand calls to <code class="highlight"><c- n>sprintf</c-></code>. We further analyzed a random sample of 100 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> invocations listed in <a href="#sample">Appendix A</a>. 91 of them are called with
@@ -2363,6 +2361,8 @@ though.</p>
 turned out to be very low and the cases that we analyzed are mostly non-critical
 such as tests and debugging/logging use cases. Some of them may even contain
 latent bugs because the use of the locale is unintentional.</p>
+   <p>As a mitigation mechanism we could provide <code class="highlight"><c- n>to_string_localized</c-></code> (not currently
+proposed) with the old behavior which would provide a simple migration path.</p>
    <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>{fmt} implements proposed changes in <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
    <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>

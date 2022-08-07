@@ -269,9 +269,6 @@ arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
 be localized.
 
-As a mitigation mechanism we could provide `to_string_localized` with the old
-behavior which provides a simple migration path.
-
 In order to estimate the practical impact on existing code we looked at
 [[CODESEARCH]] results for `std::to_string`. 876 million lines of code
 contained only ~11 thousand calls to this function. For comparison, there
@@ -346,6 +343,9 @@ In summary, the number of uses of `to_string` with floating point arguments
 turned out to be very low and the cases that we analyzed are mostly non-critical
 such as tests and debugging/logging use cases. Some of them may even contain
 latent bugs because the use of the locale is unintentional.
+
+As a mitigation mechanism we could provide `to_string_localized` (not currently
+proposed) with the old behavior which would provide a simple migration path.
 
 Implementation {#impl}
 ==============
