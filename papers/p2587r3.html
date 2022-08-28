@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2587R2: &lt;code>to_string&lt;/code> or not &lt;code>to_string&lt;/code></title>
+  <title>P2587R3: &lt;code>to_string&lt;/code> or not &lt;code>to_string&lt;/code></title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5f3f52323751f0c2c766de7876054f998c09e476" name="document-revision">
+  <meta content="5e78e8ea1f75b9f264b30421ab8c317e073b1832" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2083,8 +2083,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2587R2<br><code class="highlight"><c- n>to_string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-07-24">2022-07-24</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2587R3<br><code class="highlight"><c- n>to_string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-08-28">2022-08-28</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2103,12 +2103,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
-    <li><a href="#polls"><span class="secno">3</span> <span class="content">LEWG Polls</span></a>
-    <li><a href="#examples"><span class="secno">4</span> <span class="content">Examples</span></a>
-    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
-    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#polls2"><span class="secno">3</span> <span class="content">LEWG Poll (R2)</span></a>
+    <li><a href="#polls1"><span class="secno">4</span> <span class="content">LEWG Poll (R1)</span></a>
+    <li><a href="#examples"><span class="secno">5</span> <span class="content">Examples</span></a>
+    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
+    <li><a href="#impact"><span class="secno">7</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">9</span> <span class="content">Wording</span></a>
     <li><a href="#sample"><span class="secno"></span> <span class="content">Appendix A: Sample of code search results for <code class="highlight"><c- n>to_string</c-></code></span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2128,6 +2129,11 @@ the choice of the floating-point format makes <code class="highlight"><c- n>std<
 use in practice. This paper proposes fixing these issues while retaining
 existing semantics of integral overloads.</p>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R2:</p>
+   <ul>
+    <li data-md>
+     <p>Added more poll results.</p>
+   </ul>
    <p>Changes since R1:</p>
    <ul>
     <li data-md>
@@ -2136,7 +2142,7 @@ existing semantics of integral overloads.</p>
      <p>Mentioned that the current proposal enables future extension to other types
 via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
     <li data-md>
-     <p>Added an analysis of codesearch results to <a href="#impact">§ 6 Impact on existing code</a>.</p>
+     <p>Added an analysis of codesearch results to <a href="#impact">§ 7 Impact on existing code</a>.</p>
    </ul>
    <p>Changes since R0:</p>
    <ul>
@@ -2150,7 +2156,24 @@ via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
      <p>Added a reference to <a data-link-type="biblio" href="#biblio-std_discussion">[STD_DISCUSSION]</a> which proposed deprecating
 floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">LEWG Polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="3" id="polls2"><span class="secno">3. </span><span class="content">LEWG Poll (R2)</span><a class="self-link" href="#polls2"></a></h2>
+   <p>Poll: Forward P2587R2 for C++26 (Priority B2) to be confirmed by electronic polling.</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>11 
+      <td>6 
+      <td>2 
+      <td>0 
+      <td>0 
+   </table>
+   <h2 class="heading settled" data-level="4" id="polls1"><span class="secno">4. </span><span class="content">LEWG Poll (R1)</span><a class="self-link" href="#polls1"></a></h2>
    <p>Poll: Fix <code class="highlight"><c- n>to_string</c-></code> as proposed by P2587R1 (<code class="highlight"><c- n>to</c-><c- o>-</c-><c- n>string</c-></code> or not <code class="highlight"><c- n>to_string</c-></code>).</p>
    <table class="poll">
     <tbody>
@@ -2168,7 +2191,7 @@ floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><
       <td>1 
    </table>
    <p>Outcome: Weak consensus</p>
-   <h2 class="heading settled" data-level="4" id="examples"><span class="secno">4. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
+   <h2 class="heading settled" data-level="5" id="examples"><span class="secno">5. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>loc</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"uk_UA.UTF-8"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>loc</c-><c- p>);</c->
@@ -2233,7 +2256,7 @@ a precision loss or garbage digit output in many other cases.</p>
 been discussed in the paper that proposed this facility (<a data-link-type="biblio" href="#biblio-n1803">[N1803]</a>, <a data-link-type="biblio" href="#biblio-n2408">[N2408]</a>).
 However, they were brought up as early as 2015 in a mailing list discussion
 (<a data-link-type="biblio" href="#biblio-std_discussion">[STD_DISCUSSION]</a>) which proposed deprecating floating-point overloads of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> but no paper came out of that.</p>
-   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Redefine <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> which in turn uses <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> making more explicit the fact that integral overloads are
 unlocalized and changing the format of floating-point overloads to also be
 unlocalized and use the shortest decimal representation.</p>
@@ -2293,7 +2316,7 @@ unlocalized and use the shortest decimal representation.</p>
    </table>
    <p>In addition to fixing the broken behavior for floating point, this proposal
 enables an easy and natural extension of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> to other types via <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (not proposed in this paper).</p>
-   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This change will affect the output of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_string</c-></code> with floating-point
 arguments. In most cases it will result in a more precise and/or shorter output.
 In cases where the C locale is explicitly set the decimal point will no longer
@@ -2363,9 +2386,9 @@ such as tests and debugging/logging use cases. Some of them may even contain
 latent bugs because the use of the locale is unintentional.</p>
    <p>As a mitigation mechanism we could provide <code class="highlight"><c- n>to_string_localized</c-></code> (not currently
 proposed) with the old behavior which would provide a simple migration path.</p>
-   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>{fmt} implements proposed changes in <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>to_string</c-></code>.</p>
-   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="9" id="wording"><span class="secno">9. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add an entry for <code class="highlight"><c- n>__cpp_lib_to_string</c-></code> to section "Header <code class="highlight"><c- o>&lt;</c-><c- n>version</c-><c- o>></c-></code> synopsis <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4910.pdf#subsection.17.3.2">[version.syn</a>]",
 in a place that respects the table’s current alphabetic order:</p>
 <pre class="highlight"><ins><c- cp>#define __cpp_lib_to_string **placeholder**  </c-><c- c1>// also in &lt;string></c-></ins>
