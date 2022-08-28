@@ -86,7 +86,7 @@ possible using ``fmt::vformat``, ``fmt::vprint``, etc.
 
 .. doxygentypedef:: fmt::format_string
 
-.. doxygenfunction:: fmt::runtime(const S&)
+.. doxygenfunction:: fmt::runtime(string_view) -> basic_runtime<char>
 
 Named Arguments
 ---------------
@@ -473,7 +473,7 @@ Standard Library Types Formatting
 
 ``fmt/std.h`` provides formatters for:
 
-* `std::filesystem::path <std::filesystem::path>`_
+* `std::filesystem::path <https://en.cppreference.com/w/cpp/filesystem/path>`_
 * `std::thread::id <https://en.cppreference.com/w/cpp/thread/thread/id>`_
 * `std::monostate <https://en.cppreference.com/w/cpp/utility/variant/monostate>`_
 * `std::variant <https://en.cppreference.com/w/cpp/utility/variant/variant>`_
