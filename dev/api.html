@@ -570,19 +570,6 @@ the size with <code class="docutils literal notranslate"><span class="pre">std::
 <dd></dd></dl>
 
 </section>
-<section id="locale">
-<h3>Locale<a class="headerlink" href="#locale" title="Permalink to this headline">¶</a></h3>
-<p>All formatting is locale-independent by default. Use the <code class="docutils literal notranslate"><span class="pre">'L'</span></code> format
-specifier to insert the appropriate number separator characters from the
-locale:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span><span class="cp"></span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;locale&gt;</span><span class="cp"></span>
-
-<span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="o">::</span><span class="n">global</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="p">(</span><span class="s">&quot;en_US.UTF-8&quot;</span><span class="p">));</span><span class="w"></span>
-<span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:L}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000</span><span class="p">);</span><span class="w">  </span><span class="c1">// s == &quot;1,000,000&quot;</span>
-</pre></div>
-</div>
-</section>
 </section>
 <section id="format-api">
 <span id="id2"></span><h2>Format API<a class="headerlink" href="#format-api" title="Permalink to this headline">¶</a></h2>
@@ -1026,6 +1013,34 @@ allocator:</p>
 normally don’t do any allocations for built-in and string types except for
 non-default floating-point formatting that occasionally falls back on
 <code class="docutils literal notranslate"><span class="pre">sprintf</span></code>.</p>
+</section>
+<section id="locale">
+<h3>Locale<a class="headerlink" href="#locale" title="Permalink to this headline">¶</a></h3>
+<p>All formatting is locale-independent by default. Use the <code class="docutils literal notranslate"><span class="pre">'L'</span></code> format
+specifier to insert the appropriate number separator characters from the
+locale:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;locale&gt;</span><span class="cp"></span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="o">::</span><span class="n">global</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="p">(</span><span class="s">&quot;en_US.UTF-8&quot;</span><span class="p">));</span><span class="w"></span>
+<span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:L}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1000000</span><span class="p">);</span><span class="w">  </span><span class="c1">// s == &quot;1,000,000&quot;</span>
+</pre></div>
+</div>
+<dl class="cpp function">
+<dt id="_CPPv4I0DpEN3fmt6formatENSt6stringERK6Locale13format_stringIDp1TEDpRR1T">
+<span id="_CPPv3I0DpEN3fmt6formatERK6Locale13format_stringIDp1TEDpRR1T"></span><span id="_CPPv2I0DpEN3fmt6formatERK6Locale13format_stringIDp1TEDpRR1T"></span>template&lt;typename <code class="sig-name descname">Locale</code>, typename ...<code class="sig-name descname">T</code>&gt;<br /><span class="target" id="format_8h_1ab14dd1acbc55791fb7c9c072a7280348"></span>auto <code class="sig-prename descclassname"><a class="reference internal" href="#_CPPv4I0DpEN3fmt6formatENSt6stringERK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format::fmt">fmt</a><code class="sig-prename descclassname">::</code></code><code class="sig-name descname">format</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0DpEN3fmt6formatENSt6stringERK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format::Locale">Locale</a> &amp;<em>loc</em>, <a class="reference internal" href="#_CPPv4IDpEN3fmt13format_stringE" title="fmt::format_string">format_string</a>&lt;<a class="reference internal" href="#_CPPv4I0DpEN3fmt6formatENSt6stringERK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format::T">T</a>...&gt; <em>fmt</em>, <a class="reference internal" href="#_CPPv4I0DpEN3fmt6formatENSt6stringERK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format::T">T</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span> -&gt; std::string<a class="headerlink" href="#_CPPv4I0DpEN3fmt6formatENSt6stringERK6Locale13format_stringIDp1TEDpRR1T" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt id="_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T">
+<span id="_CPPv3I00DpEN3fmt9format_toE8OutputItRK6Locale13format_stringIDp1TEDpRR1T"></span><span id="_CPPv2I00DpEN3fmt9format_toE8OutputItRK6Locale13format_stringIDp1TEDpRR1T"></span>template&lt;typename <code class="sig-name descname">OutputIt</code>, typename <code class="sig-name descname">Locale</code>, typename ...<code class="sig-name descname">T</code>&gt;<br /><span class="target" id="format_8h_1a789034b65987d8a507e00538cab50d7a"></span>auto <code class="sig-prename descclassname"><a class="reference internal" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format_to::fmt">fmt</a><code class="sig-prename descclassname">::</code></code><code class="sig-name descname">format_to</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format_to::OutputIt">OutputIt</a> <em>out</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format_to::Locale">Locale</a> &amp;<em>loc</em>, <a class="reference internal" href="#_CPPv4IDpEN3fmt13format_stringE" title="fmt::format_string">format_string</a>&lt;<a class="reference internal" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format_to::T">T</a>...&gt; <em>fmt</em>, <a class="reference internal" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format_to::T">T</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span> -&gt; <a class="reference internal" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::format_to::OutputIt">OutputIt</a><a class="headerlink" href="#_CPPv4I00DpEN3fmt9format_toE8OutputIt8OutputItRK6Locale13format_stringIDp1TEDpRR1T" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt id="_CPPv4I0DpEN3fmt14formatted_sizeE6size_tRK6Locale13format_stringIDp1TEDpRR1T">
+<span id="_CPPv3I0DpEN3fmt14formatted_sizeERK6Locale13format_stringIDp1TEDpRR1T"></span><span id="_CPPv2I0DpEN3fmt14formatted_sizeERK6Locale13format_stringIDp1TEDpRR1T"></span>template&lt;typename <code class="sig-name descname">Locale</code>, typename ...<code class="sig-name descname">T</code>&gt;<br /><span class="target" id="format_8h_1a736542f7b3651a668bc113a74e28f1c6"></span>auto <code class="sig-prename descclassname"><a class="reference internal" href="#_CPPv4I0DpEN3fmt14formatted_sizeE6size_tRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::formatted_size::fmt">fmt</a><code class="sig-prename descclassname">::</code></code><code class="sig-name descname">formatted_size</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4I0DpEN3fmt14formatted_sizeE6size_tRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::formatted_size::Locale">Locale</a> &amp;<em>loc</em>, <a class="reference internal" href="#_CPPv4IDpEN3fmt13format_stringE" title="fmt::format_string">format_string</a>&lt;<a class="reference internal" href="#_CPPv4I0DpEN3fmt14formatted_sizeE6size_tRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::formatted_size::T">T</a>...&gt; <em>fmt</em>, <a class="reference internal" href="#_CPPv4I0DpEN3fmt14formatted_sizeE6size_tRK6Locale13format_stringIDp1TEDpRR1T" title="fmt::formatted_size::T">T</a>&amp;&amp;... <em>args</em><span class="sig-paren">)</span> -&gt; size_t<a class="headerlink" href="#_CPPv4I0DpEN3fmt14formatted_sizeE6size_tRK6Locale13format_stringIDp1TEDpRR1T" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </section>
 </section>
 <section id="range-and-tuple-formatting">
