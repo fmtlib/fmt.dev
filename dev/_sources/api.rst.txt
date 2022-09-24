@@ -105,7 +105,7 @@ template and implement ``parse`` and ``format`` methods::
     char presentation = 'f';
 
     // Parses format specifications of the form ['f' | 'e'].
-    constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    constexpr auto parse(format_parse_context& ctx) -> format_parse_context::iterator {
       // [ctx.begin(), ctx.end()) is a character range that contains a part of
       // the format string starting from the format specifications to be parsed,
       // e.g. in
@@ -134,8 +134,7 @@ template and implement ``parse`` and ``format`` methods::
 
     // Formats the point p using the parsed format specification (presentation)
     // stored in this formatter.
-    template <typename FormatContext>
-    auto format(const point& p, FormatContext& ctx) const -> decltype(ctx.out()) {
+    auto format(const point& p, format_context& ctx) const -> format_context::iterator {
       // ctx.out() is an output iterator to write to.
       return presentation == 'f'
                 ? fmt::format_to(ctx.out(), "({:.1f}, {:.1f})", p.x, p.y)
@@ -152,24 +151,33 @@ Then you can pass objects of type ``point`` to any formatting function::
 You can also reuse existing formatters via inheritance or composition, for
 example::
 
+  // color.h:
   #include <fmt/core.h>
 
   enum class color {red, green, blue};
 
   template <> struct fmt::formatter<color>: formatter<string_view> {
     // parse is inherited from formatter<string_view>.
-    template <typename FormatContext>
-    auto format(color c, FormatContext& ctx) const {
-      string_view name = "unknown";
-      switch (c) {
-      case color::red:   name = "red"; break;
-      case color::green: name = "green"; break;
-      case color::blue:  name = "blue"; break;
-      }
-      return formatter<string_view>::format(name, ctx);
-    }
+
+    auto format(color c, format_context& ctx) const;
   };
 
+  // color.cc:
+  #include "color.h"
+  #include <fmt/format.h>
+
+  auto fmt::formatter<color>::format(color c, format_context& ctx) const {
+    string_view name = "unknown";
+    switch (c) {
+    case color::red:   name = "red"; break;
+    case color::green: name = "green"; break;
+    case color::blue:  name = "blue"; break;
+    }
+    return formatter<string_view>::format(name, ctx);
+  }
+
+Note that ``formatter<string_view>::format`` is defined in ``fmt/format.h`` so
+it has to be included in the source file.
 Since ``parse`` is inherited from ``formatter<string_view>`` it will recognize
 all string format specifications, for example
 
@@ -181,6 +189,7 @@ will return ``"      blue"``.
 
 You can also write a formatter for a hierarchy of classes::
 
+  // demo.h:
   #include <type_traits>
   #include <fmt/core.h>
 
@@ -196,11 +205,14 @@ You can also write a formatter for a hierarchy of classes::
   template <typename T>
   struct fmt::formatter<T, std::enable_if_t<std::is_base_of<A, T>::value, char>> :
       fmt::formatter<std::string> {
-    template <typename FormatCtx>
-    auto format(const A& a, FormatCtx& ctx) const {
+    auto format(const A& a, format_context& ctx) const {
       return fmt::formatter<std::string>::format(a.name(), ctx);
     }
   };
+
+  // demo.cc:
+  #include "demo.h"
+  #include <fmt/format.h>
 
   int main() {
     B b;
@@ -243,11 +255,11 @@ Argument Lists
 --------------
 
 You can create your own formatting function with compile-time checks and small
-binary footprint, for example (https://godbolt.org/z/oba4Mc):
+binary footprint, for example (https://godbolt.org/z/Gab1q3jKE):
 
 .. code:: c++
 
-    #include <fmt/format.h>
+    #include <fmt/core.h>
 
     void vlog(const char* file, int line, fmt::string_view format,
               fmt::format_args args) {
@@ -255,13 +267,12 @@ binary footprint, for example (https://godbolt.org/z/oba4Mc):
       fmt::vprint(format, args);
     }
 
-    template <typename S, typename... Args>
-    void log(const char* file, int line, const S& format, Args&&... args) {
+    template <typename... T>
+    void log(const char* file, int line, fmt::format_string<T...> format, T&&... args) {
       vlog(file, line, format, fmt::make_format_args(args...));
     }
 
-    #define MY_LOG(format, ...) \
-      log(__FILE__, __LINE__, FMT_STRING(format), __VA_ARGS__)
+    #define MY_LOG(format, ...) log(__FILE__, __LINE__, format, __VA_ARGS__)
 
     MY_LOG("invalid squishiness: {}", 42);
 
