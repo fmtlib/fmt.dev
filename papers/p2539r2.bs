@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Should the output of std::print to a terminal be synchronized with the underlying stream?
 Shortname: P2539
-Revision: 1
-Audience: LEWG
-Status: P
+Revision: 2
+Audience: LWG
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-04-09
+Date: 2022-09-24
 Markup Shorthands: markdown yes
 </pre>
 
@@ -40,6 +40,12 @@ guarantee.
 
 Revision history {#hist}
 ================
+
+Changes since R1:
+
+* Replaced "the terminal output is buffered by default" with a more specific
+    "`stdout` referring to a terminal is buffered by default on the current
+    system" to address LWG feedback.
 
 Changes since R0:
 
@@ -143,8 +149,9 @@ the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes `out` to `stream` unchanged.
 <ins>
-If the native Unicode API is used and the terminal output is buffered by
-default, the function flushes the `stream`'s   buffer before writing `out`.
+If the native Unicode API is used and `stdout` referring to a terminal is
+buffered by default on the current system, the function flushes the `stream`'s
+buffer before writing `out`.
 </ins>
 
 Modify subsection "Print [ostream.formatted.print]":
@@ -178,8 +185,8 @@ terminal capable of displaying Unicode which is determined in an
 implementation-defined manner, writes `out` to the terminal using the
 native Unicode API; if `out` contains invalid code units, the behavior
 is undefined and implementations are encouraged to diagnose it. <ins>
-If the terminal output is buffered by default, the function flushes the
-`os`'s buffer before writing `out`.
+If `stdout` referring to a terminal is buffered by default on the current
+system, the function flushes the `os`'s buffer before writing `out`.
 </ins>
 <p>
 Otherwise (if `os` is not such a stream or the function is
