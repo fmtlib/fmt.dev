@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>D2539R2: Should the output of std::print to a terminal be synchronized with the underlying stream?</title>
+  <title>P2539R2: Should the output of std::print to a terminal be synchronized with the underlying stream?</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e86be1e4aec61c253d07599dd8c3cb65edd965cc" name="document-revision">
+  <meta content="0af197e84a176f3998e83942ca982f726b3e3d5d" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">D2539R2<br>Should the output of std::print to a terminal be synchronized with the underlying stream?</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2022-09-24">2022-09-24</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2539R2<br>Should the output of std::print to a terminal be synchronized with the underlying stream?</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-09-24">2022-09-24</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2105,9 +2105,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#hist"><span class="secno">2</span> <span class="content">Revision history</span></a>
-    <li><a href="#examples"><span class="secno">3</span> <span class="content">Motivating examples</span></a>
-    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
+    <li><a href="#polls1"><span class="secno">3</span> <span class="content">LEWG Poll (R1)</span></a>
+    <li><a href="#examples"><span class="secno">4</span> <span class="content">Motivating examples</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2127,9 +2128,11 @@ guarantee.</p>
    <p>Changes since R1:</p>
    <ul>
     <li data-md>
+     <p>Added LEWG poll results.</p>
+    <li data-md>
      <p>Replaced "the terminal output is buffered by default" with a more specific
 "<code class="highlight"><c- n>stdout</c-></code> referring to a terminal is buffered by default on the current
-system" to address LWG feedback.</p>
+system".</p>
    </ul>
    <p>Changes since R0:</p>
    <ul>
@@ -2140,7 +2143,27 @@ system" to address LWG feedback.</p>
     <li data-md>
      <p>Added the wording.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="examples"><span class="secno">3. </span><span class="content">Motivating examples</span><a class="self-link" href="#examples"></a></h2>
+   <h2 class="heading settled" data-level="3" id="polls1"><span class="secno">3. </span><span class="content">LEWG Poll (R1)</span><a class="self-link" href="#polls1"></a></h2>
+   <p>Poll: Send P2539R1 Should The Output Of print To A Terminal Be Synchronized With
+The Underlying Stream? to Library Working Group for C++23, classified as an
+addition (P0592R4 bucket 3 item).</p>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>SF 
+      <th>F 
+      <th>N 
+      <th>A 
+      <th>SA 
+     <tr>
+      <td>11 
+      <td>10 
+      <td>2 
+      <td>1 
+      <td>0 
+   </table>
+   <p>Outcome: Consensus in favor</p>
+   <h2 class="heading settled" data-level="4" id="examples"><span class="secno">4. </span><span class="content">Motivating examples</span><a class="self-link" href="#examples"></a></h2>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"first</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"second</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
@@ -2183,7 +2206,7 @@ preserved too because the output goes through the stream buffer in both cases.</
    <p>We updated the implementation of <code class="highlight"><c- n>print</c-></code> for <code class="highlight"><c- n>ostream</c-></code> in {fmt} to use the
 native Unicode API and verified that there is no reordering in this example
 either on the same test platform.</p>
-   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Although the issue appears to be mostly theoretical, it might still be
 beneficial to clarify in the standard that synchronization is desired.
 It is possible to guarantee the desired output ordering by flushing the buffer
@@ -2194,7 +2217,7 @@ tested should be able to avoid a call to flush.</p>
    <p>Neither {fmt} (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>) nor Rust (<a data-link-type="biblio" href="#biblio-rust-stdio">[RUST-STDIO]</a>) do any attempt to provide such
 synchronization in their implementations of <code class="highlight"><c- n>print</c-></code>. However, in practice this
 synchronization appears to be a noop on tested platforms.</p>
-   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify subsection "Print functions [print.fun]":</p>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </pre>
