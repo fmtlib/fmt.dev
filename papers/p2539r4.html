@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2539R2: Should the output of std::print to a terminal be synchronized with the underlying stream?</title>
+  <title>P2539R4: Should the output of std::print to a terminal be synchronized with the underlying stream?</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0af197e84a176f3998e83942ca982f726b3e3d5d" name="document-revision">
+  <meta content="2d0e3d20b4b8b9c934df1ebe518c260816ba6e2e" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2539R2<br>Should the output of std::print to a terminal be synchronized with the underlying stream?</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-09-24">2022-09-24</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2539R4<br>Should the output of std::print to a terminal be synchronized with the underlying stream?</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-11-08">2022-11-08</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2125,6 +2125,31 @@ motivating examples, observes that this problem doesn’t normally happen in
 practice and proposes a minor update to the wording to provide a synchronization
 guarantee.</p>
    <h2 class="heading settled" data-level="2" id="hist"><span class="secno">2. </span><span class="content">Revision history</span><a class="self-link" href="#hist"></a></h2>
+   <p>Changes since R3:</p>
+   <ul>
+    <li data-md>
+     <p>Replaced "flushes the <code class="highlight"><c- n>os</c-></code>'s buffer before writing <code class="highlight"><c- n>out</c-></code>" with
+"flushes <code class="highlight"><c- n>os</c-></code> before writing <code class="highlight"><c- n>out</c-></code>" per LWG feedback.</p>
+    <li data-md>
+     <p>Replaced "flushes the <code class="highlight"><c- n>stream</c-></code>'s buffer before writing <code class="highlight"><c- n>out</c-></code>" with
+"flushes <code class="highlight"><c- n>stream</c-></code> before writing <code class="highlight"><c- n>out</c-></code>" per LWG feedback.</p>
+   </ul>
+   <p>Changes since R2:</p>
+   <ul>
+    <li data-md>
+     <p>Replaced
+"If the native Unicode API is used and <code class="highlight"><c- n>stdout</c-></code> referring to a terminal is
+buffered by default on the current system, the function flushes the <code class="highlight"><c- n>stream</c-></code>'s
+buffer before writing <code class="highlight"><c- n>out</c-></code>." with
+"If the native Unicode API is used, the function flushes the <code class="highlight"><c- n>stream</c-></code>'s buffer
+before writing <code class="highlight"><c- n>out</c-></code>." to provide a stronger guarantee per LEWG feedback.</p>
+    <li data-md>
+     <p>Replaced
+"If <code class="highlight"><c- n>stdout</c-></code> referring to a terminal is buffered by default on the current
+system, the function flushes the <code class="highlight"><c- n>os</c-></code>'s buffer before writing <code class="highlight"><c- n>out</c-></code>." with
+"If the native Unicode API is used, the function flushes the <code class="highlight"><c- n>os</c-></code>'s buffer before
+writing <code class="highlight"><c- n>out</c-></code>." to provide a stronger guarantee per LEWG feedback.</p>
+   </ul>
    <p>Changes since R1:</p>
    <ul>
     <li data-md>
@@ -2229,9 +2254,7 @@ synchronization appears to be a noop on tested platforms.</p>
 the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged.</p>
-   <ins> If the native Unicode API is used and <code class="highlight"><c- n>stdout</c-></code> referring to a terminal is
-buffered by default on the current system, the function flushes the <code class="highlight"><c- n>stream</c-></code>'s
-buffer before writing <code class="highlight"><c- n>out</c-></code>. </ins>
+   <ins> If the native Unicode API is used, the function flushes <code class="highlight"><c- n>stream</c-></code> before writing <code class="highlight"><c- n>out</c-></code>. </ins>
    <p>Modify subsection "Print [ostream.formatted.print]":</p>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 <c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
@@ -2255,8 +2278,8 @@ terminal capable of displaying Unicode which is determined in an
 implementation-defined manner, writes <code class="highlight"><c- n>out</c-></code> to the terminal using the
 native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units, the behavior
 is undefined and implementations are encouraged to diagnose it. 
-    <ins> If <code class="highlight"><c- n>stdout</c-></code> referring to a terminal is buffered by default on the current
-system, the function flushes the <code class="highlight"><c- n>os</c-></code>'s buffer before writing <code class="highlight"><c- n>out</c-></code>.</ins>
+    <ins> If the native Unicode API is used, the function flushes <code class="highlight"><c- n>os</c-></code> before
+writing <code class="highlight"><c- n>out</c-></code>.</ins>
    </p>
    <p> Otherwise (if <code class="highlight"><c- n>os</c-></code> is not such a stream or the function is <code class="highlight"><c- n>vprint_nonunicode</c-></code>), inserts the character sequence <code class="highlight"><c- p>[</c-><c- n>out</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>out</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> into <code class="highlight"><c- n>os</c-></code>. </p>
    <p> If writing to the terminal or inserting into <code class="highlight"><c- n>os</c-></code> fails, calls <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>setstate</c-><c- p>(</c-><c- n>ios_base</c-><c- o>::</c-><c- n>badbit</c-><c- p>)</c-></code> (which may throw <code class="highlight"><c- n>ios_base</c-><c- o>::</c-><c- n>failure</c-></code>). </p>

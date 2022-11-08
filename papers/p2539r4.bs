@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Should the output of std::print to a terminal be synchronized with the underlying stream?
 Shortname: P2539
-Revision: 2
+Revision: 4
 Audience: LWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-09-24
+Date: 2022-11-08
 Markup Shorthands: markdown yes
 </pre>
 
@@ -40,6 +40,29 @@ guarantee.
 
 Revision history {#hist}
 ================
+
+Changes since R3:
+
+* Replaced "flushes the `os`'s buffer before writing `out`" with
+    "flushes `os` before writing `out`" per LWG feedback.
+
+* Replaced "flushes the `stream`'s buffer before writing `out`" with
+    "flushes `stream` before writing `out`" per LWG feedback.
+
+Changes since R2:
+
+* Replaced 
+    "If the native Unicode API is used and `stdout` referring to a terminal is
+    buffered by default on the current system, the function flushes the `stream`'s
+    buffer before writing `out`." with
+    "If the native Unicode API is used, the function flushes the `stream`'s buffer
+    before writing `out`." to provide a stronger guarantee per LEWG feedback.
+
+* Replaced
+    "If `stdout` referring to a terminal is buffered by default on the current
+    system, the function flushes the `os`'s buffer before writing `out`." with
+    "If the native Unicode API is used, the function flushes the `os`'s buffer before
+    writing `out`." to provide a stronger guarantee per LEWG feedback.
 
 Changes since R1:
 
@@ -178,9 +201,8 @@ the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes `out` to `stream` unchanged.
 <ins>
-If the native Unicode API is used and `stdout` referring to a terminal is
-buffered by default on the current system, the function flushes the `stream`'s
-buffer before writing `out`.
+If the native Unicode API is used, the function flushes `stream` before writing
+`out`.
 </ins>
 
 Modify subsection "Print [ostream.formatted.print]":
@@ -214,8 +236,8 @@ terminal capable of displaying Unicode which is determined in an
 implementation-defined manner, writes `out` to the terminal using the
 native Unicode API; if `out` contains invalid code units, the behavior
 is undefined and implementations are encouraged to diagnose it. <ins>
-If `stdout` referring to a terminal is buffered by default on the current
-system, the function flushes the `os`'s buffer before writing `out`.
+If the native Unicode API is used, the function flushes `os` before
+writing `out`.
 </ins>
 <p>
 Otherwise (if `os` is not such a stream or the function is
