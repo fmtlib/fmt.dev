@@ -460,8 +460,8 @@ pointers and may be omitted.</p></td>
 </section>
 <section id="chrono-format-specifications">
 <span id="chrono-specs"></span><h2>Chrono Format Specifications<a class="headerlink" href="#chrono-format-specifications" title="Permalink to this headline">¶</a></h2>
-<p>Format specifications for chrono types and <code class="docutils literal notranslate"><span class="pre">std::tm</span></code> have the following
-syntax:</p>
+<p>Format specifications for chrono duration and time point types as well as
+<code class="docutils literal notranslate"><span class="pre">std::tm</span></code> have the following syntax:</p>
 <pre>
 <strong id="grammar-token-sf-chrono_format_spec"><span id="grammar-token-chrono-format-spec"></span>chrono_format_spec</strong> ::=  [[<a class="reference internal" href="#grammar-token-sf-fill"><code class="xref docutils literal notranslate"><span class="pre">fill</span></code></a>]<a class="reference internal" href="#grammar-token-sf-align"><code class="xref docutils literal notranslate"><span class="pre">align</span></code></a>][<a class="reference internal" href="#grammar-token-sf-width"><code class="xref docutils literal notranslate"><span class="pre">width</span></code></a>][&quot;.&quot; <a class="reference internal" href="#grammar-token-sf-precision"><code class="xref docutils literal notranslate"><span class="pre">precision</span></code></a>][<a class="reference internal" href="#grammar-token-sf-chrono_specs"><code class="xref docutils literal notranslate"><span class="pre">chrono_specs</span></code></a>]
 <strong id="grammar-token-sf-chrono_specs"><span id="grammar-token-chrono-specs"></span>chrono_specs      </strong> ::=  [<a class="reference internal" href="#grammar-token-sf-chrono_specs"><code class="xref docutils literal notranslate"><span class="pre">chrono_specs</span></code></a>] <a class="reference internal" href="#grammar-token-sf-conversion_spec"><code class="xref docutils literal notranslate"><span class="pre">conversion_spec</span></code></a> | <a class="reference internal" href="#grammar-token-sf-chrono_specs"><code class="xref docutils literal notranslate"><span class="pre">chrono_specs</span></code></a> <a class="reference internal" href="#grammar-token-sf-literal_char"><code class="xref docutils literal notranslate"><span class="pre">literal_char</span></code></a>
@@ -475,8 +475,7 @@ syntax:</p>
 </pre>
 <p>Literal chars are copied unchanged to the output. Precision is valid only for
 <code class="docutils literal notranslate"><span class="pre">std::chrono::duration</span></code> types with a floating-point representation type.</p>
-<p>The available presentation types (<em>chrono_type</em>) for chrono durations and time
-points are:</p>
+<p>The available presentation types (<em>chrono_type</em>) are:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 12%" />
@@ -488,15 +487,107 @@ points are:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'H'</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'a'</span></code></p></td>
+<td><p>The abbreviated weekday name, e.g. “Sat”. If the value does not
+contain a valid weekday, an exception of type <code class="docutils literal notranslate"><span class="pre">format_error</span></code> is
+thrown.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'A'</span></code></p></td>
+<td><p>The full weekday name, e.g. “Saturday”. If the value does not
+contain a valid weekday, an exception of type <code class="docutils literal notranslate"><span class="pre">format_error</span></code> is
+thrown.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'b'</span></code></p></td>
+<td><p>The abbreviated month name, e.g. “Nov”. If the value does not
+contain a valid month, an exception of type <code class="docutils literal notranslate"><span class="pre">format_error</span></code> is
+thrown.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'B'</span></code></p></td>
+<td><p>The full month name, e.g. “November”. If the value does not
+contain a valid month, an exception of type <code class="docutils literal notranslate"><span class="pre">format_error</span></code> is
+thrown.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'c'</span></code></p></td>
+<td><p>The date and time representation, e.g. “Sat Nov 12 22:04:00 1955”.
+The modified command <code class="docutils literal notranslate"><span class="pre">%Ec</span></code> produces the locale’s alternate date
+and time representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'C'</span></code></p></td>
+<td><p>The year divided by 100 using floored division, e.g. “55”. If the
+result is a single decimal digit, it is prefixed with 0.
+The modified command <code class="docutils literal notranslate"><span class="pre">%EC</span></code> produces the locale’s alternative
+representation of the century.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'d'</span></code></p></td>
+<td><p>The day of month as a decimal number. If the result is a single
+decimal digit, it is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%Od</span></code>
+produces the locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'D'</span></code></p></td>
+<td><p>Equivalent to <code class="docutils literal notranslate"><span class="pre">%m/%d/%y</span></code>, e.g. “11/12/55”.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'e'</span></code></p></td>
+<td><p>The day of month as a decimal number. If the result is a single
+decimal digit, it is prefixed with a space. The modified command
+<code class="docutils literal notranslate"><span class="pre">%Oe</span></code> produces the locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'F'</span></code></p></td>
+<td><p>Equivalent to <code class="docutils literal notranslate"><span class="pre">%Y-%m-%d</span></code>, e.g. “1955-11-12”.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'g'</span></code></p></td>
+<td><p>The last two decimal digits of the ISO week-based year. If the
+result is a single digit it is prefixed by 0.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'G'</span></code></p></td>
+<td><p>The ISO week-based year as a decimal number. If the result is less
+than four digits it is left-padded with 0 to four digits.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'h'</span></code></p></td>
+<td><p>Equivalent to <code class="docutils literal notranslate"><span class="pre">%b</span></code>, e.g. “Nov”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'H'</span></code></p></td>
 <td><p>The hour (24-hour clock) as a decimal number. If the result is a
 single digit, it is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%OH</span></code>
+produces the locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'I'</span></code></p></td>
+<td><p>The hour (12-hour clock) as a decimal number. If the result is a
+single digit, it is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%OI</span></code>
+produces the locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'j'</span></code></p></td>
+<td><p>If the type being formatted is a specialization of duration, the
+decimal number of days without padding. Otherwise, the day of the
+year as a decimal number. Jan 1 is 001. If the result is less than
+three digits, it is left-padded with 0 to three digits.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'m'</span></code></p></td>
+<td><p>The month as a decimal number. Jan is 01. If the result is a
+single digit, it is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%Om</span></code>
 produces the locale’s alternative representation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'M'</span></code></p></td>
 <td><p>The minute as a decimal number. If the result is a single digit,
 it is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%OM</span></code> produces the
 locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'n'</span></code></p></td>
+<td><p>A new-line character.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'p'</span></code></p></td>
+<td><p>The AM/PM designations associated with a 12-hour clock.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'q'</span></code></p></td>
+<td><p>The duration’s unit suffix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'Q'</span></code></p></td>
+<td><p>The duration’s numeric value (as if extracted via <code class="docutils literal notranslate"><span class="pre">.count()</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'r'</span></code></p></td>
+<td><p>The 12-hour clock time, e.g. “10:04:00 PM”.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'R'</span></code></p></td>
+<td><p>Equivalent to <code class="docutils literal notranslate"><span class="pre">%H:%M</span></code>, e.g. “22:04”.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'S'</span></code></p></td>
 <td><p>Seconds as a decimal number. If the number of seconds is less than
@@ -508,6 +599,77 @@ precision if the conversion to floating-point decimal seconds
 cannot be made within 18 fractional digits). The character for the
 decimal point is localized according to the locale. The modified
 command <code class="docutils literal notranslate"><span class="pre">%OS</span></code> produces the locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'t'</span></code></p></td>
+<td><p>A horizontal-tab character.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'T'</span></code></p></td>
+<td><p>Equivalent to <code class="docutils literal notranslate"><span class="pre">%H:%M:%S</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'u'</span></code></p></td>
+<td><p>The ISO weekday as a decimal number (1-7), where Monday is 1. The
+modified command <code class="docutils literal notranslate"><span class="pre">%Ou</span></code> produces the locale’s alternative
+representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'U'</span></code></p></td>
+<td><p>The week number of the year as a decimal number. The first Sunday
+of the year is the first day of week 01. Days of the same year
+prior to that are in week 00. If the result is a single digit, it
+is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%OU</span></code> produces the
+locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'V'</span></code></p></td>
+<td><p>The ISO week-based week number as a decimal number. If the result
+is a single digit, it is prefixed with 0. The modified command
+<code class="docutils literal notranslate"><span class="pre">%OV</span></code> produces the locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'w'</span></code></p></td>
+<td><p>The weekday as a decimal number (0-6), where Sunday is 0.
+The modified command <code class="docutils literal notranslate"><span class="pre">%Ow</span></code> produces the locale’s alternative
+representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'W'</span></code></p></td>
+<td><p>The week number of the year as a decimal number. The first Monday
+of the year is the first day of week 01. Days of the same year
+prior to that are in week 00. If the result is a single digit, it
+is prefixed with 0. The modified command <code class="docutils literal notranslate"><span class="pre">%OW</span></code> produces the
+locale’s alternative representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'x'</span></code></p></td>
+<td><p>The date representation, e.g. “11/12/55”. The modified command
+<code class="docutils literal notranslate"><span class="pre">%Ex</span></code> produces the locale’s alternate date representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'X'</span></code></p></td>
+<td><p>The time representation, e.g. “10:04:00”. The modified command
+<code class="docutils literal notranslate"><span class="pre">%EX</span></code> produces the locale’s alternate time representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'y'</span></code></p></td>
+<td><p>The last two decimal digits of the year. If the result is a single
+digit it is prefixed by 0. The modified command <code class="docutils literal notranslate"><span class="pre">%Oy</span></code> produces
+the locale’s alternative representation. The modified command
+<code class="docutils literal notranslate"><span class="pre">%Ey</span></code> produces the locale’s alternative representation of offset
+from <code class="docutils literal notranslate"><span class="pre">%EC</span></code> (year only).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'Y'</span></code></p></td>
+<td><p>The year as a decimal number. If the result is less than four
+digits it is left-padded with 0 to four digits. The modified
+command <code class="docutils literal notranslate"><span class="pre">%EY</span></code> produces the locale’s alternative full year
+representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'z'</span></code></p></td>
+<td><p>The offset from UTC in the ISO 8601:2004 format. For example -0430
+refers to 4 hours 30 minutes behind UTC. If the offset is zero,
++0000 is used. The modified commands <code class="docutils literal notranslate"><span class="pre">%Ez</span></code> and <code class="docutils literal notranslate"><span class="pre">%Oz</span></code> insert a
+<code class="docutils literal notranslate"><span class="pre">:</span></code> between the hours and minutes: -04:30. If the offset
+information is not available, an exception of type
+<code class="docutils literal notranslate"><span class="pre">format_error</span></code> is thrown.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'Z'</span></code></p></td>
+<td><p>The time zone abbreviation. If the time zone abbreviation is not
+available, an exception of type <code class="docutils literal notranslate"><span class="pre">format_error</span></code> is thrown.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">'%'</span></code></p></td>
+<td><p>A % character.</p></td>
 </tr>
 </tbody>
 </table>
