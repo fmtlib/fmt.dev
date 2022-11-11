@@ -181,6 +181,24 @@ interpret *S* and construct *E*.
 
 - Finally, U+0022 QUOTATION MARK (") is appended to *E*.
 
+...
+
+[*Example 1*:
+<pre>
+string s0 = format("[{}]", "h\tllo");               // s0 has value: [h    llo]
+string s1 = format("[{:?}]", "h\tllo");             // s1 has value: ["h\tllo"]
+string s3 = format("[{:?}, {:?}]", '\\'', '"');      // s3 has value: ['\'', '"']
+
+// The following examples assume use of the UTF-8 encoding
+string s4 = format("[{:?}]", string("\0 \n \t \x02 \x1b", 9));
+                                                    // s4 has value: ["\u{0} \n \t \u{2} \u{1b}"]
+string s5 = format("[{:?}]", "\xc3\x28");           // invalid UTF-8, s5 has value: ["\x{c3}("]
+<ins>string s6 = format("[{:?}]", "\u0301");             // s6 has value: ["\u{301}"]</ins>
+<ins>string s7 = format("[{:?}]", "\\\u0301");           // s7 has value: ["\\\u{301}"]</ins>
+<ins>string s8 = format("[{:?}]", "e\u0301\u0323");      // s8 has value: ["ẹ́"]</ins>
+</pre>
+— *end example*]
+
 <!-- TODO: example -->
 
 Acknowledgements {#ack}

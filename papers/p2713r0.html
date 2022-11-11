@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bd382a9e659816f0617ec526a9fe1c115e01ea97" name="document-revision">
+  <meta content="c586e75c158df9857ee1991286e02796166ed2e3" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2232,6 +2232,21 @@ where <em>hex-digit-sequence</em> is the shortest hexadecimal representation of 
     <li data-md>
      <p>Finally, U+0022 QUOTATION MARK (") is appended to <em>E</em>.</p>
    </ul>
+   <p>...</p>
+   <p>[<em>Example 1</em>:</p>
+<pre class="highlight"><c- n>string</c-> <c- n>s0</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{}]"</c-><c- p>,</c-> <c- s>"h</c-><c- se>\t</c-><c- s>llo"</c-><c- p>);</c->               <c- c1>// s0 has value: [h    llo]</c->
+<c- n>string</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- s>"h</c-><c- se>\t</c-><c- s>llo"</c-><c- p>);</c->             <c- c1>// s1 has value: ["h\tllo"]</c->
+<c- n>string</c-> <c- n>s3</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}, {:?}]"</c-><c- p>,</c-> <c- sc>'\''</c-><c- p>,</c-> <c- sc>'"'</c-><c- p>);</c->      <c- c1>// s3 has value: ['\'', '"']</c->
+
+<c- c1>// The following examples assume use of the UTF-8 encoding</c->
+<c- n>string</c-> <c- n>s4</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- n>string</c-><c- p>(</c-><c- s>"</c-><c- se>\0</c-><c- s> </c-><c- se>\n</c-><c- s> </c-><c- se>\t</c-><c- s> </c-><c- se>\x02</c-><c- s> </c-><c- se>\x1b</c-><c- s>"</c-><c- p>,</c-> <c- mi>9</c-><c- p>));</c->
+                                                    <c- c1>// s4 has value: ["\u{0} \n \t \u{2} \u{1b}"]</c->
+<c- n>string</c-> <c- n>s5</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- s>"</c-><c- se>\xc3\x28</c-><c- s>"</c-><c- p>);</c->           <c- c1>// invalid UTF-8, s5 has value: ["\x{c3}("]</c->
+<ins><c- n>string</c-> <c- n>s6</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- s>"</c-><c- se>\u0301</c-><c- s>"</c-><c- p>);</c->             <c- c1>// s6 has value: ["\u{301}"]</c-></ins>
+<ins><c- n>string</c-> <c- n>s7</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- s>"</c-><c- se>\\\u0301</c-><c- s>"</c-><c- p>);</c->           <c- c1>// s7 has value: ["\\\u{301}"]</c-></ins>
+<ins><c- n>string</c-> <c- n>s8</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- s>"e</c-><c- se>\u0301\u0323</c-><c- s>"</c-><c- p>);</c->      <c- c1>// s8 has value: ["ẹ́"]</c-></ins>
+</pre>
+   <p>— <em>end example</em>]</p>
    <h2 class="heading settled" data-level="3" id="ack"><span class="secno">3. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Tom Honermann for nicely summarizing the resolution of NB comments
 in <a data-link-type="biblio" href="#biblio-us38-098">[US38-098]</a> which is quoted in this paper.</p>
