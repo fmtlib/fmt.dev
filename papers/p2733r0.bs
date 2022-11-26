@@ -30,6 +30,8 @@ Markup Shorthands: markdown yes
 Proposal {#proposal}
 ========
 
+<!-- https://github.com/cplusplus/papers/issues/1314 -->
+
 [[LWG3776]] "Avoid parsing format-spec if it is not present or empty" proposed
 omitting the call to `formatter::parse` for empty format specifiers
 (*format-spec* in [[format.string.general](
@@ -52,18 +54,21 @@ int main() {
   auto s2 = fmt::format("{:}", S()); // (2) empty format-spec
 }
 ```
-<!-- https://godbolt.org/z/MfxW3M1n5 -->
+<!-- https://godbolt.org/z/z4oeYM3Tb -->
 
 In (1) *format-spec* is not present and in (2) it is present but empty.
 There is nothing to parse in both of these cases and therefore requiring 
 implementations to call `formatter::parse` doesn't make a lot of sense.
 It only adds unnecessary overhead for the common case which is what [[LWG3776]]
-was proposing to eliminate.
+was proposing to eliminate. Implementation experience in {fmt} showed that it
+has negative impact on formatting of ranges that have to unnecessarily call
+`parse` from multiple places. The same issue may exist in other contexts such
+as format string compilation.
 
 Additionally [[LWG3776]] made a drive-by fix clarifying that the two cases are
 equivalent which was not obvious from existing wording. This is arguably even
 more important than omitting `parse`, particularly because formatting of ranges
-([[P2286]]) doesn't allow distinguishing between these forms for nested
+([[P2286]]) doesn't allow distinguishing between the two forms for nested
 specifiers, e.g.
 
 ```
@@ -74,6 +79,9 @@ auto s = std::format("{::}", std::vector<S>(2));
 Library Evolution Working Group (LEWG) reviewed [[LWG3776]] in Kona and
 approved it with the amendment that implementations are allowed but not required
 to omit the call to `formatter::parse` for empty *format-spec*.
+
+Barry Revzin pointed out existing limitation of the formatting ranges design
+that requires calling `set_debug_format` from the `parse` function.
 
 LEWG Poll Results
 =================
@@ -141,6 +149,12 @@ format-spec if it is not present or empty". Return the issue to LWG for C++23
     "title": "Formatting Ranges",
     "authors": "Barry Revzin",
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html"
+  },
+  "FMT": {
+    "title": "The fmt library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
   }
 }
 </pre>
