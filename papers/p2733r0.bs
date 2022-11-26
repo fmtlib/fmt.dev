@@ -1,0 +1,146 @@
+<pre class='metadata'>
+Title: Clarify handling of empty specifiers in std::format
+Shortname: P2733
+Revision: 0
+Audience: LEWG
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2022-11-26
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+	ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+  .parnum {
+    display: block;
+    height: 0;
+    position: relative;
+    left: -24px;
+    font-size: small;
+  }
+</style>
+
+Proposal {#proposal}
+========
+
+[[LWG3776]] "Avoid parsing format-spec if it is not present or empty" proposed
+omitting the call to `formatter::parse` for empty format specifiers
+(*format-spec* in [[format.string.general](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=794)] of
+[[N4917]]).
+
+Consider the following example:
+
+```
+struct S {};
+
+template <>
+struct std::formatter<S> {
+  auto parse(format_parse_context& ctx) { return ctx.begin(); }
+  auto format(S, format_context& ctx) const { return ctx.out(); }
+};
+
+int main() {
+  auto s1 = fmt::format("{}", S());  // (1) no format-spec
+  auto s2 = fmt::format("{:}", S()); // (2) empty format-spec
+}
+```
+<!-- https://godbolt.org/z/MfxW3M1n5 -->
+
+In (1) *format-spec* is not present and in (2) it is present but empty.
+There is nothing to parse in both of these cases and therefore requiring 
+implementations to call `formatter::parse` doesn't make a lot of sense.
+It only adds unnecessary overhead for the common case which is what [[LWG3776]]
+was proposing to eliminate.
+
+Additionally [[LWG3776]] made a drive-by fix clarifying that the two cases are
+equivalent which was not obvious from existing wording. This is arguably even
+more important than omitting `parse`, particularly because formatting of ranges
+([[P2286]]) doesn't allow distinguishing between these forms for nested
+specifiers, e.g.
+
+```
+auto s = std::format("{::}", std::vector<S>(2));
+//                       ^ empty format-spec for S
+```
+
+Library Evolution Working Group (LEWG) reviewed [[LWG3776]] in Kona and
+approved it with the amendment that implementations are allowed but not required
+to omit the call to `formatter::parse` for empty *format-spec*.
+
+LEWG Poll Results
+=================
+
+**POLL**: Relax the requirements table 74 and 75 to make the optimization allowed
+by the issue resolution of LWG3776 a QoI issue with additional changes to the
+handle class removed
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>1
+  <td>9
+  <td>2
+  <td>1
+  <td>1
+</tr>
+</table>
+
+**Outcome**: consensus in favour
+
+**POLL**: Adopt the amended proposed resolution of LWG3776 "Avoid parsing
+format-spec if it is not present or empty". Return the issue to LWG for C++23
+(to be confirmed by electronic polling)
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>2
+  <td>6
+  <td>1
+  <td>2
+  <td>1
+</tr>
+</table>
+
+**Outcome**: weak consensus in favour
+
+<pre class=biblio>
+{
+  "LWG3776": {
+    "title": "Avoid parsing format-spec if it is not present or empty",
+    "authors": "Mark de Wever",
+    "href": "https://cplusplus.github.io/LWG/issue3776"
+  },
+  "N4917": {
+    "title": "Working Draft, Standard for Programming Language C++",
+    "authors": "Thomas Köppe",
+    "etAl": true,
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf"
+  },
+  "P2286": {
+    "title": "Formatting Ranges",
+    "authors": "Barry Revzin",
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html"
+  }
+}
+</pre>
