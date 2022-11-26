@@ -81,9 +81,16 @@ approved it with the amendment that implementations are allowed but not required
 to omit the call to `formatter::parse` for empty *format-spec*.
 
 Barry Revzin pointed out existing limitation of the formatting ranges design
-that requires calling `set_debug_format` from the `parse` function.
+that requires calling `set_debug_format` from the `parse` function. However,
+as discovered by Mark de Wever while implementing ranges formatting in libc++,
+the `formatter` specialization for tuples already omits the call to `parse`
+for the underlying type so we need to fix this anyway.
 
-LEWG Poll Results
+This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
+makes the necessary changes to the `set_debug_format` API. It has been
+implemented in [[FMT]].
+
+LEWG Poll Results {#poll-results}
 =================
 
 **POLL**: Relax the requirements table 74 and 75 to make the optimization allowed
@@ -131,6 +138,52 @@ format-spec if it is not present or empty". Return the issue to LWG for C++23
 </table>
 
 **Outcome**: weak consensus in favour
+
+Wording {#wording}
+=======
+
+This wording is relative to [[N4917]].
+
+Modify 22.14.6.1 [[formatter.requirements](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=802)]
+as indicated:
+
+-3- Given character type `charT`, output iterator type `Out`, and formatting
+argument type `T`, in Table 74 and Table 75:
+
+...
+
+`pc.begin()` points to the beginning of the *format-spec* (22.14.2
+[format.string]) of the replacement field being formatted in the format string.
+If *format-spec* is <ins>not present or</ins> empty then either
+`pc.begin() == pc.end()` or `*pc.begin() == '}'`.
+
+Modify *BasicFormatter* requirements [[tab:formatter.basic](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]
+as indicated:
+
+<table>
+<tr>
+  <th>Expression
+  <th>Return type
+  <th>Requirement
+</th>
+<tr>
+  <td>`f.format(u, fc)`
+  <td>`FC::iterator`
+  <td>Formats `u` according to the specifiers stored in
+      `*this`, writes the output to `fc.out()`, and returns
+      an iterator past the end of the output range.
+      The output shall only depend on `u`, `fc.locale()`,
+      `fc.arg(n)` for any value `n` of type `size_t`, and
+      the range `[pc.begin(), pc.end())` from the last
+      call to `f.parse(pc)`. <ins>When the *format-spec*
+      (22.14.2 [format.string]) is not present or empty
+      the call to `f.parse(pc)` may be omitted.</ins>
+</tr>
+</table>
+
+TODO: remainder of the proposed resolution and ranges fix
 
 <pre class=biblio>
 {
