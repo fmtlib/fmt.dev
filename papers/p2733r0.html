@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8bf0a451780a029dbd30c82cca4ee9b72c3fbc5b" name="document-revision">
+  <meta content="35ef9e4cd6938782bf5f8bc5940624396aff29eb" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2134,11 +2134,13 @@ omitting the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c
    <p>In (1) <em>format-spec</em> is not present and in (2) it is present but empty.
 There is nothing to parse in both of these cases and therefore requiring 
 implementations to call <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> doesn’t make a lot of sense.
-It only adds unnecessary overhead for the common case which is what <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> was proposing to eliminate.</p>
+It only adds unnecessary overhead for the common case which is what <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> was proposing to eliminate. Implementation experience in {fmt} showed that it
+has negative impact on formatting of ranges that have to unnecessarily call <code class="highlight"><c- n>parse</c-></code> from multiple places. The same issue may exist in other contexts such
+as format string compilation.</p>
    <p>Additionally <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> made a drive-by fix clarifying that the two cases are
 equivalent which was not obvious from existing wording. This is arguably even
 more important than omitting <code class="highlight"><c- n>parse</c-></code>, particularly because formatting of ranges
-(<a data-link-type="biblio" href="#biblio-p2286">[P2286]</a>) doesn’t allow distinguishing between these forms for nested
+(<a data-link-type="biblio" href="#biblio-p2286">[P2286]</a>) doesn’t allow distinguishing between the two forms for nested
 specifiers, e.g.</p>
 <pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{::}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- n>S</c-><c- o>></c-><c- p>(</c-><c- mi>2</c-><c- p>));</c->
 <c- c1>//                       ^ empty format-spec for S</c->
@@ -2146,6 +2148,8 @@ specifiers, e.g.</p>
    <p>Library Evolution Working Group (LEWG) reviewed <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> in Kona and
 approved it with the amendment that implementations are allowed but not required
 to omit the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> for empty <em>format-spec</em>.</p>
+   <p>Barry Revzin pointed out existing limitation of the formatting ranges design
+that requires calling <code class="highlight"><c- n>set_debug_format</c-></code> from the <code class="highlight"><c- n>parse</c-></code> function.</p>
    <h2 class="heading settled" data-level="2" id="lewg-poll-results"><span class="secno">2. </span><span class="content">LEWG Poll Results</span><a class="self-link" href="#lewg-poll-results"></a></h2>
    <p><strong>POLL</strong>: Relax the requirements table 74 and 75 to make the optimization allowed
 by the issue resolution of LWG3776 a QoI issue with additional changes to the
