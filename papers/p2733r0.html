@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5883817dcc363ca2589369704f49ce880e8f5a7a" name="document-revision">
+  <meta content="59f2245460a40af3275ff03be10d46f43ee121c0" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2149,7 +2149,7 @@ specifiers, e.g.</p>
    <p>Library Evolution Working Group (LEWG) reviewed <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> in Kona and
 approved it with the amendment that implementations are allowed but not required
 to omit the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> for empty <em>format-spec</em>.</p>
-   <p>Barry Revzin pointed out existing limitation of the formatting ranges design
+   <p>Barry Revzin pointed out an existing limitation of the formatting ranges design
 that requires calling <code class="highlight"><c- n>set_debug_format</c-></code> from the <code class="highlight"><c- n>parse</c-></code> function. However,
 as discovered by Mark de Wever while implementing ranges formatting in libc++,
 the <code class="highlight"><c- n>formatter</c-></code> specialization for tuples already omits the call to <code class="highlight"><c- n>parse</c-></code> for the underlying type so we need to fix this anyway.</p>
@@ -2229,6 +2229,27 @@ as indicated:</p>
        <ins>When the <em>format-spec</em> (22.14.2 [format.string]) is not present or empty
       the call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> may be omitted.</ins>
    </table>
+   <p>Modify <em>Formatter</em> requirements <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803">[tab:formatter</a>]
+as indicated:</p>
+   <table>
+    <tbody>
+     <tr>
+      <th>Expression 
+      <th>Return type 
+      <th>Requirement 
+     <tr>
+      <td><code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>t</c-><c- p>,</c-> <c- n>fc</c-><c- p>)</c-></code> 
+      <td><code class="highlight"><c- n>FC</c-><c- o>::</c-><c- n>iterator</c-></code> 
+      <td>
+       Formats <code class="highlight"><c- n>t</c-></code> according to the specifiers stored in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>, writes the output to <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code>, and returns
+      an iterator past the end of the output range.
+      The output shall only depend on <code class="highlight"><c- n>t</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>locale</c-><c- p>()</c-></code>, <code class="highlight"><c- n>fc</c-><c- p>.</c-><c- n>arg</c-><c- p>(</c-><c- n>n</c-><c- p>)</c-></code> for any value <code class="highlight"><c- n>n</c-></code> of type <code class="highlight"><c- b>size_t</c-></code>, and
+      the range <code class="highlight"><c- p>[</c-><c- n>pc</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>pc</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> from the last
+      call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>. 
+       <ins>When the <em>format-spec</em> (22.14.2 [format.string]) is not present or empty
+      the call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> may be omitted.</ins>
+   </table>
+   <p>TODO: remainder of the proposed resolution and ranges fix</p>
   </main>
 <script>
 (function() {

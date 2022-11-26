@@ -80,7 +80,7 @@ Library Evolution Working Group (LEWG) reviewed [[LWG3776]] in Kona and
 approved it with the amendment that implementations are allowed but not required
 to omit the call to `formatter::parse` for empty *format-spec*.
 
-Barry Revzin pointed out existing limitation of the formatting ranges design
+Barry Revzin pointed out an existing limitation of the formatting ranges design
 that requires calling `set_debug_format` from the `parse` function. However,
 as discovered by Mark de Wever while implementing ranges formatting in libc++,
 the `formatter` specialization for tuples already omits the call to `parse`
@@ -183,7 +183,32 @@ as indicated:
 </tr>
 </table>
 
-TODO: remainder of the proposed resolution and ranges fix
+Modify *Formatter* requirements [[tab:formatter](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]
+as indicated:
+
+<table>
+<tr>
+  <th>Expression
+  <th>Return type
+  <th>Requirement
+</th>
+<tr>
+  <td>`f.format(t, fc)`
+  <td>`FC::iterator`
+  <td>Formats `t` according to the specifiers stored in
+      `*this`, writes the output to `fc.out()`, and returns
+      an iterator past the end of the output range.
+      The output shall only depend on `t`, `fc.locale()`,
+      `fc.arg(n)` for any value `n` of type `size_t`, and
+      the range `[pc.begin(), pc.end())` from the last
+      call to `f.parse(pc)`. <ins>When the *format-spec*
+      (22.14.2 [format.string]) is not present or empty
+      the call to `f.parse(pc)` may be omitted.</ins>
+</tr>
+</table>
+
+TODO: fix ranges formatting
 
 <pre class=biblio>
 {
