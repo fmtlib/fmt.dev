@@ -1,5 +1,5 @@
 <pre class='metadata'>
-Title: Clarify handling of empty specifiers in std::format
+Title: Fix handling of empty specifiers in std::format
 Shortname: P2733
 Revision: 0
 Audience: LEWG
@@ -60,12 +60,12 @@ In (1) *format-spec* is not present and in (2) it is present but empty.
 There is nothing to parse in both of these cases and therefore requiring 
 implementations to call `formatter::parse` doesn't make a lot of sense.
 It only adds unnecessary overhead for the common case which is what [[LWG3776]]
-was proposing to eliminate. Implementation experience in {fmt} showed that it
-has negative impact on formatting of ranges that have to unnecessarily call
-`parse` from multiple places. The same issue may exist in other contexts such
-as format string compilation.
+was proposing to eliminate. Implementation experience in {fmt} showed that
+requiring the call to `parse` has negative impact on formatting of ranges where
+we had to unnecessarily call this function from multiple places. The same issue
+may exist in other contexts such as format string compilation.
 
-Additionally [[LWG3776]] made a drive-by fix clarifying that the two cases are
+Additionally [[LWG3776]] made a drive-by fix, clarifying that the two cases are
 equivalent which was not obvious from existing wording. This is arguably even
 more important than omitting `parse`, particularly because formatting of ranges
 ([[P2286]]) doesn't allow distinguishing between the two forms for nested
@@ -76,6 +76,9 @@ auto s = std::format("{::}", std::vector<S>(2));
 //                       ^ empty format-spec for S
 ```
 
+Having the two cases equivalent is also more intuitive and consistent with all
+existing standard formatters.
+
 Library Evolution Working Group (LEWG) reviewed [[LWG3776]] in Kona and
 approved it with the amendment that implementations are allowed but not required
 to omit the call to `formatter::parse` for empty *format-spec*.
@@ -84,11 +87,29 @@ Barry Revzin pointed out an existing limitation of the formatting ranges design
 that requires calling `set_debug_format` from the `parse` function. However,
 as discovered by Mark de Wever while implementing ranges formatting in libc++,
 the `formatter` specialization for tuples already omits the call to `parse`
-for the underlying type so we need to fix this anyway.
+for the underlying type so we need to fix this anyway. The following example
+illustrates the fix:
+
+```
+auto s = fmt::format("{}", std::make_tuple(std::make_tuple('a')));
+```
+
+<table class="poll">
+<tr>
+  <th>Before
+  <th>After
+</th>
+<tr>
+  <td>`s == ((a))`
+  <td>`s == (('a'))`
+</tr>
+</table>
+
 
 This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
-makes the necessary changes to the `set_debug_format` API. It has been
-implemented in [[FMT]].
+makes the necessary changes to the `set_debug_format` API both to enable the
+proposed resolution and to fix tuple formatting. It has been implemented in
+[[FMT]].
 
 LEWG Poll Results {#poll-results}
 =================
@@ -208,7 +229,173 @@ as indicated:
 </tr>
 </table>
 
-TODO: fix ranges formatting
+In [[format.formatter.spec](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]:
+
+-2- Let `charT` be either `char` or `wchar_`. Each specialization of `formatter`
+is either enabled or disabled, as described below. A *debug-enabled*
+specialization of `formatter` additionally provides a public, constexpr,
+non-static member function `set_debug_format(bool set)` which modifies the state
+of the `formatter` to be as if the type of the *std-format-spec* parsed by the
+last call to `parse` were `?` <ins>if `set` is `true` and empty otherwise</ins>.
+Each header that declares the template `formatter` provides the following
+enabled specializations:
+
+...
+
+In [[format.range.formatter](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=809)]
+
+<pre>
+namespace std {
+  template&lt;class T, class charT = char>
+    requires same_as&lt;remove_cvref_t&lt;T>, T> && formattable&lt;T, charT>
+  class range_formatter {
+    ...
+    constexpr const formatter&lt;T, charT>& underlying() const { return <i>underlying_</i>; }
+
+    <ins>range_formatter();</ins>
+
+    template&lt;class ParseContext>
+      constexpr typename ParseContext::iterator
+        parse(ParseContext& ctx);
+  };
+}
+</pre>
+...
+
+```
+constexpr void set_brackets(basic_string_view<charT> opening, basic_string_view<charT> closing);
+```
+*Effects*: Equivalent to:
+
+<pre>
+<i>opening-bracket_</i> = opening;
+<i>closing-bracket_</i> = closing;
+</pre>
+
+<pre>
+<ins>
+range_formatter();
+</ins>
+</pre>
+<ins>
+*Effects*: Calls <code><i>underlying_</i>.set_debug_format(true)</code> if it is a valid
+expression.
+</ins>
+
+```
+template<class ParseContext>
+  constexpr typename ParseContext::iterator
+    parse(ParseContext& ctx);
+```
+
+*Effects*: Parses the format specifier<ins>s</ins> as a *range-format-spec*
+and stores the parsed specifiers in `*this`. The values of
+<code><i>opening-bracket_</i></code>,
+<code><i>closing-bracket_</i></code>, and <code><i>separator_</i></code> are
+modified if and only if required by the *range-type* or the `n` option, if
+present. <del>If:</del>
+
+* <del>the range-type is neither `s` nor `?s`,
+* <del><code><i>underlying_</i>.set_debug_format()</code> is a valid expression, and
+* <del>there is no *range-underlying-spec*,
+
+<del>then calls <code><i>underlying_</i>underlying_.set_debug_format()</code>.</del>
+<p>
+<ins>
+Calls <code><i>underlying_</i>.set_debug_format(false)</code> if it is a valid
+expression and there is *range-underlying-spec*.
+</ins>
+
+In [[format.range.fmtstr](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813)]:
+
+```
+template<class ParseContext>
+  constexpr typename ParseContext::iterator
+    parse(ParseContext& ctx);
+```
+
+-2- *Effects*: Equivalent to:
+
+<pre>
+auto i = <i>underlying_</i>.parse(ctx);
+if constexpr (K == range_format::debug_string) {
+  <i>underlying_</i>.set_debug_format(<ins>true</ins>);
+}
+return i;
+</pre>
+
+In [[format.tuple](
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=816)]:
+
+-1- For each of `pair` and `tuple`, the library provides the following formatter
+specialization where *pair-or-tuple* is the name of the template:
+
+<pre>
+namespace std {
+  template&lt;class charT, formattable&lt;charT>... Ts>
+  struct formatter&lt;pair-or-tuple&lt;Ts...>, charT> {
+
+  ...
+
+  constexpr void set_brackets(basic_string_view&lt;charT> opening,
+                              basic_string_view&lt;charT> closing);
+
+  <ins>formatter();</ins>
+                              
+  template&lt;class ParseContext>
+    constexpr typename ParseContext::iterator
+      parse(ParseContext& ctx);
+  };
+}
+</pre>
+...
+```
+constexpr void set_brackets(basic_string_view<charT> opening, basic_string_view<charT> closing);
+```
+
+-6- *Effects*: Equivalent to:
+
+<pre>
+<i>opening-bracket_</i> = opening;
+<i>closing-bracket_</i> = closing;
+</pre>
+
+<pre>
+<ins>
+formatter();
+</ins>
+</pre>
+
+<ins>*Effects*: For each
+element <code><i>e</i></code> in <code><i>underlying_</i></code>, if
+<code><i>e</i>.set_debug_format(true)</code> is a valid expression, calls
+<code><i>e</i>.set_debug_format(true)</code>.</ins>
+
+```
+template<class ParseContext>
+  constexpr typename ParseContext::iterator
+    parse(ParseContext& ctx);
+```
+
+-7- *Effects*: Parses the format specifier<ins>s</ins> as a *tuple-format-spec*
+and stores the parsed specifiers in `*this`. The values of
+<code><i>opening-bracket_</i></code>,
+<code><i>closing-bracket_</i></code>, and <code><i>separator_</i></code> are
+modified if and only if required by the *tuple-type*, if present. <del>For each
+element <code><i>e</i></code> in <code><i>underlying_</i></code>, if
+<code><i>e</i>.set_debug_format()</code> is a valid expression, calls
+<code><i>e</i>.set_debug_format()</code>.</del>
+
+-8- *Returns*: An iterator past the end of the *tuple-format-spec*.
+
+Acknowledgements {#ack}
+================
+
+Thanks to Barry Revzin and Mark de Wever for pointing out issues with debug
+formatting of ranges and tuples.
 
 <pre class=biblio>
 {

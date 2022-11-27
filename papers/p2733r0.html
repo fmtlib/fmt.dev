@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2733R0: Clarify handling of empty specifiers in std::format</title>
+  <title>P2733R0: Fix handling of empty specifiers in std::format</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="59f2245460a40af3275ff03be10d46f43ee121c0" name="document-revision">
+  <meta content="ba98ac831284067cb36e9f9afba30ac2b3806fb2" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,7 +2085,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2733R0<br>Clarify handling of empty specifiers in std::format</h1>
+   <h1 class="p-name no-ref" id="title">P2733R0<br>Fix handling of empty specifiers in std::format</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-11-26">2022-11-26</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2106,6 +2106,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#proposal"><span class="secno">1</span> <span class="content">Proposal</span></a>
     <li><a href="#poll-results"><span class="secno">2</span> <span class="content">LEWG Poll Results</span></a>
     <li><a href="#wording"><span class="secno">3</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2135,10 +2136,11 @@ omitting the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c
    <p>In (1) <em>format-spec</em> is not present and in (2) it is present but empty.
 There is nothing to parse in both of these cases and therefore requiring 
 implementations to call <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> doesn’t make a lot of sense.
-It only adds unnecessary overhead for the common case which is what <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> was proposing to eliminate. Implementation experience in {fmt} showed that it
-has negative impact on formatting of ranges that have to unnecessarily call <code class="highlight"><c- n>parse</c-></code> from multiple places. The same issue may exist in other contexts such
-as format string compilation.</p>
-   <p>Additionally <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> made a drive-by fix clarifying that the two cases are
+It only adds unnecessary overhead for the common case which is what <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> was proposing to eliminate. Implementation experience in {fmt} showed that
+requiring the call to <code class="highlight"><c- n>parse</c-></code> has negative impact on formatting of ranges where
+we had to unnecessarily call this function from multiple places. The same issue
+may exist in other contexts such as format string compilation.</p>
+   <p>Additionally <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> made a drive-by fix, clarifying that the two cases are
 equivalent which was not obvious from existing wording. This is arguably even
 more important than omitting <code class="highlight"><c- n>parse</c-></code>, particularly because formatting of ranges
 (<a data-link-type="biblio" href="#biblio-p2286">[P2286]</a>) doesn’t allow distinguishing between the two forms for nested
@@ -2146,16 +2148,30 @@ specifiers, e.g.</p>
 <pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{::}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- n>S</c-><c- o>></c-><c- p>(</c-><c- mi>2</c-><c- p>));</c->
 <c- c1>//                       ^ empty format-spec for S</c->
 </pre>
+   <p>Having the two cases equivalent is also more intuitive and consistent with all
+existing standard formatters.</p>
    <p>Library Evolution Working Group (LEWG) reviewed <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> in Kona and
 approved it with the amendment that implementations are allowed but not required
 to omit the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> for empty <em>format-spec</em>.</p>
    <p>Barry Revzin pointed out an existing limitation of the formatting ranges design
 that requires calling <code class="highlight"><c- n>set_debug_format</c-></code> from the <code class="highlight"><c- n>parse</c-></code> function. However,
 as discovered by Mark de Wever while implementing ranges formatting in libc++,
-the <code class="highlight"><c- n>formatter</c-></code> specialization for tuples already omits the call to <code class="highlight"><c- n>parse</c-></code> for the underlying type so we need to fix this anyway.</p>
+the <code class="highlight"><c- n>formatter</c-></code> specialization for tuples already omits the call to <code class="highlight"><c- n>parse</c-></code> for the underlying type so we need to fix this anyway. The following example
+illustrates the fix:</p>
+<pre class="highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>make_tuple</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>make_tuple</c-><c- p>(</c-><c- sc>'a'</c-><c- p>)));</c->
+</pre>
+   <table class="poll">
+    <tbody>
+     <tr>
+      <th>Before 
+      <th>After 
+     <tr>
+      <td><code class="highlight"><c- n>s</c-> <c- o>==</c-> <c- p>((</c-><c- n>a</c-><c- p>))</c-></code> 
+      <td><code class="highlight"><c- n>s</c-> <c- o>==</c-> <c- p>((</c-><c- sc>'a'</c-><c- p>))</c-></code> 
+   </table>
    <p>This paper amends the proposed resolution of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> per LEWG feedback and
-makes the necessary changes to the <code class="highlight"><c- n>set_debug_format</c-></code> API. It has been
-implemented in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>.</p>
+makes the necessary changes to the <code class="highlight"><c- n>set_debug_format</c-></code> API both to enable the
+proposed resolution and to fix tuple formatting. It has been implemented in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>.</p>
    <h2 class="heading settled" data-level="2" id="poll-results"><span class="secno">2. </span><span class="content">LEWG Poll Results</span><a class="self-link" href="#poll-results"></a></h2>
    <p><strong>POLL</strong>: Relax the requirements table 74 and 75 to make the optimization allowed
 by the issue resolution of LWG3776 a QoI issue with additional changes to the
@@ -2249,7 +2265,129 @@ as indicated:</p>
        <ins>When the <em>format-spec</em> (22.14.2 [format.string]) is not present or empty
       the call to <code class="highlight"><c- n>f</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code> may be omitted.</ins>
    </table>
-   <p>TODO: remainder of the proposed resolution and ranges fix</p>
+   <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803">[format.formatter.spec</a>]:</p>
+   <p>
+    -2- Let <code class="highlight"><c- n>charT</c-></code> be either <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- n>wchar_</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is either enabled or disabled, as described below. A <em>debug-enabled</em> specialization of <code class="highlight"><c- n>formatter</c-></code> additionally provides a public, constexpr,
+non-static member function <code class="highlight"><c- n>set_debug_format</c-><c- p>(</c-><c- b>bool</c-> <c- n>set</c-><c- p>)</c-></code> which modifies the state
+of the <code class="highlight"><c- n>formatter</c-></code> to be as if the type of the <em>std-format-spec</em> parsed by the
+last call to <code class="highlight"><c- n>parse</c-></code> were <code class="highlight"><c- o>?</c-></code> 
+    <ins>if <code class="highlight"><c- n>set</c-></code> is <code class="highlight">true</code> and empty otherwise</ins>
+    .
+Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following
+enabled specializations:
+   </p>
+   <p>...</p>
+   <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=809">[format.range.formatter</a>]</p>
+<pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-> <c- o>=</c-> <c- b>char</c-><c- o>></c->
+    <c- k>requires</c-> <c- n>same_as</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>T</c-><c- o>></c-> <c- o>&amp;&amp;</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c->
+  <c- k>class</c-> <c- nc>range_formatter</c-> <c- p>{</c->
+    <c- p>...</c->
+    <c- k>constexpr</c-> <c- k>const</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>>&amp;</c-> <c- n>underlying</c-><c- p>()</c-> <c- k>const</c-> <c- p>{</c-> <c- k>return</c-> <i><c- n>underlying_</c-></i><c- p>;</c-> <c- p>}</c->
+
+    <ins><c- n>range_formatter</c-><c- p>();</c-></ins>
+
+    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>ParseContext</c-><c- o>></c->
+      <c- k>constexpr</c-> <c- k>typename</c-> <c- nc>ParseContext</c-><c- o>::</c-><c- n>iterator</c->
+        <c- n>parse</c-><c- p>(</c-><c- n>ParseContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+  <c- p>};</c->
+<c- p>}</c->
+</pre>
+   <p>...</p>
+<pre class="highlight"><c- k>constexpr</c-> <c- b>void</c-> <c- n>set_brackets</c-><c- p>(</c-><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>opening</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>closing</c-><c- p>);</c->
+</pre>
+   <em>Effects</em>: Equivalent to: 
+<pre class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i> <c- o>=</c-> <c- n>opening</c-><c- p>;</c->
+<i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i> <c- o>=</c-> <c- n>closing</c-><c- p>;</c->
+</pre>
+<pre class="highlight"><ins><c- n>range_formatter</c-><c- p>();</c->
+</ins></pre>
+   <ins> <em>Effects</em>: Calls <code class="highlight"><i><c- n>underlying_</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->true<c- p>)</c-></code> if it is a valid
+expression. </ins>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>ParseContext</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- k>typename</c-> <c- nc>ParseContext</c-><c- o>::</c-><c- n>iterator</c->
+    <c- n>parse</c-><c- p>(</c-><c- n>ParseContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+</pre>
+   <p>
+    <em>Effects</em>: Parses the format specifier
+    <ins>s</ins>
+     as a <em>range-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
+modified if and only if required by the <em>range-type</em> or the <code class="highlight"><c- n>n</c-></code> option, if
+present. 
+    <del>If:</del>
+   </p>
+   <ul>
+    <li data-md>
+     <del>the range-type is neither <code class="highlight"><c- n>s</c-></code> nor <code class="highlight"><c- o>?</c-><c- n>s</c-></code>, </del>
+    <li data-md>
+     <del><code class="highlight"><i><c- n>underlying_</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code> is a valid expression, and </del>
+    <li data-md>
+     <del>there is no <em>range-underlying-spec</em>, </del>
+   </ul>
+   <del>then calls <code class="highlight"><i><c- n>underlying_</c-></i><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
+   <p>
+    <ins> Calls <code class="highlight"><i><c- n>underlying_</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->false<c- p>)</c-></code> if it is a valid
+expression and there is <em>range-underlying-spec</em>. </ins>
+   </p>
+   <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813">[format.range.fmtstr</a>]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>ParseContext</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- k>typename</c-> <c- nc>ParseContext</c-><c- o>::</c-><c- n>iterator</c->
+    <c- n>parse</c-><c- p>(</c-><c- n>ParseContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+</pre>
+   <p>-2- <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- k>auto</c-> <c- n>i</c-> <c- o>=</c-> <i><c- n>underlying_</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>);</c->
+<c- k>if</c-> <c- nf>constexpr</c-> <c- p>(</c-><c- n>K</c-> <c- o>==</c-> <c- n>range_format</c-><c- o>::</c-><c- n>debug_string</c-><c- p>)</c-> <c- p>{</c->
+  <i><c- n>underlying_</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c-><ins>true</ins><c- p>);</c->
+<c- p>}</c->
+<c- k>return</c-> <c- n>i</c-><c- p>;</c->
+</pre>
+   <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=816">[format.tuple</a>]:</p>
+   <p>-1- For each of <code class="highlight"><c- n>pair</c-></code> and <code class="highlight"><c- n>tuple</c-></code>, the library provides the following formatter
+specialization where <em>pair-or-tuple</em> is the name of the template:</p>
+<pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
+  <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>pair</c-><c- o>-</c-><c- n>or</c-><c- o>-</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
+
+  <c- p>...</c->
+
+  <c- k>constexpr</c-> <c- b>void</c-> <c- n>set_brackets</c-><c- p>(</c-><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>opening</c-><c- p>,</c->
+                              <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>closing</c-><c- p>);</c->
+
+  <ins><c- n>formatter</c-><c- p>();</c-></ins>
+                              
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>ParseContext</c-><c- o>></c->
+    <c- k>constexpr</c-> <c- k>typename</c-> <c- nc>ParseContext</c-><c- o>::</c-><c- n>iterator</c->
+      <c- n>parse</c-><c- p>(</c-><c- n>ParseContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+  <c- p>};</c->
+<c- p>}</c->
+</pre>
+   <p>...</p>
+<pre class="highlight"><c- k>constexpr</c-> <c- b>void</c-> <c- n>set_brackets</c-><c- p>(</c-><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>opening</c-><c- p>,</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>closing</c-><c- p>);</c->
+</pre>
+   <p>-6- <em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i> <c- o>=</c-> <c- n>opening</c-><c- p>;</c->
+<i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i> <c- o>=</c-> <c- n>closing</c-><c- p>;</c->
+</pre>
+<pre class="highlight"><ins><c- n>formatter</c-><c- p>();</c->
+</ins></pre>
+   <ins><em>Effects</em>: For each
+element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>, if <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->true<c- p>)</c-></code> is a valid expression, calls <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->true<c- p>)</c-></code>.</ins>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>ParseContext</c-><c- o>></c->
+  <c- k>constexpr</c-> <c- k>typename</c-> <c- nc>ParseContext</c-><c- o>::</c-><c- n>iterator</c->
+    <c- n>parse</c-><c- p>(</c-><c- n>ParseContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+</pre>
+   <p>
+    -7- <em>Effects</em>: Parses the format specifier
+    <ins>s</ins>
+     as a <em>tuple-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
+modified if and only if required by the <em>tuple-type</em>, if present. 
+    <del>For each
+element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>, if <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code> is a valid expression, calls <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
+   </p>
+   <p>-8- <em>Returns</em>: An iterator past the end of the <em>tuple-format-spec</em>.</p>
+   <h2 class="heading settled" data-level="4" id="ack"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Barry Revzin and Mark de Wever for pointing out issues with debug
+formatting of ranges and tuples.</p>
   </main>
 <script>
 (function() {
