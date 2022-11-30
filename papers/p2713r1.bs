@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Escaping improvements in std::format
 Shortname: P2713
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2022-11-09
+Date: 2022-11-30
 Markup Shorthands: markdown yes
 </pre>
 
@@ -115,6 +115,11 @@ US 38-098 & FR005-134.
 
 Outcome: Unanimous consent
 
+Changes from R0 {#changes}
+===============
+
+* Applied a minor wording tweak per SG16 feedback.
+
 Wording {#wording}
 =======
 
@@ -155,8 +160,9 @@ interpret *S* and construct *E*.
 
             - <ins>*CE* is a Unicode encoding and *C* corresponds to
                 a UCS scalar value which has the Unicode property
-                `Grapheme_Extend=Yes` and is not immediately preceded in *S* by
-                a UCS scalar value appended to *E* or</ins>
+                `Grapheme_Extend=Yes` and *C* is not immediately preceded in *S*
+                by a character *P* appended to *E* without translation to an
+                escape sequence, or</ins>
 
             - *CE* is not a Unicode encoding and *C* is one of an
                 implementation-defined set of separator or non-printable
@@ -198,8 +204,6 @@ string s5 = format("[{:?}]", "\xc3\x28");           // invalid UTF-8, s5 has val
 <ins>string s8 = format("[{:?}]", "e\u0301\u0323");      // s8 has value: ["ẹ́"]</ins>
 </pre>
 — *end example*]
-
-<!-- TODO: example -->
 
 Acknowledgements {#ack}
 ================

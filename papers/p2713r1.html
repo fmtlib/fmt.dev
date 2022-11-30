@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2713R0: Escaping improvements in std::format</title>
+  <title>P2713R1: Escaping improvements in std::format</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="f6176c553703aa8b970d32826249e4b3902e3a35" name="document-revision">
+  <meta content="0317cbe3dadfb64127e376399eb8120b661cbcf0" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2085,8 +2085,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2713R0<br>Escaping improvements in std::format</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-11-09">2022-11-09</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2713R1<br>Escaping improvements in std::format</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2022-11-30">2022-11-30</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2104,8 +2104,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#proposal"><span class="secno">1</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">2</span> <span class="content">Wording</span></a>
-    <li><a href="#ack"><span class="secno">3</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes"><span class="secno">2</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#wording"><span class="secno">3</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2172,7 +2173,12 @@ US 38-098 &amp; FR005-134.</p>
       <td>0 
    </table>
    <p>Outcome: Unanimous consent</p>
-   <h2 class="heading settled" data-level="2" id="wording"><span class="secno">2. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Applied a minor wording tweak per SG16 feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>In <a href="http://eel.is/c++draft/format.string.escaped">[format.string.escaped</a>]:</p>
    <p><span class="parnum">1</span> A character or string can be formatted as <em>escaped</em> to make it more suitable for debugging or for logging.</p>
    <p><span class="parnum">2</span> The escaped string <em>E</em> representation of a
@@ -2209,8 +2215,8 @@ a value in the groups <code class="highlight"><c- n>Separator</c-></code> (Z) or
 described by table 12 of UAX #44, or</ins>
           <li data-md>
            <ins><em>CE</em> is a Unicode encoding and <em>C</em> corresponds to
-a UCS scalar value which has the Unicode property <code class="highlight"><c- n>Grapheme_Extend</c-><c- o>=</c-><c- n>Yes</c-></code> and is not immediately preceded in <em>S</em> by
-a UCS scalar value appended to <em>E</em> or</ins>
+a UCS scalar value which has the Unicode property <code class="highlight"><c- n>Grapheme_Extend</c-><c- o>=</c-><c- n>Yes</c-></code> and <em>C</em> is not immediately preceded in <em>S</em> by a character <em>P</em> appended to <em>E</em> without translation to an
+escape sequence, or</ins>
           <li data-md>
            <p><em>CE</em> is not a Unicode encoding and <em>C</em> is one of an
 implementation-defined set of separator or non-printable
@@ -2247,7 +2253,7 @@ where <em>hex-digit-sequence</em> is the shortest hexadecimal representation of 
 <ins><c- n>string</c-> <c- n>s8</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"[{:?}]"</c-><c- p>,</c-> <c- s>"e</c-><c- se>\u0301\u0323</c-><c- s>"</c-><c- p>);</c->      <c- c1>// s8 has value: ["ẹ́"]</c-></ins>
 </pre>
    <p>— <em>end example</em>]</p>
-   <h2 class="heading settled" data-level="3" id="ack"><span class="secno">3. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="4" id="ack"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Tom Honermann for nicely summarizing the resolution of NB comments
 in <a data-link-type="biblio" href="#biblio-us38-098">[US38-098]</a> which is quoted in this paper.</p>
   </main>
