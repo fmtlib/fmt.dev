@@ -63,7 +63,9 @@ It only adds unnecessary overhead for the common case which is what [[LWG3776]]
 was proposing to eliminate. Implementation experience in {fmt} showed that
 requiring the call to `parse` has negative impact on formatting of ranges where
 we had to unnecessarily call this function from multiple places. The same issue
-may exist in other contexts such as format string compilation.
+may exist in other contexts such as format string compilation. In the tuple
+case there aren't even nested format specifiers to call the underlying `parse`
+on.
 
 Additionally [[LWG3776]] made a drive-by fix, clarifying that the two cases are
 equivalent which was not obvious from existing wording. This is arguably even
@@ -108,8 +110,10 @@ auto s = fmt::format("{}", std::make_tuple(std::make_tuple('a')));
 
 This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
 makes the necessary changes to the `set_debug_format` API both to enable the
-proposed resolution and to fix tuple formatting. It has been implemented in
-[[FMT]].
+proposed resolution and to fix tuple formatting. It also fixes a specification
+bug in `range_formatter` that doesn't mention calling `parse` for the
+underlying formatter. This proposal has been implemented in [[FMT]] and in a
+branch of [[LIBCXX]].
 
 LEWG Poll Results {#poll-results}
 =================
@@ -235,11 +239,11 @@ https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]:
 -2- Let `charT` be either `char` or `wchar_`. Each specialization of `formatter`
 is either enabled or disabled, as described below. A *debug-enabled*
 specialization of `formatter` additionally provides a public, constexpr,
-non-static member function `set_debug_format(bool set)` which modifies the state
-of the `formatter` to be as if the type of the *std-format-spec* parsed by the
-last call to `parse` were `?` <ins>if `set` is `true` and empty otherwise</ins>.
-Each header that declares the template `formatter` provides the following
-enabled specializations:
+non-static member function <code>set_debug_format(<ins>bool set</ins>)</code>
+which modifies the state of the `formatter` to be as if the type of the
+*std-format-spec* parsed by the last call to `parse` were `?` <ins>if `set` is
+`true` and none otherwise</ins>. Each header that declares the template
+`formatter` provides the following enabled specializations:
 
 ...
 
@@ -254,7 +258,7 @@ namespace std {
     ...
     constexpr const formatter&lt;T, charT>& underlying() const { return <i>underlying_</i>; }
 
-    <ins>range_formatter();</ins>
+    <ins>constexpr range_formatter();</ins>
 
     template&lt;class ParseContext>
       constexpr typename ParseContext::iterator
@@ -276,7 +280,7 @@ constexpr void set_brackets(basic_string_view<charT> opening, basic_string_view<
 
 <pre>
 <ins>
-range_formatter();
+constexpr range_formatter();
 </ins>
 </pre>
 <ins>
@@ -303,13 +307,42 @@ present. <del>If:</del>
 
 <del>then calls <code><i>underlying_</i>underlying_.set_debug_format()</code>.</del>
 <p>
-<ins>
-Calls <code><i>underlying_</i>.set_debug_format(false)</code> if it is a valid
-expression and there is *range-underlying-spec*.
-</ins>
+<ins>If there is *range-underlying-spec*:
+
+* <ins>calls `underlying_.set_debug_format(false)` if it is a valid expression,</ins>
+* <ins>calls `underlying_.parse` to parse *range-underlying-spec*.</ins>
 
 In [[format.range.fmtstr](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813)]:
+
+<pre>
+namespace std {
+  template&lt;range_format K, ranges::input_­range R, class charT>
+    requires (K == range_format::string || K == range_format::debug_string)
+  struct <i>range-default-formatter</i>&lt;K, R, charT> {
+
+    ...
+
+  public:
+    <ins><i>constexpr range-default-formatter</i>();</ins>
+    
+    template&lt;class ParseContext>
+      constexpr typename ParseContext::iterator
+        parse(ParseContext& ctx);
+
+    ...
+  };
+}
+</pre>
+
+<pre>
+<ins>constexpr <i>range-default-formatter</i>();</ins>
+</pre>
+
+<ins>
+*Effects*: Calls <code><i>underlying_</i>.set_debug_format(true)</code> if it is a valid
+expression and `K == range_format::debug_string`.
+</ins>
 
 ```
 template<class ParseContext>
@@ -320,11 +353,17 @@ template<class ParseContext>
 -2- *Effects*: Equivalent to:
 
 <pre>
-auto i = <i>underlying_</i>.parse(ctx);
+<del>
+auto i =<i> underlying_</i>.parse(ctx);
 if constexpr (K == range_format::debug_string) {
-  <i>underlying_</i>.set_debug_format(<ins>true</ins>);
+ <i> underlying_</i>.set_debug_format(true);
 }
-return i;
+return i;</del><ins>
+if constexpr (K == range_format::debug_string) {
+ <i> underlying_</i>.set_debug_format(false);
+}
+return<i> underlying_</i>.parse(ctx);
+</ins>
 </pre>
 
 In [[format.tuple](
@@ -343,7 +382,7 @@ namespace std {
   constexpr void set_brackets(basic_string_view&lt;charT> opening,
                               basic_string_view&lt;charT> closing);
 
-  <ins>formatter();</ins>
+  <ins>constexpr formatter();</ins>
                               
   template&lt;class ParseContext>
     constexpr typename ParseContext::iterator
@@ -365,7 +404,7 @@ constexpr void set_brackets(basic_string_view<charT> opening, basic_string_view<
 
 <pre>
 <ins>
-formatter();
+constexpr formatter();
 </ins>
 </pre>
 
@@ -420,6 +459,10 @@ formatting of ranges and tuples.
     "authors": ["Victor Zverovich"],
     "etAl": true,
     "href": "https://github.com/fmtlib/fmt"
+  },
+  "LIBCXX": {
+    "title": "“libc++” C++ Standard Library",
+    "href": "https://libcxx.llvm.org/"
   }
 }
 </pre>
