@@ -108,13 +108,20 @@ auto s = fmt::format("{}", std::make_tuple(std::make_tuple('a')));
 </tr>
 </table>
 
-
 This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
 makes the necessary changes to the `set_debug_format` API both to enable the
 proposed resolution and to fix tuple formatting. It also fixes a specification
 bug in `range_formatter` that doesn't mention calling `parse` for the
 underlying formatter. This proposal has been implemented in [[FMT]] and in a
 branch of [[LIBCXX]].
+
+Some potential alternative resolutions for [[LWG3776]] are:
+
+* Make range-based formatters conditionally a debug-enabled specialization (S1).
+* Always call the underlying formatter parse function (S2).
+* Default the output type of debug-enabled specializations in the constructor (S3).
+
+The table below compares alternative solutions with the current proposal:
 
 <table style="width:100%">
 <colgroup>
@@ -143,7 +150,7 @@ branch of [[LIBCXX]].
 <strong>S3</strong>
 </div></th>
 <th><div style="text-align:center">
-<strong>P2733R0</strong>
+<strong>After</strong>
 </div></th>
 </tr>
 </thead>
@@ -280,24 +287,24 @@ branch of [[LIBCXX]].
   <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
   <td>{}</td>
   <td>\[[a]]</td>
-  <td><strong>\[[‘a’]]</strong></td>
-  <td><strong>\[[‘a’]]</strong></td>
-  <td><strong>\[[‘a’]]</strong></td>
+  <td><strong>[[‘a’]]</strong></td>
+  <td><strong>[[‘a’]]</strong></td>
+  <td><strong>[[‘a’]]</strong></td>
 </tr>
 <tr class="m_even">
   <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
   <td>{::}</td>
-  <td>\[[‘a’]]</td>
-  <td>\[[‘a’]]</td>
-  <td>\[[‘a’]]</td>
-  <td>\[[‘a’]]</td>
+  <td>[[‘a’]]</td>
+  <td>[[‘a’]]</td>
+  <td>[[‘a’]]</td>
+  <td>[[‘a’]]</td>
 </tr>
 <tr class="m_odd">
   <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
   <td>{:::}</td>
   <td>\[[a]]</td>
   <td>\[[a]]</td>
-  <td><strong>\[[‘a’]</strong></td>
+  <td><strong>[[‘a’]</strong></td>
   <td>\[[a]]</td>
 </tr>
 <tr class="m_even">

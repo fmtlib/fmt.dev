@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="77d9187298e2ba49940dbc92e9fd075553a7e959" name="document-revision">
+  <meta content="fa8bd2c21dafe6fb3a98af3d84b9970aee996a2a" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2177,6 +2177,16 @@ proposed resolution and to fix tuple formatting. It also fixes a specification
 bug in <code class="highlight"><c- n>range_formatter</c-></code> that doesn’t mention calling <code class="highlight"><c- n>parse</c-></code> for the
 underlying formatter. This proposal has been implemented in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and in a
 branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
+   <p>Some potential alternative resolutions for <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> are:</p>
+   <ul>
+    <li data-md>
+     <p>Make range-based formatters conditionally a debug-enabled specialization (S1).</p>
+    <li data-md>
+     <p>Always call the underlying formatter parse function (S2).</p>
+    <li data-md>
+     <p>Default the output type of debug-enabled specializations in the constructor (S3).</p>
+   </ul>
+   <p>The table below compares alternative solutions with the current proposal:</p>
    <table style="width:100%">
     <colgroup>
      <col style="width:32%">
@@ -2198,7 +2208,7 @@ branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
       <th>
        <div style="text-align:center"> <strong>S3</strong> </div>
       <th>
-       <div style="text-align:center"> <strong>P2733R0</strong> </div>
+       <div style="text-align:center"> <strong>After</strong> </div>
     <tbody>
      <tr class="m_odd">
       <td><code class="highlight"><c- b>char</c-></code>
@@ -2316,22 +2326,22 @@ branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
       <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
       <td>{}
       <td>[[a]]
-      <td><strong>\[[‘a’]]</strong>
-      <td><strong>\[[‘a’]]</strong>
-      <td><strong>\[[‘a’]]</strong>
+      <td><strong>[[‘a’]]</strong>
+      <td><strong>[[‘a’]]</strong>
+      <td><strong>[[‘a’]]</strong>
      <tr class="m_even">
       <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
       <td>{::}
-      <td>\[[‘a’]]
-      <td>\[[‘a’]]
-      <td>\[[‘a’]]
-      <td>\[[‘a’]]
+      <td>[[‘a’]]
+      <td>[[‘a’]]
+      <td>[[‘a’]]
+      <td>[[‘a’]]
      <tr class="m_odd">
       <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
       <td>{:::}
       <td>[[a]]
       <td>[[a]]
-      <td><strong>\[[‘a’]</strong>
+      <td><strong>[[‘a’]</strong>
       <td>[[a]]
      <tr class="m_even">
       <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
