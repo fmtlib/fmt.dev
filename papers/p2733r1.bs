@@ -7,6 +7,7 @@ Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
+Editor: Mark de Wever, koraq@xs4all.nl
 No abstract: true
 Date: 2022-11-26
 Markup Shorthands: markdown yes
@@ -114,6 +115,435 @@ proposed resolution and to fix tuple formatting. It also fixes a specification
 bug in `range_formatter` that doesn't mention calling `parse` for the
 underlying formatter. This proposal has been implemented in [[FMT]] and in a
 branch of [[LIBCXX]].
+
+<table style="width:100%">
+<colgroup>
+<col style="width:32%">
+<col style="width:8%">
+<col style="width:9%">
+<col style="width:16%">
+<col style="width:16%">
+<col style="width:16%">
+</colgroup>
+<thead>
+<tr class="m_header">
+<th><div style="text-align:center">
+<strong>Type</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>Format</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>Before</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>S1 &amp; S2</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>S3</strong>
+</div></th>
+<th><div style="text-align:center">
+<strong>P2733R0</strong>
+</div></th>
+</tr>
+</thead>
+<tbody>
+<tr class="m_odd">
+  <td><code>char</code></td>
+  <td>{}</td>
+  <td>a</td>
+  <td>a</td>
+  <td>a</td>
+  <td>a</td>
+</tr>
+<tr class="m_even">
+  <td><code>char</code></td>
+  <td>{:?}</td>
+  <td>‘a’</td>
+  <td>‘a’</td>
+  <td>‘a’</td>
+  <td>‘a’</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;char, 1&gt;</code></td>
+  <td>{}</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;char, 1&gt;</code></td>
+  <td>{::}</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td><strong>[‘a’]</strong></td>
+  <td>[a]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;char, 1&gt;</code></td>
+  <td>{::c}</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td>[a]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;char, 1&gt;</code></td>
+  <td>{::?}</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>map&lt;char, char&gt;</code></td>
+  <td>{}</td>
+  <td>{a: a}</td>
+  <td><strong>{‘a’: ‘a’}</strong></td>
+  <td><strong>{‘a’: ‘a’}</strong></td>
+  <td><strong>{‘a’: ‘a’}</strong></td>
+</tr>
+<tr class="m_even">
+  <td><code>set&lt;char&gt;</code></td>
+  <td>{}</td>
+  <td>{‘a’}</td>
+  <td>{‘a’}</td>
+  <td>{‘a’}</td>
+  <td>{‘a’}</td>
+</tr>
+<tr class="m_odd">
+  <td><code>set&lt;char&gt;</code></td>
+  <td>{::}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+  <td><strong>{‘a’}</strong></td>
+  <td>{a}</td>
+</tr>
+<tr class="m_even">
+  <td><code>set&lt;char&gt;</code></td>
+  <td>{::c}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+</tr>
+<tr class="m_odd">
+  <td><code>set&lt;char&gt;</code></td>
+  <td>{::?}</td>
+  <td>{‘a’}</td>
+  <td>{‘a’}</td>
+  <td>{‘a’}</td>
+  <td>{‘a’}</td>
+</tr>
+<tr class="m_even">
+  <td><code>tuple&lt;char&gt;</code></td>
+  <td>{}</td>
+  <td>(‘a’)</td>
+  <td>(‘a’)</td>
+  <td>(‘a’)</td>
+  <td>(‘a’)</td>
+</tr>
+<tr class="m_odd">
+  <td><code>stack&lt;char&gt;</code></td>
+  <td>{}</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+</tr>
+<tr class="m_even">
+  <td><code>stack&lt;char&gt;</code></td>
+  <td>{::}</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td><strong>[‘a’]</strong></td>
+  <td>[a]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>stack&lt;char&gt;</code></td>
+  <td>{::c}</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td>[a]</td>
+</tr>
+<tr class="m_even">
+  <td><code>stack&lt;char&gt;</code></td>
+  <td>{::?}</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+  <td>[‘a’]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
+  <td>{}</td>
+  <td>\[[a]]</td>
+  <td><strong>\[[‘a’]]</strong></td>
+  <td><strong>\[[‘a’]]</strong></td>
+  <td><strong>\[[‘a’]]</strong></td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
+  <td>{::}</td>
+  <td>\[[‘a’]]</td>
+  <td>\[[‘a’]]</td>
+  <td>\[[‘a’]]</td>
+  <td>\[[‘a’]]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
+  <td>{:::}</td>
+  <td>\[[a]]</td>
+  <td>\[[a]]</td>
+  <td><strong>\[[‘a’]</strong></td>
+  <td>\[[a]]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
+  <td>{:::c}</td>
+  <td>\[[a]]</td>
+  <td>\[[a]]</td>
+  <td>\[[a]]</td>
+  <td>\[[a]]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;array&lt;char, 1&gt;, 1&gt;</code></td>
+  <td>{:::?}</td>
+  <td>[[‘a’]]</td>
+  <td>[[‘a’]]</td>
+  <td>[[‘a’]]</td>
+  <td>[[‘a’]]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;tuple&lt;char&gt;, 1&gt;</code></td>
+  <td>{}</td>
+  <td>[(a)]</td>
+  <td><strong>[(‘a’)]</strong></td>
+  <td><strong>[(‘a’)]</strong></td>
+  <td><strong>[(‘a’)]</strong></td>
+</tr>
+<tr class="m_odd">
+  <td><code>tuple&lt;tuple&lt;char&gt;&gt;</code></td>
+  <td>{}</td>
+  <td>((a))</td>
+  <td><strong>((‘a’))</strong></td>
+  <td><strong>((‘a’))</strong></td>
+  <td><strong>((‘a’))</strong></td>
+</tr>
+<tr class="m_even">
+  <td><code>tuple&lt;array&lt;char, 1&gt;&gt;</code></td>
+  <td>{}</td>
+  <td>([a])</td>
+  <td><strong>([‘a’])</strong></td>
+  <td><strong>([‘a’])</strong></td>
+  <td><strong>([‘a’])</strong></td>
+</tr>
+<tr class="m_odd">
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+  <td></td>
+</tr>
+<tr class="m_even">
+  <td><code>format_string&lt;char&gt;</code></td>
+  <td>{}</td>
+  <td>a</td>
+  <td>a</td>
+  <td>a</td>
+  <td>a</td>
+</tr>
+<tr class="m_odd">
+  <td><code>format_string&lt;char&gt;</code></td>
+  <td>{:s}</td>
+  <td>a</td>
+  <td>a</td>
+  <td>a</td>
+  <td>a</td>
+</tr>
+<tr class="m_even">
+  <td><code>format_string&lt;char&gt;</code></td>
+  <td>{:?}</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td>“a”</td>
+</tr>
+<tr class="m_odd">
+  <td><code>format_debug_string&lt;char&gt;</code></td>
+  <td>{}</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td>“a”</td>
+</tr>
+<tr class="m_even">
+  <td><code>format_debug_string&lt;char&gt;</code></td>
+  <td>{:s}</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td><strong>a</strong></td>
+  <td>“a”</td>
+</tr>
+<tr class="m_odd">
+  <td><code>format_debug_string&lt;char&gt;</code></td>
+  <td>{:?}</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td>“a”</td>
+  <td>“a”</td>
+</tr>
+<tr class="m_even">
+  <td><code>map&lt;format_string&lt;char&gt;, format_string&lt;char&gt;&gt;</code></td>
+  <td>{}</td>
+  <td>{a: a}</td>
+  <td><strong>{“a”: “a”}</strong></td>
+  <td><strong>{“a”: “a”}</strong></td>
+  <td>{a: a}</td>
+</tr>
+<tr class="m_odd">
+  <td><code>map&lt;format_debug_string&lt;char&gt;, format_debug_string&lt;char&gt;&gt;</code></td>
+  <td>{}</td>
+  <td>{a: a}</td>
+  <td><strong>{“a”: “a”}</strong></td>
+  <td><strong>{“a”: “a”}</strong></td>
+  <td><strong>{“a”: “a”}</strong><!--sup>1</sup--></td>
+</tr>
+<tr class="m_even">
+  <td><code>set&lt;format_string&lt;char&gt;&gt;</code></td>
+  <td>{}</td>
+  <td>{a}</td>
+  <td><strong>{“a”}</strong></td>
+  <td><strong>{“a”}</strong></td>
+  <td><strong>{“a”}</strong></td>
+</tr>
+<tr class="m_odd">
+  <td><code>set&lt;format_string&lt;char&gt;&gt;</code></td>
+  <td>{::}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+  <td><strong>{“a”}</strong></td>
+  <td>{a}</td>
+</tr>
+<tr class="m_even">
+  <td><code>set&lt;format_string&lt;char&gt;&gt;</code></td>
+  <td>{::s}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+  <td>{a}</td>
+</tr>
+<tr class="m_odd">
+  <td><code>set&lt;format_string&lt;char&gt;&gt;</code></td>
+  <td>{::?}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+</tr>
+<tr class="m_even">
+  <td><code>set&lt;format_debug_string&lt;char&gt;&gt;</code></td>
+  <td>{}</td>
+  <td>{a}</td>
+  <td><strong>{“a”}</strong></td>
+  <td><strong>{“a”}</strong></td>
+  <td><strong>{“a”}</strong> <!--sup>2</sup--></td>
+</tr>
+<tr class="m_odd">
+  <td><code>set&lt;format_debug_string&lt;char&gt;&gt;</code></td>
+  <td>{::}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+</tr>
+<tr class="m_even">
+  <td><code>set&lt;format_debug_string&lt;char&gt;&gt;</code></td>
+  <td>{::s}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td><strong>{a}</strong></td>
+  <td>{“a”}</td>
+</tr>
+<tr class="m_odd">
+  <td><code>set&lt;format_debug_string&lt;char&gt;&gt;</code></td>
+  <td>{::?}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+  <td>{“a”}</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;format_string&lt;char&gt;, 1&gt;</code></td>
+  <td>{}</td>
+  <td>[a]</td>
+  <td><strong>[“a”]</strong></td>
+  <td><strong>[“a”]</strong></td>
+  <td>[a]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;format_string&lt;char&gt;, 1&gt;</code></td>
+  <td>{::}</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td><strong>[“a”]</strong></td>
+  <td>[a]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;format_string&lt;char&gt;, 1&gt;</code></td>
+  <td>{::s}</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td>[a]</td>
+  <td>[a]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;format_string&lt;char&gt;, 1&gt;</code></td>
+  <td>{::?}</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;format_debug_string&lt;<wbr>char&gt;, 1&gt;</code></td>
+  <td>{}</td>
+  <td>[a]</td>
+  <td><strong>[“a”]</strong></td>
+  <td><strong>[“a”]</strong></td>
+  <td><strong>[“a”]</strong> <!--sup>3</sup--></td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;format_debug_string&lt;<wbr>char&gt;, 1&gt;</code></td>
+  <td>{::}</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+</tr>
+<tr class="m_even">
+  <td><code>array&lt;format_debug_string&lt;<wbr>char&gt;, 1&gt;</code></td>
+  <td>{::s}</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td><strong>[a]</strong></td>
+  <td>[“a”]</td>
+</tr>
+<tr class="m_odd">
+  <td><code>array&lt;format_debug_string&lt;<wbr>char&gt;, 1&gt;</code></td>
+  <td>{::?}</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+  <td>[“a”]</td>
+</tr>
+</tbody>
+</table>
+
+<!-- TODO: clarify what this table shows, what is format_debug_string and fix unbalanced [] in **`[['a']`** -->
 
 LEWG Poll Results {#poll-results}
 =================
