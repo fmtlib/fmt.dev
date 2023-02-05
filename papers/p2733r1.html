@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="fa8bd2c21dafe6fb3a98af3d84b9970aee996a2a" name="document-revision">
+  <meta content="8eed08253d5c254780f286ff307ed5be808c29d7" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2104,10 +2104,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#proposal"><span class="secno">1</span> <span class="content">Proposal</span></a>
-    <li><a href="#poll-results"><span class="secno">2</span> <span class="content">LEWG Poll Results</span></a>
-    <li><a href="#wording"><span class="secno">3</span> <span class="content">Wording</span></a>
-    <li><a href="#ack"><span class="secno">4</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#changes"><span class="secno">2</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
+    <li><a href="#poll-results"><span class="secno">4</span> <span class="content">LEWG Poll Results</span></a>
+    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2116,7 +2118,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <h2 class="heading settled" data-level="1" id="proposal"><span class="secno">1. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
+   <p>This paper amends the proposed resolution of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> per LEWG feedback and
+makes the necessary changes to the <code class="highlight"><c- n>set_debug_format</c-></code> API both to enable the
+proposed resolution and to fix tuple formatting.</p>
+   <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added a comparison with potential alternative resolutions of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a>.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> "Avoid parsing format-spec if it is not present or empty" proposed
 omitting the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> for empty format specifiers
 (<em>format-spec</em> in <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=794">[format.string.general</a>] of <a data-link-type="biblio" href="#biblio-n4917">[N4917]</a>).</p>
@@ -2125,8 +2136,8 @@ omitting the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c
 
 <c- k>template</c-> <c- o>&lt;></c->
 <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>S</c-><c- o>></c-> <c- p>{</c->
-  <c- k>auto</c-> <c- nf>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>();</c-> <c- p>}</c->
-  <c- k>auto</c-> <c- nf>format</c-><c- p>(</c-><c- n>S</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-> <c- p>{</c-> <c- k>return</c-> <c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>();</c-> <c- p>}</c->
+  <c- k>constexpr</c-> <c- k>auto</c-> <c- n>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>();</c-> <c- p>}</c->
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>S</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-> <c- p>{</c-> <c- k>return</c-> <c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>();</c-> <c- p>}</c->
 <c- p>};</c->
 
 <c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
@@ -2182,11 +2193,11 @@ branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
     <li data-md>
      <p>Make range-based formatters conditionally a debug-enabled specialization (S1).</p>
     <li data-md>
-     <p>Always call the underlying formatter parse function (S2).</p>
+     <p>Always call the underlying formatter <code class="highlight"><c- n>parse</c-></code> function (S2).</p>
     <li data-md>
      <p>Default the output type of debug-enabled specializations in the constructor (S3).</p>
    </ul>
-   <p>The table below compares alternative solutions with the current proposal:</p>
+   <p>The table below compares alternative solutions with the current proposal (S0):</p>
    <table style="width:100%">
     <colgroup>
      <col style="width:32%">
@@ -2198,363 +2209,178 @@ branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
     <thead>
      <tr class="m_header">
       <th>
-       <div style="text-align:center"> <strong>Type</strong> </div>
+       <div style="text-align:center"> Type </div>
       <th>
-       <div style="text-align:center"> <strong>Format</strong> </div>
+       <div style="text-align:center"> Format </div>
       <th>
-       <div style="text-align:center"> <strong>Before</strong> </div>
+       <div style="text-align:center"> Before </div>
       <th>
-       <div style="text-align:center"> <strong>S1 &amp; S2</strong> </div>
+       <div style="text-align:center"> S1 &amp; S2 </div>
       <th>
-       <div style="text-align:center"> <strong>S3</strong> </div>
+       <div style="text-align:center"> S3 </div>
       <th>
-       <div style="text-align:center"> <strong>After</strong> </div>
+       <div style="text-align:center"> S0 </div>
     <tbody>
      <tr class="m_odd">
       <td><code class="highlight"><c- b>char</c-></code>
-      <td>{}
-      <td>a
-      <td>a
-      <td>a
-      <td>a
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- n>a</c-></code>
+      <td><code class="highlight"><c- n>a</c-></code>
+      <td><code class="highlight"><c- n>a</c-></code>
+      <td><code class="highlight"><c- n>a</c-></code>
      <tr class="m_even">
       <td><code class="highlight"><c- b>char</c-></code>
-      <td>{:?}
-      <td>‘a’
-      <td>‘a’
-      <td>‘a’
-      <td>‘a’
+      <td><code class="highlight"><c- p>{</c-><c- o>:?</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- sc>'a'</c-></code>
+      <td><code class="highlight"><c- sc>'a'</c-></code>
+      <td><code class="highlight"><c- sc>'a'</c-></code>
+      <td><code class="highlight"><c- sc>'a'</c-></code>
      <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{}
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
      <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::}
-      <td>[a]
-      <td>[a]
-      <td><strong>[‘a’]</strong>
-      <td>[a]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>::</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
+      <td>
+       <ins><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code></ins>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
      <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::c}
-      <td>[a]
-      <td>[a]
-      <td>[a]
-      <td>[a]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>::</c-><c- n>c</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- n>a</c-><c- p>]</c-></code>
      <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::?}
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>::?</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
+      <td><code class="highlight"><c- p>[</c-><c- sc>'a'</c-><c- p>]</c-></code>
      <tr class="m_odd">
       <td><code class="highlight"><c- n>map</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></code>
-      <td>{}
-      <td>{a: a}
-      <td><strong>{‘a’: ‘a’}</strong>
-      <td><strong>{‘a’: ‘a’}</strong>
-      <td><strong>{‘a’: ‘a’}</strong>
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- nl>a</c-><c- p>:</c-> <c- n>a</c-><c- p>}</c-></code>
+      <td>
+       <ins><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- o>:</c-> <c- sc>'a'</c-><c- p>}</c-></code></ins>
+      <td>
+       <ins><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- o>:</c-> <c- sc>'a'</c-><c- p>}</c-></code></ins>
+      <td>
+       <ins><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- o>:</c-> <c- sc>'a'</c-><c- p>}</c-></code></ins>
      <tr class="m_even">
       <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{}
-      <td>{‘a’}
-      <td>{‘a’}
-      <td>{‘a’}
-      <td>{‘a’}
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
      <tr class="m_odd">
       <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{::}
-      <td>{a}
-      <td>{a}
-      <td><strong>{‘a’}</strong>
-      <td>{a}
+      <td><code class="highlight"><c- p>{</c-><c- o>::</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
+      <td>
+       <ins><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code></ins>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
      <tr class="m_even">
       <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{::c}
-      <td>{a}
-      <td>{a}
-      <td>{a}
-      <td>{a}
+      <td><code class="highlight"><c- p>{</c-><c- o>::</c-><c- n>c</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- n>a</c-><c- p>}</c-></code>
      <tr class="m_odd">
       <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{::?}
-      <td>{‘a’}
-      <td>{‘a’}
-      <td>{‘a’}
-      <td>{‘a’}
+      <td><code class="highlight"><c- p>{</c-><c- o>::?</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- sc>'a'</c-><c- p>}</c-></code>
      <tr class="m_even">
       <td><code class="highlight"><c- n>tuple</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{}
-      <td>(‘a’)
-      <td>(‘a’)
-      <td>(‘a’)
-      <td>(‘a’)
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code>
+      <td><code class="highlight"><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code>
+      <td><code class="highlight"><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code>
+      <td><code class="highlight"><c- p>(</c-><c- sc>'a'</c-><c- p>)</c-></code>
      <tr class="m_odd">
-      <td><code class="highlight"><c- n>stack</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{}
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
+      <td>
+       <ins><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code></ins>
+      <td>
+       <ins><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code></ins>
+      <td>
+       <ins><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code></ins>
      <tr class="m_even">
-      <td><code class="highlight"><c- n>stack</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{::}
-      <td>[a]
-      <td>[a]
-      <td><strong>[‘a’]</strong>
-      <td>[a]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>::</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
      <tr class="m_odd">
-      <td><code class="highlight"><c- n>stack</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{::c}
-      <td>[a]
-      <td>[a]
-      <td>[a]
-      <td>[a]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>:::</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
+      <td>
+       <ins><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code></ins>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
      <tr class="m_even">
-      <td><code class="highlight"><c- n>stack</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{::?}
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
-      <td>[‘a’]
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>:::</c-><c- n>c</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- n>a</c-><c- p>]]</c-></code>
      <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{}
-      <td>[[a]]
-      <td><strong>[[‘a’]]</strong>
-      <td><strong>[[‘a’]]</strong>
-      <td><strong>[[‘a’]]</strong>
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{</c-><c- o>:::?</c-><c- p>}</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
+      <td><code class="highlight"><c- p>[[</c-><c- sc>'a'</c-><c- p>]]</c-></code>
      <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::}
-      <td>[[‘a’]]
-      <td>[[‘a’]]
-      <td>[[‘a’]]
-      <td>[[‘a’]]
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{:::}
-      <td>[[a]]
-      <td>[[a]]
-      <td><strong>[[‘a’]</strong>
-      <td>[[a]]
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{:::c}
-      <td>[[a]]
-      <td>[[a]]
-      <td>[[a]]
-      <td>[[a]]
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{:::?}
-      <td>[[‘a’]]
-      <td>[[‘a’]]
-      <td>[[‘a’]]
-      <td>[[‘a’]]
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>tuple</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{}
-      <td>[(a)]
-      <td><strong>[(‘a’)]</strong>
-      <td><strong>[(‘a’)]</strong>
-      <td><strong>[(‘a’)]</strong>
+      <td><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- n>tuple</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>[(</c-><c- n>a</c-><c- p>)]</c-></code>
+      <td>
+       <ins><code class="highlight"><c- p>[(</c-><c- sc>'a'</c-><c- p>)]</c-></code></ins>
+      <td>
+       <ins><code class="highlight"><c- p>[(</c-><c- sc>'a'</c-><c- p>)]</c-></code></ins>
+      <td>
+       <ins><code class="highlight"><c- p>[(</c-><c- sc>'a'</c-><c- p>)]</c-></code></ins>
      <tr class="m_odd">
       <td><code class="highlight"><c- n>tuple</c-><c- o>&lt;</c-><c- n>tuple</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{}
-      <td>((a))
-      <td><strong>((‘a’))</strong>
-      <td><strong>((‘a’))</strong>
-      <td><strong>((‘a’))</strong>
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>tuple</c-><c- o>&lt;</c-><c- n>array</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- mi>1</c-><c- o>>></c-></code>
-      <td>{}
-      <td>([a])
-      <td><strong>([‘a’])</strong>
-      <td><strong>([‘a’])</strong>
-      <td><strong>([‘a’])</strong>
-     <tr class="m_odd">
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>((</c-><c- n>a</c-><c- p>))</c-></code>
       <td>
+       <ins><code class="highlight"><c- p>((</c-><c- sc>'a'</c-><c- p>))</c-></code></ins>
       <td>
+       <ins><code class="highlight"><c- p>((</c-><c- sc>'a'</c-><c- p>))</c-></code></ins>
       <td>
+       <ins><code class="highlight"><c- p>((</c-><c- sc>'a'</c-><c- p>))</c-></code></ins>
+     <tr class="m_even">
+      <td><code class="highlight"><c- n>tuple</c-><c- o>&lt;</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
+      <td><code class="highlight"><c- p>{}</c-></code>
+      <td><code class="highlight"><c- p>([</c-><c- n>a</c-><c- p>])</c-></code>
       <td>
+       <ins><code class="highlight"><c- p>([</c-><c- sc>'a'</c-><c- p>])</c-></code></ins>
       <td>
+       <ins><code class="highlight"><c- p>([</c-><c- sc>'a'</c-><c- p>])</c-></code></ins>
       <td>
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{}
-      <td>a
-      <td>a
-      <td>a
-      <td>a
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{:s}
-      <td>a
-      <td>a
-      <td>a
-      <td>a
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{:?}
-      <td>“a”
-      <td>“a”
-      <td>“a”
-      <td>“a”
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{}
-      <td>“a”
-      <td>“a”
-      <td>“a”
-      <td>“a”
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{:s}
-      <td>“a”
-      <td>“a”
-      <td><strong>a</strong>
-      <td>“a”
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-></code>
-      <td>{:?}
-      <td>“a”
-      <td>“a”
-      <td>“a”
-      <td>“a”
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>map</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{}
-      <td>{a: a}
-      <td><strong>{“a”: “a”}</strong>
-      <td><strong>{“a”: “a”}</strong>
-      <td>{a: a}
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>map</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{}
-      <td>{a: a}
-      <td><strong>{“a”: “a”}</strong>
-      <td><strong>{“a”: “a”}</strong>
-      <td><strong>{“a”: “a”}</strong>
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{}
-      <td>{a}
-      <td><strong>{“a”}</strong>
-      <td><strong>{“a”}</strong>
-      <td><strong>{“a”}</strong>
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{::}
-      <td>{a}
-      <td>{a}
-      <td><strong>{“a”}</strong>
-      <td>{a}
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{::s}
-      <td>{a}
-      <td>{a}
-      <td>{a}
-      <td>{a}
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{::?}
-      <td>{“a”}
-      <td>{“a”}
-      <td>{“a”}
-      <td>{“a”}
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{}
-      <td>{a}
-      <td><strong>{“a”}</strong>
-      <td><strong>{“a”}</strong>
-      <td><strong>{“a”}</strong> 
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{::}
-      <td>{“a”}
-      <td>{“a”}
-      <td>{“a”}
-      <td>{“a”}
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{::s}
-      <td>{“a”}
-      <td>{“a”}
-      <td><strong>{a}</strong>
-      <td>{“a”}
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>set</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>>></c-></code>
-      <td>{::?}
-      <td>{“a”}
-      <td>{“a”}
-      <td>{“a”}
-      <td>{“a”}
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{}
-      <td>[a]
-      <td><strong>[“a”]</strong>
-      <td><strong>[“a”]</strong>
-      <td>[a]
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::}
-      <td>[a]
-      <td>[a]
-      <td><strong>[“a”]</strong>
-      <td>[a]
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::s}
-      <td>[a]
-      <td>[a]
-      <td>[a]
-      <td>[a]
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::?}
-      <td>[“a”]
-      <td>[“a”]
-      <td>[“a”]
-      <td>[“a”]
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><wbr><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{}
-      <td>[a]
-      <td><strong>[“a”]</strong>
-      <td><strong>[“a”]</strong>
-      <td><strong>[“a”]</strong> 
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><wbr><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::}
-      <td>[“a”]
-      <td>[“a”]
-      <td>[“a”]
-      <td>[“a”]
-     <tr class="m_even">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><wbr><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::s}
-      <td>[“a”]
-      <td>[“a”]
-      <td><strong>[a]</strong>
-      <td>[“a”]
-     <tr class="m_odd">
-      <td><code class="highlight"><c- n>array</c-><c- o>&lt;</c-><c- n>format_debug_string</c-><c- o>&lt;</c-><wbr><c- b>char</c-><c- o>></c-><c- p>,</c-> <c- mi>1</c-><c- o>></c-></code>
-      <td>{::?}
-      <td>[“a”]
-      <td>[“a”]
-      <td>[“a”]
-      <td>[“a”]
+       <ins><code class="highlight"><c- p>([</c-><c- sc>'a'</c-><c- p>])</c-></code></ins>
    </table>
-   <h2 class="heading settled" data-level="2" id="poll-results"><span class="secno">2. </span><span class="content">LEWG Poll Results</span><a class="self-link" href="#poll-results"></a></h2>
+   <h2 class="heading settled" data-level="4" id="poll-results"><span class="secno">4. </span><span class="content">LEWG Poll Results</span><a class="self-link" href="#poll-results"></a></h2>
    <p><strong>POLL</strong>: Relax the requirements table 74 and 75 to make the optimization allowed
 by the issue resolution of LWG3776 a QoI issue with additional changes to the
 handle class removed</p>
@@ -2593,7 +2419,7 @@ format-spec if it is not present or empty". Return the issue to LWG for C++23
       <td>1 
    </table>
    <p><strong>Outcome</strong>: weak consensus in favour</p>
-   <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>This wording is relative to <a data-link-type="biblio" href="#biblio-n4917">[N4917]</a>.</p>
    <p>Modify 22.14.6.1 <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=802">[formatter.requirements</a>]
 as indicated:</p>
@@ -2794,7 +2620,7 @@ modified if and only if required by the <em>tuple-type</em>, if present.
 element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>, if <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code> is a valid expression, calls <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
    </p>
    <p>-8- <em>Returns</em>: An iterator past the end of the <em>tuple-format-spec</em>.</p>
-   <h2 class="heading settled" data-level="4" id="ack"><span class="secno">4. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="6" id="ack"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Barry Revzin and Mark de Wever for pointing out issues with debug
 formatting of ranges and tuples.</p>
   </main>
