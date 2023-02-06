@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="82a2667dc37ffa8d296b1ced2812b203b8b168cd" name="document-revision">
+  <meta content="0adf445c3aeef1fa11e8ce3610a5b9f000c661b5" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2120,12 +2120,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p>This paper amends the proposed resolution of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> per LEWG feedback and
-makes the necessary changes to the <code class="highlight"><c- n>set_debug_format</c-></code> API both to enable the
-proposed resolution and to fix tuple formatting.</p>
+makes the necessary changes to the <code class="highlight"><c- n>set_debug_format</c-></code> API to enable the proposed
+resolution and fix tuple formatting. It also makes a drive-by fix to the range
+formatter adding a missing call to <code class="highlight"><c- n>parse</c-></code> for the underlying formatter.</p>
    <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes"></a></h2>
    <ul>
     <li data-md>
-     <p>Added a comparison with potential alternative resolutions of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a>.</p>
+     <p>Added a comparison with potential alternative resolutions of the nested
+range/tuple formatting bug.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> "Avoid parsing format-spec if it is not present or empty" proposed
@@ -2188,7 +2190,8 @@ proposed resolution and to fix tuple formatting. It also fixes a specification
 bug in <code class="highlight"><c- n>range_formatter</c-></code> that doesn’t mention calling <code class="highlight"><c- n>parse</c-></code> for the
 underlying formatter. This proposal has been implemented in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> and in a
 branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
-   <p>Some potential alternative resolutions for <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> are:</p>
+   <p>Some potential alternative resolutions for the nested range/tuple formatting bug
+are:</p>
    <ul>
     <li data-md>
      <p>Make range-based formatters conditionally debug-enabled specializations (S1).</p>
@@ -2380,6 +2383,21 @@ branch of <a data-link-type="biblio" href="#biblio-libcxx">[LIBCXX]</a>.</p>
       <td>
        <ins><code class="highlight"><c- p>([</c-><c- sc>'a'</c-><c- p>])</c-></code></ins>
    </table>
+   <p>S1 and S2 are inconsistent with the resolution of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> earlier approved
+by LEWG and not proposed here. They are only included for completeness.</p>
+   <p>S3 is similar to the current proposal (S0) and the difference is that in S3
+the default of the element type is changed to the debug format. This means that
+users have to give explicit specifiers to get the default format, e.g. <code class="highlight"><c- s>"{::s}"</c-></code> instead of <code class="highlight"><c- s>"{::}"</c-></code>:</p>
+<pre class="highlight"><c- k>auto</c-> <c- n>v</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>{</c-><c- sc>'a'</c-><c- p>};</c->
+<c- k>auto</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{::}"</c-><c- p>,</c-> <c- n>v</c-><c- p>);</c->  <c- c1>// ['a'] in S3, [a] in S0</c->
+<c- k>auto</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{::s}"</c-><c- p>,</c-> <c- n>v</c-><c- p>);</c-> <c- c1>// [a] in both S0 and S3</c->
+</pre>
+   <p>On the other hand combining the debug format with other specifiers such as width
+is easier in S3:</p>
+<pre class="highlight"><c- k>auto</c-> <c- n>v</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>{</c-><c- sc>'a'</c-><c- p>};</c->
+<c- k>auto</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{::4}"</c-><c- p>,</c-> <c- n>v</c-><c- p>);</c->  <c- c1>// ['a' ] in S3, [a   ] in S0</c->
+<c- k>auto</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{::4?}"</c-><c- p>,</c-> <c- n>v</c-><c- p>);</c-> <c- c1>// ['a' ] in both S0 and S3</c->
+</pre>
    <h2 class="heading settled" data-level="4" id="poll-results"><span class="secno">4. </span><span class="content">LEWG Poll Results</span><a class="self-link" href="#poll-results"></a></h2>
    <p><strong>POLL</strong>: Relax the requirements table 74 and 75 to make the optimization allowed
 by the issue resolution of LWG3776 a QoI issue with additional changes to the

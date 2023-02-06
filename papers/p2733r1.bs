@@ -32,13 +32,15 @@ Introduction {#intro}
 ============
 
 This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
-makes the necessary changes to the `set_debug_format` API both to enable the
-proposed resolution and to fix tuple formatting.
+makes the necessary changes to the `set_debug_format` API to enable the proposed
+resolution and fix tuple formatting. It also makes a drive-by fix to the range
+formatter adding a missing call to `parse` for the underlying formatter.
 
 Changes from R0 {#changes}
 ===============
 
-* Added a comparison with potential alternative resolutions of [[LWG3776]].
+* Added a comparison with potential alternative resolutions of the nested
+    range/tuple formatting bug.
 
 Proposal {#proposal}
 ========
@@ -127,7 +129,8 @@ bug in `range_formatter` that doesn't mention calling `parse` for the
 underlying formatter. This proposal has been implemented in [[FMT]] and in a
 branch of [[LIBCXX]].
 
-Some potential alternative resolutions for [[LWG3776]] are:
+Some potential alternative resolutions for the nested range/tuple formatting bug 
+are:
 
 * Make range-based formatters conditionally debug-enabled specializations (S1).
 * Always call the underlying formatter `parse` function (S2).
@@ -532,7 +535,28 @@ S0
 </tbody>
 </table>
 
-<!-- TODO: clarify what is string -->
+S1 and S2 are inconsistent with the resolution of [[LWG3776]] earlier approved
+by LEWG and not proposed here. They are only included for completeness.
+
+S3 is similar to the current proposal (S0) and the difference is that in S3
+the default of the element type is changed to the debug format. This means that
+users have to give explicit specifiers to get the default format, e.g. `"{::s}"`
+instead of `"{::}"`:
+
+```
+auto v = std::vector<char>{'a'};
+auto s1 = std::format("{::}", v);  // ['a'] in S3, [a] in S0
+auto s2 = std::format("{::s}", v); // [a] in both S0 and S3
+```
+
+On the other hand combining the debug format with other specifiers such as width
+is easier in S3:
+
+```
+auto v = std::vector<char>{'a'};
+auto s1 = std::format("{::4}", v);  // ['a' ] in S3, [a   ] in S0
+auto s2 = std::format("{::4?}", v); // ['a' ] in both S0 and S3
+```
 
 LEWG Poll Results {#poll-results}
 =================
