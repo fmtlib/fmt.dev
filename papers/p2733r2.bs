@@ -1,9 +1,9 @@
 <pre class='metadata'>
 Title: Fix handling of empty specifiers in std::format
 Shortname: P2733
-Revision: 1
+Revision: 2
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
@@ -31,10 +31,18 @@ Markup Shorthands: markdown yes
 Introduction {#intro}
 ============
 
-This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
-makes the necessary changes to the `set_debug_format` API to enable the proposed
-resolution and fix tuple formatting. It also makes a drive-by fix to the range
-formatter adding a missing call to `parse` for the underlying formatter.
+This paper fixes a number of issues in range and tuple formatting related to
+handling of empty specifiers for element types and clarifies that empty and not
+present format specifiers are handled equivalently.
+Originally it also amended the proposed resolution of [[LWG3776]] to allow
+omitting calls to `formatter::parse` for empty specifiers per LEWG feedback but
+this part was removed due to new LEWG feedback.
+
+Changes from R1 {#changes}
+===============
+
+* Removed the permission to omit calls to `parse` for empty or missing
+    format specifiers per new LEWG guidance.
 
 Changes from R0 {#changes}
 ===============
@@ -536,7 +544,9 @@ S0
 </table>
 
 S1 and S2 are inconsistent with the resolution of [[LWG3776]] earlier approved
-by LEWG and not proposed here. They are only included for completeness.
+by LEWG and were not originally proposed. However, after LEWG reversed its two
+earlier decisions we are effectively stuck with S2 and the other options are
+only included for information.
 
 S3 is similar to the current proposal (S0) and the difference is that in S3
 the default of the element type is changed to the debug format. This means that
@@ -546,7 +556,7 @@ instead of `"{::}"`:
 ```
 auto v = std::vector<char>{'a'};
 auto s1 = std::format("{::}", v);  // ['a'] in S3, [a] in S0
-auto s2 = std::format("{::s}", v); // [a] in both S0 and S3
+auto s2 = std::format("{::c}", v); // [a] in both S0 and S3
 ```
 
 On the other hand combining the debug format with other specifiers such as width
@@ -561,9 +571,9 @@ auto s2 = std::format("{::4?}", v); // ['a' ] in both S0 and S3
 LEWG Poll Results {#poll-results}
 =================
 
-**POLL**: Relax the requirements table 74 and 75 to make the optimization allowed
-by the issue resolution of LWG3776 a QoI issue with additional changes to the
-handle class removed
+**POLL**: Relax the requirements table 74 and 75 to make the optimization
+allowed by the issue resolution of LWG3776 a QoI issue with additional changes
+to the handle class removed
 
 <table class="poll">
 <tr>
@@ -626,6 +636,7 @@ argument type `T`, in Table 74 and Table 75:
 If *format-spec* is <ins>not present or</ins> empty then either
 `pc.begin() == pc.end()` or `*pc.begin() == '}'`.
 
+<!--
 Modify *BasicFormatter* requirements [[tab:formatter.basic](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]
 as indicated:
@@ -674,7 +685,7 @@ as indicated:
       (22.14.2 [format.string]) is not present or empty
       the call to `f.parse(pc)` may be omitted.</ins>
 </tr>
-</table>
+</table-->
 
 In [[format.formatter.spec](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]:
@@ -737,7 +748,7 @@ template<class ParseContext>
     parse(ParseContext& ctx);
 ```
 
-*Effects*: Parses the format specifier<ins>s</ins> as a *range-format-spec*
+*Effects*: Parses the format <del>specifier<del><ins>specifiers</ins> as a *range-format-spec*
 and stores the parsed specifiers in `*this`. The values of
 <code><i>opening-bracket_</i></code>,
 <code><i>closing-bracket_</i></code>, and <code><i>separator_</i></code> are
@@ -753,7 +764,7 @@ present. <del>If:</del>
 <ins>If there is *range-underlying-spec*:
 
 * <ins>calls `underlying_.set_debug_format(false)` if it is a valid expression,</ins>
-* <ins>calls `underlying_.parse` to parse *range-underlying-spec*.</ins>
+* <ins>calls `underlying_.parse(ctx)` to parse *range-underlying-spec*.</ins>
 
 In [[format.range.fmtstr](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813)]:
@@ -862,16 +873,22 @@ template<class ParseContext>
     parse(ParseContext& ctx);
 ```
 
--7- *Effects*: Parses the format specifier<ins>s</ins> as a *tuple-format-spec*
+-7- *Effects*: Parses the format <del>specifier<del><ins>specifiers</ins> as a *tuple-format-spec*
 and stores the parsed specifiers in `*this`. The values of
 <code><i>opening-bracket_</i></code>,
 <code><i>closing-bracket_</i></code>, and <code><i>separator_</i></code> are
 modified if and only if required by the *tuple-type*, if present. <del>For each
 element <code><i>e</i></code> in <code><i>underlying_</i></code>, if
 <code><i>e</i>.set_debug_format()</code> is a valid expression, calls
-<code><i>e</i>.set_debug_format()</code>.</del>
+<code><i>e</i>.set_debug_format()</code>.</del><ins>For each
+element <code><i>e</i></code> in <code><i>underlying_</i></code>, calls
+<code><i>e</i>.parse(ctx)</code>.</ins>
 
 -8- *Returns*: An iterator past the end of the *tuple-format-spec*.
+
+<ins>*Throws*: `format_error` if `ctx.begin() != ctx.end()` or `*ctx.begin() != '}'
+after parsing *tuple-format-spec* and before invoking <code><i>e</i>.parse(ctx)</code>
+for each element <code><i>e</i></code> in <code><i>underlying_</i></code>.</ins>
 
 Acknowledgements {#ack}
 ================
