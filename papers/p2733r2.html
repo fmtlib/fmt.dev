@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="dc13f96f6b4985cf11437e8300dbf85c21a710f0" name="document-revision">
+  <meta content="ed920377a099d116c7ed6946433a54d067903898" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2131,6 +2131,8 @@ this part was removed due to new LEWG feedback.</p>
     <li data-md>
      <p>Removed the permission to omit calls to <code class="highlight"><c- n>parse</c-></code> for empty or missing
 format specifiers per new LEWG guidance.</p>
+    <li data-md>
+     <p>Added calls to <code class="highlight"><c- n>parse</c-></code> for tuple element formatters.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes①"><span class="secno">3. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes①"></a></h2>
    <ul>
@@ -2152,8 +2154,8 @@ omitting the call to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c
 <c- p>};</c->
 
 <c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
-  <c- k>auto</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>S</c-><c- p>());</c->  <c- c1>// (1) no format-spec</c->
-  <c- k>auto</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:}"</c-><c- p>,</c-> <c- n>S</c-><c- p>());</c-> <c- c1>// (2) empty format-spec</c->
+  <c- k>auto</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>S</c-><c- p>());</c->  <c- c1>// (1) no format-spec</c->
+  <c- k>auto</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:}"</c-><c- p>,</c-> <c- n>S</c-><c- p>());</c-> <c- c1>// (2) empty format-spec</c->
 <c- p>}</c->
 </pre>
    <p>In (1) <em>format-spec</em> is not present and in (2) it is present but empty.
@@ -2209,7 +2211,8 @@ are:</p>
     <li data-md>
      <p>Default the output type of debug-enabled specializations in the constructor (S3).</p>
    </ul>
-   <p>The table below compares alternative solutions with the current proposal (S0):</p>
+   <p>The table below compares alternative solutions with the earlier version (R1) of
+the current proposal (S0):</p>
    <table style="width:100%">
     <colgroup>
      <col style="width:32%">
@@ -2396,7 +2399,7 @@ are:</p>
 by LEWG and were not originally proposed. However, after LEWG reversed its two
 earlier decisions we are effectively stuck with S2 and the other options are
 only included for information.</p>
-   <p>S3 is similar to the current proposal (S0) and the difference is that in S3
+   <p>S3 is similar to S0 and the difference is that in S3
 the default of the element type is changed to the debug format. This means that
 users have to give explicit specifiers to get the default format, e.g. <code class="highlight"><c- s>"{::s}"</c-></code> instead of <code class="highlight"><c- s>"{::}"</c-></code>:</p>
 <pre class="highlight"><c- k>auto</c-> <c- n>v</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>{</c-><c- sc>'a'</c-><c- p>};</c->
@@ -2503,16 +2506,12 @@ expression. </ins>
 </pre>
    <p>
     <em>Effects</em>: Parses the format 
-    <del>
-     specifier
-     <del>
-      <ins>specifiers</ins>
-       as a <em>range-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
+    <del>specifier</del>
+    <ins>specifiers</ins>
+     as a <em>range-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
 modified if and only if required by the <em>range-type</em> or the <code class="highlight"><c- n>n</c-></code> option, if
 present. 
-      <del>If:</del>
-     </del>
-    </del>
+    <del>If:</del>
    </p>
    <ul>
     <li data-md>
@@ -2621,7 +2620,7 @@ element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highl
     </del>
    </p>
    <p>-8- <em>Returns</em>: An iterator past the end of the <em>tuple-format-spec</em>.</p>
-   <ins><em>Throws</em>: <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>!=</c-> <c- n>ctx</c-><c- p>.</c-><c- n>end</c-><c- p>()</c-></code> or <code class="highlight"><c- o>*</c-><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>!=</c-> <c- sc>'}'</c-></code> after parsing <em>tuple-format-spec</em> and before invoking <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> for each element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>.</ins>
+   <ins><em>Throws</em>: <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>!=</c-> <c- n>ctx</c-><c- p>.</c-><c- n>end</c-><c- p>()</c-></code> and <code class="highlight"><c- o>*</c-><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>!=</c-> <c- sc>'}'</c-></code> after parsing <em>tuple-format-spec</em> and before invoking <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> for each element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>.</ins>
    <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Barry Revzin and Mark de Wever for pointing out issues with debug
 formatting of ranges and tuples.</p>

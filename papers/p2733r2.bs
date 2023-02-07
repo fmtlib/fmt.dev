@@ -145,7 +145,8 @@ are:
 * Always call the underlying formatter `parse` function (S2).
 * Default the output type of debug-enabled specializations in the constructor (S3).
 
-The table below compares alternative solutions with the current proposal (S0):
+The table below compares alternative solutions with the earlier version (R1) of
+the current proposal (S0):
 
 <!-- https://godbolt.org/z/sszfT3Eh5 -->
 
@@ -549,7 +550,7 @@ by LEWG and were not originally proposed. However, after LEWG reversed its two
 earlier decisions we are effectively stuck with S2 and the other options are
 only included for information.
 
-S3 is similar to the current proposal (S0) and the difference is that in S3
+S3 is similar to S0 and the difference is that in S3
 the default of the element type is changed to the debug format. This means that
 users have to give explicit specifiers to get the default format, e.g. `"{::s}"`
 instead of `"{::}"`:
@@ -749,7 +750,7 @@ template<class ParseContext>
     parse(ParseContext& ctx);
 ```
 
-*Effects*: Parses the format <del>specifier<del><ins>specifiers</ins> as a *range-format-spec*
+*Effects*: Parses the format <del>specifier</del><ins>specifiers</ins> as a *range-format-spec*
 and stores the parsed specifiers in `*this`. The values of
 <code><i>opening-bracket_</i></code>,
 <code><i>closing-bracket_</i></code>, and <code><i>separator_</i></code> are
@@ -887,7 +888,7 @@ element <code><i>e</i></code> in <code><i>underlying_</i></code>, calls
 
 -8- *Returns*: An iterator past the end of the *tuple-format-spec*.
 
-<ins>*Throws*: `format_error` if `ctx.begin() != ctx.end()` or `*ctx.begin() != '}'`
+<ins>*Throws*: `format_error` if `ctx.begin() != ctx.end()` and `*ctx.begin() != '}'`
 after parsing *tuple-format-spec* and before invoking <code><i>e</i>.parse(ctx)</code>
 for each element <code><i>e</i></code> in <code><i>underlying_</i></code>.</ins>
 
