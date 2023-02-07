@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ed920377a099d116c7ed6946433a54d067903898" name="document-revision">
+  <meta content="c8e43ee03f19788720be77e9c0c861be3774c1f7" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2212,7 +2212,7 @@ are:</p>
      <p>Default the output type of debug-enabled specializations in the constructor (S3).</p>
    </ul>
    <p>The table below compares alternative solutions with the earlier version (R1) of
-the current proposal (S0):</p>
+the current proposal denoted as S0:</p>
    <table style="width:100%">
     <colgroup>
      <col style="width:32%">
@@ -2523,13 +2523,14 @@ present.
    </ul>
    <del>then calls <code class="highlight"><i><c- n>underlying_</c-></i><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
    <p>
-    <ins>If there is <em>range-underlying-spec</em>: </ins>
+    <ins></ins>
    </p>
    <ul>
     <li data-md>
-     <ins>calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->false<c- p>)</c-></code> if it is a valid expression,</ins>
+     <ins>Calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->false<c- p>)</c-></code> if it is a valid expression
+and there is <em>range-underlying-spec</em>.</ins>
     <li data-md>
-     <ins>calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> to parse <em>range-underlying-spec</em>.</ins>
+     <ins>Calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> to parse, possibly empty, <em>range-underlying-spec</em>.</ins>
    </ul>
    <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813">[format.range.fmtstr</a>]:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
@@ -2606,18 +2607,14 @@ element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highl
 </pre>
    <p>
     -7- <em>Effects</em>: Parses the format 
-    <del>
-     specifier
-     <del>
-      <ins>specifiers</ins>
-       as a <em>tuple-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
+    <del>specifier</del>
+    <ins>specifiers</ins>
+     as a <em>tuple-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
 modified if and only if required by the <em>tuple-type</em>, if present. 
-      <del>For each
+    <del>For each
 element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>, if <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code> is a valid expression, calls <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
-      <ins>For each
+    <ins>For each
 element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>, calls <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code>.</ins>
-     </del>
-    </del>
    </p>
    <p>-8- <em>Returns</em>: An iterator past the end of the <em>tuple-format-spec</em>.</p>
    <ins><em>Throws</em>: <code class="highlight"><c- n>format_error</c-></code> if <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>!=</c-> <c- n>ctx</c-><c- p>.</c-><c- n>end</c-><c- p>()</c-></code> and <code class="highlight"><c- o>*</c-><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>()</c-> <c- o>!=</c-> <c- sc>'}'</c-></code> after parsing <em>tuple-format-spec</em> and before invoking <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> for each element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>.</ins>
