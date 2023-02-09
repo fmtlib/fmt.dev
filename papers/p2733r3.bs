@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Fix handling of empty specifiers in std::format
 Shortname: P2733
-Revision: 2
+Revision: 3
 Audience: LEWG
 Status: D
 Group: WG21
@@ -9,7 +9,7 @@ URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Mark de Wever, koraq@xs4all.nl
 No abstract: true
-Date: 2023-02-06
+Date: 2023-02-09
 Markup Shorthands: markdown yes
 </pre>
 
@@ -37,6 +37,13 @@ present format specifiers are handled equivalently.
 Originally it also amended the proposed resolution of [[LWG3776]] to allow
 omitting calls to `formatter::parse` for empty specifiers per LEWG feedback but
 this part was removed due to new LEWG feedback.
+
+Changes from R2 {#changes2}
+===============
+
+* Switched to option S1, make range and tuple formatters provide
+    `set_debug_format`, since LWG found issues with implementability of the
+    previous solution.
 
 Changes from R1 {#changes1}
 ===============
@@ -133,17 +140,11 @@ auto s = fmt::format("{}", std::make_tuple(std::make_tuple('a')));
 </tr>
 </table>
 
-This paper amends the proposed resolution of [[LWG3776]] per LEWG feedback and
-makes the necessary changes to the `set_debug_format` API both to enable the
-proposed resolution and to fix tuple formatting. It also fixes a specification
-bug in `range_formatter` that doesn't mention calling `parse` for the
-underlying formatter. This proposal has been implemented in [[FMT]] and in a
-branch of [[LIBCXX]].
+Alternative resolutions for the nested range/tuple formatting bug are:
 
-Some potential alternative resolutions for the nested range/tuple formatting bug 
-are:
-
-* Make range-based formatters conditionally debug-enabled specializations (S1).
+* Set range and tuple formtters to debug state in constuctors and make empty
+    inner format spec override it (S0).
+* Make range and tuple formatters provide `set_debug_format` (S1).
 * Always call the underlying formatter `parse` function (S2).
 * Default the output type of debug-enabled specializations in the constructor (S3).
 
@@ -549,10 +550,14 @@ S0
 
 S1 and S2 are inconsistent with the resolution of [[LWG3776]] earlier approved
 by LEWG and were not originally proposed. However, after LEWG reversed its two
-earlier decisions we are effectively stuck with S2 and the other options are
-only included for information.
+earlier decisions and LWG found issues with implementability of S0, S1 and S2
+are the only viable options and the other ones are only included for reference.
+We propose making range and tuple formatters provide `set_debug_format` (option
+S2) since they have a debug representation and it is compatible with always
+calling `parse` and future optimizations that may omit redundant calls to
+`parse` (not proposed in this paper).
 
-S3 is similar to S0 and the difference is that in S3
+<!--S3 is similar to S0 and the difference is that in S3
 the default of the element type is changed to the debug format. This means that
 users have to give explicit specifiers to get the default format, e.g. `"{::s}"`
 instead of `"{::}"`:
@@ -570,7 +575,7 @@ is easier in S3:
 auto v = std::vector<char>{'a'};
 auto s1 = std::format("{::4}", v);  // ['a' ] in S3, [a   ] in S0
 auto s2 = std::format("{::4?}", v); // ['a' ] in both S0 and S3
-```
+```-->
 
 LEWG Poll Results {#poll-results}
 =================
@@ -703,6 +708,7 @@ as indicated:
 </tr>
 </table-->
 
+<!--
 In [[format.formatter.spec](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]:
 
@@ -716,7 +722,7 @@ and the default otherwise.</ins><del> to be as if the type of the *std-format-sp
 parsed by the last call to `parse` were `?`.</del> Each header that declares the
 template `formatter` provides the following enabled specializations:
 
-...
+... -->
 
 In [[format.range.formatter](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=809)]
@@ -729,7 +735,8 @@ namespace std {
     ...
     constexpr const formatter&lt;T, charT>& underlying() const { return <i>underlying_</i>; }
 
-    <ins>constexpr range_formatter();</ins>
+    <ins>constexpr void set_debug_format();</ins>
+    <!--ins>constexpr range_formatter();</ins-->
 
     template&lt;class ParseContext>
       constexpr typename ParseContext::iterator
@@ -751,15 +758,15 @@ constexpr void set_brackets(basic_string_view<charT> opening, basic_string_view<
 
 <pre>
 <ins>
-constexpr range_formatter();
+constexpr void set_debug_format();<!--constexpr range_formatter();-->
 </ins>
 </pre>
 <ins>
-*Effects*: Calls <code><i>underlying_</i>.set_debug_format(true)</code> if it is a valid
+*Effects*: Calls <code><i>underlying_</i>.set_debug_format()</code> if it is a valid
 expression.
 </ins>
 
-```
+<!--```
 template<class ParseContext>
   constexpr typename ParseContext::iterator
     parse(ParseContext& ctx);
@@ -783,6 +790,7 @@ present. <del>If:</del>
 `underlying_.set_debug_format(false)` if that is a valid expression. Then calls
 `underlying_.parse(ctx)` after having advanced `ctx` to the beginning of the
 *range-underlying-spec*, if any.</ins>
+-->
 
 In [[format.range.fmtstr](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813)]:
@@ -796,7 +804,8 @@ namespace std {
     ...
 
   public:
-    <ins><i>constexpr range-default-formatter</i>();</ins>
+    <!--ins><i>constexpr range-default-formatter</i>();</ins-->
+    <ins>constexpr void set_debug_format();</ins>
     
     template&lt;class ParseContext>
       constexpr typename ParseContext::iterator
@@ -808,11 +817,12 @@ namespace std {
 </pre>
 
 <pre>
-<ins>constexpr <i>range-default-formatter</i>();</ins>
+<!--ins>constexpr <i>range-default-formatter</i>();</ins-->
+<ins>constexpr void set_debug_format();</ins>
 </pre>
 
 <ins>
-*Effects*: Calls <code><i>underlying_</i>.set_debug_format(true)</code> if it is a valid
+*Effects*: Calls <code><i>underlying_</i>.set_debug_format()</code> if it is a valid
 expression and `K == range_format::debug_string`.
 </ins>
 
@@ -822,6 +832,7 @@ template<class ParseContext>
     parse(ParseContext& ctx);
 ```
 
+<!--
 -2- *Effects*: Equivalent to:
 
 <pre>
@@ -834,6 +845,7 @@ return i;</del><ins>
 return<i> underlying_</i>.parse(ctx);
 </ins>
 </pre>
+-->
 
 In [[format.tuple](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=816)]:
@@ -851,7 +863,8 @@ namespace std {
   constexpr void set_brackets(basic_string_view&lt;charT> opening,
                               basic_string_view&lt;charT> closing);
 
-  <ins>constexpr formatter();</ins>
+  <!--ins>constexpr formatter();</ins-->
+  <ins>constexpr void set_debug_format();</ins>
                               
   template&lt;class ParseContext>
     constexpr typename ParseContext::iterator
@@ -873,15 +886,15 @@ constexpr void set_brackets(basic_string_view<charT> opening, basic_string_view<
 
 <pre>
 <ins>
-constexpr formatter();
+constexpr void set_debug_format();
 </ins>
 </pre>
 
 <ins>*Effects*: For each
-element <code><i>e</i></code> in <code><i>underlying_</i></code>, if
-<code><i>e</i>.set_debug_format(true)</code> is a valid expression, calls
-<code><i>e</i>.set_debug_format(true)</code>.</ins>
+element <code><i>e</i></code> in <code><i>underlying_</i></code>, calls
+<code><i>e</i>.set_debug_format()</code> if it is a valid expression.</ins>
 
+<!--
 ```
 template<class ParseContext>
   constexpr typename ParseContext::iterator
@@ -905,6 +918,7 @@ element <code><i>e</i></code> in <code><i>underlying_</i></code>, calls
 <ins>*Throws*: `format_error` if `ctx.begin() != ctx.end()` and `*ctx.begin() != '}'`
 after parsing *tuple-format-spec* and before invoking <code><i>e</i>.parse(ctx)</code>
 for each element <code><i>e</i></code> in <code><i>underlying_</i></code>.</ins>
+-->
 
 Acknowledgements {#ack}
 ================
@@ -929,7 +943,7 @@ formatting of ranges and tuples.
     "title": "Formatting Ranges",
     "authors": "Barry Revzin",
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html"
-  },
+  } <!--,
   "FMT": {
     "title": "The fmt library",
     "authors": ["Victor Zverovich"],
@@ -939,6 +953,6 @@ formatting of ranges and tuples.
   "LIBCXX": {
     "title": "“libc++” C++ Standard Library",
     "href": "https://libcxx.llvm.org/"
-  }
+  }-->
 }
 </pre>
