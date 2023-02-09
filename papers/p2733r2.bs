@@ -38,14 +38,16 @@ Originally it also amended the proposed resolution of [[LWG3776]] to allow
 omitting calls to `formatter::parse` for empty specifiers per LEWG feedback but
 this part was removed due to new LEWG feedback.
 
-Changes from R1 {#changes}
+Changes from R1 {#changes1}
 ===============
 
 * Removed the permission to omit calls to `parse` for empty or missing
     format specifiers per new LEWG guidance.
 * Added calls to `parse` for tuple element formatters.
+* Clarified that *format-spec* cannot start with `}` per LWG feedback.
+* Improved wording of `set_debug_format`.
 
-Changes from R0 {#changes}
+Changes from R0 {#changes0}
 ===============
 
 * Added a comparison with potential alternative resolutions of the nested
@@ -624,6 +626,18 @@ Wording {#wording}
 
 This wording is relative to [[N4917]].
 
+Modify [[format.string.general](http://eel.is/c++draft/format.string.general)]
+as indicated:
+
+-1- ...
+
+<i>format-specifier</i>:<br>
+&nbsp;&nbsp;`:` <i>format-spec</i>
+
+<i>format-spec</i>:<br>
+&nbsp;&nbsp;as specified by the `formatter` specialization for the argument type<ins>;
+  cannot start with `}`</ins>
+
 Modify 22.14.6.1 [[formatter.requirements](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=802)]
 as indicated:
@@ -696,10 +710,11 @@ https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803)]:
 is either enabled or disabled, as described below. A *debug-enabled*
 specialization of `formatter` additionally provides a public, constexpr,
 non-static member function <code>set_debug_format(<ins>bool set</ins>)</code>
-which modifies the state of the `formatter` to be as if the type of the
-*std-format-spec* parsed by the last call to `parse` were `?` <ins>if `set` is
-`true` and none otherwise</ins>. Each header that declares the template
-`formatter` provides the following enabled specializations:
+which modifies the state of the `formatter` <ins>setting the presentation type
+to debug, which is represented by `?` in *std-format-spec*, if `set` is `true`
+and the default otherwise.</ins><del> to be as if the type of the *std-format-spec*
+parsed by the last call to `parse` were `?`.</del> Each header that declares the
+template `formatter` provides the following enabled specializations:
 
 ...
 
@@ -763,10 +778,11 @@ present. <del>If:</del>
 
 <del>then calls <code><i>underlying_</i>underlying_.set_debug_format()</code>.</del>
 <p>
-<ins>
-* <ins>Calls `underlying_.set_debug_format(false)` if it is a valid expression
-    and there is *range-underlying-spec*.</ins>
-* <ins>Calls `underlying_.parse(ctx)` to parse, possibly empty, *range-underlying-spec*.</ins>
+
+<ins>If there is a *range-underlying-spec*, then calls
+`underlying_.set_debug_format(false)` if that is a valid expression. Then calls
+`underlying_.parse(ctx)` after having advanced `ctx` to the beginning of the
+*range-underlying-spec*, if any.</ins>
 
 In [[format.range.fmtstr](
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813)]:
@@ -815,9 +831,6 @@ if constexpr (K == range_format::debug_string) {
  <i> underlying_</i>.set_debug_format(true);
 }
 return i;</del><ins>
-if constexpr (K == range_format::debug_string) {
- <i> underlying_</i>.set_debug_format(false);
-}
 return<i> underlying_</i>.parse(ctx);
 </ins>
 </pre>
@@ -875,9 +888,10 @@ template<class ParseContext>
     parse(ParseContext& ctx);
 ```
 
--7- *Effects*: Parses the format <del>specifier</del><ins>specifiers</ins> as a *tuple-format-spec*
-and stores the parsed specifiers in `*this`. The values of
-<code><i>opening-bracket_</i></code>,
+-7- *Effects*: Parses the format <del>specifier</del><ins>specifiers</ins> as a 
+*tuple-format-spec* <del>and</del> <ins>,</ins> stores the parsed specifiers in
+`*this` <ins> and advances `ctx` to the end of the parsed input</ins>. 
+The values of <code><i>opening-bracket_</i></code>,
 <code><i>closing-bracket_</i></code>, and <code><i>separator_</i></code> are
 modified if and only if required by the *tuple-type*, if present. <del>For each
 element <code><i>e</i></code> in <code><i>underlying_</i></code>, if

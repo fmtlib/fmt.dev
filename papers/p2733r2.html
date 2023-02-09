@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c8e43ee03f19788720be77e9c0c861be3774c1f7" name="document-revision">
+  <meta content="b9120b76ae6efd1c1759a5b297dcb101b70d0cbe" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2105,8 +2105,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes"><span class="secno">2</span> <span class="content">Changes from R1</span></a>
-    <li><a href="#changes①"><span class="secno">3</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes from R1</span></a>
+    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes from R0</span></a>
     <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
     <li><a href="#poll-results"><span class="secno">5</span> <span class="content">LEWG Poll Results</span></a>
     <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
@@ -2126,15 +2126,19 @@ present format specifiers are handled equivalently.
 Originally it also amended the proposed resolution of <a data-link-type="biblio" href="#biblio-lwg3776">[LWG3776]</a> to allow
 omitting calls to <code class="highlight"><c- n>formatter</c-><c- o>::</c-><c- n>parse</c-></code> for empty specifiers per LEWG feedback but
 this part was removed due to new LEWG feedback.</p>
-   <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Removed the permission to omit calls to <code class="highlight"><c- n>parse</c-></code> for empty or missing
 format specifiers per new LEWG guidance.</p>
     <li data-md>
      <p>Added calls to <code class="highlight"><c- n>parse</c-></code> for tuple element formatters.</p>
+    <li data-md>
+     <p>Clarified that <em>format-spec</em> cannot start with <code class="highlight"><c- p>}</c-></code> per LWG feedback.</p>
+    <li data-md>
+     <p>Improved wording of <code class="highlight"><c- n>set_debug_format</c-></code>.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes①"><span class="secno">3. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes①"></a></h2>
+   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added a comparison with potential alternative resolutions of the nested
@@ -2453,6 +2457,15 @@ format-spec if it is not present or empty". Return the issue to LWG for C++23
    <p><strong>Outcome</strong>: weak consensus in favour</p>
    <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>This wording is relative to <a data-link-type="biblio" href="#biblio-n4917">[N4917]</a>.</p>
+   <p>Modify <a href="http://eel.is/c++draft/format.string.general">[format.string.general</a>]
+as indicated:</p>
+   <p>-1- ...</p>
+   <p><i>format-specifier</i>:<br>   <code class="highlight"><c- o>:</c-></code> <i>format-spec</i></p>
+   <p>
+    <i>format-spec</i>:<br>   as specified by the <code class="highlight"><c- n>formatter</c-></code> specialization for the argument type
+    <ins>;
+  cannot start with <code class="highlight"><c- p>}</c-></code></ins>
+   </p>
    <p>Modify 22.14.6.1 <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=802">[formatter.requirements</a>]
 as indicated:</p>
    <p>-3- Given character type <code class="highlight"><c- n>charT</c-></code>, output iterator type <code class="highlight"><c- n>Out</c-></code>, and formatting
@@ -2468,9 +2481,12 @@ If <em>format-spec</em> is
    <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=803">[format.formatter.spec</a>]:</p>
    <p>
     -2- Let <code class="highlight"><c- n>charT</c-></code> be either <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- n>wchar_</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is either enabled or disabled, as described below. A <em>debug-enabled</em> specialization of <code class="highlight"><c- n>formatter</c-></code> additionally provides a public, constexpr,
-non-static member function <code class="highlight"><c- n>set_debug_format</c-><c- p>(</c-><ins><c- b>bool</c-> <c- n>set</c-></ins><c- p>)</c-></code> which modifies the state of the <code class="highlight"><c- n>formatter</c-></code> to be as if the type of the <em>std-format-spec</em> parsed by the last call to <code class="highlight"><c- n>parse</c-></code> were <code class="highlight"><c- o>?</c-></code> 
-    <ins>if <code class="highlight"><c- n>set</c-></code> is <code class="highlight">true</code> and none otherwise</ins>
-    . Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following enabled specializations:
+non-static member function <code class="highlight"><c- n>set_debug_format</c-><c- p>(</c-><ins><c- b>bool</c-> <c- n>set</c-></ins><c- p>)</c-></code> which modifies the state of the <code class="highlight"><c- n>formatter</c-></code> 
+    <ins>setting the presentation type
+to debug, which is represented by <code class="highlight"><c- o>?</c-></code> in <em>std-format-spec</em>, if <code class="highlight"><c- n>set</c-></code> is <code class="highlight">true</code> and the default otherwise.</ins>
+    <del> to be as if the type of the <em>std-format-spec</em> parsed by the last call to <code class="highlight"><c- n>parse</c-></code> were <code class="highlight"><c- o>?</c-></code>.</del>
+     Each header that declares the
+template <code class="highlight"><c- n>formatter</c-></code> provides the following enabled specializations:
    </p>
    <p>...</p>
    <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=809">[format.range.formatter</a>]</p>
@@ -2523,15 +2539,8 @@ present.
    </ul>
    <del>then calls <code class="highlight"><i><c- n>underlying_</c-></i><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
    <p>
-    <ins></ins>
+    <ins>If there is a <em>range-underlying-spec</em>, then calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->false<c- p>)</c-></code> if that is a valid expression. Then calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> after having advanced <code class="highlight"><c- n>ctx</c-></code> to the beginning of the <em>range-underlying-spec</em>, if any.</ins>
    </p>
-   <ul>
-    <li data-md>
-     <ins>Calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>set_debug_format</c-><c- p>(</c->false<c- p>)</c-></code> if it is a valid expression
-and there is <em>range-underlying-spec</em>.</ins>
-    <li data-md>
-     <ins>Calls <code class="highlight"><c- n>underlying_</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code> to parse, possibly empty, <em>range-underlying-spec</em>.</ins>
-   </ul>
    <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=813">[format.range.fmtstr</a>]:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- n>range_format</c-> <c- n>K</c-><c- p>,</c-> <c- n>ranges</c-><c- o>::</c-><c- n>input_</c->­<c- n>range</c-> <c- n>R</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
@@ -2565,10 +2574,7 @@ expression and <code class="highlight"><c- n>K</c-> <c- o>==</c-> <c- n>range_fo
   <i><c- n>underlying_</c-><c- p>.</c-></i><c- n>set_debug_format</c-><c- p>(</c->true<c- p>);</c->
 <c- p>}</c->
 <c- k>return</c-> <c- n>i</c-><c- p>;</c->
-</del><ins><c- k>if</c-> <c- nf>constexpr</c-> <c- p>(</c-><c- n>K</c-> <c- o>==</c-> <c- n>range_format</c-><c- o>::</c-><c- n>debug_string</c-><c- p>)</c-> <c- p>{</c->
-  <i><c- n>underlying_</c-><c- p>.</c-></i><c- n>set_debug_format</c-><c- p>(</c->false<c- p>);</c->
-<c- p>}</c->
-<c- k>return</c-> <i><c- n>underlying_</c-><c- p>.</c-></i><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>);</c->
+</del><ins><c- k>return</c-> <i><c- n>underlying_</c-><c- p>.</c-></i><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>);</c->
 </ins></pre>
    <p>In <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/n4917.pdf#page=816">[format.tuple</a>]:</p>
    <p>-1- For each of <code class="highlight"><c- n>pair</c-></code> and <code class="highlight"><c- n>tuple</c-></code>, the library provides the following formatter
@@ -2609,7 +2615,13 @@ element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highl
     -7- <em>Effects</em>: Parses the format 
     <del>specifier</del>
     <ins>specifiers</ins>
-     as a <em>tuple-format-spec</em> and stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>. The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
+     as a <em>tuple-format-spec</em> 
+    <del>and</del>
+    <ins>,</ins>
+     stores the parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code> 
+    <ins> and advances <code class="highlight"><c- n>ctx</c-></code> to the end of the parsed input</ins>
+    . 
+The values of <code class="highlight"><i><c- n>opening</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, <code class="highlight"><i><c- n>closing</c-><c- o>-</c-><c- n>bracket_</c-></i></code>, and <code class="highlight"><i><c- n>separator_</c-></i></code> are
 modified if and only if required by the <em>tuple-type</em>, if present. 
     <del>For each
 element <code class="highlight"><i><c- n>e</c-></i></code> in <code class="highlight"><i><c- n>underlying_</c-></i></code>, if <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code> is a valid expression, calls <code class="highlight"><i><c- n>e</c-></i><c- p>.</c-><c- n>set_debug_format</c-><c- p>()</c-></code>.</del>
