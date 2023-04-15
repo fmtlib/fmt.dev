@@ -42,8 +42,62 @@ improved `std::formatter` specialization for `path`.
 Proposal
 ========
 
-TODO: briefly talk about previous proposal, what is wrong with it and how to 
-fix it.
+[[P1636]] proposed defining a `formatter` specialization for `path` in terms of
+`ostream` insertion operator which, in turn, formats the native representation
+wrapped in `quoted`. For example:
+
+```c++
+std::cout << std::format("{}, std::filesystem:::path("/usr/bin"));
+```
+would print `"/usr/bin"` with quotes being part of the output.
+
+Unfortunately this has a number of problems, some of them raised in the LWG
+discussion of the paper.
+
+First, `std::quoted` only escapes the delimiter (`"`) and the escape character
+itself (<code>\</code>). As a result the output may not be usable if the path contains
+control characters such as newlines. For example:
+
+```c++
+std::cout << std::format("{}, std::filesystem:::path("multi\nline"));
+```
+would print
+```text
+"multi
+line"
+```
+which is not a valid string in C++ and most other languages, most importantly,
+including shell languages. This makes the output pretty much unusable and
+interferes with formatting of ranges of paths.
+
+Another problem is encoding. The representation return by the `native` member
+function gives `basic_string<value_type>` where
+
+> `value_type` is a `typedef` for the operating system dependent encoded
+> character type used to represent pathnames.
+
+`value_type` is normally `char` on POSIX and `wchar_t` on Windows.
+
+When `value_type` doesn't match the character (code unit) type of a formatting
+function, encoding conversion would be performed per [[fs.path.type.cvt](
+http://eel.is/c++draft/fs.path.type.cvt)].
+
+If the character type is `wchar_t` the method of conversion is unspecified.
+For example, in libstdc++ even a basic case like
+
+```c++
+std::wcout.imbue(std::locale::classic()); // Mimick P1636.
+std::wcout << std::filesystem::path("паляниця");
+```
+
+throws an exception:
+
+```text
+terminate called after throwing an instance of 'std::filesystem::__cxx11::filesystem_error'
+  what():  filesystem error: Cannot convert character sequence: Invalid or incomplete multibyte or wide character
+```
+
+TODO: wchar_t -> char
 
 Implementation
 ==============
