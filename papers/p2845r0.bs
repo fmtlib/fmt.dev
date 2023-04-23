@@ -39,12 +39,12 @@ However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
 
-Proposal
+Problems
 ========
 
-[[P1636]] proposed defining a `formatter` specialization for `path` in terms of
-`ostream` insertion operator which, in turn, formats the native representation
-wrapped in `quoted`. For example:
+[[P1636]] proposed defining a `formatter` specialization for `path` in terms
+of the `ostream` insertion operator which, in turn, formats the native
+representation wrapped in `quoted`. For example:
 
 ```c++
 std::cout << std::format("{}, std::filesystem:::path("/usr/bin"));
@@ -66,38 +66,63 @@ would print
 "multi
 line"
 ```
-which is not a valid string in C++ and most other languages, most importantly,
-including shell languages. This makes the output pretty much unusable and
+which is not a valid string in C++ and many other languages, most importantly
+including shell languages. Such output is pretty much unusable and
 interferes with formatting of ranges of paths.
 
-Another problem is encoding. The representation return by the `native` member
-function gives `basic_string<value_type>` where
+Another problem is encoding. The `native` member function returns
+`basic_string<value_type>` where
 
 > `value_type` is a `typedef` for the operating system dependent encoded
 > character type used to represent pathnames.
 
 `value_type` is normally `char` on POSIX and `wchar_t` on Windows.
 
-When `value_type` doesn't match the character (code unit) type of a formatting
-function, encoding conversion would be performed per [[fs.path.type.cvt](
+This function may perform encoding conversion per [[fs.path.type.cvt](
 http://eel.is/c++draft/fs.path.type.cvt)].
 
-If the character type is `wchar_t` the method of conversion is unspecified.
-For example, in libstdc++ even a basic case like
+On POSIX, when the target code unit type is `char` no conversion is normally
+performed:
+
+> For POSIX-based operating systems `path::value_type` is `char` so no
+> conversion from `char` value type arguments or to `char` value type return
+> values is performed.
+
+This usually gives the desired result.
+
+On Windows, when the target code unit type is `char` the encoding conversion
+would result in invalid output. For example, trying to print the following path
+in Belarusian
 
 ```c++
-std::wcout.imbue(std::locale::classic()); // Mimick P1636.
-std::wcout << std::filesystem::path("паляниця");
+std::print("{}\n", std::filesystem::path(L"Шчучыншчына"));
 ```
 
-throws an exception:
+would result in the following output in the Windows console even though all code
+pages and localization settings are set to Belarusian and both the source and
+literal encodings are UTF-8:
 
-```text
-terminate called after throwing an instance of 'std::filesystem::__cxx11::filesystem_error'
-  what():  filesystem error: Cannot convert character sequence: Invalid or incomplete multibyte or wide character
+```
+"�����������"
 ```
 
-TODO: wchar_t -> char
+The problem is that despite `print` and `path` both support Unicode the
+intermediate conversion goes through CP1251 (the code page used for Belarusian)
+which is not even valid for printing in the console which uses legacy CP866.
+This has been discussed at length in [[P2093]] "Formatted output".
+
+Proposal
+========
+
+Fortunately both of the problems discussed in the previoius section have
+already been solved. The escaping mechanism has been introduced in [[P2286]]
+"Formatting Ranges" and encoding issues have been addressed in [[P2093]] and
+other papers. We apply those solutions to the formatting of paths.
+
+This paper proposes adding a `formatter` specialization for `path` that does
+escaping similarly to [[P2286]] and Unicode transcoding on Windows.
+
+TODO
 
 Implementation
 ==============
@@ -110,6 +135,16 @@ TODO
     "title": "Formatters for library types",
     "authors": "Lars Gullik Bjønnes",
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf"
+  },
+  "P2093": {
+    "title": "Formatted output",
+    "authors": "Victor Zverovich",
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html"
+  },
+  "P2286": {
+    "title": "Formatting Ranges",
+    "authors": "Barry Revzin",
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html"
   }
 }
 </pre>
