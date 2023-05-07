@@ -167,7 +167,64 @@ std::print("{}\n", p);
 </tr>
 </table>
 
-TODO: how to handle invalid code units?
+This leaves only one question of how to handle invalid Unicode. Plain strings
+handle them by formatting ill-formed code units as hexadecimal escapes, e.g.
+
+```c++
+// invalid UTF-8, s has value: ["\x{c3}("]
+std::string s = std::format("[{:?}]", "\xc3\x28");
+```
+
+This is useful because it doesn't loose any information. But in case of paths
+it is a bit more complicated because the string is in a different forms and
+the mapping between ill-formed code units in one form to another may not be
+well-defined.
+
+The current paper proposes applying hexadecimal escapes to the original
+ill-formed data because it gives more intuitive result and doesn't require
+picking non-standard mappings such as WTF-8 ([[WTF]]).
+
+For example:
+```c++
+auto p = std::filesystem::path(L"\xd800"); // a lone surrogate
+std::print("{}\n", p);
+```
+prints
+```text
+"\x{d800}"
+```
+
+TODO: implement handling of invalid Unicode
+
+Wording {#wording}
+=======
+
+Add to "Header &lt;filesystem> synopsis" [[fs.filesystem.syn](
+https://eel.is/c++draft/fs.filesystem.syn)]:
+
+```
+// [fs.path.fmt], formatter
+template<class charT> struct formatter<filesystem::path, charT>;
+```
+
+Add a new section "Formatting" [fs.path.fmt] under "Class path"
+[[fs.class.path](https://eel.is/c++draft/fs.class.path)]:
+
+```
+template<class charT> struct formatter<filesystem::path, charT> {
+  constexpr format_parse_context::iterator parse(format_parse_context& ctx);
+
+  template<class FormatContext>
+    typename FormatContext::iterator
+      format(filesystem::path& path, FormatContext& ctx) const;
+};
+```
+
+```
+constexpr format_parse_context::iterator parse(format_parse_context& ctx);
+```
+
+TODO: define parse and format
 
 Implementation {#impl}
 ==============
@@ -198,5 +255,10 @@ The proposed `formatter` for `std::filesystem::path` has been implemented in
     "etAl": true,
     "href": "https://github.com/fmtlib/fmt"
   },
+  "WTF": {
+    "title": "The WTF-8 encoding",
+    "authors": "Simon Sapin",
+    "href": "https://simonsapin.github.io/wtf-8/"
+  }
 }
 </pre>
