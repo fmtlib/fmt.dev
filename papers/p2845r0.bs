@@ -182,7 +182,7 @@ well-defined.
 
 The current paper proposes applying hexadecimal escapes to the original
 ill-formed data because it gives more intuitive result and doesn't require
-picking non-standard mappings such as WTF-8 ([[WTF]]).
+non-standard mappings such as WTF-8 ([[WTF]]).
 
 For example:
 ```c++
@@ -191,10 +191,8 @@ std::print("{}\n", p);
 ```
 prints
 ```text
-"\x{d800}"
+"\u{d800}"
 ```
-
-TODO: implement handling of invalid Unicode
 
 Wording {#wording}
 =======
@@ -210,21 +208,39 @@ template<class charT> struct formatter<filesystem::path, charT>;
 Add a new section "Formatting" [fs.path.fmt] under "Class path"
 [[fs.class.path](https://eel.is/c++draft/fs.class.path)]:
 
-```
-template<class charT> struct formatter<filesystem::path, charT> {
+<pre>
+template&lt;class charT> struct formatter&lt;filesystem::path, charT> {
   constexpr format_parse_context::iterator parse(format_parse_context& ctx);
 
-  template<class FormatContext>
+  template&lt;class FormatContext>
     typename FormatContext::iterator
-      format(filesystem::path& path, FormatContext& ctx) const;
+      format(const filesystem::path& path, FormatContext& ctx) const;
 };
-```
+</pre>
 
 ```
 constexpr format_parse_context::iterator parse(format_parse_context& ctx);
 ```
 
-TODO: define parse and format
+*Effects*: Parses the format specifier as a *path-format-spec* and stores the
+parsed specifiers in `*this`.
+
+<i>path-format-spec</i>:<br>
+&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i>
+
+*Returns*: An iterator past the end of the *path-format-spec*.
+
+<pre>
+  template&lt;class FormatContext>
+    typename FormatContext::iterator
+      format(const filesystem::path& p, FormatContext& ctx) const;
+</pre>
+
+*Effects*: Writes escaped ([[format.string.escaped](
+http://eel.is/c++draft/format#string.escaped)]) `p.native()` into `ctx.out()`,
+adjusted according to the *range-format-spec*.
+
+*Returns*: An iterator past the end of the output range.
 
 Implementation {#impl}
 ==============
