@@ -310,8 +310,31 @@ See <a class="reference internal" href="#ranges-api"><span class="std std-ref">f
 containers such as <code class="docutils literal notranslate"><span class="pre">std::vector</span></code>, <a class="reference internal" href="#chrono-api"><span class="std std-ref">fmt/chrono.h</span></a> for date
 and time formatting and <a class="reference internal" href="#std-api"><span class="std std-ref">fmt/std.h</span></a> for other standard library
 types.</p>
-<p>To make a user-defined type formattable, specialize the <code class="docutils literal notranslate"><span class="pre">formatter&lt;T&gt;</span></code> struct
-template and implement <code class="docutils literal notranslate"><span class="pre">parse</span></code> and <code class="docutils literal notranslate"><span class="pre">format</span></code> methods:</p>
+<p>There are two ways to make a user-defined type formattable: providing a
+<code class="docutils literal notranslate"><span class="pre">format_as</span></code> function or specializing the <code class="docutils literal notranslate"><span class="pre">formatter</span></code> struct template.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">format_as</span></code> if you want to make your type formattable as some other type
+with the same format specifiers. The <code class="docutils literal notranslate"><span class="pre">format_as</span></code> function should take an
+object of your type and return an object of a formattable type. It should be
+defined in the same namespace as your type.</p>
+<p>Example (<a class="reference external" href="https://godbolt.org/z/r7vvGE1v7">https://godbolt.org/z/r7vvGE1v7</a>):</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">kevin_namespacy</span><span class="w"> </span><span class="p">{</span>
+<span class="k">enum</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">film</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">house_of_cards</span><span class="p">,</span><span class="w"> </span><span class="n">american_beauty</span><span class="p">,</span><span class="w"> </span><span class="n">se7en</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span>
+<span class="p">};</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">format_as</span><span class="p">(</span><span class="n">film</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">underlying</span><span class="p">(</span><span class="n">f</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kevin_namespacy</span><span class="o">::</span><span class="n">film</span><span class="o">::</span><span class="n">se7en</span><span class="p">);</span><span class="w"> </span><span class="c1">// prints &quot;7&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Using the specialization API is more comlex but gives you full control over
+parsing and formatting. To use this method specialize the <code class="docutils literal notranslate"><span class="pre">formatter</span></code> struct
+template for your type and implement <code class="docutils literal notranslate"><span class="pre">parse</span></code> and <code class="docutils literal notranslate"><span class="pre">format</span></code> methods.
+For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span>
 
 <span class="k">struct</span><span class="w"> </span><span class="nc">point</span><span class="w"> </span><span class="p">{</span>
@@ -439,25 +462,6 @@ all string format specifications, for example</p>
 <p>If a type provides both a <code class="docutils literal notranslate"><span class="pre">formatter</span></code> specialization and an implicit
 conversion to a formattable type, the specialization takes precedence over the
 conversion.</p>
-<p>For enums {fmt} also provides the <code class="docutils literal notranslate"><span class="pre">format_as</span></code> extension API. To format an enum
-via this API define <code class="docutils literal notranslate"><span class="pre">format_as</span></code> that takes this enum and converts it to the
-underlying type. <code class="docutils literal notranslate"><span class="pre">format_as</span></code> should be defined in the same namespace as the
-enum.</p>
-<p>Example (<a class="reference external" href="https://godbolt.org/z/r7vvGE1v7">https://godbolt.org/z/r7vvGE1v7</a>):</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span>
-
-<span class="k">namespace</span><span class="w"> </span><span class="nn">kevin_namespacy</span><span class="w"> </span><span class="p">{</span>
-<span class="k">enum</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">film</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">house_of_cards</span><span class="p">,</span><span class="w"> </span><span class="n">american_beauty</span><span class="p">,</span><span class="w"> </span><span class="n">se7en</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span>
-<span class="p">};</span>
-<span class="k">auto</span><span class="w"> </span><span class="n">format_as</span><span class="p">(</span><span class="n">film</span><span class="w"> </span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">underlying</span><span class="p">(</span><span class="n">f</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
-<span class="p">}</span>
-
-<span class="kt">int</span><span class="w"> </span><span class="n">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">kevin_namespacy</span><span class="o">::</span><span class="n">film</span><span class="o">::</span><span class="n">se7en</span><span class="p">);</span><span class="w"> </span><span class="c1">// prints &quot;7&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
 </section>
 <section id="named-arguments">
 <h3>Named Arguments<a class="headerlink" href="#named-arguments" title="Permalink to this headline">¶</a></h3>
