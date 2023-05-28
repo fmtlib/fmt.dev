@@ -46,9 +46,10 @@ Problems {#problems}
 
 [[P2216]] "std::format improvements" introduced compile-time format string
 checks for `std::format`. This obviously requires format strings be known at
-compile time. However, there are some use cases where it is not the case, e.g.
-translation through gettext ([[GETTEXT]]). One possible workaround is using
-type-erased formatting functions such as `std::vformat`:
+compile time. However, there are some use cases where format strings are only
+known at runtime, e.g. when translated through gettext ([[GETTEXT]]).
+One possible workaround is using type-erased formatting functions such as
+`std::vformat`:
 
 ```c++
 std::string str = "The answer is {}.";
@@ -65,7 +66,7 @@ following example:
 <!-- https://godbolt.org/z/8PoPeheav -->
 ```c++
 std::string str = "{}";
-std::filesystem::path path = "/path/leading/to/Rome";
+std::filesystem::path path = "/path/etic/experience";
 auto args = std::make_format_args(path.string());
 std::string msg = std::vformat(str, args);
 ```
