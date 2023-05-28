@@ -1,0 +1,111 @@
+<pre class='metadata'>
+Title: Runtime format strings
+Shortname: P2905
+Revision: 0
+Audience: LEWG
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2023-05-28
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+	ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+		text-align: right;
+    width: 20%;
+	}
+</style>
+
+<p style="text-align: right">
+TODO
+</p>
+
+Introduction {#intro}
+============
+
+[[P2216]] "std::format improvements" introduced compile-time format string
+checks which, quoting Barry Revzin, "is a fantastic feature". However, due to
+resource constraints it didn't provide a good API for using formatting functions
+with format strings not known at compile time. As a workaround one could use
+type-erased API which has never been designed for that. This severely undermined
+safety and led to poor user experience. This paper fixes the issue by proposing
+direct support for runtime format strings which has been long available in the
+{fmt} library.
+
+Problems {#problems}
+========
+
+[[P2216]] "std::format improvements" introduced compile-time format string
+checks for `std::format`. This obviously requires format strings be known at
+compile time. However, there are some use cases where it is not the case, e.g.
+translation through gettext ([[GETTEXT]]). One possible workaround is using
+type-erased formatting functions such as `std::vformat`:
+
+```c++
+std::string str = "The answer is {}.";
+std::string msg = std::vformat(str, std::make_format_args(42));
+```
+
+This is not a great user experience because the type-erased API was designed
+to avoid template bloat and should be used by formatting function writers and
+not by end users.
+
+Such misuse of the API also introduces major safety issues illustrated in the
+following example:
+
+<!-- https://godbolt.org/z/8PoPeheav -->
+```c++
+std::string str = "{}";
+std::filesystem::path path = "/path/leading/to/Rome";
+auto args = std::make_format_args(path.string());
+std::string msg = std::vformat(str, args);
+```
+
+This innocent-looking code has undefined behavior because format arguments
+store a reference to a temporary which is destroyed before use. This has been
+discovered and fixed in [[FMT]] which now rejects this code at compile time.
+
+Proposal {#proposal}
+========
+
+TODO: propose std::runtime/std::fmt::runtime
+
+Wording {#wording}
+=======
+
+TODO
+
+Implementation {#impl}
+==============
+
+The proposed API has been implemented in the {fmt} library ([[FMT]]).
+
+<pre class=biblio>
+{
+  "FMT": {
+    "title": "The fmt library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "GETTEXT": {
+    "title": "gettext",
+    "authors": ["Free Software Foundation"],
+    "href": "https://www.gnu.org/software/gettext/"
+  },
+  "P2216": {
+    "title": "std::format improvements",
+    "authors": ["Victor Zverovich"],
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html"
+  }
+}
+</pre>
