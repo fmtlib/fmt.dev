@@ -12,7 +12,7 @@
  *   - .toc for the Table of Contents (<ol class="toc">)
  *     + <span class="secno"> for the section numbers
  *   - #toc for the Table of Contents (<nav id="toc">)
- *   - ul.index for Indices (<a href="#ref">term</a><span>, in §N.M</span>)
+ *   - ul.index for Indices (<a href="#ref">term</a><span>, in § N.M</span>)
  *   - table.index for Index Tables (e.g. for properties or elements)
  *
  * Structural Markup
@@ -1269,7 +1269,7 @@ Possible extra rowspan handling
 	ul.index ul,
 	ul.index dl { font-size: smaller; }
 	@media not print {
-		ul.index li span:not(.dfn-paneled) {
+		ul.index li a + span {
 			white-space: nowrap;
 			color: transparent; }
 		ul.index li a:hover + span,
@@ -1487,7 +1487,7 @@ Possible extra rowspan handling
 		}
 	}
 </style>
-<style type="text/css">
+<style>
     table, th, td {
       border: 1px solid black;
       border-collapse: collapse;
@@ -1560,12 +1560,11 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
+  <meta content="Bikeshed version 3383f409d, updated Fri Apr 28 15:49:22 2023 -0700" name="generator">
   <link href="http://wg21.link/P1729R1" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ef3c5f5e5d0061136154064070bbfd427294e675" name="document-revision">
+  <meta content="741d24b1b7c383ae58b702d1f8464b8c91417183" name="document-revision">
 <style>/* style-autolinks */
-
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
     font-size: inherit;
@@ -1625,7 +1624,8 @@ pre .property::before, pre .property::after {
 
 [data-link-type=biblio] {
     white-space: pre;
-}</style>
+}
+</style>
 <style>/* style-colors */
 
 /* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
@@ -1734,9 +1734,9 @@ pre .property::before, pre .property::after {
     --outdated-shadow: red;
 
     --editedrec-bg: darkorange;
-}</style>
+}
+</style>
 <style>/* style-counters */
-
 body {
     counter-reset: example figure issue;
 }
@@ -1763,9 +1763,18 @@ figcaption {
 }
 figcaption:not(.no-marker)::before {
     content: "Figure " counter(figure) " ";
-}</style>
+}
+</style>
+<style>/* style-issues */
+a[href].issue-return {
+    float: right;
+    float: inline-end;
+    color: var(--issueheading-text);
+    font-weight: bold;
+    text-decoration: none;
+}
+</style>
 <style>/* style-md-lists */
-
 /* This is a weird hack for me not yet following the commonmark spec
    regarding paragraph and lists. */
 [data-md] > :first-child {
@@ -1773,7 +1782,8 @@ figcaption:not(.no-marker)::before {
 }
 [data-md] > :last-child {
     margin-bottom: 0;
-}</style>
+}
+</style>
 <style>/* style-selflinks */
 
 :root {
@@ -1800,6 +1810,14 @@ a.self-link:hover {
 }
 .heading > a.self-link {
     font-size: 83%;
+}
+.example > a.self-link,
+.note > a.self-link,
+.issue > a.self-link {
+    /* These blocks are overflow:auto, so positioning outside
+       doesn't work. */
+    left: auto;
+    right: 0;
 }
 li > a.self-link {
     left: calc(-1 * (3.5rem - 26px) - 2em);
@@ -1998,6 +2016,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
        which is quite common in practice... */
     img { background: white; }
 }
+
 @media (prefers-color-scheme: dark) {
     :root {
         --selflink-text: black;
@@ -2094,7 +2113,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref heading settled" id="abstract"><span class="content">Abstract</span></h2>
    <p>This paper discusses a new text parsing facility to complement the text
 
-  formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, proposed in <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a>.</p>
+  formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, proposed in <a data-link-type="biblio" href="#biblio-p0645" title="Text Formatting">[P0645]</a>.</p>
   </div>
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
@@ -2171,20 +2190,20 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <p>Remove support for partial successes</p>
    </ul>
    <h2 class="heading settled" data-level="2" id="introduction"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> proposed a text formatting facility that provides a safe and
+   <p><a data-link-type="biblio" href="#biblio-p0645" title="Text Formatting">[P0645]</a> proposed a text formatting facility that provides a safe and
 extensible alternative to the <code class="highlight"><c- n>printf</c-></code> family of functions.
 This facility has since been introduced into C++, as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
 This paper explores the possibility of adding a symmetric parsing facility,
 which is based on the same design principles and shares many features with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
-   <p>According to <a data-link-type="biblio" href="#biblio-codesearch">[CODESEARCH]</a>, a C and C++ codesearch engine based on the ACTCD19
+   <p>According to <a data-link-type="biblio" href="#biblio-codesearch" title="Code search engine website">[CODESEARCH]</a>, a C and C++ codesearch engine based on the ACTCD19
 dataset, there are 389,848 calls to <code class="highlight"><c- n>sprintf</c-></code> and 87,815 calls to <code class="highlight"><c- n>sscanf</c-></code> at
 the time of writing. So although formatted input functions are less popular than
 their output counterparts, they are still widely used.</p>
    <p>The lack of a general-purpose parsing facility based on format strings has been
-raised in <a data-link-type="biblio" href="#biblio-p1361">[P1361]</a> in the context of formatting and parsing of dates and times.</p>
+raised in <a data-link-type="biblio" href="#biblio-p1361" title="Integration of chrono with text formatting">[P1361]</a> in the context of formatting and parsing of dates and times.</p>
    <p>Although having a symmetric parsing facility seems beneficial, not all languages
 provide it out-of-the-box. For example, Python doesn’t have a <code class="highlight"><c- n>scanf</c-></code> equivalent
-in the standard library, but there is a separate <code class="highlight"><c- n>parse</c-></code> package (<a data-link-type="biblio" href="#biblio-parse">[PARSE]</a>).</p>
+in the standard library, but there is a separate <code class="highlight"><c- n>parse</c-></code> package (<a data-link-type="biblio" href="#biblio-parse" title="Python `parse` package">[PARSE]</a>).</p>
    <h2 class="heading settled" data-level="3" id="examples"><span class="secno">3. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="example-basic"><span class="secno">3.1. </span><span class="content">Basic example</span><a class="self-link" href="#example-basic"></a></h3>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- p>[</c-><c- n>result</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>value</c-><c- p>]</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>,</c-> <c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"answer = 42"</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>);</c->
@@ -2199,7 +2218,8 @@ in the standard library, but there is a separate <code class="highlight"><c- n>p
   <c- c1>// num == 123</c->
   <c- c1>// result.range() == " 456"</c->
 <c- p>}</c-> <c- k>else</c-> <c- p>{</c->
-  <c- c1>// result.error() == something</c->
+  <c- c1>// result.error() is an object of type scan_error,</c->
+  <c- c1>//                containing an error code and a message</c->
   <c- c1>// result.range() == "123 456"</c->
 <c- p>}</c->
 </pre>
@@ -2222,11 +2242,7 @@ in the standard library, but there is a separate <code class="highlight"><c- n>p
 </pre>
    <h3 class="heading settled" data-level="3.5" id="example-loop"><span class="secno">3.5. </span><span class="content">Reading multiple values in a loop</span><a class="self-link" href="#example-loop"></a></h3>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- n>read_values</c-><c- p>;</c->
-<c- c1>// Send our input through map_scan_input_range(), to get something that can,</c->
-<c- c1>// in generic code, be assigned to from result.range() below.</c->
-<c- c1>// If we know that get_source() returs a std::string&amp;, for example,</c->
-<c- c1>// we could just use std::string_view here.</c->
-<c- k>auto</c-> <c- n>range</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>map_scan_input_range</c-><c- p>(</c-><c- n>get_source</c-><c- p>());</c->
+<c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>range</c-> <c- o>=</c-> <c- p>...;</c->
 
 <c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
   <c- k>auto</c-> <c- p>[</c-><c- n>result</c-><c- p>,</c-> <c- n>i</c-><c- p>]</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- n>range</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->
@@ -2235,6 +2251,18 @@ in the standard library, but there is a separate <code class="highlight"><c- n>p
   <c- p>}</c->
 
   <c- n>read_values</c-><c- p>.</c-><c- n>push_back</c-><c- p>(</c-><c- n>i</c-><c- p>);</c->
+  <c- n>range</c-> <c- o>=</c-> <c- n>result</c-><c- p>.</c-><c- n>range</c-><c- p>();</c->
+<c- p>}</c->
+</pre>
+   <p>In the case that the input is not a <code class="highlight"><c- n>string_view</c-></code>, <code class="highlight"><c- n>map_scan_input_range</c-></code> can be used.
+It returns a range that is a view into the range it’s given.
+This view has an assignment operator, so that it can be assigned to from <code class="highlight"><c- n>result</c-><c- p>.</c-><c- n>range</c-><c- p>()</c-></code>,
+even in generic code.</p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>range</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>map_scan_input_range</c-><c- p>(...);</c->
+
+<c- k>while</c-> <c- p>(</c->true<c- p>)</c-> <c- p>{</c->
+  <c- c1>// Same as above</c->
+
   <c- n>range</c-> <c- o>=</c-> <c- n>result</c-><c- p>.</c-><c- n>range</c-><c- p>();</c->
 <c- p>}</c->
 </pre>
@@ -2268,7 +2296,7 @@ unnecessarily complicate specification and parsing.</p>
     <li data-md>
      <p>Using <code class="highlight"><c- sc>'%'</c-></code> in a custom format specifier poses difficulties, e.g. for <code class="highlight"><c- n>get_time</c-></code>-like time parsing.</p>
    </ul>
-   <p>Therefore, we propose a syntax based on <a data-link-type="biblio" href="#biblio-parse">[PARSE]</a> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. This syntax
+   <p>Therefore, we propose a syntax based on <a data-link-type="biblio" href="#biblio-parse" title="Python `parse` package">[PARSE]</a> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. This syntax
 employs <code class="highlight"><c- sc>'{'</c-></code> and <code class="highlight"><c- sc>'}'</c-></code> as replacement field delimiters instead of <code class="highlight"><c- sc>'%'</c-></code>. It
 will provide the following advantages:</p>
    <ul>
@@ -2414,7 +2442,7 @@ sides are assumed.</p>
 i.e., the same format string (wrt. fill and align)
 can be used with both <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>,
 with round-trip semantics.</p>
-   <p class="note" role="note"><span>Note:</span> For format type specifiers other than <code class="highlight"><c- sc>'c'</c-></code> (default for <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>, can be specified for <code class="highlight"><c- n>string</c-></code>),
+   <p class="note" role="note"><span class="marker">Note:</span> For format type specifiers other than <code class="highlight"><c- sc>'c'</c-></code> (default for <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>, can be specified for <code class="highlight"><c- n>string</c-></code>),
 leading whitespace is skipped regardless of alignment specifiers.</p>
    <div class="example" id="example-a9269014">
     <a class="self-link" href="#example-a9269014"></a> 
@@ -2457,7 +2485,7 @@ Signs (both <code class="highlight"><c- o>+</c-></code> and <code class="highlig
 are always allowed for arithmetic values.
 Disabling them would be a bad default for a higher-level facility
 like <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, so flags explicitly enabling them are not needed.</p>
-   <p class="note" role="note"><span>Note:</span> This is incompatible with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> format strings.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> This is incompatible with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> format strings.</p>
    <h4 class="heading settled" data-level="4.3.4" id="fmt-width-precision"><span class="secno">4.3.4. </span><span class="content">Width and precision</span><a class="self-link" href="#fmt-width-precision"></a></h4>
 <pre class="highlight"><c- n>width</c->     <c- o>::=</c-> <c- n>positive</c-><c- o>-</c-><c- n>integer</c->
               <del><i><c- n>OR</c-></i> <c- sc>'{'</c-> <c- p>[</c-><c- n>arg</c-><c- o>-</c-><c- n>id</c-><c- p>]</c-> <c- sc>'}'</c-></del>
@@ -2532,7 +2560,7 @@ Errors, if no field width is provided.
 <c- c1>// s == "Hello"</c->
 </pre>
    </div>
-   <p class="note" role="note"><span>Note:</span> The <code class="highlight"><c- n>c</c-></code> specifier is consistent with <code class="highlight"><c- n>scanf</c-></code>,
+   <p class="note" role="note"><span class="marker">Note:</span> The <code class="highlight"><c- n>c</c-></code> specifier is consistent with <code class="highlight"><c- n>scanf</c-></code>,
 but is not supported for strings by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
    <h4 class="heading settled" data-level="4.3.7" id="fmt-type-int"><span class="secno">4.3.7. </span><span class="content">Type specifiers: integers</span><a class="self-link" href="#fmt-type-int"></a></h4>
    <p>Integer values are scanned as if by using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code>, except:</p>
@@ -2578,7 +2606,7 @@ but is not supported for strings by <code class="highlight"><c- n>std</c-><c- o>
       <td>none 
       <td>Same as <code class="highlight"><c- n>d</c-></code> 
    </table>
-   <p class="note" role="note"><span>Note:</span> The flags <code class="highlight"><c- n>u</c-></code> and <code class="highlight"><c- n>i</c-></code> are not supported by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
+   <p class="note" role="note"><span class="marker">Note:</span> The flags <code class="highlight"><c- n>u</c-></code> and <code class="highlight"><c- n>i</c-></code> are not supported by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
 These flags are consistent with <code class="highlight"><c- n>scanf</c-></code>.</p>
    <h4 class="heading settled" data-level="4.3.8" id="fmt-type-char"><span class="secno">4.3.8. </span><span class="content">Type specifiers: <code class="highlight"><c- n>CharT</c-></code></span><a class="self-link" href="#fmt-type-char"></a></h4>
    <table>
@@ -2596,7 +2624,7 @@ These flags are consistent with <code class="highlight"><c- n>scanf</c-></code>.
       <td><code class="highlight"><c- o>?</c-></code> 
       <td>Copies an escaped character from the input. 
    </table>
-   <p class="note" role="note"><span>Note:</span> This is not encoding or Unicode-aware.
+   <p class="note" role="note"><span class="marker">Note:</span> This is not encoding or Unicode-aware.
 Reading a <code class="highlight"><c- n>CharT</c-></code> with the <code class="highlight"><c- n>c</c-></code> type specifier
 will just read a single <code class="highlight"><c- n>CharT</c-></code>.</p>
    <h4 class="heading settled" data-level="4.3.9" id="fmt-type-bool"><span class="secno">4.3.9. </span><span class="content">Type specifiers: <code class="highlight"><c- b>bool</c-></code></span><a class="self-link" href="#fmt-type-bool"></a></h4>
@@ -2648,12 +2676,21 @@ floating-point values are scanned as if by using <code class="highlight"><c- n>s
    <h3 class="heading settled" data-level="4.4" id="ranges"><span class="secno">4.4. </span><span class="content">Ranges</span><a class="self-link" href="#ranges"></a></h3>
    <p>We propose, that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> would take a range as its input.
 This range should satisfy the requirements of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-></code> to
-enable look-ahead, which is necessary for parsing.
-Also, its <code class="highlight"><c- n>value_type</c-></code> needs to be correct.</p>
+enable look-ahead, which is necessary for parsing.</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-><c- n>class</c-> <c- n>Range</c-><c- p>,</c-> <c- n>class</c-> <c- n>CharT</c-><c- o>></c->
 <c- n>concept</c-> <c- n>scannable_range</c-> <c- o>=</c->
   <c- n>ranges</c-><c- o>::</c-><c- n>forward_range</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- o>&amp;&amp;</c-> <c- n>same_as</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_value_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>CharT</c-><c- o>></c-><c- p>;</c->
 </pre>
+   <p>For a range to be a <code class="highlight"><c- n>scannable_range</c-></code>, its character type (range <code class="highlight"><c- n>value_type</c-></code>, code unit type)
+needs to also be correct, i.e. it needs to match the character type of the format string.
+Mixing and matching character types between the input range and the format string is not supported.</p>
+   <div class="example" id="example-c3c92fab">
+    <a class="self-link" href="#example-c3c92fab"></a> 
+<pre class="language-c++ highlight"><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->   <c- c1>// OK</c->
+<c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c->L<c- s>"42"</c-><c- p>,</c-> L<c- s>"{}"</c-><c- p>);</c-> <c- c1>// OK</c->
+<c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c->L<c- s>"42"</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->  <c- c1>// Error: wchar_t[N] is not a scannable_range&lt;char></c->
+</pre>
+   </div>
    <p>It should be noted, that standard range facilities related to iostreams, namely <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istreambuf_iterator</c-></code>, model <code class="highlight"><c- n>input_iterator</c-></code>.
 Thus, can’t be used with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, and therefore, for example, <code class="highlight"><c- n>stdin</c-></code>, can’t be read directly using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>.
 The reference implementation deals with this by providing a range type, that wraps a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>basic_istreambuf</c-></code>, and provides a <code class="highlight"><c- n>forward_range</c-></code> interface to it.
@@ -2733,7 +2770,7 @@ Please note, how using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>
 especially wrt. the only sensible mapping for a lot of errors being <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code>.</p>
 <pre class="language-c++ highlight"><c- c1>// Not a specification, just exposition</c->
 <c- n>class</c-> <c- n>scan_error</c-> <c- p>{</c->
-<c- nl>public</c-><c- p>:</c->
+<c- n>public</c-><c- o>:</c->
   <c- k>enum</c-> <c- n>code_type</c-> <c- p>{</c->
     <c- c1>// No error.</c->
     <c- c1>// ALTERNATIVE:</c->
@@ -2807,20 +2844,20 @@ small inline wrapper around its non-variadic counterpart:</p>
   <c- k>auto</c-> <c- n>range</c-> <c- o>=</c-> <c- n>map_scan_input_range</c-><c- p>(</c-><c- n>source</c-><c- p>);</c->
   <c- k>auto</c-> <c- n>args</c-> <c- o>=</c-> <c- n>make_scan_args</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>(</c-><c- n>range</c-><c- p>);</c->
   <c- k>auto</c-> <c- n>result</c-> <c- o>=</c-> <c- n>vscan</c-><c- p>(</c-><c- n>range</c-><c- p>,</c-> <c- n>format</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
-  <c- k>return</c-> <c- nf>make_scan_result_tuple</c-><c- p>(</c->
+  <c- k>return</c-> <c- n>make_scan_result_tuple</c-><c- p>(</c->
     <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- o>></c-><c- p>(</c-><c- n>source</c-><c- p>),</c-> <c- n>result</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>args</c-><c- p>));</c->
 <c- p>}</c->
 </args...></pre>
-   <p>As shown in <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> this dramatically reduces binary code size, which will make <code class="highlight"><c- n>scan</c-></code> comparable to <code class="highlight"><c- n>scanf</c-></code> on this metric.</p>
+   <p>As shown in <a data-link-type="biblio" href="#biblio-p0645" title="Text Formatting">[P0645]</a> this dramatically reduces binary code size, which will make <code class="highlight"><c- n>scan</c-></code> comparable to <code class="highlight"><c- n>scanf</c-></code> on this metric.</p>
    <p><code class="highlight"><c- n>make_scan_args</c-></code> type erases the arguments that are to be scanned.
 This is similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-></code>, used with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
    <p><code class="highlight"><c- n>make_scan_result_tuple</c-></code> is a function, that returns a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>tuple</c-></code>.
 The first element of that tuple is an object of type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>.
 See <a href="#error-handling">§ 4.6 Error handling</a> for more.</p>
-   <p class="note" role="note"><span>Note:</span> This implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is way more complicated
+   <p class="note" role="note"><span class="marker">Note:</span> This implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is way more complicated
 compared to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, which can be described as a one-liner calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vscan</c-></code>.</p>
    <h3 class="heading settled" data-level="4.8" id="safety"><span class="secno">4.8. </span><span class="content">Safety</span><a class="self-link" href="#safety"></a></h3>
-   <p><code class="highlight"><c- n>scanf</c-></code> is arguably more unsafe than <code class="highlight"><c- n>printf</c-></code> because <code class="highlight"><c- n>__attribute__</c-><c- p>((</c-><c- n>format</c-><c- p>(</c-><c- n>scanf</c-><c- p>,</c-> <c- p>...)))</c-></code> (<a data-link-type="biblio" href="#biblio-attr">[ATTR]</a>) implemented by GCC and Clang
+   <p><code class="highlight"><c- n>scanf</c-></code> is arguably more unsafe than <code class="highlight"><c- n>printf</c-></code> because <code class="highlight"><c- n>__attribute__</c-><c- p>((</c-><c- n>format</c-><c- p>(</c-><c- n>scanf</c-><c- p>,</c-> <c- p>...)))</c-></code> (<a data-link-type="biblio" href="#biblio-attr" title="Common Function Attributes">[ATTR]</a>) implemented by GCC and Clang
 doesn’t catch the whole class of buffer overflow bugs, e.g.</p>
 <pre class="language-c++ highlight"><c- b>char</c-> <c- n>s</c-><c- p>[</c-><c- mi>10</c-><c- p>];</c->
 <c- n>std</c-><c- o>::</c-><c- n>sscanf</c-><c- p>(</c-><c- n>input</c-><c- p>,</c-> <c- s>"%s"</c-><c- p>,</c-> <c- n>s</c-><c- p>);</c-> <c- c1>// s may overflow.</c->
@@ -2855,7 +2892,7 @@ string corresponding to the current argument, and <code class="highlight"><c- n>
 input range <code class="highlight"><c- p>[</c-><c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>(),</c-> <c- n>ctx</c-><c- p>.</c-><c- n>end</c-><c- p>())</c-></code> and stores the result in <code class="highlight"><c- n>t</c-></code>.</p>
    <p>An implementation of <code class="highlight"><c- n>scanner</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>scan</c-></code> can potentially use ostream extraction <code class="highlight"><c- k>operator</c-><c- o>>></c-></code> for user-defined type <code class="highlight"><c- n>T</c-></code>, if available.</p>
    <h3 class="heading settled" data-level="4.10" id="locales"><span class="secno">4.10. </span><span class="content">Locales</span><a class="self-link" href="#locales"></a></h3>
-   <p>As pointed out in <a data-link-type="biblio" href="#biblio-n4412">[N4412]</a>:</p>
+   <p>As pointed out in <a data-link-type="biblio" href="#biblio-n4412" title="N4412: Shortcomings of iostreams">[N4412]</a>:</p>
    <blockquote>
     <p>There are a number of communications protocol frameworks in use that employ
 text-based representations of data, for example XML and JSON. The text is
@@ -2877,12 +2914,12 @@ deal with locales, it can internally use something like <code class="highlight">
 e.g.</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- p>[</c-><c- n>result</c-><c- p>,</c-> <c- n>key</c-><c- p>,</c-> <c- n>value</c-><c- p>]</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string_view</c-><c- p>,</c-> <c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"answer = 42"</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>);</c->
 </pre>
-   <p>This has lifetime implications similar to returning match objects in <a data-link-type="biblio" href="#biblio-p1433">[P1433]</a> and iterators or subranges in the ranges library and can be mitigated in the same
+   <p>This has lifetime implications similar to returning match objects in <a data-link-type="biblio" href="#biblio-p1433" title="Compile Time Regular Expressions">[P1433]</a> and iterators or subranges in the ranges library and can be mitigated in the same
 way.</p>
    <h3 class="heading settled" data-level="4.12" id="chrono"><span class="secno">4.12. </span><span class="content">Integration with chrono</span><a class="self-link" href="#chrono"></a></h3>
-   <p>The proposed facility can be integrated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-></code> (<a data-link-type="biblio" href="#biblio-p0355">[P0355]</a>)
+   <p>The proposed facility can be integrated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-></code> (<a data-link-type="biblio" href="#biblio-p0355" title="Extending <chrono> to Calendars and Time Zones">[P0355]</a>)
 via the extension mechanism, similarly to the integration between chrono and text
-formatting proposed in <a data-link-type="biblio" href="#biblio-p1361">[P1361]</a>. This will improve consistency between parsing
+formatting proposed in <a data-link-type="biblio" href="#biblio-p1361" title="Integration of chrono with text formatting">[P1361]</a>. This will improve consistency between parsing
 and formatting, make parsing multiple objects easier, and allow avoiding dynamic
 memory allocations without resolving to the deprecated <code class="highlight"><c- n>strstream</c-></code>.</p>
    <p>Before:</p>
@@ -2901,17 +2938,17 @@ memory allocations without resolving to the deprecated <code class="highlight"><
    <p>The proposed API is defined in a new header and should have no impact on
 existing code.</p>
    <h2 class="heading settled" data-level="5" id="existing-work"><span class="secno">5. </span><span class="content">Existing work</span><a class="self-link" href="#existing-work"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> is a C++ library that, among other things,
+   <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> is a C++ library that, among other things,
 provides an interface similar to the one described in this paper.
-As of the publication of this paper, the <code class="highlight"><c- n>dev</c-></code>-branch of <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a> contains the reference implementation for this proposal.</p>
-   <p><a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> has a prototype implementation of the proposal.</p>
+As of the publication of this paper, the <code class="highlight"><c- n>dev</c-></code>-branch of <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> contains the reference implementation for this proposal.</p>
+   <p><a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a> has a prototype implementation of the proposal.</p>
    <h2 class="heading settled" data-level="6" id="future"><span class="secno">6. </span><span class="content">Future extensions</span><a class="self-link" href="#future"></a></h2>
    <p>To keep the scope of this paper somewhat manageable,
 we’ve chosen to only include functionality we consider fundamental.
 This leaves the design space open for future extensions and other proposals.
 However, we are not categorically against exploring this design space,
 if it is deemed critical for v1.</p>
-   <p>All of the possible future extensions described below are implemented in <a data-link-type="biblio" href="#biblio-scnlib">[SCNLIB]</a>.</p>
+   <p>All of the possible future extensions described below are implemented in <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a>.</p>
    <h3 class="heading settled" data-level="6.1" id="istream-integration"><span class="secno">6.1. </span><span class="content">Integration with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istream</c-></code>s</span><a class="self-link" href="#istream-integration"></a></h3>
    <p>Today, in C++, standard I/O is largely done with iostreams, and not with ranges.
 The library proposed in this paper doesn’t support that use case well.
@@ -2957,7 +2994,7 @@ Providing support for reading differently-encoded strings could be useful.</p>
 </pre>
    </div>
    <h3 class="heading settled" data-level="6.4" id="range-scanning"><span class="secno">6.4. </span><span class="content">Scanning of ranges</span><a class="self-link" href="#range-scanning"></a></h3>
-   <p>Introduced in <a data-link-type="biblio" href="#biblio-p2286">[P2286]</a> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, enabling the user to use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> to scan ranges, could be useful.</p>
+   <p>Introduced in <a data-link-type="biblio" href="#biblio-p2286" title="Formatting Ranges">[P2286]</a> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, enabling the user to use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> to scan ranges, could be useful.</p>
    <h3 class="heading settled" data-level="6.5" id="default-values"><span class="secno">6.5. </span><span class="content">Default values for scanned values</span><a class="self-link" href="#default-values"></a></h3>
    <p>Currently, the values returned by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> are value-constructed,
 and assigned over if a value is read successfully.
@@ -2966,25 +3003,25 @@ one, for example, for:</p>
    <ul>
     <li data-md>
      <p>Preallocating a <code class="highlight"><c- n>string</c-></code>, and possibly reusing it:</p>
-<pre class="language-c++ highlight">    <c- n>string</c-> <c- n>str</c-><c- p>;</c->
-    <c- n>str</c-><c- p>.</c-><c- n>reserve</c-><c- p>(</c-><c- n>n</c-><c- p>);</c->
-    <c- k>auto</c-> <c- p>[</c-><c- n>_</c-><c- p>,</c-> <c- n>word</c-><c- p>]</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- p>{</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>str</c-><c- p>)});</c->
-    <c- c1>// ...</c->
-    <c- n>word</c-><c- p>.</c-><c- n>clear</c-><c- p>();</c->
-    <c- k>auto</c-> <c- p>[</c-><c- n>_</c-><c- p>,</c-> <c- n>word2</c-><c- p>]</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- p>{</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>word</c-><c- p>)});</c->
+<pre class="language-c++ highlight"><c- n>string</c-> <c- n>str</c-><c- p>;</c->
+<c- n>str</c-><c- p>.</c-><c- n>reserve</c-><c- p>(</c-><c- n>n</c-><c- p>);</c->
+<c- k>auto</c-> <c- p>[</c-><c- n>_</c-><c- p>,</c-> <c- n>word</c-><c- p>]</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- p>{</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>str</c-><c- p>)});</c->
+<c- c1>// ...</c->
+<c- n>word</c-><c- p>.</c-><c- n>clear</c-><c- p>();</c->
+<c- k>auto</c-> <c- p>[</c-><c- n>_</c-><c- p>,</c-> <c- n>word2</c-><c- p>]</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- p>{</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>word</c-><c- p>)});</c->
 </pre>
     <li data-md>
      <p>Having a better default value in error conditions</p>
    </ul>
    <h2 class="heading settled" data-level="7" id="spec"><span class="secno">7. </span><span class="content">Specification</span><a class="self-link" href="#spec"></a></h2>
    <p>At this point, only the synopsis is provided.</p>
-   <p>Note the similarity with <a data-link-type="biblio" href="#biblio-p0645">[P0645]</a> in some parts.</p>
+   <p>Note the similarity with <a data-link-type="biblio" href="#biblio-p0645" title="Text Formatting">[P0645]</a> in some parts.</p>
    <p>Add a new header, <code class="highlight"><c- o>&lt;</c-><c- n>scan</c-><c- o>></c-></code>.</p>
    <h3 class="heading settled" data-level="7.1" id="header-synopsis"><span class="secno">7.1. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>scan</c-><c- o>></c-></code> synopsis</span><a class="self-link" href="#header-synopsis"></a></h3>
 <pre class="highlight"><c- cp>#include</c-> &lt;format>
 <c- cp>#include</c-> &lt;ranges>
 
-<c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>class</c-> <c- nc>scan_error</c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- o>></c->
@@ -3230,25 +3267,25 @@ one, for example, for:</p>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
    <dt id="biblio-attr">[ATTR]
-   <dd><a href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html">Common Function Attributes</a>. URL: <a href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html">https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html</a>
+   <dd><a href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"><cite>Common Function Attributes</cite></a>. URL: <a href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html">https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html</a>
    <dt id="biblio-codesearch">[CODESEARCH]
-   <dd>Andrew Tomazos. <a href="https://codesearch.isocpp.org">Code search engine website</a>. URL: <a href="https://codesearch.isocpp.org">https://codesearch.isocpp.org</a>
+   <dd>Andrew Tomazos. <a href="https://codesearch.isocpp.org"><cite>Code search engine website</cite></a>. URL: <a href="https://codesearch.isocpp.org">https://codesearch.isocpp.org</a>
    <dt id="biblio-fmt">[FMT]
-   <dd>Victor Zverovich et al. <a href="https://github.com/fmtlib/fmt">The fmt library</a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dd>Victor Zverovich et al. <a href="https://github.com/fmtlib/fmt"><cite>The fmt library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-n4412">[N4412]
-   <dd>Jens Maurer. <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">N4412: Shortcomings of iostreams</a>. URL: <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html</a>
+   <dd>Jens Maurer. <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html"><cite>N4412: Shortcomings of iostreams</cite></a>. URL: <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html</a>
    <dt id="biblio-p0355">[P0355]
-   <dd>Howard E. Hinnant; Tomasz Kamiński. <a href="https://wg21.link/p0355">Extending &lt;chrono> to Calendars and Time Zones</a>. URL: <a href="https://wg21.link/p0355">https://wg21.link/p0355</a>
+   <dd>Howard E. Hinnant; Tomasz Kamiński. <a href="https://wg21.link/p0355"><cite>Extending &lt;chrono> to Calendars and Time Zones</cite></a>. URL: <a href="https://wg21.link/p0355">https://wg21.link/p0355</a>
    <dt id="biblio-p0645">[P0645]
-   <dd>Victor Zverovich. <a href="https://wg21.link/p0645">Text Formatting</a>. URL: <a href="https://wg21.link/p0645">https://wg21.link/p0645</a>
+   <dd>Victor Zverovich. <a href="https://wg21.link/p0645"><cite>Text Formatting</cite></a>. URL: <a href="https://wg21.link/p0645">https://wg21.link/p0645</a>
    <dt id="biblio-p1361">[P1361]
-   <dd>Victor Zverovich; Daniela Engert; Howard E. Hinnant. <a href="https://wg21.link/p1361">Integration of chrono with text formatting</a>. URL: <a href="https://wg21.link/p1361">https://wg21.link/p1361</a>
+   <dd>Victor Zverovich; Daniela Engert; Howard E. Hinnant. <a href="https://wg21.link/p1361"><cite>Integration of chrono with text formatting</cite></a>. URL: <a href="https://wg21.link/p1361">https://wg21.link/p1361</a>
    <dt id="biblio-p1433">[P1433]
-   <dd>Hana Dusíková. <a href="https://wg21.link/p1433">Compile Time Regular Expressions</a>. URL: <a href="https://wg21.link/p1433">https://wg21.link/p1433</a>
+   <dd>Hana Dusíková. <a href="https://wg21.link/p1433"><cite>Compile Time Regular Expressions</cite></a>. URL: <a href="https://wg21.link/p1433">https://wg21.link/p1433</a>
    <dt id="biblio-p2286">[P2286]
-   <dd>Barry Revzin. <a href="https://wg21.link/p2286">Formatting Ranges</a>. URL: <a href="https://wg21.link/p2286">https://wg21.link/p2286</a>
+   <dd>Barry Revzin. <a href="https://wg21.link/p2286"><cite>Formatting Ranges</cite></a>. URL: <a href="https://wg21.link/p2286">https://wg21.link/p2286</a>
    <dt id="biblio-parse">[PARSE]
-   <dd><a href="https://pypi.org/project/parse/">Python `parse` package</a>. URL: <a href="https://pypi.org/project/parse/">https://pypi.org/project/parse/</a>
+   <dd><a href="https://pypi.org/project/parse/"><cite>Python `parse` package</cite></a>. URL: <a href="https://pypi.org/project/parse/">https://pypi.org/project/parse/</a>
    <dt id="biblio-scnlib">[SCNLIB]
-   <dd>Elias Kosunen. <a href="https://github.com/eliaskosunen/scnlib">scnlib: scanf for modern C++</a>. URL: <a href="https://github.com/eliaskosunen/scnlib">https://github.com/eliaskosunen/scnlib</a>
+   <dd>Elias Kosunen. <a href="https://github.com/eliaskosunen/scnlib"><cite>scnlib: scanf for modern C++</cite></a>. URL: <a href="https://github.com/eliaskosunen/scnlib">https://github.com/eliaskosunen/scnlib</a>
   </dl>

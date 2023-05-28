@@ -80,7 +80,8 @@ if (const auto [result, num] = std::scan<int>("123 456", "{}"); result) {
   // num == 123
   // result.range() == " 456"
 } else {
-  // result.error() == something
+  // result.error() is an object of type scan_error,
+  //                containing an error code and a message
   // result.range() == "123 456"
 }
 ```
@@ -115,11 +116,7 @@ Reading multiple values in a loop {#example-loop}
 
 ```c++
 std::vector<int> read_values;
-// Send our input through map_scan_input_range(), to get something that can,
-// in generic code, be assigned to from result.range() below.
-// If we know that get_source() returns a std::string&, for example,
-// we could just use std::string_view here.
-auto range = std::map_scan_input_range(get_source());
+std::string_view range = ...;
 
 while (true) {
   auto [result, i] = std::scan<int>(range, "{}");
@@ -128,6 +125,22 @@ while (true) {
   }
 
   read_values.push_back(i);
+  range = result.range();
+}
+```
+
+In the case that the input is not a `string_view`,
+`map_scan_input_range` can be used.
+It returns a range that is a view into the range it's given.
+This view has an assignment operator, so that it can be assigned to from `result.range()`,
+even in generic code.
+
+```c++
+auto range = std::map_scan_input_range(...);
+
+while (true) {
+  // Same as above
+
   range = result.range();
 }
 ```
@@ -671,13 +684,24 @@ Ranges {#ranges}
 We propose, that `std::scan` would take a range as its input.
 This range should satisfy the requirements of `std::ranges::forward_range` to
 enable look-ahead, which is necessary for parsing.
-Also, its `value_type` needs to be correct.
 
 ```c++
 template <class Range, class CharT>
 concept scannable_range =
   ranges::forward_range<Range> && same_as<ranges::range_value_t<Range>, CharT>;
 ```
+
+For a range to be a `scannable_range`, its character type (range `value_type`, code unit type)
+needs to also be correct, i.e. it needs to match the character type of the format string.
+Mixing and matching character types between the input range and the format string is not supported.
+
+<div class=example>
+```c++
+scan<int>("42", "{}");   // OK
+scan<int>(L"42", L"{}"); // OK
+scan<int>(L"42", "{}");  // Error: wchar_t\[N] is not a scannable_range<char>
+```
+</div>
 
 It should be noted, that standard range facilities related to iostreams, namely
 `std::istreambuf_iterator`, model `input_iterator`.
