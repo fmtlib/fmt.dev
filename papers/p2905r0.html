@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="741d24b1b7c383ae58b702d1f8464b8c91417183" name="document-revision">
+  <meta content="faf319e866dcc0236dd7ef50af4615fd47ee4f3f" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2115,10 +2115,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <p style="text-align: right"> TODO </p>
+   <p style="text-align: right"> "Temporary solutions often become permanent problems." — Craig Bruce </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2216">[P2216]</a> "std::format improvements" introduced compile-time format string
-checks which, quoting Barry Revzin, "is a fantastic feature" <a data-link-type="biblio" href="#biblio-p2757">[p2757]</a>.
+checks which, quoting Barry Revzin, "is a fantastic feature" (<a data-link-type="biblio" href="#biblio-p2757">[P2757]</a>).
 However, due to resource constraints it didn’t provide a good API for using
 formatting functions with format strings not known at compile time.
 As a workaround one could use type-erased API which has never been designed
@@ -2148,8 +2148,9 @@ following example:</p>
 store a reference to a temporary which is destroyed before use. This has been
 discovered and fixed in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> which now rejects such code at compile time.</p>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>This paper proposes adding the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime</c-></code> function to explicitly mark a
-format string as a runtime one and opt out of compile-time format string checks.</p>
+   <p>This paper proposes adding the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> function to explicitly mark
+a format string as a runtime one and opt out of compile-time format string
+checks.</p>
    <table>
     <tbody>
      <tr>
@@ -2160,14 +2161,14 @@ format string as a runtime one and opt out of compile-time format string checks.
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vformat</c-><c- p>(</c-><c- n>str</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-><c- p>(</c-><c- mi>42</c-><c- p>));</c->
 </pre>
       <td>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>runtime</c-><c- p>(</c-><c- n>str</c-><c- p>),</c-> <c- mi>42</c-><c- p>);</c->
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-><c- p>(</c-><c- n>str</c-><c- p>),</c-> <c- mi>42</c-><c- p>);</c->
 </pre>
    </table>
-   <p>This improves usability, makes the intent more explicit. It can also enable
-detection of some lifetime errors for arguments (<a data-link-type="biblio" href="#biblio-p2418">[p2418]</a>). This API has been
+   <p>This improves usability and makes the intent more explicit. It can also enable
+detection of some lifetime errors for arguments (<a data-link-type="biblio" href="#biblio-p2418">[P2418]</a>). This API has been
 available in {fmt} since <code class="highlight"><c- k>consteval</c-></code>-based format string checks were introduced
-~2 years ago and usage experience was very positive.</p>
-   <p>TODO: naming std::runtime/std::fmt::runtime</p>
+~2 years ago and usage experience was very positive. In a large codebase with
+> 100k calls of <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>format</c-></code> only ~0.1% use <code class="highlight"><c- n>make_format_args</c-></code>.</p>
    <p>This paper also proposes changing <code class="highlight"><c- n>make_format_args</c-></code> to take lvalue references
 instead of rvalue references, rejecting problematic code:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>path</c-> <c- o>=</c-> <c- s>"path/etic/experience"</c-><c- p>;</c->
@@ -2188,24 +2189,23 @@ references only, e.g. <a href="http://eel.is/c++draft/format#functions-2">[forma
    <p>Notice that there is intentionally no forwarding of <code class="highlight"><c- n>args</c-></code> so the switch from
 forwarding to lvalue references is effectively a noop there.</p>
    <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
-   <p>Rejecting passing temporaries to <code class="highlight"><c- n>make_format_args</c-></code> is an (intentionally)
+   <p>Rejecting temporaries in <code class="highlight"><c- n>make_format_args</c-></code> is an (intentionally)
 breaking change.</p>
-   <p>Searching github for calls of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-></code> using the following query</p>
+   <p>Searching GitHub for calls of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-></code> using the following query</p>
 <pre class="highlight"><c- s>"std::make_format_args"</c-> <c- nl>language</c-><c- p>:</c-><c- n>c</c-><c- o>++</c-> <c- o>-</c-><c- nl>path</c-><c- p>:</c-><c- n>libstdc</c-> <c- o>-</c-><c- nl>path</c-><c- p>:</c-><c- n>libcxx</c-> <c- o>-</c-><c- nl>path</c-><c- p>:</c-><c- n>include</c-><c- o>/</c-><c- n>c</c-><c- o>++</c-> 
 </pre>
    <p>returned only 844 results at the time of writing. For comparison, similar
 search returned 165k results for <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>format</c-></code> and 7.3k for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
 Such low usage is not very surprising because <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is not widely
 available yet.</p>
-   <p>452 of these call sites use <code class="highlight"><c- n>make_format_args</c-></code> as intended and will require no
-changes:</p>
+   <p>At least 452 of these call sites use <code class="highlight"><c- n>make_format_args</c-></code> as intended and will
+require no changes:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vformat_to</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>back_inserter</c-><c- p>(</c-><c- n>c</c-><c- p>),</c-> <c- n>fmt</c-><c- p>.</c-><c- n>get</c-><c- p>(),</c-> <c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 </pre>
-   <p>72 of these calls can be trivially fixed by removing unnecessary forwarding.</p>
+   <p>72 of calls can be trivially fixed by removing unnecessary forwarding.</p>
    <p>This leaves only 320 cases most of which will continue to work and the ones
 that pass temporaries can be trivially fixed by either switching to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime</c-></code> or by storing a temporary in a variable.</p>
    <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
-   <p>TODO: construct basic_format_string from runtime-format-string</p>
    <p>Change in <a href="https://eel.is/c++draft/format#syn">[format.syn</a>]:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
   <c- p>...</c->
@@ -2219,10 +2219,10 @@ that pass temporaries can be trivially fixed by either switching to <code class=
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>using</c-> <c- n>wformat_string</c-> <c- o>=</c-> <c- n>basic_format_string</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
 
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <i><c- nc>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+  <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <i><c- nc>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
 
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>);</c->
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>);</c->
+  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>);</c->
+  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>);</c-></ins>
 
   <c- p>...</c->
 

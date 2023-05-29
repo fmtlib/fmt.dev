@@ -26,14 +26,14 @@ Markup Shorthands: markdown yes
 </style>
 
 <p style="text-align: right">
-TODO
+"Temporary solutions often become permanent problems." — Craig Bruce
 </p>
 
 Introduction {#intro}
 ============
 
 [[P2216]] "std::format improvements" introduced compile-time format string
-checks which, quoting Barry Revzin, "is a fantastic feature" [[p2757]].
+checks which, quoting Barry Revzin, "is a fantastic feature" ([[P2757]]).
 However, due to resource constraints it didn't provide a good API for using
 formatting functions with format strings not known at compile time.
 As a workaround one could use type-erased API which has never been designed
@@ -78,8 +78,9 @@ discovered and fixed in [[FMT]] which now rejects such code at compile time.
 Proposal {#proposal}
 ========
 
-This paper proposes adding the `std::runtime` function to explicitly mark a
-format string as a runtime one and opt out of compile-time format string checks.
+This paper proposes adding the `std::runtime_format` function to explicitly mark
+a format string as a runtime one and opt out of compile-time format string
+checks.
 
 <table>
 <tr>
@@ -93,17 +94,18 @@ std::vformat(str, std::make_format_args(42));
 ```
 <td>
 ```
-std::format(std::runtime(str), 42);
+std::format(std::runtime_format(str), 42);
 ```
 </tr>
 </table>
 
-This improves usability, makes the intent more explicit. It can also enable
-detection of some lifetime errors for arguments ([[p2418]]). This API has been
+This improves usability and makes the intent more explicit. It can also enable
+detection of some lifetime errors for arguments ([[P2418]]). This API has been
 available in {fmt} since `consteval`-based format string checks were introduced
-~2 years ago and usage experience was very positive.
+~2 years ago and usage experience was very positive. In a large codebase with
+&gt; 100k calls of `fmt::format` only ~0.1% use `make_format_args`.
 
-TODO: naming std::runtime/std::fmt::runtime
+<!-- TODO: naming std::runtime_format/std::fmt::runtime -->
 
 This paper also proposes changing `make_format_args` to take lvalue references
 instead of rvalue references, rejecting problematic code:
@@ -137,10 +139,10 @@ forwarding to lvalue references is effectively a noop there.
 Impact on existing code {#impact}
 =======================
 
-Rejecting passing temporaries to `make_format_args` is an (intentionally)
+Rejecting temporaries in `make_format_args` is an (intentionally)
 breaking change.
 
-Searching github for calls of `std::make_format_args` using the following query
+Searching GitHub for calls of `std::make_format_args` using the following query
 
 ```
 "std::make_format_args" language:c++ -path:libstdc -path:libcxx -path:include/c++ 
@@ -151,14 +153,14 @@ search returned 165k results for `fmt::format` and 7.3k for `std::format`.
 Such low usage is not very surprising because `std::format` is not widely
 available yet.
 
-452 of these call sites use `make_format_args` as intended and will require no
-changes:
+At least 452 of these call sites use `make_format_args` as intended and will
+require no changes:
 
 ```
 std::vformat_to(std::back_inserter(c), fmt.get(), std::make_format_args(args...));
 ```
 
-72 of these calls can be trivially fixed by removing unnecessary forwarding.
+72 of calls can be trivially fixed by removing unnecessary forwarding.
 
 This leaves only 320 cases most of which will continue to work and the ones
 that pass temporaries can be trivially fixed by either switching to
@@ -167,7 +169,7 @@ that pass temporaries can be trivially fixed by either switching to
 Wording {#wording}
 =======
 
-TODO: construct basic_format_string from runtime-format-string
+<!-- TODO: construct basic_format_string from runtime-format-string -->
 
 Change in [[format.syn](https://eel.is/c++draft/format#syn)]:
 
@@ -184,10 +186,10 @@ namespace std {
   template&lt;class... Args>
     using wformat_string = basic_format_string&lt;wchar_t, type_identity_t&lt;Args>...>;
 
-  template&lt;class charT> struct <i>runtime-format-string</i>;  <i>// exposition-only</i>
+  <ins>template&lt;class charT> struct <i>runtime-format-string</i>;  <i>// exposition-only</i>
 
-  <i>runtime-format-string</i>&lt;char&gt; runtime(string_view fmt);
-  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime(wstring_view fmt);
+  <i>runtime-format-string</i>&lt;char&gt; runtime_format(string_view fmt);
+  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime_format(wstring_view fmt);</ins>
 
   ...
 
