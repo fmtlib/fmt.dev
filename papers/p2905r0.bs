@@ -33,13 +33,13 @@ Introduction {#intro}
 ============
 
 [[P2216]] "std::format improvements" introduced compile-time format string
-checks which, quoting Barry Revzin, "is a fantastic feature". However, due to
-resource constraints it didn't provide a good API for using formatting functions
-with format strings not known at compile time. As a workaround one could use
-type-erased API which has never been designed for that. This severely undermined
-safety and led to poor user experience. This paper fixes the issue by proposing
-direct support for runtime format strings which has been long available in the
-{fmt} library.
+checks which, quoting Barry Revzin, "is a fantastic feature" [[p2757]].
+However, due to resource constraints it didn't provide a good API for using
+formatting functions with format strings not known at compile time.
+As a workaround one could use type-erased API which has never been designed
+for that. This severely undermined safety and led to poor user experience.
+This paper fixes the issue by proposing direct support for runtime format
+strings which has been long available in the {fmt} library.
 
 Problems {#problems}
 ========
@@ -52,38 +52,175 @@ One possible workaround is using type-erased formatting functions such as
 `std::vformat`:
 
 ```c++
-std::string str = "The answer is {}.";
+std::string str = translate("The answer is {}.");
 std::string msg = std::vformat(str, std::make_format_args(42));
 ```
 
 This is not a great user experience because the type-erased API was designed
-to avoid template bloat and should be used by formatting function writers and
-not by end users.
+to avoid template bloat and should only be used by formatting function writers
+and not by end users.
 
 Such misuse of the API also introduces major safety issues illustrated in the
 following example:
 
-<!-- https://godbolt.org/z/8PoPeheav -->
+<!-- https://godbolt.org/z/xMnbY8rMj -->
 ```c++
 std::string str = "{}";
-std::filesystem::path path = "/path/etic/experience";
+std::filesystem::path path = "path/etic/experience";
 auto args = std::make_format_args(path.string());
 std::string msg = std::vformat(str, args);
 ```
 
-This innocent-looking code has undefined behavior because format arguments
+This innocent-looking code exhibits undefined behavior because format arguments
 store a reference to a temporary which is destroyed before use. This has been
-discovered and fixed in [[FMT]] which now rejects this code at compile time.
+discovered and fixed in [[FMT]] which now rejects such code at compile time.
 
 Proposal {#proposal}
 ========
 
-TODO: propose std::runtime/std::fmt::runtime
+This paper proposes adding the `std::runtime` function to explicitly mark a
+format string as a runtime one and opt out of compile-time format string checks.
+
+<table>
+<tr>
+  <th>Before
+  <th>After
+</tr>
+<tr>
+<td>
+```
+std::vformat(str, std::make_format_args(42));
+```
+<td>
+```
+std::format(std::runtime(str), 42);
+```
+</tr>
+</table>
+
+This improves usability, makes the intent more explicit. It can also enable
+detection of some lifetime errors for arguments ([[p2418]]). This API has been
+available in {fmt} since `consteval`-based format string checks were introduced
+~2 years ago and usage experience was very positive.
+
+TODO: naming std::runtime/std::fmt::runtime
+
+This paper also proposes changing `make_format_args` to take lvalue references
+instead of rvalue references, rejecting problematic code:
+
+```
+std::filesystem::path path = "path/etic/experience";
+auto args = std::make_format_args(path.string()); // ill-formed
+```
+
+This has also been implemented in {fmt} catching some bugs even though the
+pattern of using `make_format_args` has never been suggested as a way to pass
+runtime format strings there. If left unchanged this will be a major safety
+hole in the standard formatting facility.
+
+In the standard itself `make_format_args` is already called with lvalue
+references only, e.g. [[format.functions](http://eel.is/c++draft/format#functions-2)]:
+
+```
+template<class... Args>
+  string format(format_string<Args...> fmt, Args&&... args);
+```
+
+*Effects*: Equivalent to:
+```
+  return vformat(fmt.str, make_format_args(args...));
+```
+
+Notice that there is intentionally no forwarding of `args` so the switch from
+forwarding to lvalue references is effectively a noop there.
+
+Impact on existing code {#impact}
+=======================
+
+Rejecting passing temporaries to `make_format_args` is an (intentionally)
+breaking change.
+
+Searching github for calls of `std::make_format_args` using the following query
+
+```
+"std::make_format_args" language:c++ -path:libstdc -path:libcxx -path:include/c++ 
+```
+
+returned only 844 results at the time of writing. For comparison, similar
+search returned 165k results for `fmt::format` and 7.3k for `std::format`.
+Such low usage is not very surprising because `std::format` is not widely
+available yet.
+
+452 of these call sites use `make_format_args` as intended and will require no
+changes:
+
+```
+std::vformat_to(std::back_inserter(c), fmt.get(), std::make_format_args(args...));
+```
+
+72 of these calls can be trivially fixed by removing unnecessary forwarding.
+
+This leaves only 320 cases most of which will continue to work and the ones
+that pass temporaries can be trivially fixed by either switching to
+`std::runtime` or by storing a temporary in a variable.
 
 Wording {#wording}
 =======
 
-TODO
+TODO: construct basic_format_string from runtime-format-string
+
+Change in [[format.syn](https://eel.is/c++draft/format#syn)]:
+
+<pre>
+namespace std {
+  ...
+
+  // [format.fmt.string], class template basic_format_string
+  template&lt;class charT, class... Args>
+    struct basic_format_string;
+
+  template&lt;class... Args>
+    using format_string = basic_format_string&lt;char, type_identity_t&lt;Args>...>;
+  template&lt;class... Args>
+    using wformat_string = basic_format_string&lt;wchar_t, type_identity_t&lt;Args>...>;
+
+  template&lt;class charT> struct <i>runtime-format-string</i>;  <i>// exposition-only</i>
+
+  <i>runtime-format-string</i>&lt;char&gt; runtime(string_view fmt);
+  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime(wstring_view fmt);
+
+  ...
+
+  template&lt;class Context = format_context, class... Args>
+    format-arg-store&lt;Context, Args...>
+      make_format_args(Args&<del>&</del>... fmt_args);
+  template&lt;class... Args>
+    format-arg-store&lt;wformat_context, Args...>
+      make_wformat_args(Args&<del>&</del>... args);
+
+  ...
+}
+</pre>
+
+Change in [[format.arg.store](https://eel.is/c++draft/format#arg.store)]:
+
+<pre>
+template&lt;class Context = format_context, class... Args>
+  format-arg-store&lt;Context, Args...> make_format_args(Args&<del>&</del>... fmt_args);
+</pre>
+
+2 *Preconditions*:
+The type <code>typename Context::template
+formatter_type&lt;remove_<del>cvref</del><ins>const</ins>_t&lt;T&gt;<sub>i</sub>></code> meets the
+<i>BasicFormatter</i> requirements ([formatter.requirements]) for each
+<code>T<sub>i</sub></code> in `Args`.
+
+...
+
+<pre>
+template&lt;class... Args>
+  format-arg-store&lt;wformat_context, Args...> make_wformat_args(Args&<del>&</del>... args);
+</pre>
 
 Implementation {#impl}
 ==============
@@ -107,6 +244,16 @@ The proposed API has been implemented in the {fmt} library ([[FMT]]).
     "title": "std::format improvements",
     "authors": ["Victor Zverovich"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html"
+  },
+  "P2418": {
+    "title": "Add support for `std::generator`-like types to `std::format`",
+    "authors": ["Victor Zverovich"],
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2418r2.html"
+  },
+  "p2757": {
+    "title": "Type-checking format args",
+    "authors": ["Barry Revzin"],
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2757r1.html"
   }
 }
 </pre>
