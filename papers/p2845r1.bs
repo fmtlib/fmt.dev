@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting of std::filesystem::path
 Shortname: P2845
-Revision: 0
+Revision: 1
 Audience: SG16
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-05-07
+Date: 2023-06-03
 Markup Shorthands: markdown yes
 </pre>
 
@@ -38,6 +38,17 @@ Introduction {#intro}
 However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
+
+Changes from R0 {#changes0}
+===============
+
+* Added a reference to [[format.string](http://eel.is/c++draft/format#string)] for
+    the productions <i>fill-and-align</i> and <i>width</i>.
+
+* Replaced *range-format-spec* with *path-format-spec* in the *Effects* clause
+    of the `format` function.
+
+* Added missing transcoding to the definition of the `format` function.
 
 Problems {#problems}
 ========
@@ -228,6 +239,9 @@ parsed specifiers in `*this`.
 <i>path-format-spec</i>:<br>
 &nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i>
 
+where the productions <i>fill-and-align</i> and <i>width</i> are described in
+[[format.string](http://eel.is/c++draft/format#string)].
+
 *Returns*: An iterator past the end of the *path-format-spec*.
 
 <pre>
@@ -238,7 +252,10 @@ parsed specifiers in `*this`.
 
 *Effects*: Writes escaped ([[format.string.escaped](
 http://eel.is/c++draft/format#string.escaped)]) `p.native()` into `ctx.out()`,
-adjusted according to the *range-format-spec*.
+adjusted according to the *path-format-spec*.
+If `Char` is `char`, `path::value_type` is `wchar_t` and the literal encoding
+is UTF-8 then the escaped path is transcoded from the native encoding for wide
+character strings to UTF-8. Otherwise, transcoding is implementation-defined.
 
 *Returns*: An iterator past the end of the output range.
 
@@ -247,6 +264,12 @@ Implementation {#impl}
 
 The proposed `formatter` for `std::filesystem::path` has been implemented in
 {fmt} ([[FMT]]).
+
+Acknowledgements {#ack}
+================
+
+Thanks to Mark de Wever for reviewing an early version of the paper and
+suggesting a number of fixes and improvements.
 
 <pre class=biblio>
 {
