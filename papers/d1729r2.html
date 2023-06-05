@@ -1561,9 +1561,9 @@ Possible extra rowspan handling
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
   <meta content="Bikeshed version 3383f409d, updated Fri Apr 28 15:49:22 2023 -0700" name="generator">
-  <link href="http://wg21.link/P1729R1" rel="canonical">
+  <link href="http://wg21.link/P1729R2" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="741d24b1b7c383ae58b702d1f8464b8c91417183" name="document-revision">
+  <meta content="3efb6dd27730773fa539625212ecbc27ff3b55f2" name="document-revision">
 <style>/* style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2096,7 +2096,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://wg21.link/P1729R1">http://wg21.link/P1729R1</a>
+     <dd><a class="u-url" href="http://wg21.link/P1729R2">http://wg21.link/P1729R2</a>
      <dt class="editor">Authors:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:isocpp@eliaskosunen.com">Elias Kosunen</a>
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
@@ -2159,6 +2159,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#scan-transcode"><span class="secno">6.3</span> <span class="content">Reading strings and chars of different width</span></a>
       <li><a href="#range-scanning"><span class="secno">6.4</span> <span class="content">Scanning of ranges</span></a>
       <li><a href="#default-values"><span class="secno">6.5</span> <span class="content">Default values for scanned values</span></a>
+      <li><a href="#discard"><span class="secno">6.6</span> <span class="content">Assignment suppression / discarding values</span></a>
      </ol>
     <li>
      <a href="#spec"><span class="secno">7</span> <span class="content">Specification</span></a>
@@ -2718,6 +2719,12 @@ to the range which it wraps.</p>
                   <c- n>views</c-><c- o>::</c-><c- n>reverse</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- n>string_view</c-><c- o>></c-><c- p>()))),</c->       <c- n>erased_scannable_range</c-><c- o>></c->
 </pre>
    </div>
+   <p class="note" role="note"><span class="marker">Note:</span> The terminology "erased" used here implies type erasure,
+but it can potentially be misleading wrt. ranges, as itcould be construed to mean
+something similar to <code class="highlight"><c- n>ranges</c-><c- o>::</c-><c- n>drop</c-></code>, through e.g. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>erase</c-></code>.
+A name like <code class="highlight"><c- n>any_scannable_range</c-></code> could be a viable alternative.
+Range-v3 also has <code class="highlight"><c- n>any_view</c-></code>, which is a generic type-erased <code class="highlight"><c- n>view</c-></code>,
+that may be desirable over a strictly <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>-specific type-erased <code class="highlight"><c- n>scannable_range</c-></code>.</p>
    <p>Inside the implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, <code class="highlight"><c- n>map_scan_input_range</c-></code> is called for
 the given input range. The result of that call is then passed to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vscan</c-></code>.
 This ensures, that even when using multiple different types of ranges with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>,
@@ -2958,19 +2965,31 @@ can’t be used.</p>
    <p>Integration with iostreams is needed to enable working with files and <code class="highlight"><c- n>stdin</c-></code>.
 This can be worked around with something like <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>getline</c-></code>,
 and using its result with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, but error recovery with that gets very tricky very fast.</p>
+   <p>A possible solution would be a more robust <code class="highlight"><c- n>istream_view</c-></code>, that models at least <code class="highlight"><c- n>forward_range</c-></code>,
+either through caching the read characters in the view itself, or by utilizing the stream buffer. <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> implements this by providing a generic <code class="highlight"><c- n>caching_view</c-></code>, which wraps an <code class="highlight"><c- n>input_range</c-></code> and a buffer, and provides an interface that models <code class="highlight"><c- n>bidirectional_range</c-></code>.
+In <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a>, a <code class="highlight"><c- n>caching_view</c-></code> wrapping an <code class="highlight"><c- n>istreambuf</c-></code> is called <code class="highlight"><c- n>istreambuf_view</c-></code>,
+and is a first-class citizen, with a <code class="highlight"><c- n>vscan</c-></code> overload alongside <code class="highlight"><c- n>string_view</c-></code> and <code class="highlight"><c- n>erased_scannable_range</c-></code>.</p>
    <h3 class="heading settled" data-level="6.2" id="char-set-match"><span class="secno">6.2. </span><span class="content"><code class="highlight"><c- n>scanf</c-></code>-like <code class="highlight"><c- p>[</c-><c- n>character</c-> <c- n>set</c-><c- p>]</c-></code> matching</span><a class="self-link" href="#char-set-match"></a></h3>
    <p><code class="highlight"><c- n>scanf</c-></code> supports the <code class="highlight"><c- p>[</c-></code> format specifier, which allows for matching for a set of accepted
 characters. Unfortunately, because some of the syntax for specifying that set is
 implementation-defined, the utility of this functionality is hampered.
 Properly specified, this could be useful.</p>
-   <div class="example" id="example-a1b16be1">
-    <a class="self-link" href="#example-a1b16be1"></a> 
+   <div class="example" id="example-ef5d4a8f">
+    <a class="self-link" href="#example-ef5d4a8f"></a> 
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- p>[</c-><c- n>_</c-><c- p>,</c-> <c- n>s</c-><c- p>]</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"abc123"</c-><c- p>,</c-> <c- s>"{:[a-zA-Z]}"</c-><c- p>);</c-> <c- c1>// s == "abc"</c->
 <c- c1>// Compare with:</c->
 <c- b>char</c-> <c- n>buf</c-><c- p>[</c-><c- n>N</c-><c- p>];</c->
 <c- n>sscanf</c-><c- p>(</c-><c- s>"abc123"</c-><c- p>,</c-> <c- s>"%[a-zA-Z]"</c-><c- p>,</c-> <c- n>buf</c-><c- p>);</c->
+
+<c- c1>// ...</c->
+
+<c- k>auto</c-> <c- n>_</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{:[^</c-><c- se>\n</c-><c- s>]}"</c-><c- p>);</c-> <c- c1>// match until newline</c->
 </pre>
    </div>
+   <p>It should be noted, that while the syntax is quite similar, this is not a regular expression.
+This syntax is intentionally way more limited, as is meant for simple character matching.</p>
+   <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> implements this syntax, providing support for matching single characters/code points
+(<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>abc</c-><c- p>]}</c-></code>), code point ranges (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>a</c-><c- o>-</c-><c- n>z</c-><c- p>]}</c-></code>), and regex-like wildcards (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- o>:</c-><c- n>alpha</c-><c- o>:</c-><c- p>]}</c-></code> or <code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c->\\<c- n>w</c-><c- p>]})</c-></code>.</p>
    <h3 class="heading settled" data-level="6.3" id="scan-transcode"><span class="secno">6.3. </span><span class="content">Reading strings and chars of different width</span><a class="self-link" href="#scan-transcode"></a></h3>
    <p>In C++, we have character types other than <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>, too:
 namely <code class="highlight"><c- b>char8_t</c-></code>, <code class="highlight"><c- b>char16_t</c-></code>, and <code class="highlight"><c- b>char32_t</c-></code>.
@@ -3013,6 +3032,16 @@ one, for example, for:</p>
     <li data-md>
      <p>Having a better default value in error conditions</p>
    </ul>
+   <h3 class="heading settled" data-level="6.6" id="discard"><span class="secno">6.6. </span><span class="content">Assignment suppression / discarding values</span><a class="self-link" href="#discard"></a></h3>
+   <p><code class="highlight"><c- n>scanf</c-></code> supports discarding scanned values with the <code class="highlight"><c- o>*</c-></code> specifier in the format string. <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> provides similar functionality through a special type, <code class="highlight"><c- n>scn</c-><c- o>::</c-><c- n>discard</c-></code>:</p>
+   <div class="example" id="example-d1747f13">
+    <a class="self-link" href="#example-d1747f13"></a> 
+<pre class="language-c++ highlight"><c- b>int</c-> <c- n>i</c-><c- p>;</c->
+<c- n>scanf</c-><c- p>(</c-><c- s>"%*d"</c-><c- p>,</c-> <c- o>&amp;</c-><c- n>i</c-><c- p>);</c->
+
+<c- k>auto</c-> <c- p>[</c-><c- n>_</c-><c- p>,</c-> <c- n>_</c-><c- p>]</c-> <c- o>=</c-> <c- n>scn</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>scn</c-><c- o>::</c-><c- n>discard</c-><c- o>&lt;</c-><c- b>int</c-><c- o>>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>);</c->
+</pre>
+   </div>
    <h2 class="heading settled" data-level="7" id="spec"><span class="secno">7. </span><span class="content">Specification</span><a class="self-link" href="#spec"></a></h2>
    <p>At this point, only the synopsis is provided.</p>
    <p>Note the similarity with <a data-link-type="biblio" href="#biblio-p0645" title="Text Formatting">[P0645]</a> in some parts.</p>

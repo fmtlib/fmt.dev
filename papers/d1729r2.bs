@@ -5,7 +5,7 @@ Revision: 2
 Audience: LEWG, SG6, SG16
 Status: D
 Group: WG21
-URL: http://wg21.link/P1729R1
+URL: http://wg21.link/P1729R2
 Editor: Elias Kosunen, isocpp@eliaskosunen.com
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
@@ -15,13 +15,6 @@ Date: 2023-04-30
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
-
-<!-- TODO:
- (from the GitHub issue)
- - Explore a simplified design that doesn't support partial success.
- - Prioritize enabling the use of the same format string for input and output.
- - Explore supporting non-unique positional arguments.
--->
 
 Revision history {#history}
 ================
@@ -267,7 +260,7 @@ type              ::= <i>one of</i>
 </pre>
 <!--
 scnlib also has types:
- * 'Bnn' for arbitrary base
+ * 'rnn', 'Rnn' for arbitrary base (r = radix)
  * 'U' for Unicode code point
  * '[...]' for scanf-like set of characters
 -->
@@ -735,6 +728,13 @@ same_as<decltype(map_scan_input_range(
 ```
 </div>
 
+Note: The terminology "erased" used here implies type erasure,
+but it can potentially be misleading wrt. ranges, as it could be construed to mean
+something similar to `ranges::drop`, through e.g. `std::vector<T>::erase`.
+A name like `any_scannable_range` could be a viable alternative.
+Range-v3 also has `any_view`, which is a generic type-erased `view`,
+that may be desirable over a strictly `std::scan`-specific type-erased `scannable_range`.
+
 Inside the implementation of `std::scan`, `map_scan_input_range` is called for 
 the given input range. The result of that call is then passed to `std::vscan`.
 This ensures, that even when using multiple different types of ranges with `std::scan`,
@@ -1058,6 +1058,13 @@ Integration with iostreams is needed to enable working with files and `stdin`.
 This can be worked around with something like `std::getline`,
 and using its result with `std::scan`, but error recovery with that gets very tricky very fast.
 
+A possible solution would be a more robust `istream_view`, that models at least `forward_range`,
+either through caching the read characters in the view itself, or by utilizing the stream buffer.
+[[SCNLIB]] implements this by providing a generic `caching_view`, which wraps an `input_range`
+and a buffer, and provides an interface that models `bidirectional_range`.
+In [[SCNLIB]], a `caching_view` wrapping an `istreambuf` is called `istreambuf_view`,
+and is a first-class citizen, with a `vscan` overload alongside `string_view` and `erased_scannable_range`.
+
 `scanf`-like `[character set]` matching {#char-set-match}
 ---------------------------------------
 
@@ -1072,8 +1079,18 @@ auto [_, s] = scan<string>("abc123", "{:[a-zA-Z]}"); // s == "abc"
 // Compare with:
 char buf\[N];
 sscanf("abc123", "%[a-zA-Z]", buf);
+
+// ...
+
+auto _ = scan<string>(..., "{:[^\n]}"); // match until newline
 ```
 </div>
+
+It should be noted, that while the syntax is quite similar, this is not a regular expression.
+This syntax is intentionally way more limited, as is meant for simple character matching.
+
+[[SCNLIB]] implements this syntax, providing support for matching single characters/code points
+(`{:[abc]}`), code point ranges (`{:[a-z]}`), and regex-like wildcards (`{:[:alpha:]}` or `{:[\\w]})`.
 
 Reading strings and chars of different width {#scan-transcode}
 --------------------------------------------
@@ -1127,6 +1144,21 @@ one, for example, for:
     ```
 
  * Having a better default value in error conditions
+
+Assignment suppression / discarding values {#discard}
+------------------------------------------
+
+`scanf` supports discarding scanned values with the `*` specifier in the format string.
+[[SCNLIB]] provides similar functionality through a special type, `scn::discard`:
+
+<div class=example>
+```c++
+int i;
+scanf("%*d", &i);
+
+auto [_, _] = scn::scan<scn::discard<int>>(..., "{}");
+```
+</div>
 
 Specification {#spec}
 =============
