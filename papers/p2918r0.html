@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ed51f3d6b5b9d9e8ece1a206dc2394037cb0d7d0" name="document-revision">
+  <meta content="a44883d49549f772cfc781c9cd20a8e6ece30da1" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2107,6 +2107,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
     <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
     <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
+    <li><a href="#ack"><span class="secno">7</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2183,10 +2184,14 @@ feedback with the original paper focusing on the safety fix only.</p>
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>struct</c-> <c- nc>basic_format_string</c-><c- p>;</c->
 
-  <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <i><c- nc>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+  <ins>
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <i><c- nc>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- p>{</c->  <i><c- c1>// exposition-only</c-></i>
+    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <i><c- n>str</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+  <c- p>};</c->
 
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>);</c->
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>);</c-></ins>
+  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- p>{</c-><c- n>fmt</c-><c- p>};</c-> <c- p>}</c->
+  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- p>{</c-><c- n>fmt</c-><c- p>};</c-> <c- p>}</c->
+  </ins>
 
   <c- p>...</c->
 <c- p>}</c->
@@ -2200,7 +2205,7 @@ feedback with the original paper focusing on the safety fix only.</p>
 
   <c- k>public</c-><c- o>:</c->
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic_format_string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
-    <ins><c- n>basic_format_string</c-><c- p>(</c-><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>s</c-><c- p>)</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>.</c-><c- n>str</c-><c- p>)</c-> <c- p>{}</c-></ins>
+    <ins><c- n>basic_format_string</c-><c- p>(</c-><i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>charT</c-><c- o>>&amp;&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>.</c-><i><c- n>str</c-></i><c- p>)</c-> <c- p>{}</c-></ins>
 
     <c- k>constexpr</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>get</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- p>{</c-> <c- k>return</c-> <c- n>str</c-><c- p>;</c-> <c- p>}</c->
   <c- p>};</c->
@@ -2208,6 +2213,9 @@ feedback with the original paper focusing on the safety fix only.</p>
 </pre>
    <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed API has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
+   <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Mateusz Pusz for the suggestion to pass <em>runtime-format-string</em> by
+rvalue reference that improves safety of the API.</p>
   </main>
 <script>
 (function() {

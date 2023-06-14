@@ -131,10 +131,14 @@ namespace std {
   template&lt;class charT, class... Args>
     struct basic_format_string;
 
-  <ins>template&lt;class charT> struct <i>runtime-format-string</i>;  <i>// exposition-only</i>
+  <ins>
+  template&lt;class charT> struct <i>runtime-format-string</i> {  <i>// exposition-only</i>
+    basic_string_view&lt;charT> <i>str</i>;  <i>// exposition-only</i>
+  };
 
-  <i>runtime-format-string</i>&lt;char&gt; runtime_format(string_view fmt);
-  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime_format(wstring_view fmt);</ins>
+  <i>runtime-format-string</i>&lt;char&gt; runtime_format(string_view fmt) { return {fmt}; }
+  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime_format(wstring_view fmt) { return {fmt}; }
+  </ins>
 
   ...
 }
@@ -151,7 +155,7 @@ namespace std {
 
   public:
     template&lt;class T> consteval basic_format_string(const T& s);
-    <ins>basic_format_string(runtime-format-string&lt;charT> s) : str(s.str) {}</ins>
+    <ins>basic_format_string(<i>runtime-format-string</i>&lt;charT>&& s) : str(s.<i>str</i>) {}</ins>
 
     constexpr basic_string_view&lt;charT> get() const noexcept { return str; }
   };
@@ -162,6 +166,12 @@ Implementation {#impl}
 ==============
 
 The proposed API has been implemented in the {fmt} library ([[FMT]]).
+
+Acknowledgements {#ack}
+================
+
+Thanks to Mateusz Pusz for the suggestion to pass *runtime-format-string* by
+rvalue reference that improves safety of the API.
 
 <pre class=biblio>
 {
