@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2905R0: Runtime format strings</title>
+  <title>D2905R1: Runtime format strings</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1562,7 +1562,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="01092270e326600fad4b376fe4d325c0dce3621b" name="document-revision">
+  <meta content="b401273db0ca382b45b6463f22ac9af6de5761aa" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2083,8 +2083,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2905R0<br>Runtime format strings</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-05-28">2023-05-28</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2905R1<br>Runtime format strings</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2023-06-14">2023-06-14</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2103,10 +2103,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#problems"><span class="secno">2</span> <span class="content">Problems</span></a>
-    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
-    <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes"><span class="secno">3</span> <span class="content">Changes</span></a>
+    <li><a href="#polls"><span class="secno">4</span> <span class="content">Polls</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
+    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2123,8 +2125,9 @@ However, due to resource constraints it didn’t provide a good API for using
 formatting functions with format strings not known at compile time.
 As a workaround one could use type-erased API which has never been designed
 for that. This severely undermined safety and led to poor user experience.
-This paper fixes the issue by proposing direct support for runtime format
-strings which has been long available in the {fmt} library.</p>
+This paper fixes the safety issue and its companion paper <a data-link-type="biblio" href="#biblio-p2918">[P2918]</a> proposes
+direct support for runtime format strings which has been long available in the
+{fmt} library.</p>
    <h2 class="heading settled" data-level="2" id="problems"><span class="secno">2. </span><span class="content">Problems</span><a class="self-link" href="#problems"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2216">[P2216]</a> "std::format improvements" introduced compile-time format string
 checks for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. This obviously requires format strings be known at
@@ -2147,30 +2150,23 @@ following example:</p>
    <p>This innocent-looking code exhibits undefined behavior because format arguments
 store a reference to a temporary which is destroyed before use. This has been
 discovered and fixed in <a data-link-type="biblio" href="#biblio-fmt">[FMT]</a> which now rejects such code at compile time.</p>
-   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>This paper proposes adding the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> function to explicitly mark
-a format string as a runtime one and opt out of compile-time format string
-checks.</p>
-   <table>
-    <tbody>
-     <tr>
-      <th>Before 
-      <th>After 
-     <tr>
-      <td>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vformat</c-><c- p>(</c-><c- n>str</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-><c- p>(</c-><c- mi>42</c-><c- p>));</c->
+   <h2 class="heading settled" data-level="3" id="changes"><span class="secno">3. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Moved the API for direct runtime format string support to a separate paper
+per LEWG feedback.</p>
+    <li data-md>
+     <p>Removed forwarding in <code class="highlight"><c- n>print</c-></code> per LEWG feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <p>LEWG poll results for R0:</p>
+   <p><strong>POLL:</strong> In P2905R0 split <code class="highlight"><c- n>runtime_format</c-></code> and <code class="highlight"><c- n>make_format_args</c-></code> (add fix for <code class="highlight"><c- n>print</c-></code>) into separate papers, the latter being a DR against C++23.</p>
+<pre class="highlight"><c- n>SF</c->  <c- n>F</c->  <c- n>N</c->  <c- n>A</c-> <c- n>SA</c->
+ <c- mi>5</c-> <c- mi>10</c->  <c- mi>4</c->  <c- mi>0</c->  <c- mi>0</c->
 </pre>
-      <td>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-><c- p>(</c-><c- n>str</c-><c- p>),</c-> <c- mi>42</c-><c- p>);</c->
-</pre>
-   </table>
-   <p>This improves usability and makes the intent more explicit. It can also enable
-detection of some lifetime errors for arguments (<a data-link-type="biblio" href="#biblio-p2418">[P2418]</a>). This API has been
-available in {fmt} since <code class="highlight"><c- k>consteval</c-></code>-based format string checks were introduced
-~2 years ago and usage experience was very positive. In a large codebase with
-> 100k calls of <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>format</c-></code> only ~0.1% use <code class="highlight"><c- n>make_format_args</c-></code>.</p>
-   <p>This paper also proposes changing <code class="highlight"><c- n>make_format_args</c-></code> to take lvalue references
-instead of rvalue references, rejecting problematic code:</p>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p>This paper proposes changing <code class="highlight"><c- n>make_format_args</c-></code> to take lvalue references
+instead of forwarding references, rejecting problematic code:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>path</c-> <c- o>=</c-> <c- s>"path/etic/experience"</c-><c- p>;</c->
 <c- k>auto</c-> <c- n>args</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-><c- p>(</c-><c- n>path</c-><c- p>.</c-><c- n>string</c-><c- p>());</c-> <c- c1>// ill-formed</c->
 </pre>
@@ -2179,7 +2175,7 @@ pattern of using <code class="highlight"><c- n>make_format_args</c-></code> has 
 runtime format strings there. If left unchanged this will be a major safety
 hole in the standard formatting facility.</p>
    <p>In the standard itself <code class="highlight"><c- n>make_format_args</c-></code> is already called with lvalue
-references only, e.g. <a href="http://eel.is/c++draft/format#functions-2">[format.functions</a>]:</p>
+references in <code class="highlight"><c- n>format</c-></code>, e.g. <a href="http://eel.is/c++draft/format#functions-2">[format.functions</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>string</c-> <c- n>format</c-><c- p>(</c-><c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
@@ -2188,7 +2184,11 @@ references only, e.g. <a href="http://eel.is/c++draft/format#functions-2">[forma
 </pre>
    <p>Notice that there is intentionally no forwarding of <code class="highlight"><c- n>args</c-></code> so the switch from
 forwarding to lvalue references is effectively a noop there.</p>
-   <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <p>There is forwarding in the definitions on recently added <code class="highlight"><c- n>print</c-></code> functions
+(e.g. <a href="https://eel.is/c++draft/input.output#print.fun-2">[print.fun</a>])
+which is unnecessary and inconsistent with <code class="highlight"><c- n>format</c-></code>. Removing fowarding there is
+not observable.</p>
+   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Rejecting temporaries in <code class="highlight"><c- n>make_format_args</c-></code> is an (intentionally)
 breaking change.</p>
    <p>Searching GitHub for calls of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-></code> using the following query</p>
@@ -2205,25 +2205,9 @@ require no changes:</p>
    <p>72 of remaining calls can be trivially fixed by removing unnecessary forwarding.</p>
    <p>This leaves only 320 cases most of which will continue to work and the ones
 that pass temporaries can be easily fixed by either switching to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> or by storing a temporary in a variable.</p>
-   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Change in <a href="https://eel.is/c++draft/format#syn">[format.syn</a>]:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- n>std</c-> <c- p>{</c->
-  <c- p>...</c->
-
-  <c- c1>// [format.fmt.string], class template basic_format_string</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- k>struct</c-> <c- nc>basic_format_string</c-><c- p>;</c->
-
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- k>using</c-> <c- n>format_string</c-> <c- o>=</c-> <c- n>basic_format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
-    <c- k>using</c-> <c- n>wformat_string</c-> <c- o>=</c-> <c- n>basic_format_string</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
-
-  <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <i><c- nc>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
-
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>);</c->
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>);</c-></ins>
-
   <c- p>...</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-> <c- o>=</c-> <c- n>format_context</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
@@ -2246,7 +2230,27 @@ The type <code class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- n>format</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-><c- o>&lt;</c-><c- n>wformat_context</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>make_wformat_args</c-><c- p>(</c-><c- n>Args</c-><c- o>&amp;</c-><del><c- o>&amp;</c-></del><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
-   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <p>Change in <a href="https://eel.is/c++draft/print.fun#2">[print.fun</a>]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>2 <em>Effects</em>: If the ordinary literal encoding ([lex.charset]) is UTF-8, equivalent to:</p>
+<pre class="highlight"><c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><del><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...</c-></del><ins><c- n>args</c-><c- p>...</c-></ins><c- p>));</c->
+</pre>
+   <p>Otherwise, equivalent to:</p>
+<pre class="highlight"><c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><del><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...</c-></del><ins><c- n>args</c-><c- p>...</c-></ins><c- p>));</c->
+</pre>
+   <p>Change in <a href="https://eel.is/c++draft/input.output#ostream.formatted.print-1">[ostream.formatted.print</a>]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- n>ostream</c-><c- o>&amp;</c-> <c- n>os</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>1 <em>Effects</em>: If the ordinary literal encoding ([lex.charset]) is UTF-8, equivalent to:</p>
+<pre class="highlight"><c- n>vprint_unicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><del><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...</c-></del><ins><c- n>args</c-><c- p>...</c-></ins><c- p>));</c->
+</pre>
+   <p>Otherwise, equivalent to:</p>
+<pre class="highlight"><c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><del><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...</c-></del><ins><c- n>args</c-><c- p>...</c-></ins><c- p>));</c->
+</pre>
+   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed API has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
   </main>
 <script>
@@ -2387,8 +2391,8 @@ The type <code class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::
    <dd>Free Software Foundation. <a href="https://www.gnu.org/software/gettext/">gettext</a>. URL: <a href="https://www.gnu.org/software/gettext/">https://www.gnu.org/software/gettext/</a>
    <dt id="biblio-p2216">[P2216]
    <dd>Victor Zverovich. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html">std::format improvements</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html</a>
-   <dt id="biblio-p2418">[P2418]
-   <dd>Victor Zverovich. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2418r2.html">Add support for `std::generator`-like types to `std::format`</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2418r2.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2418r2.html</a>
    <dt id="biblio-p2757">[P2757]
    <dd>Barry Revzin. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2757r1.html">Type-checking format args</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2757r1.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2757r1.html</a>
+   <dt id="biblio-p2918">[P2918]
+   <dd>Victor Zverovich. Runtime format strings II. 
   </dl>

@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Runtime format strings
-Shortname: P2905
-Revision: 0
+Shortname: D2905
+Revision: 1
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-05-28
+Date: 2023-06-14
 Markup Shorthands: markdown yes
 </pre>
 
@@ -38,8 +38,9 @@ However, due to resource constraints it didn't provide a good API for using
 formatting functions with format strings not known at compile time.
 As a workaround one could use type-erased API which has never been designed
 for that. This severely undermined safety and led to poor user experience.
-This paper fixes the issue by proposing direct support for runtime format
-strings which has been long available in the {fmt} library.
+This paper fixes the safety issue and its companion paper [[P2918]] proposes
+direct support for runtime format strings which has been long available in the
+{fmt} library.
 
 Problems {#problems}
 ========
@@ -75,40 +76,34 @@ This innocent-looking code exhibits undefined behavior because format arguments
 store a reference to a temporary which is destroyed before use. This has been
 discovered and fixed in [[FMT]] which now rejects such code at compile time.
 
+Changes {#changes}
+=======
+
+* Moved the API for direct runtime format string support to a separate paper
+    per LEWG feedback.
+* Removed forwarding in `print` per LEWG feedback.
+
+Polls {#polls}
+=====
+
+<!-- https://docs.google.com/document/d/1bTtXiuN-1V9ksEzgeUyIEfqQZe5fstd6dfRkr7p_-p0/edit -->
+LEWG poll results for R0:
+
+**POLL:** In P2905R0 split `runtime_format` and `make_format_args` (add fix for
+`print`) into separate papers, the latter being a DR against C++23.
+
+```
+SF  F  N  A SA
+ 5 10  4  0  0
+```
+
 Proposal {#proposal}
 ========
 
-This paper proposes adding the `std::runtime_format` function to explicitly mark
-a format string as a runtime one and opt out of compile-time format string
-checks.
-
-<table>
-<tr>
-  <th>Before
-  <th>After
-</tr>
-<tr>
-<td>
-```
-std::vformat(str, std::make_format_args(42));
-```
-<td>
-```
-std::format(std::runtime_format(str), 42);
-```
-</tr>
-</table>
-
-This improves usability and makes the intent more explicit. It can also enable
-detection of some lifetime errors for arguments ([[P2418]]). This API has been
-available in {fmt} since `consteval`-based format string checks were introduced
-~2 years ago and usage experience was very positive. In a large codebase with
-&gt; 100k calls of `fmt::format` only ~0.1% use `make_format_args`.
-
 <!-- TODO: naming std::runtime_format/std::fmt::runtime -->
 
-This paper also proposes changing `make_format_args` to take lvalue references
-instead of rvalue references, rejecting problematic code:
+This paper proposes changing `make_format_args` to take lvalue references
+instead of forwarding references, rejecting problematic code:
 
 ```
 std::filesystem::path path = "path/etic/experience";
@@ -121,7 +116,8 @@ runtime format strings there. If left unchanged this will be a major safety
 hole in the standard formatting facility.
 
 In the standard itself `make_format_args` is already called with lvalue
-references only, e.g. [[format.functions](http://eel.is/c++draft/format#functions-2)]:
+references in `format`, e.g.
+[[format.functions](http://eel.is/c++draft/format#functions-2)]:
 
 ```
 template<class... Args>
@@ -135,6 +131,11 @@ template<class... Args>
 
 Notice that there is intentionally no forwarding of `args` so the switch from
 forwarding to lvalue references is effectively a noop there.
+
+There is forwarding in the definitions on recently added `print` functions
+(e.g. [[print.fun](https://eel.is/c++draft/input.output#print.fun-2)])
+which is unnecessary and inconsistent with `format`. Removing fowarding there is
+not observable.
 
 Impact on existing code {#impact}
 =======================
@@ -177,22 +178,6 @@ Change in [[format.syn](https://eel.is/c++draft/format#syn)]:
 namespace std {
   ...
 
-  // [format.fmt.string], class template basic_format_string
-  template&lt;class charT, class... Args>
-    struct basic_format_string;
-
-  template&lt;class... Args>
-    using format_string = basic_format_string&lt;char, type_identity_t&lt;Args>...>;
-  template&lt;class... Args>
-    using wformat_string = basic_format_string&lt;wchar_t, type_identity_t&lt;Args>...>;
-
-  <ins>template&lt;class charT> struct <i>runtime-format-string</i>;  <i>// exposition-only</i>
-
-  <i>runtime-format-string</i>&lt;char&gt; runtime_format(string_view fmt);
-  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime_format(wstring_view fmt);</ins>
-
-  ...
-
   template&lt;class Context = format_context, class... Args>
     format-arg-store&lt;Context, Args...>
       make_format_args(Args&<del>&</del>... fmt_args);
@@ -224,6 +209,44 @@ template&lt;class... Args>
   format-arg-store&lt;wformat_context, Args...> make_wformat_args(Args&<del>&</del>... args);
 </pre>
 
+Change in [[print.fun](https://eel.is/c++draft/print.fun#2)]:
+
+<pre>
+template&lt;class... Args>
+  void print(FILE* stream, format_string&lt;Args...> fmt, Args&&... args);
+</pre>
+
+2 *Effects*: If the ordinary literal encoding ([lex.charset]) is UTF-8, equivalent to:
+
+<pre>
+vprint_unicode(stream, fmt.str, make_format_args(<del>std::forward&lt;Args>(args)...</del><ins>args...</ins>));
+</pre>
+
+Otherwise, equivalent to:
+
+<pre>
+vprint_nonunicode(stream, fmt.str, make_format_args(<del>std::forward&lt;Args>(args)...</del><ins>args...</ins>));
+</pre>
+
+Change in [[ostream.formatted.print](https://eel.is/c++draft/input.output#ostream.formatted.print-1)]:
+
+<pre>
+template&lt;class... Args>
+  void print(ostream& os, format_string&lt;Args...> fmt, Args&&... args);
+</pre>
+
+1 *Effects*: If the ordinary literal encoding ([lex.charset]) is UTF-8, equivalent to:
+
+<pre>
+vprint_unicode(os, fmt.str, make_format_args(<del>std::forward&lt;Args>(args)...</del><ins>args...</ins>));
+</pre>
+
+Otherwise, equivalent to:
+
+<pre>
+vprint_nonunicode(os, fmt.str, make_format_args(<del>std::forward&lt;Args>(args)...</del><ins>args...</ins>));
+</pre>
+
 Implementation {#impl}
 ==============
 
@@ -247,15 +270,14 @@ The proposed API has been implemented in the {fmt} library ([[FMT]]).
     "authors": ["Victor Zverovich"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2216r3.html"
   },
-  "P2418": {
-    "title": "Add support for `std::generator`-like types to `std::format`",
-    "authors": ["Victor Zverovich"],
-    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p2418r2.html"
-  },
   "p2757": {
     "title": "Type-checking format args",
     "authors": ["Barry Revzin"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2757r1.html"
+  },
+  "P2918": {
+    "title": "Runtime format strings II",
+    "authors": ["Victor Zverovich"]
   }
 }
 </pre>
