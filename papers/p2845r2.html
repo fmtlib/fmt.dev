@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2845R1: Formatting of std::filesystem::path</title>
+  <title>P2845R2: Formatting of std::filesystem::path</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -12,7 +12,7 @@
  *   - .toc for the Table of Contents (<ol class="toc">)
  *     + <span class="secno"> for the section numbers
  *   - #toc for the Table of Contents (<nav id="toc">)
- *   - ul.index for Indices (<a href="#ref">term</a><span>, in §N.M</span>)
+ *   - ul.index for Indices (<a href="#ref">term</a><span>, in § N.M</span>)
  *   - table.index for Index Tables (e.g. for properties or elements)
  *
  * Structural Markup
@@ -1238,14 +1238,15 @@ Possible extra rowspan handling
 			grid-column: 2;
 			width: auto;
 			margin-right: 1rem;
+			border-bottom: 3px solid transparent;
+			margin-bottom: -3px;
 		}
 		#toc .content:hover,
 		#toc .content:focus {
 			background: rgba(75%, 75%, 75%, .25);
 			background: var(--a-hover-bg);
-			border-bottom: 3px solid #054572;
-			border-bottom: 3px solid var(--toclink-underline);
-			margin-bottom: -3px;
+			border-bottom-color: #054572;
+			border-bottom-color: var(--toclink-underline);
 		}
 		#toc li li li .content {
 			margin-left: 1rem;
@@ -1269,7 +1270,7 @@ Possible extra rowspan handling
 	ul.index ul,
 	ul.index dl { font-size: smaller; }
 	@media not print {
-		ul.index li span:not(.dfn-paneled) {
+		ul.index li a + span {
 			white-space: nowrap;
 			color: transparent; }
 		ul.index li a:hover + span,
@@ -1487,7 +1488,7 @@ Possible extra rowspan handling
 		}
 	}
 </style>
-<style type="text/css">
+<style>
     table, th, td {
       border: 1px solid black;
       border-collapse: collapse;
@@ -1560,23 +1561,22 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 3d6a6fcbb, updated Wed Jun 16 16:19:39 2021 -0700" name="generator">
+  <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8f0c78159cb12c90357cbae0b183b3edd7aa7a66" name="document-revision">
+  <meta content="42972158e9858e97a6919dbf8931a942a2b08660" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
   }
-	ins { text-decoration: none; }
+  ins { text-decoration: none; }
   ins code { background: #cfc !important; }
 
   .poll th, .poll td {
-		text-align: right;
+    text-align: right;
     width: 20%;
-	}
+  }
 </style>
-<style>/* style-autolinks */
-
+<style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
     font-size: inherit;
@@ -1636,8 +1636,17 @@ pre .property::before, pre .property::after {
 
 [data-link-type=biblio] {
     white-space: pre;
-}</style>
-<style>/* style-colors */
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --selflink-text: black;
+        --selflink-bg: silver;
+        --selflink-hover-text: white;
+    }
+}
+</style>
+<style>/* Boilerplate: style-colors */
 
 /* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
 :root {
@@ -1745,158 +1754,7 @@ pre .property::before, pre .property::after {
     --outdated-shadow: red;
 
     --editedrec-bg: darkorange;
-}</style>
-<style>/* style-counters */
-
-body {
-    counter-reset: example figure issue;
 }
-.issue {
-    counter-increment: issue;
-}
-.issue:not(.no-marker)::before {
-    content: "Issue " counter(issue);
-}
-
-.example {
-    counter-increment: example;
-}
-.example:not(.no-marker)::before {
-    content: "Example " counter(example);
-}
-.invalid.example:not(.no-marker)::before,
-.illegal.example:not(.no-marker)::before {
-    content: "Invalid Example" counter(example);
-}
-
-figcaption {
-    counter-increment: figure;
-}
-figcaption:not(.no-marker)::before {
-    content: "Figure " counter(figure) " ";
-}</style>
-<style>/* style-md-lists */
-
-/* This is a weird hack for me not yet following the commonmark spec
-   regarding paragraph and lists. */
-[data-md] > :first-child {
-    margin-top: 0;
-}
-[data-md] > :last-child {
-    margin-bottom: 0;
-}</style>
-<style>/* style-selflinks */
-
-:root {
-    --selflink-text: white;
-    --selflink-bg: gray;
-    --selflink-hover-text: black;
-}
-.heading, .issue, .note, .example, li, dt {
-    position: relative;
-}
-a.self-link {
-    position: absolute;
-    top: 0;
-    left: calc(-1 * (3.5rem - 26px));
-    width: calc(3.5rem - 26px);
-    height: 2em;
-    text-align: center;
-    border: none;
-    transition: opacity .2s;
-    opacity: .5;
-}
-a.self-link:hover {
-    opacity: 1;
-}
-.heading > a.self-link {
-    font-size: 83%;
-}
-li > a.self-link {
-    left: calc(-1 * (3.5rem - 26px) - 2em);
-}
-dfn > a.self-link {
-    top: auto;
-    left: auto;
-    opacity: 0;
-    width: 1.5em;
-    height: 1.5em;
-    background: var(--selflink-bg);
-    color: var(--selflink-text);
-    font-style: normal;
-    transition: opacity .2s, background-color .2s, color .2s;
-}
-dfn:hover > a.self-link {
-    opacity: 1;
-}
-dfn > a.self-link:hover {
-    color: var(--selflink-hover-text);
-}
-
-a.self-link::before            { content: "¶"; }
-.heading > a.self-link::before { content: "§"; }
-dfn > a.self-link::before      { content: "#"; }
-</style>
-<style>/* style-syntax-highlighting */
-
-code.highlight { padding: .1em; border-radius: .3em; }
-pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
-
-.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
-c-[a] { color: #990055 } /* Keyword.Declaration */
-c-[b] { color: #990055 } /* Keyword.Type */
-c-[c] { color: #708090 } /* Comment */
-c-[d] { color: #708090 } /* Comment.Multiline */
-c-[e] { color: #0077aa } /* Name.Attribute */
-c-[f] { color: #669900 } /* Name.Tag */
-c-[g] { color: #222222 } /* Name.Variable */
-c-[k] { color: #990055 } /* Keyword */
-c-[l] { color: #000000 } /* Literal */
-c-[m] { color: #000000 } /* Literal.Number */
-c-[n] { color: #0077aa } /* Name */
-c-[o] { color: #999999 } /* Operator */
-c-[p] { color: #999999 } /* Punctuation */
-c-[s] { color: #a67f59 } /* Literal.String */
-c-[t] { color: #a67f59 } /* Literal.String.Single */
-c-[u] { color: #a67f59 } /* Literal.String.Double */
-c-[cp] { color: #708090 } /* Comment.Preproc */
-c-[c1] { color: #708090 } /* Comment.Single */
-c-[cs] { color: #708090 } /* Comment.Special */
-c-[kc] { color: #990055 } /* Keyword.Constant */
-c-[kn] { color: #990055 } /* Keyword.Namespace */
-c-[kp] { color: #990055 } /* Keyword.Pseudo */
-c-[kr] { color: #990055 } /* Keyword.Reserved */
-c-[ld] { color: #000000 } /* Literal.Date */
-c-[nc] { color: #0077aa } /* Name.Class */
-c-[no] { color: #0077aa } /* Name.Constant */
-c-[nd] { color: #0077aa } /* Name.Decorator */
-c-[ni] { color: #0077aa } /* Name.Entity */
-c-[ne] { color: #0077aa } /* Name.Exception */
-c-[nf] { color: #0077aa } /* Name.Function */
-c-[nl] { color: #0077aa } /* Name.Label */
-c-[nn] { color: #0077aa } /* Name.Namespace */
-c-[py] { color: #0077aa } /* Name.Property */
-c-[ow] { color: #999999 } /* Operator.Word */
-c-[mb] { color: #000000 } /* Literal.Number.Bin */
-c-[mf] { color: #000000 } /* Literal.Number.Float */
-c-[mh] { color: #000000 } /* Literal.Number.Hex */
-c-[mi] { color: #000000 } /* Literal.Number.Integer */
-c-[mo] { color: #000000 } /* Literal.Number.Oct */
-c-[sb] { color: #a67f59 } /* Literal.String.Backtick */
-c-[sc] { color: #a67f59 } /* Literal.String.Char */
-c-[sd] { color: #a67f59 } /* Literal.String.Doc */
-c-[se] { color: #a67f59 } /* Literal.String.Escape */
-c-[sh] { color: #a67f59 } /* Literal.String.Heredoc */
-c-[si] { color: #a67f59 } /* Literal.String.Interpol */
-c-[sx] { color: #a67f59 } /* Literal.String.Other */
-c-[sr] { color: #a67f59 } /* Literal.String.Regex */
-c-[ss] { color: #a67f59 } /* Literal.String.Symbol */
-c-[vc] { color: #0077aa } /* Name.Variable.Class */
-c-[vg] { color: #0077aa } /* Name.Variable.Global */
-c-[vi] { color: #0077aa } /* Name.Variable.Instance */
-c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
-</style>
-<style>/* style-darkmode */
 
 @media (prefers-color-scheme: dark) {
     :root {
@@ -2009,13 +1867,174 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
        which is quite common in practice... */
     img { background: white; }
 }
-@media (prefers-color-scheme: dark) {
-    :root {
-        --selflink-text: black;
-        --selflink-bg: silver;
-        --selflink-hover-text: white;
-    }
+</style>
+<style>/* Boilerplate: style-counters */
+body {
+    counter-reset: example figure issue;
 }
+.issue {
+    counter-increment: issue;
+}
+.issue:not(.no-marker)::before {
+    content: "Issue " counter(issue);
+}
+
+.example {
+    counter-increment: example;
+}
+.example:not(.no-marker)::before {
+    content: "Example " counter(example);
+}
+.invalid.example:not(.no-marker)::before,
+.illegal.example:not(.no-marker)::before {
+    content: "Invalid Example" counter(example);
+}
+
+figcaption {
+    counter-increment: figure;
+}
+figcaption:not(.no-marker)::before {
+    content: "Figure " counter(figure) " ";
+}
+</style>
+<style>/* Boilerplate: style-issues */
+a[href].issue-return {
+    float: right;
+    float: inline-end;
+    color: var(--issueheading-text);
+    font-weight: bold;
+    text-decoration: none;
+}
+</style>
+<style>/* Boilerplate: style-md-lists */
+/* This is a weird hack for me not yet following the commonmark spec
+   regarding paragraph and lists. */
+[data-md] > :first-child {
+    margin-top: 0;
+}
+[data-md] > :last-child {
+    margin-bottom: 0;
+}
+</style>
+<style>/* Boilerplate: style-selflinks */
+
+:root {
+    --selflink-text: white;
+    --selflink-bg: gray;
+    --selflink-hover-text: black;
+}
+.heading, .issue, .note, .example, li, dt {
+    position: relative;
+}
+a.self-link {
+    position: absolute;
+    top: 0;
+    left: calc(-1 * (3.5rem - 26px));
+    width: calc(3.5rem - 26px);
+    height: 2em;
+    text-align: center;
+    border: none;
+    transition: opacity .2s;
+    opacity: .5;
+}
+a.self-link:hover {
+    opacity: 1;
+}
+.heading > a.self-link {
+    font-size: 83%;
+}
+.example > a.self-link,
+.note > a.self-link,
+.issue > a.self-link {
+    /* These blocks are overflow:auto, so positioning outside
+       doesn't work. */
+    left: auto;
+    right: 0;
+}
+li > a.self-link {
+    left: calc(-1 * (3.5rem - 26px) - 2em);
+}
+dfn > a.self-link {
+    top: auto;
+    left: auto;
+    opacity: 0;
+    width: 1.5em;
+    height: 1.5em;
+    background: var(--selflink-bg);
+    color: var(--selflink-text);
+    font-style: normal;
+    transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+    opacity: 1;
+}
+dfn > a.self-link:hover {
+    color: var(--selflink-hover-text);
+}
+
+a.self-link::before            { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before      { content: "#"; }
+</style>
+<style>/* Boilerplate: style-syntax-highlighting */
+
+code.highlight { padding: .1em; border-radius: .3em; }
+pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
+
+.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
+c-[a] { color: #990055 } /* Keyword.Declaration */
+c-[b] { color: #990055 } /* Keyword.Type */
+c-[c] { color: #708090 } /* Comment */
+c-[d] { color: #708090 } /* Comment.Multiline */
+c-[e] { color: #0077aa } /* Name.Attribute */
+c-[f] { color: #669900 } /* Name.Tag */
+c-[g] { color: #222222 } /* Name.Variable */
+c-[k] { color: #990055 } /* Keyword */
+c-[l] { color: #000000 } /* Literal */
+c-[m] { color: #000000 } /* Literal.Number */
+c-[n] { color: #0077aa } /* Name */
+c-[o] { color: #999999 } /* Operator */
+c-[p] { color: #999999 } /* Punctuation */
+c-[s] { color: #a67f59 } /* Literal.String */
+c-[t] { color: #a67f59 } /* Literal.String.Single */
+c-[u] { color: #a67f59 } /* Literal.String.Double */
+c-[cp] { color: #708090 } /* Comment.Preproc */
+c-[c1] { color: #708090 } /* Comment.Single */
+c-[cs] { color: #708090 } /* Comment.Special */
+c-[kc] { color: #990055 } /* Keyword.Constant */
+c-[kn] { color: #990055 } /* Keyword.Namespace */
+c-[kp] { color: #990055 } /* Keyword.Pseudo */
+c-[kr] { color: #990055 } /* Keyword.Reserved */
+c-[ld] { color: #000000 } /* Literal.Date */
+c-[nc] { color: #0077aa } /* Name.Class */
+c-[no] { color: #0077aa } /* Name.Constant */
+c-[nd] { color: #0077aa } /* Name.Decorator */
+c-[ni] { color: #0077aa } /* Name.Entity */
+c-[ne] { color: #0077aa } /* Name.Exception */
+c-[nf] { color: #0077aa } /* Name.Function */
+c-[nl] { color: #0077aa } /* Name.Label */
+c-[nn] { color: #0077aa } /* Name.Namespace */
+c-[py] { color: #0077aa } /* Name.Property */
+c-[ow] { color: #999999 } /* Operator.Word */
+c-[mb] { color: #000000 } /* Literal.Number.Bin */
+c-[mf] { color: #000000 } /* Literal.Number.Float */
+c-[mh] { color: #000000 } /* Literal.Number.Hex */
+c-[mi] { color: #000000 } /* Literal.Number.Integer */
+c-[mo] { color: #000000 } /* Literal.Number.Oct */
+c-[sb] { color: #a67f59 } /* Literal.String.Backtick */
+c-[sc] { color: #a67f59 } /* Literal.String.Char */
+c-[sd] { color: #a67f59 } /* Literal.String.Doc */
+c-[se] { color: #a67f59 } /* Literal.String.Escape */
+c-[sh] { color: #a67f59 } /* Literal.String.Heredoc */
+c-[si] { color: #a67f59 } /* Literal.String.Interpol */
+c-[sx] { color: #a67f59 } /* Literal.String.Other */
+c-[sr] { color: #a67f59 } /* Literal.String.Regex */
+c-[ss] { color: #a67f59 } /* Literal.String.Symbol */
+c-[vc] { color: #0077aa } /* Name.Variable.Class */
+c-[vg] { color: #0077aa } /* Name.Variable.Global */
+c-[vi] { color: #0077aa } /* Name.Variable.Instance */
+c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
+
 
 @media (prefers-color-scheme: dark) {
     .highlight:not(.idl) { background: rgba(255, 255, 255, .05); }
@@ -2083,8 +2102,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2845R1<br>Formatting of std::filesystem::path</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-06-03">2023-06-03</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2845R2<br>Formatting of std::filesystem::path</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-07-16">2023-07-16</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2102,12 +2121,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes from R0</span></a>
-    <li><a href="#problems"><span class="secno">3</span> <span class="content">Problems</span></a>
-    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
-    <li><a href="#ack"><span class="secno">7</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes from R1</span></a>
+    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#problems"><span class="secno">4</span> <span class="content">Problems</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
+    <li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2119,42 +2139,47 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p style="text-align: right"> "The Tao is constantly moving, the path is always changing."
 ― Lao Tzu </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-p1636">[P1636]</a> "Formatters for library types" proposed adding a number of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>formatter</c-></code> specializations, including the one for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code>.
+   <p><a data-link-type="biblio" href="#biblio-p1636" title="Formatters for library types">[P1636]</a> "Formatters for library types" proposed adding a number of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>formatter</c-></code> specializations, including the one for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code>.
 However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>path</c-></code>.</p>
-   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
-     <p>Added a reference to <a href="http://eel.is/c++draft/format#string">[format.string</a>] for
-the productions <i>fill-and-align</i> and <i>width</i>.</p>
+     <p>Provided control over escaping via format specifiers per SG16 feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added a reference to <a href="http://eel.is/c++draft/format#string">[format.string</a>]
+for the productions <i>fill-and-align</i> and <i>width</i>.</p>
     <li data-md>
      <p>Replaced <em>range-format-spec</em> with <em>path-format-spec</em> in the <em>Effects</em> clause
 of the <code class="highlight"><c- n>format</c-></code> function.</p>
     <li data-md>
      <p>Added missing transcoding to the definition of the <code class="highlight"><c- n>format</c-></code> function.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="problems"><span class="secno">3. </span><span class="content">Problems</span><a class="self-link" href="#problems"></a></h2>
-   <p><a data-link-type="biblio" href="#biblio-p1636">[P1636]</a> proposed defining a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>path</c-></code> in terms
+   <h2 class="heading settled" data-level="4" id="problems"><span class="secno">4. </span><span class="content">Problems</span><a class="self-link" href="#problems"></a></h2>
+   <p><a data-link-type="biblio" href="#biblio-p1636" title="Formatters for library types">[P1636]</a> proposed defining a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>path</c-></code> in terms
 of the <code class="highlight"><c- n>ostream</c-></code> insertion operator which, in turn, formats the native
 representation wrapped in <code class="highlight"><c- n>quoted</c-></code>. For example:</p>
-<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}, std::filesystem::path("</c-><c- o>/</c-><c- n>usr</c-><c- o>/</c-><c- n>bin</c-><c- s>"));</c->
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c-><c- s>"/usr/bin"</c-><c- p>));</c->
 </pre>
-   would print <code class="highlight"><c- s>"/usr/bin"</c-></code> with quotes being part of the output. 
+   <p>would print <code class="highlight"><c- s>"/usr/bin"</c-></code> with quotes being part of the output.</p>
    <p>Unfortunately this has a number of problems, some of them raised in the LWG
 discussion of the paper.</p>
    <p>First, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>quoted</c-></code> only escapes the delimiter (<code class="highlight"><c- s>"</c-></code>) and the escape character
-itself (<code class="highlight">\</code>). As a result the output may not be usable if the path contains
-control characters such as newlines. For example:</p>
+itself (<code class="highlight">\</code>). As a result the output may not be usable if the path
+contains control characters such as newlines. For example:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c-><c- s>"multi</c-><c- se>\n</c-><c- s>line"</c-><c- p>));</c->
 </pre>
    <p>would print</p>
 <pre class="language-text highlight">"multi
 line"
 </pre>
-   which is not a valid string in C++ and many other languages, most importantly
+   <p>which is not a valid string in C++ and many other languages, most importantly
 including shell languages. Such output is pretty much unusable and
-interferes with formatting of ranges of paths. 
+interferes with formatting of ranges of paths.</p>
    <p>Another problem is encoding. The <code class="highlight"><c- n>native</c-></code> member function returns <code class="highlight"><c- n>basic_string</c-><c- o>&lt;</c-><c- n>value_type</c-><c- o>></c-></code> where</p>
    <blockquote>
     <p><code class="highlight"><c- n>value_type</c-></code> is a <code class="highlight"><c- k>typedef</c-></code> for the operating system dependent encoded
@@ -2183,25 +2208,46 @@ literal encodings are UTF-8:</p>
    <p>The problem is that despite <code class="highlight"><c- n>print</c-></code> and <code class="highlight"><c- n>path</c-></code> both support Unicode the
 intermediate conversion goes through CP1251 (the code page used for Belarusian)
 which is not even valid for printing in the console which uses legacy CP866.
-This has been discussed at length in <a data-link-type="biblio" href="#biblio-p2093">[P2093]</a> "Formatted output".</p>
-   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+This has been discussed at length in <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> "Formatted output".</p>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Both of the problems discussed in the previoius section have already been
 solved. The escaping mechanism that can handle invalid code units has been
-introduced in <a data-link-type="biblio" href="#biblio-p2286">[P2286]</a> "Formatting Ranges" and encoding issues have been
-addressed in <a data-link-type="biblio" href="#biblio-p2093">[P2093]</a> and other papers. We apply those solutions to the
+introduced in <a data-link-type="biblio" href="#biblio-p2286" title="Formatting Ranges">[P2286]</a> "Formatting Ranges" and encoding issues have been
+addressed in <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> and other papers. We apply those solutions to the
 formatting of paths.</p>
    <p>This paper proposes adding a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>path</c-></code> that does
-escaping similarly to <a data-link-type="biblio" href="#biblio-p2286">[P2286]</a> and Unicode transcoding on Windows.</p>
+escaping similarly to <a data-link-type="biblio" href="#biblio-p2286" title="Formatting Ranges">[P2286]</a> and Unicode transcoding on Windows.
+Additionally, it proposes giving the user control over escaping via format
+specifiers. The debug format (<code class="highlight"><c- o>?</c-></code>) gives the escaped representation while the
+default is unescaped and minimally processed with only invalid code units
+substituted with replacement characters if necessary. This is consistent with
+formatting of strings. The default format can be useful for displaying paths in
+a UI and gives the user control whether and how to handle special characters.
+The debug format is useful for displaying paths as parts of a larger structure
+such as a range and prevents interferring with its formatting.</p>
    <table>
     <tbody>
      <tr>
       <th>Code 
-      <th>Before 
-      <th>After 
+      <th>P1636 
+      <th>This proposal 
      <tr>
       <td>
 <pre class="highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c-><c- s>"multi</c-><c- se>\n</c-><c- s>line"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
+</pre>
+      <td>
+<pre class="language-text highlight">"multi
+line"
+</pre>
+      <td>
+<pre class="language-text highlight">multi
+line
+</pre>
+     <tr>
+      <td>
+<pre class="highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c-><c- s>"multi</c-><c- se>\n</c-><c- s>line"</c-><c- p>);</c->
+<c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:?}"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
 </pre>
       <td>
 <pre class="language-text highlight">"multi
@@ -2233,50 +2279,70 @@ it is a bit more complicated because the string is in a different form and
 the mapping between ill-formed code units in one form to another may not be
 well-defined.</p>
    <p>The current paper proposes applying hexadecimal escapes to the original
-ill-formed data because it gives more intuitive result and doesn’t require
-non-standard mappings such as WTF-8 (<a data-link-type="biblio" href="#biblio-wtf">[WTF]</a>).</p>
+ill-formed data when escaping because it gives more intuitive result and doesn’t
+require non-standard mappings such as WTF-8 (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>).</p>
    <p>For example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
 </pre>
-   prints 
+   <p>prints</p>
 <pre class="language-text highlight">"\u{d800}"
 </pre>
-   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>When not escaping, we propose substituting invalid code units with replacement
+characters which is the recommended Unicode practice (<a data-link-type="biblio" href="#biblio-unicode-sub" title="The Unicode Standard Version 13.0 – Core Specification, Chapter 3.9, U+FFFD Substitution of Maximal Subparts">[UNICODE-SUB]</a>):</p>
+   <p>For example:</p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
+<c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
+</pre>
+   <p>prints</p>
+<pre class="language-text highlight">�
+</pre>
+   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add to "Header &lt;filesystem> synopsis" <a href="https://eel.is/c++draft/fs.filesystem.syn">[fs.filesystem.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [fs.path.fmt], formatter</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p>Add a new section "Formatting" [fs.path.fmt] under "Class path" <a href="https://eel.is/c++draft/fs.class.path">[fs.class.path</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
-  <c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- n>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+  <c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- nf>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>FormatContext</c-><c- o>></c->
     <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c->
       <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>&amp;</c-> <c- n>path</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
 <c- p>};</c->
 </pre>
-<pre class="highlight"><c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- n>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+   <p><code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> is <em>debug-enabled</em> (<a href="http://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]).</p>
+<pre class="highlight"><c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- nf>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
 </pre>
    <p><em>Effects</em>: Parses the format specifier as a <em>path-format-spec</em> and stores the
 parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</p>
-   <p><i>path-format-spec</i>:<br>   <i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i></p>
+   <p><i>path-format-spec</i>:<br>   <i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code class="highlight"><c- o>?</c-></code><i><sub>opt</sub></i></p>
    <p>where the productions <i>fill-and-align</i> and <i>width</i> are described in <a href="http://eel.is/c++draft/format#string">[format.string</a>].</p>
    <p><em>Returns</em>: An iterator past the end of the <em>path-format-spec</em>.</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>FormatContext</c-><c- o>></c->
   <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c->
     <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>&amp;</c-> <c- n>p</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
 </pre>
-   <p><em>Effects</em>: Writes escaped (<a href="http://eel.is/c++draft/format#string.escaped">[format.string.escaped</a>]) <code class="highlight"><c- n>p</c-><c- p>.</c-><c- n>native</c-><c- p>()</c-></code> into <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code>,
-adjusted according to the <em>path-format-spec</em>.
+   <p><em>Effects</em>: Let <code class="highlight"><c- n>s</c-></code> be</p>
+   <ul>
+    <li data-md>
+     <p><code class="highlight"><c- n>p</c-><c- p>.</c-><c- n>native</c-><c- p>()</c-></code> escaped per <a href="http://eel.is/c++draft/format#string.escaped">[format.string.escaped</a>] if <code class="highlight"><c- o>?</c-></code> is specified, or</p>
+    <li data-md>
+     <p><code class="highlight"><c- n>p</c-><c- p>.</c-><c- n>native</c-><c- p>()</c-></code> otherwise.</p>
+   </ul>
+   <p>Writes <code class="highlight"><c- n>s</c-></code> into <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code>, adjusted according to the <em>path-format-spec</em>.
 If <code class="highlight"><c- n>Char</c-></code> is <code class="highlight"><c- b>char</c-></code>, <code class="highlight"><c- n>path</c-><c- o>::</c-><c- n>value_type</c-></code> is <code class="highlight"><c- b>wchar_t</c-></code> and the literal encoding
 is UTF-8 then the escaped path is transcoded from the native encoding for wide
-character strings to UTF-8. Otherwise, transcoding is implementation-defined.</p>
+character strings to UTF-8 with invalid code units substituted with U+FFFD
+REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD Substitution
+in Conversion.
+If <code class="highlight"><c- n>Char</c-></code> and <code class="highlight"><c- n>path</c-><c- o>::</c-><c- n>value_type</c-></code> are the same then no transcoding is performed.
+Otherwise, transcoding is implementation-defined.</p>
    <p><em>Returns</em>: An iterator past the end of the output range.</p>
-   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
-   <p>The proposed <code class="highlight"><c- n>formatter</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> has been implemented in
-{fmt} (<a data-link-type="biblio" href="#biblio-fmt">[FMT]</a>).</p>
-   <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <p>The proposed <code class="highlight"><c- n>formatter</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> has been implemented in the
+open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>).</p>
+   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Mark de Wever for reviewing an early version of the paper and
 suggesting a number of fixes and improvements.</p>
   </main>
@@ -2413,13 +2479,15 @@ suggesting a number of fixes and improvements.</p>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
    <dt id="biblio-fmt">[FMT]
-   <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt">The fmt library</a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The {fmt} library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-p1636">[P1636]
-   <dd>Lars Gullik Bjønnes. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf">Formatters for library types</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf</a>
+   <dd>Lars Gullik Bjønnes. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf"><cite>Formatters for library types</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf</a>
    <dt id="biblio-p2093">[P2093]
-   <dd>Victor Zverovich. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html">Formatted output</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html</a>
+   <dd>Victor Zverovich. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html"><cite>Formatted output</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html</a>
    <dt id="biblio-p2286">[P2286]
-   <dd>Barry Revzin. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html">Formatting Ranges</a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html</a>
+   <dd>Barry Revzin. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html"><cite>Formatting Ranges</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html</a>
+   <dt id="biblio-unicode-sub">[UNICODE-SUB]
+   <dd>The Unicode Consortium. <a href="https://www.unicode.org/versions/Unicode13.0.0/UnicodeStandard-13.0.pdf"><cite>The Unicode Standard Version 13.0 – Core Specification, Chapter 3.9, U+FFFD Substitution of Maximal Subparts</cite></a>. URL: <a href="https://www.unicode.org/versions/Unicode13.0.0/UnicodeStandard-13.0.pdf">https://www.unicode.org/versions/Unicode13.0.0/UnicodeStandard-13.0.pdf</a>
    <dt id="biblio-wtf">[WTF]
-   <dd>Simon Sapin. <a href="https://simonsapin.github.io/wtf-8/">The WTF-8 encoding</a>. URL: <a href="https://simonsapin.github.io/wtf-8/">https://simonsapin.github.io/wtf-8/</a>
+   <dd>Simon Sapin. <a href="https://simonsapin.github.io/wtf-8/"><cite>The WTF-8 encoding</cite></a>. URL: <a href="https://simonsapin.github.io/wtf-8/">https://simonsapin.github.io/wtf-8/</a>
   </dl>

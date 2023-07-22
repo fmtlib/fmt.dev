@@ -16,13 +16,13 @@ Markup Shorthands: markdown yes
   td {
     vertical-align: middle;
   }
-	ins { text-decoration: none; }
+  ins { text-decoration: none; }
   ins code { background: #cfc !important; }
 
   .poll th, .poll td {
-		text-align: right;
+    text-align: right;
     width: 20%;
-	}
+  }
 </style>
 
 <p style="text-align: right">
@@ -39,11 +39,16 @@ However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
 
+Changes from R1 {#changes1}
+===============
+
+* Provided control over escaping via format specifiers per SG16 feedback.
+
 Changes from R0 {#changes0}
 ===============
 
-* Added a reference to [[format.string](http://eel.is/c++draft/format#string)] for
-    the productions <i>fill-and-align</i> and <i>width</i>.
+* Added a reference to [[format.string](http://eel.is/c++draft/format#string)]
+    for the productions <i>fill-and-align</i> and <i>width</i>.
 
 * Replaced *range-format-spec* with *path-format-spec* in the *Effects* clause
     of the `format` function.
@@ -60,14 +65,15 @@ representation wrapped in `quoted`. For example:
 ```c++
 std::cout << std::format("{}", std::filesystem::path("/usr/bin"));
 ```
+
 would print `"/usr/bin"` with quotes being part of the output.
 
 Unfortunately this has a number of problems, some of them raised in the LWG
 discussion of the paper.
 
 First, `std::quoted` only escapes the delimiter (`"`) and the escape character
-itself (<code>\</code>). As a result the output may not be usable if the path contains
-control characters such as newlines. For example:
+itself (<code>\</code>). As a result the output may not be usable if the path
+contains control characters such as newlines. For example:
 
 ```c++
 std::cout << std::format("{}", std::filesystem::path("multi\nline"));
@@ -79,6 +85,7 @@ would print
 "multi
 line"
 ```
+
 which is not a valid string in C++ and many other languages, most importantly
 including shell languages. Such output is pretty much unusable and
 interferes with formatting of ranges of paths.
@@ -133,22 +140,48 @@ introduced in [[P2286]] "Formatting Ranges" and encoding issues have been
 addressed in [[P2093]] and other papers. We apply those solutions to the
 formatting of paths.
 
+<!-- if necessary for transcoding -->
 This paper proposes adding a `formatter` specialization for `path` that does
 escaping similarly to [[P2286]] and Unicode transcoding on Windows.
+Additionally, it proposes giving the user control over escaping via format
+specifiers. The debug format (`?`) gives the escaped representation while the
+default is unescaped and minimally processed with only invalid code units
+substituted with replacement characters if necessary. This is consistent with
+formatting of strings. The default format can be useful for displaying paths in
+a UI and gives the user control whether and how to handle special characters.
+The debug format is useful for displaying paths as parts of a larger structure
+such as a range and prevents interferring with its formatting.
 
 <!-- https://godbolt.org/z/WK4oKvWoj -->
 
 <table>
 <tr>
   <th>Code
-  <th>Before
-  <th>After
+  <th>P1636
+  <th>This proposal
 </tr>
 <tr>
 <td>
 ```
 auto p = std::filesystem::path("multi\nline");
 std::cout << std::format("{}", p);
+```
+<td>
+```text
+"multi
+line"
+```
+<td>
+```text
+multi
+line
+```
+</tr>
+<tr>
+<td>
+```
+auto p = std::filesystem::path("multi\nline");
+std::cout << std::format("{:?}", p);
 ```
 <td>
 ```text
@@ -192,8 +225,8 @@ the mapping between ill-formed code units in one form to another may not be
 well-defined.
 
 The current paper proposes applying hexadecimal escapes to the original
-ill-formed data because it gives more intuitive result and doesn't require
-non-standard mappings such as WTF-8 ([[WTF]]).
+ill-formed data when escaping because it gives more intuitive result and doesn't
+require non-standard mappings such as WTF-8 ([[WTF]]).
 
 For example:
 ```c++
@@ -203,6 +236,19 @@ std::print("{}\n", p);
 prints
 ```text
 "\u{d800}"
+```
+
+When not escaping, we propose substituting invalid code units with replacement
+characters which is the recommended Unicode practice ([[UNICODE-SUB]]):
+
+For example:
+```c++
+auto p = std::filesystem::path(L"\xd800"); // a lone surrogate
+std::print("{}\n", p);
+```
+prints
+```text
+�
 ```
 
 Wording {#wording}
@@ -229,6 +275,9 @@ template&lt;class charT> struct formatter&lt;filesystem::path, charT> {
 };
 </pre>
 
+`formatter<filesystem::path, charT>` is *debug-enabled*
+([[format.formatter.spec](http://eel.is/c++draft/format.formatter.spec)]).
+
 ```
 constexpr format_parse_context::iterator parse(format_parse_context& ctx);
 ```
@@ -237,7 +286,7 @@ constexpr format_parse_context::iterator parse(format_parse_context& ctx);
 parsed specifiers in `*this`.
 
 <i>path-format-spec</i>:<br>
-&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i>
+&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code>?</code><i><sub>opt</sub></i>
 
 where the productions <i>fill-and-align</i> and <i>width</i> are described in
 [[format.string](http://eel.is/c++draft/format#string)].
@@ -250,20 +299,28 @@ where the productions <i>fill-and-align</i> and <i>width</i> are described in
       format(const filesystem::path& p, FormatContext& ctx) const;
 </pre>
 
-*Effects*: Writes escaped ([[format.string.escaped](
-http://eel.is/c++draft/format#string.escaped)]) `p.native()` into `ctx.out()`,
-adjusted according to the *path-format-spec*.
+*Effects*: Let `s` be
+
+* `p.native()` escaped per [[format.string.escaped](
+    http://eel.is/c++draft/format#string.escaped)] if `?` is specified, or
+* `p.native()` otherwise.
+
+Writes `s` into `ctx.out()`, adjusted according to the *path-format-spec*.
 If `Char` is `char`, `path::value_type` is `wchar_t` and the literal encoding
 is UTF-8 then the escaped path is transcoded from the native encoding for wide
-character strings to UTF-8. Otherwise, transcoding is implementation-defined.
+character strings to UTF-8 with invalid code units substituted with U+FFFD
+REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD Substitution
+in Conversion.
+If `Char` and `path::value_type` are the same then no transcoding is performed.
+Otherwise, transcoding is implementation-defined.
 
 *Returns*: An iterator past the end of the output range.
 
 Implementation {#impl}
 ==============
 
-The proposed `formatter` for `std::filesystem::path` has been implemented in
-{fmt} ([[FMT]]).
+The proposed `formatter` for `std::filesystem::path` has been implemented in the
+open-source {fmt} library ([[FMT]]).
 
 Acknowledgements {#ack}
 ================
@@ -275,28 +332,33 @@ suggesting a number of fixes and improvements.
 {
   "P1636": {
     "title": "Formatters for library types",
-    "authors": "Lars Gullik Bjønnes",
+    "authors": ["Lars Gullik Bjønnes"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1636r2.pdf"
   },
   "P2093": {
     "title": "Formatted output",
-    "authors": "Victor Zverovich",
+    "authors": ["Victor Zverovich"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html"
   },
   "P2286": {
     "title": "Formatting Ranges",
-    "authors": "Barry Revzin",
+    "authors": ["Barry Revzin"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2286r8.html"
   },
   "FMT": {
-    "title": "The fmt library",
+    "title": "The {fmt} library",
     "authors": ["Victor Zverovich"],
     "etAl": true,
     "href": "https://github.com/fmtlib/fmt"
   },
+  "UNICODE-SUB": {
+    "title": "The Unicode Standard Version 13.0 – Core Specification, Chapter 3.9, U+FFFD Substitution of Maximal Subparts",
+    "authors": ["The Unicode Consortium"],
+    "href": "https://www.unicode.org/versions/Unicode13.0.0/UnicodeStandard-13.0.pdf"
+  },
   "WTF": {
     "title": "The WTF-8 encoding",
-    "authors": "Simon Sapin",
+    "authors": ["Simon Sapin"],
     "href": "https://simonsapin.github.io/wtf-8/"
   }
 }
