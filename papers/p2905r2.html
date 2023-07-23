@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2905R1: Runtime format strings</title>
+  <title>P2905R2: Runtime format strings</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2dbbd79130d998c457b285429525428c64f209b7" name="document-revision">
+  <meta content="c107e63e5e121b2515755d4af3a62efede23243b" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2102,8 +2102,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2905R1<br>Runtime format strings</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-06-14">2023-06-14</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2905R2<br>Runtime format strings</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-07-23">2023-07-23</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2122,12 +2122,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#problems"><span class="secno">2</span> <span class="content">Problems</span></a>
-    <li><a href="#changes"><span class="secno">3</span> <span class="content">Changes</span></a>
-    <li><a href="#polls"><span class="secno">4</span> <span class="content">Polls</span></a>
-    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
-    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0①"><span class="secno">4</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">5</span> <span class="content">Polls</span></a>
+    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
+    <li><a href="#impact"><span class="secno">7</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">9</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2169,20 +2170,34 @@ following example:</p>
    <p>This innocent-looking code exhibits undefined behavior because format arguments
 store a reference to a temporary which is destroyed before use. This has been
 discovered and fixed in <a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a> which now rejects such code at compile time.</p>
-   <h2 class="heading settled" data-level="3" id="changes"><span class="secno">3. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h2>
+   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added LEWG poll results for R1.</p>
+   </ul>
+   <h2 class="heading settled" data-level="4" id="changes0①"><span class="secno">4. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0①"></a></h2>
    <ul>
     <li data-md>
      <p>Moved the API for direct runtime format string support to a separate paper <a data-link-type="biblio" href="#biblio-p2918" title="Runtime format strings II">[P2918]</a> per LEWG feedback.</p>
     <li data-md>
      <p>Removed forwarding in <code class="highlight"><c- n>print</c-></code> per LEWG feedback.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="5" id="polls"><span class="secno">5. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
    <p>LEWG poll results for R0:</p>
-   <p><strong>POLL:</strong> In P2905R0 split <code class="highlight"><c- n>runtime_format</c-></code> and <code class="highlight"><c- n>make_format_args</c-></code> (add fix for <code class="highlight"><c- n>print</c-></code>) into separate papers, the latter being a DR against C++23.</p>
+   <p><strong>POLL</strong>: In P2905R0 split <code class="highlight"><c- n>runtime_format</c-></code> and <code class="highlight"><c- n>make_format_args</c-></code> (add fix for <code class="highlight"><c- n>print</c-></code>) into separate papers, the latter being a DR against C++23.</p>
 <pre class="highlight"><c- n>SF</c->  <c- n>F</c->  <c- n>N</c->  <c- n>A</c-> <c- n>SA</c->
  <c- mi>5</c-> <c- mi>10</c->  <c- mi>4</c->  <c- mi>0</c->  <c- mi>0</c->
 </pre>
-   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p><strong>Outcome</strong>: Strong Consensus in Favor</p>
+   <p>LEWG poll results for R1:</p>
+   <p><strong>POLL</strong>: Send P2905R1 (Runtime Format Strings) to electronic balloting to be
+forwarded to library for C++26, with the intention to retroactively apply the
+paper to C++23.</p>
+<pre class="highlight"><c- n>SF</c->  <c- n>F</c->  <c- n>N</c->  <c- n>A</c-> <c- n>SA</c->
+ <c- mi>4</c->  <c- mi>7</c->  <c- mi>0</c->  <c- mi>0</c->  <c- mi>0</c->
+</pre>
+   <p><strong>Outcome</strong>: Unanimous consent in favor.</p>
+   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>This paper proposes changing <code class="highlight"><c- n>make_format_args</c-></code> to take lvalue references
 instead of forwarding references, rejecting problematic code:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>path</c-> <c- o>=</c-> <c- s>"path/etic/experience"</c-><c- p>;</c->
@@ -2206,7 +2221,7 @@ forwarding to lvalue references is effectively a noop there.</p>
 (e.g. <a href="https://eel.is/c++draft/input.output#print.fun-2">[print.fun</a>])
 which is unnecessary and inconsistent with <code class="highlight"><c- n>format</c-></code>. Removing fowarding there is
 not observable.</p>
-   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>Rejecting temporaries in <code class="highlight"><c- n>make_format_args</c-></code> is an (intentionally)
 breaking change.</p>
    <p>Searching GitHub for calls of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>make_format_args</c-></code> using the following query</p>
@@ -2223,7 +2238,7 @@ require no changes:</p>
    <p>72 of remaining calls can be trivially fixed by removing unnecessary forwarding.</p>
    <p>This leaves only 320 cases most of which will continue to work and the ones
 that pass temporaries can be easily fixed by either switching to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> or by storing a temporary in a variable.</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Change in <a href="https://eel.is/c++draft/format#syn">[format.syn</a>]:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- p>...</c->
@@ -2268,7 +2283,7 @@ The type <code class="highlight"><c- k>typename</c-> <c- nc>Context</c-><c- o>::
    <p>Otherwise, equivalent to:</p>
 <pre class="highlight"><c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>os</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><del><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...</c-></del><ins><c- n>args</c-><c- p>...</c-></ins><c- p>));</c->
 </pre>
-   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed API has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>).</p>
   </main>
 <script>
