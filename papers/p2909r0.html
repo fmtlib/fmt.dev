@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5b736091c04d614d9289025352fbb302b4688589" name="document-revision">
+  <meta content="92ccc6177bbf83cd550784d2c2398754b7747edb" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2139,16 +2139,16 @@ simplicity." — Henry Wadsworth Longfellow </p>
    <p>The C++20 formatting facility (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>) allows formatting of <code class="highlight"><c- b>char</c-></code> as an
 integer via format specifiers such as <code class="highlight"><c- n>d</c-></code> and <code class="highlight"><c- n>x</c-></code>. Unfortunately <a data-link-type="biblio" href="#biblio-p0645" title="Text Formatting">[P0645]</a> that
 introduced the facility didn’t take into account that signedness of <code class="highlight"><c- b>char</c-></code> is
-implementation-defined and specified this formatting in terms of <code class="highlight"><c- n>to_chars</c-></code> with char implicitly converted (promoted) to <code class="highlight"><c- b>int</c-></code>. This had some undesirable
-effects discovered during usage experience and resolved in the {fmt} library
-(<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>). This paper proposes applying a similar fix to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+implementation-defined and specified this formatting in terms of <code class="highlight"><c- n>to_chars</c-></code> with the value implicitly converted (promoted) to <code class="highlight"><c- b>int</c-></code>. This had some
+undesirable effects discovered after getting usage experience and resolved in
+the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>). This paper proposes applying a similar fix to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
    <p>First, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> normally produces consistent output across platforms for
 the same integral types and the same IEEE 754 floating point types. Formatting <code class="highlight"><c- b>char</c-></code> as an integer breaks this nice property making the output
 implementation-defined even if the <code class="highlight"><c- b>char</c-></code> size is effectively the same.</p>
    <p>Second, <code class="highlight"><c- b>char</c-></code> is used as a code unit type in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and other text
 processing facilities. In these use cases one normally needs to either output <code class="highlight"><c- b>char</c-></code> as (a part of) text which is the default or as a bit pattern. Having it
 sometimes be output as a signed integer is surprising to users. It is
-particularly surprising when formatted in non-decimal base. For example,
+particularly surprising when formatted in a non-decimal base. For example,
 assuming UTF-8 literal encoding:</p>
 <pre class="language-c++ highlight"><c- k>for</c-> <c- p>(</c-><c- b>char</c-> <c- n>c</c-> <c- o>:</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>(</c-><c- s>"🤷"</c-><c- p>))</c-> <c- p>{</c->
   <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"</c-><c- se>\\</c-><c- s>x{:02x}"</c-><c- p>,</c-> <c- n>c</c-><c- p>);</c->
@@ -2160,7 +2160,7 @@ assuming UTF-8 literal encoding:</p>
    <p>or</p>
 <pre class="highlight">\<c- n>x</c-><c- mi>-10</c->\<c- n>x</c-><c- mi>-61</c->\<c- n>x</c-><c- mi>-5</c-><c- n>c</c->\<c- n>x</c-><c- mi>-49</c->
 </pre>
-   <p>depending on platform. Since it is implementation-defined the user may not
+   <p>depending on a platform. Since it is implementation-defined, the user may not
 even be aware of this issue which can then manifest itself when the code is
 compiled and run on a different platform or with different compiler flags.</p>
    <p>This particular case can be fixed by adding a cast to <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> but it
@@ -2215,10 +2215,9 @@ instead of implementation-defined.</p>
       <td>Copies the escaped character ([format.string.escaped]) to the output. 
    </table>
    <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
-   <p>This is a breaking change but the it only affects the output of negative code
-units when output via opt-in format specifiers. There were no issues reported
-when the change was shipped in {fmt} and the number of uses of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is
-orders of magnitude smaller at the moment.</p>
+   <p>This is a breaking change but the it only affects the output of negative/large
+code units when output via opt-in format specifiers. There were no issues
+reported when the change was shipped in {fmt} and the number of uses of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is orders of magnitude smaller at the moment.</p>
    <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed change has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>).</p>
   </main>
