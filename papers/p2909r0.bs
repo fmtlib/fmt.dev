@@ -1,0 +1,173 @@
+<pre class='metadata'>
+Title: Dude, where's my char?
+Shortname: D2909
+Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2023-07-29
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+  ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+    text-align: right;
+    width: 20%;
+  }
+</style>
+
+<p style="text-align: right">
+"In character, in manner, in style, in all things, the supreme excellence is
+simplicity." — Henry Wadsworth Longfellow
+</p>
+
+Introduction {#intro}
+============
+
+The C++20 formatting facility (`std::format`) allows formatting of `char` as an
+integer via format specifiers such as `d` and `x`. Unfortunately [[P0645]] that
+introduced the facility didn't take into account that signedness of `char` is
+implementation-defined and specified this formatting in terms of `to_chars`
+with char implicitly converted (promoted) to `int`. This had some undesirable
+effects discovered during usage experience and resolved in the {fmt} library
+([[FMT]]). This paper proposes applying a similar fix to `std::format`.
+
+First, `std::format` normally produces consistent output across platforms for
+the same integral types and the same IEEE 754 floating point types. Formatting
+`char` as an integer breaks this nice property making the output
+implementation-defined even if the `char` size is effectively the same.
+
+Second, `char` is used as a code unit type in `std::format` and other text
+processing facilities. In these use cases one normally needs to either output
+`char` as (a part of) text which is the default or as a bit pattern. Having it
+sometimes be output as a signed integer is surprising to users. It is
+particularly surprising when formatted in non-decimal base. For example,
+assuming UTF-8 literal encoding:
+
+```c++
+for (char c : std::string("🤷")) {
+  std::print("\\x{:02x}", c);
+}
+```
+
+will print either
+
+```
+\xf0\x9f\xa4\xb7
+```
+
+or 
+
+```
+\x-10\x-61\x-5c\x-49
+```
+
+depending on platform. Since it is implementation-defined the user may not
+even be aware of this issue which can then manifest itself when the code is
+compiled and run on a different platform or with different compiler flags.
+
+This particular case can be fixed by adding a cast to `unsigned char` but it
+may not be as easy to do when formatting ranges compared to using format
+specifiers.
+
+Proposal {#proposal}
+========
+
+This paper proposes making code unit types formatted as unsigned integers
+instead of implementation-defined.
+
+<table>
+<tr>
+  <th>Code
+  <th>Before
+  <th>After
+</tr>
+<tr>
+<td>
+```
+// Assuming UTF-8 as a literal encoding.
+for (char c : std::string("🤷")) {
+  std::print("\\x{:02x}", c);
+}
+```
+<td>
+```
+\xf0\x9f\xa4\xb7
+```
+or
+
+```
+\x-10\x-61\x-5c\x-49
+```
+(implementation-defined)
+<td>
+```text
+\xf0\x9f\xa4\xb7
+```
+</tr>
+</table>
+
+Wording {#wording}
+=======
+
+Change in [[tab:format.type.char](
+http://eel.is/c++draft/format#tab:format.type.char)]:
+
+Table 69: Meaning of type options for `charT` [tab:format.type.char]
+
+<table>
+<tr>
+  <td>Type
+  <td>Meaning
+</tr>
+<tr>
+  <td>none, `c`
+  <td>Copies the character to the output.
+</tr>
+<tr>
+  <td>`b`, `B`, `d`, `o`, `x`, `X`
+  <td>As specified in Table 68<ins> with `value` converted to the corresponding unsigned type</ins>.
+</tr>
+<tr>
+  <td>`?`
+  <td>Copies the escaped character ([format.string.escaped]) to the output.
+</tr>
+</table>
+
+Impact on existing code {#impact}
+=======================
+
+This is a breaking change but the it only affects the output of negative code
+units when output via opt-in format specifiers. There were no issues reported
+when the change was shipped in {fmt} and the number of uses of `std::format` is
+orders of magnitude smaller at the moment.
+
+Implementation {#impl}
+==============
+
+The proposed change has been implemented in the {fmt} library ([[FMT]]).
+
+<pre class=biblio>
+{
+  "P0645": {
+    "title": "Text Formatting",
+    "authors": ["Victor Zverovich"],
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0645r10.html"
+  },
+  "FMT": {
+    "title": "The fmt library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  }
+}
+</pre>
