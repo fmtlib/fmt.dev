@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="http://wg21.link/P1729R2" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9e9dd1da0845d6f853b660a843df0e251a4ba182" name="document-revision">
+  <meta content="df25dd944d44557d5075148f549f98266023e38a" name="document-revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2187,7 +2187,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h3 class="heading settled" data-level="1.1" id="history-since-r2"><span class="secno">1.1. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
    <ul>
     <li data-md>
-     <p>Defaulted <code class="highlight"><c- n>Char</c-></code> to <code class="highlight"><c- b>char</c-></code> in <code class="highlight"><c- n>scanner</c-></code> for consistency with <code class="highlight"><c- n>formatter</c-></code>.</p>
+     <p>Default <code class="highlight"><c- n>CharT</c-></code> to <code class="highlight"><c- b>char</c-></code> in <code class="highlight"><c- n>scanner</c-></code> for consistency with <code class="highlight"><c- n>formatter</c-></code>.</p>
+    <li data-md>
+     <p>Clarify that identical characters are only consumed for non-witespace literal
+characters.</p>
    </ul>
    <h3 class="heading settled" data-level="1.2" id="history-since-r1"><span class="secno">1.2. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
    <ul>
@@ -2365,11 +2368,11 @@ conveying the type information</p>
    </ul>
    <p>At the same time, most of the specifiers will remain quite similar to the ones
 in <code class="highlight"><c- n>scanf</c-></code>, which can simplify a, possibly automated, migration.</p>
-   <p>Maintaining similarity with <code class="highlight"><c- n>scanf</c-></code>, for any literal characters in the format string,
-an identical character is consumed from the input range. For whitespace characters,
-all available whitespace characters are consumed. Whether a character is a whitespace character
-is determined as if by calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>isspace</c-></code> with the locale given to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>.
-If no locale is provided for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, the behavior is locale-independent (as if by using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>()</c-></code>).</p>
+   <p>Maintaining similarity with <code class="highlight"><c- n>scanf</c-></code>, for any literal non-whitespace character in
+the format string, an identical character is consumed from the input range.
+For whitespace characters, all available whitespace characters are consumed.
+Whether a character is a whitespace character is determined as if by calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>isspace</c-></code> with the locale given to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>. If no locale is provided
+for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, the behavior is locale-independent (as if by using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>()</c-></code>).</p>
    <div class="example" id="example-ed0e931a">
     <a class="self-link" href="#example-ed0e931a"></a> 
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"abcd"</c-><c- p>,</c-> <c- s>"ab{}d"</c-><c- p>);</c-> <c- c1>// r0->value() == 'c'</c->

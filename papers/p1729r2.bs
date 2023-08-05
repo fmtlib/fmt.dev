@@ -22,7 +22,9 @@ Revision history {#history}
 Changes since R2 {#history-since-r2}
 ----------------
 
-* Defaulted `Char` to `char` in `scanner` for consistency with `formatter`.
+* Default `CharT` to `char` in `scanner` for consistency with `formatter`.
+* Clarify that identical characters are only consumed for non-witespace literal
+    characters.
 
 Changes since R1 {#history-since-r1}
 ----------------
@@ -234,11 +236,13 @@ will provide the following advantages:
 At the same time, most of the specifiers will remain quite similar to the ones
 in `scanf`, which can simplify a, possibly automated, migration.
 
-Maintaining similarity with `scanf`, for any literal characters in the format string,
-an identical character is consumed from the input range. For whitespace characters,
-all available whitespace characters are consumed. Whether a character is a whitespace character
-is determined as if by calling `std::isspace` with the locale given to `std::scan`.
-If no locale is provided for `std::scan`, the behavior is locale-independent (as if by using `std::locale::classic()`).
+Maintaining similarity with `scanf`, for any literal non-whitespace character in
+the format string, an identical character is consumed from the input range.
+For whitespace characters, all available whitespace characters are consumed.
+Whether a character is a whitespace character is determined as if by calling
+`std::isspace` with the locale given to `std::scan`. If no locale is provided
+for `std::scan`, the behavior is locale-independent (as if by using
+`std::locale::classic()`).
 
 <div class=example>
 ```c++
