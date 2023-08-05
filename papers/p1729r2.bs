@@ -19,6 +19,11 @@ Max ToC Depth: 2
 Revision history {#history}
 ================
 
+Changes since R2 {#history-since-r2}
+----------------
+
+* Defaulted `Char` to `char` in `scanner` for consistency with `formatter`.
+
 Changes since R1 {#history-since-r1}
 ----------------
 
@@ -152,7 +157,7 @@ struct mytype {
 };
 
 template <>
-struct std::scanner<mytype, char> : std::scanner<std::string, char> {
+struct std::scanner<mytype> : std::scanner<std::string> {
   template <typename Context>
   auto scan(mytype& val, Context& ctx) const
       -> std::expected<typename Context::iterator, std::scan_error> {
@@ -1014,7 +1019,7 @@ This is done by providing a specialization of `scanner` for `tm`:
 
 ```c++
 template <>
-struct scanner<tm, char> {
+struct scanner<tm> {
   constexpr auto parse(scan_parse_context& ctx)
     -> expected<scan_parse_context::iterator, scan_error>;
 
@@ -1317,7 +1322,7 @@ namespace std {
                                  wstring_view fmt,
                                  scan_args_for&lt;Range&gt; args);
 
-  template&lt;class T, class CharT&gt;
+  template&lt;class T, class CharT = char&gt;
     struct scanner;
 
   template&lt;class T, class CharT&gt;

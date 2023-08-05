@@ -1561,10 +1561,10 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 5fcd28d6d, updated Tue May 30 13:12:11 2023 -0700" name="generator">
+  <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="http://wg21.link/P1729R2" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="bae0db863b7c985f57eb91e98c30a0d2cb45a824" name="document-revision">
+  <meta content="9e9dd1da0845d6f853b660a843df0e251a4ba182" name="document-revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2103,7 +2103,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dt>Audience:
      <dd>LEWG, SG9, SG16
      <dt>Project:
-     <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
+     <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -2121,7 +2121,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li>
      <a href="#history"><span class="secno">1</span> <span class="content">Revision history</span></a>
      <ol class="toc">
-      <li><a href="#history-since-r1"><span class="secno">1.1</span> <span class="content">Changes since R1</span></a>
+      <li><a href="#history-since-r2"><span class="secno">1.1</span> <span class="content">Changes since R2</span></a>
+      <li><a href="#history-since-r1"><span class="secno">1.2</span> <span class="content">Changes since R1</span></a>
      </ol>
     <li><a href="#introduction"><span class="secno">2</span> <span class="content">Introduction</span></a>
     <li>
@@ -2183,7 +2184,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="history"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#history"></a></h2>
-   <h3 class="heading settled" data-level="1.1" id="history-since-r1"><span class="secno">1.1. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
+   <h3 class="heading settled" data-level="1.1" id="history-since-r2"><span class="secno">1.1. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
+   <ul>
+    <li data-md>
+     <p>Defaulted <code class="highlight"><c- n>Char</c-></code> to <code class="highlight"><c- b>char</c-></code> in <code class="highlight"><c- n>scanner</c-></code> for consistency with <code class="highlight"><c- n>formatter</c-></code>.</p>
+   </ul>
+   <h3 class="heading settled" data-level="1.2" id="history-since-r1"><span class="secno">1.2. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
    <ul>
     <li data-md>
      <p>Thoroughly describe the design</p>
@@ -2293,7 +2299,7 @@ shares many features with <code class="highlight"><c- n>std</c-><c- o>::</c-><c-
 <c- p>};</c->
 
 <c- n>template</c-> <c- o>&lt;></c->
-<c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>scanner</c-><c- o>&lt;</c-><c- n>mytype</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- o>:</c-> <c- n>std</c-><c- o>::</c-><c- n>scanner</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- p>{</c->
+<c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>scanner</c-><c- o>&lt;</c-><c- n>mytype</c-><c- o>></c-> <c- o>:</c-> <c- n>std</c-><c- o>::</c-><c- n>scanner</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- p>{</c->
   <c- n>template</c-> <c- o>&lt;</c-><c- n>typename</c-> <c- n>Context</c-><c- o>></c->
   <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>mytype</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c->
       <c- o>-></c-> <c- n>std</c-><c- o>::</c-><c- n>expected</c-><c- o>&lt;</c-><c- n>typename</c-> <c- n>Context</c-><c- o>::</c-><c- n>iterator</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>scan_error</c-><c- o>></c-> <c- p>{</c->
@@ -2965,7 +2971,7 @@ language for user types. It enables scanning of user-defined types.</p>
 </pre>
    <p>This is done by providing a specialization of <code class="highlight"><c- n>scanner</c-></code> for <code class="highlight"><c- n>tm</c-></code>:</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;></c->
-<c- k>struct</c-> <c- nc>scanner</c-><c- o>&lt;</c-><c- n>tm</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-> <c- p>{</c->
+<c- k>struct</c-> <c- nc>scanner</c-><c- o>&lt;</c-><c- n>tm</c-><c- o>></c-> <c- p>{</c->
   <c- n>constexpr</c-> <c- k>auto</c-> <c- n>parse</c-><c- p>(</c-><c- n>scan_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c->
     <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_parse_context</c-><c- o>::</c-><c- n>iterator</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
@@ -3190,7 +3196,7 @@ one, for example, for preallocating a <code class="highlight"><c- n>string</c-><
                                  <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
                                  <c- n>scan_args_for</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>args</c-><c- p>);</c->
 
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>CharT</c-><c- o>></c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>CharT</c-> <c- o>=</c-> <c- b>char</c-><c- o>></c->
     <c- k>struct</c-> <c- nc>scanner</c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>CharT</c-><c- o>></c->
