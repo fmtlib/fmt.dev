@@ -966,8 +966,8 @@ auto vscan(Range&& range,
 template &lt;typename... Args, scannable_range&lt;char&gt; SourceRange&gt;
 auto scan(SourceRange&& source, format_string&lt;Args...&gt; format)
     -> expected&lt;scan_result&lt;ranges::borrowed_iterator_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
-  auto args = make_scan_args&lt;Source, Args...&gt;();
-  auto result = vscan(std::forward&lt;Source&gt;(range), format, args);
+  auto args = make_scan_args&lt;SourceRange, Args...&gt;();
+  auto result = vscan(std::forward&lt;SourceRange&gt;(range), format, args);
   return make_scan_result(std::move(result), std::move(args));
 }
 </pre>
