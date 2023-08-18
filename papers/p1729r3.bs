@@ -22,8 +22,10 @@ Revision history {#history}
 Changes since R2 {#history-since-r2}
 ----------------
 
+* Return a `subrange` from `scan`, instead of just an iterator.
 * Default `CharT` to `char` in `scanner` for consistency with `formatter`.
 * Clarify handling of literal characters.
+* Clarify meaning of the width specifier, and its difference to the one in `std::format`.
 
 Changes since R1 {#history-since-r1}
 ----------------
@@ -78,7 +80,7 @@ if (auto result = std::scan<std::string, int>("answer = 42", "{} = {}")) {
   //            values
 
   // result == true
-  // result.begin() points to the end of the given input (the null terminator)
+  // result->range() gives an empty range (result->begin() == result->end())
   // key == "answer"
   // value == 42
 } else {
@@ -124,11 +126,12 @@ Reading multiple values in a loop {#example-loop}
 ```c++
 std::vector<int> read_values;
 std::ranges::forward_range auto range = ...;
-auto it = range.begin();
 
-while (auto result = std::scan<int>(std::ranges::subrange{it, range.end()}, "{}")) {
+auto input = std::ranges::subrange{range};
+
+while (auto result = std::scan<int>(input, "{}")) {
   read_values.push_back(result->value());
-  it = result->begin();
+  input = result->range();
 }
 ```
 
@@ -157,6 +160,8 @@ struct mytype {
   int a{}, b{};
 };
 
+// Specialize std::scanner to add support for user-defined types
+// Inherit from std::scanner<string> to get format string parsing (scanner::parse()) from it
 template <>
 struct std::scanner<mytype> : std::scanner<std::string> {
   template <typename Context>
@@ -192,17 +197,17 @@ The signature of `std::scan` is as follows:
 ```c++
 template <class... Args, scannable_range<char> Range>
 auto scan(Range&& range, format_string<Args...> fmt)
-  -> expected<scan_result<ranges::borrowed_iterator_t<Range>, Args...>, scan_error>;
+  -> expected<scan_result<ranges::borrowed_ssubrange_t<Range>, Args...>, scan_error>;
 
 template <class... Args, scannable_range<wchar_t> Range>
 auto scan(Range&& range, wformat_string<Args...> fmt)
-  -> expected<scan_result<ranges::borrowed_iterator_t<Range>, Args...>, scan_error>;
+  -> expected<scan_result<ranges::borrowed_ssubrange_t<Range>, Args...>, scan_error>;
 ```
 
 `std::scan` reads values of type `Args...` from the `range` it's given,
 according to the instructions given to it in the format string, `fmt`.
 `std::scan` returns a `std::expected`, containing either a `scan_result`, or a `scan_error`.
-The `scan_result` object contains an iterator, which points to the beginning of the unparsed input,
+The `scan_result` object contains a `subrange` pointing to the unparsed input,
 and a `tuple` of `Args...`, containing the scanned values.
 
 Format strings {#format-strings}
@@ -413,12 +418,12 @@ leading whitespace is skipped regardless of alignment specifiers.
 
 <div class=example>
 ```c++
-auto r0 = std::scan<int>("   42", "{}"); // r0->value() == 42, r0->begin() == ""
-auto r1 = std::scan<char>("   x", "{}"); // r1->value() == ' ', r1->begin() == "  x"
-auto r2 = std::scan<char>("x   ", "{}"); // r2->value() == 'x', r2->begin() == "   "
+auto r0 = std::scan<int>("   42", "{}"); // r0->value() == 42, r0->range() == ""
+auto r1 = std::scan<char>("   x", "{}"); // r1->value() == ' ', r1->range() == "  x"
+auto r2 = std::scan<char>("x   ", "{}"); // r2->value() == 'x', r2->range() == "   "
 
-auto r3 = std::scan<int>("    42", "{:6}");  // r3->value() == 42, r3->begin() == ""
-auto r4 = std::scan<char>("x     ", "{:6}"); // r4->value() == 'x', r4->begin() == ""
+auto r3 = std::scan<int>("    42", "{:6}");  // r3->value() == 42, r3->range() == ""
+auto r4 = std::scan<char>("x     ", "{:6}"); // r4->value() == 'x', r4->range() == ""
 
 auto r5 = std::scan<int>("***42", "{:*>}");  // r5->value() == 42
 auto r6 = std::scan<int>("***42", "{:*>5}"); // r6->value() == 42
@@ -426,19 +431,19 @@ auto r7 = std::scan<int>("***42", "{:*>4}"); // r7->value() == 4
 auto r8 = std::scan<int>("42", "{:*>}");     // r8->value() == 42
 auto r9 = std::scan<int>("42", "{:*>5}");    // ERROR (mismatching field width)
 
-auto rA = std::scan<int>("42***", "{:*<}");  // rA->value() == 42, rA->begin() == ""
-auto rB = std::scan<int>("42***", "{:*<5}"); // rB->value() == 42, rB->begin() == ""
-auto rC = std::scan<int>("42***", "{:*<4}"); // rC->value() == 42, rC->begin() == "*"
+auto rA = std::scan<int>("42***", "{:*<}");  // rA->value() == 42, rA->range() == ""
+auto rB = std::scan<int>("42***", "{:*<5}"); // rB->value() == 42, rB->range() == ""
+auto rC = std::scan<int>("42***", "{:*<4}"); // rC->value() == 42, rC->range() == "*"
 auto rD = std::scan<int>("42", "{:*<}");     // rD->value() == 42
 auto rE = std::scan<int>("42", "{:*<5}");    // ERROR (mismatching field width)
 
-auto rF = std::scan<int>("42", "{:*^}");    // rF->value() == 42, rF->begin() == ""
-auto rG = std::scan<int>("*42*", "{:*^}");  // rG->value() == 42, rG->begin() == ""
-auto rH = std::scan<int>("*42**", "{:*^}"); // rH->value() == 42, rH->begin() == "*"
+auto rF = std::scan<int>("42", "{:*^}");    // rF->value() == 42, rF->range() == ""
+auto rG = std::scan<int>("*42*", "{:*^}");  // rG->value() == 42, rG->range() == ""
+auto rH = std::scan<int>("*42**", "{:*^}"); // rH->value() == 42, rH->range() == "*"
 auto rI = std::scan<int>("**42*", "{:*^}"); // ERROR (not enough fill characters after value)
 
-auto rJ = std::scan<int>("**42**", "{:*^6}"); // rJ->value() == 42, rJ->begin() == ""
-auto rK = std::scan<int>("*42**", "{:*^5}");  // rK->value() == 42, rK->begin() == ""
+auto rJ = std::scan<int>("**42**", "{:*^6}"); // rJ->value() == 42, rJ->range() == ""
+auto rK = std::scan<int>("*42**", "{:*^5}");  // rK->value() == 42, rK->range() == ""
 ```
 </div>
 
@@ -476,11 +481,28 @@ width     ::= positive-integer
 
 The width specifier is valid for all argument types.
 The meaning of this specifier somewhat deviates from `std::format`.
-The width and precision specifiers of it are somewhat combined into
+The width and precision specifiers of it are combined into
 a single width specifier in `std::scan`.
 This specifier indicates the expected field width of the value to be
 scanned, taking into account possible fill characters used for alignment.
 If no fill characters are expected, it specifies the maximum width for the field.
+
+<div class=note>
+To clarify,
+in `std::format` the width-field provides the minimum, and the precision-field the maximum
+width for a value. In `std::scan`, the width-field provides the maximum.
+
+```c++
+auto str = std::format("{:2}", 123);
+// str == "123"
+// because only the minimum width was set by the format string
+
+auto result = std::scan<int>(str, "{:2}");
+// result->value() == 12
+// result->range() == "3"
+// because the maximum width was set to 2 by the format string
+```
+</div>
 
 For compatibility with `std::format`,
 the width specifier is in <i>field width units</i>,
@@ -809,6 +831,21 @@ The rationale behind this change is as follows:
  - Previously, there were real performance implications when using complicated tuples,
     both at compile-time and runtime. These concerns have since been alleviated, as compiler technology has improved.
 
+The return type of `scan`, `scan_result`, contains a `subrange` over the unparsed input.
+With this, a new type alias is introduced, `ranges::borrowed_ssubrange_t`, that is defined as follows:
+
+```
+template <typename R>
+using borrowed_ssubrange_t = std::conditional_t<
+  ranges::borrowed_range<R>,
+  ranges::subrange<ranges::iterator_t<R>, ranges::sentinel_t<R>>,
+  ranges::dangling>;
+```
+
+Compare this with `borrowed_subrange_t`, which is defined as <code>ranges::subrange&lt;ranges::iterator_t&lt;R&gt;gt;</code>,
+when the range models `borrowed_range`.
+The name of this alias is subject to extreme bikeshedding.
+
 <h4 id="return-type-alternatives">Design alternatives</h4>
 
 As proposed, `std::scan` returns an `expected`, containing either an iterator and a tuple, or a `scan_error`.
@@ -886,6 +923,11 @@ public:
 };
 ```
 
+Note: Only having `value_out_of_range` does not give a way to differentiate
+between different kinds of out-of-range errors, like overflowing
+(absolute value too large, either positive or negative), or underflowing
+(value not representable, between zero and the smallest subnormal).
+
 <h4 id="error-handling-discussion">Design discussion</h4>
 
 The reason why we propose adding the type `std::scan_error` instead of just using `std::errc` is,
@@ -961,11 +1003,11 @@ template&lt;scannable_range&lt;char&gt; Range&gt;
 auto vscan(Range&& range,
            string_view fmt,
            scan_args_for&lt;Range&gt; args)
-  -> expected&lt;ranges::borrowed_iterator_t&lt;Range&gt;, scan_error&gt;;
+  -> expected&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, scan_error&gt;;
 
 template &lt;typename... Args, scannable_range&lt;char&gt; SourceRange&gt;
 auto scan(SourceRange&& source, format_string&lt;Args...&gt; format)
-    -> expected&lt;scan_result&lt;ranges::borrowed_iterator_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
+    -> expected&lt;scan_result&lt;ranges::borrowed_ssubrange_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
   auto args = make_scan_args&lt;SourceRange, Args...&gt;();
   auto result = vscan(std::forward&lt;SourceRange&gt;(range), format, args);
   return make_scan_result(std::move(result), std::move(args));
@@ -1163,7 +1205,7 @@ Properly specified, this could be useful.
 
 <div class=example>
 ```c++
-auto r = scan<string>("abc123", "{:[a-zA-Z]}"); // r->value() == "abc", r->begin() == "123"
+auto r = scan<string>("abc123", "{:[a-zA-Z]}"); // r->value() == "abc", r->range() == "123"
 // Compare with:
 char buf\[N];
 sscanf("abc123", "%[a-zA-Z]", buf);
@@ -1251,7 +1293,50 @@ At this point, only the synopses are provided.
 
 Note the similarity with [[P0645]] (`std::format`) in some parts.
 
-Add a new header, `<scan>`.
+The changes to the wording include additions to the header `<ranges>`, and a new header, `<scan>`.
+
+Modify "Header `<ranges>` synopsis" [ranges.syn] {#spec-ranges-syn}
+------------------------------------------------
+
+<pre highlight=cpp>
+#include &lt;compare&gt;
+#include &lt;initializer_list&gt;
+#include &lt;iterator&gt;
+
+namespace std::ranges {
+  // ...
+
+  template&lt;range R&gt;
+    using borrowed_iterator_t = <i>see below</i>;   // freestanding
+
+  template&lt;range R&gt;
+    using borrowed_subrange_t = <i>see below</i>;   // freestanding
+  
+  <ins>template&lt;range R&gt;
+    using borrowed_ssubrange_t = <i>see below</i>;  // freestanding</ins>
+
+  // ...
+}
+</pre>
+
+Modify "Dangling iterator handling", paragraph 3 [range.dangling] {#spec-range-dangling}
+-----------------------------------------------------------------
+
+For a type `R` that models `range`:
+
+<ul>
+
+<li>if `R` models `borrowed_range`, then `borrowed_iterator_t<R>` denotes `iterator_t<R>`,
+<del>and `borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t<R>&gt;</code>;</del>
+<ins>`borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t<R>&gt;</code>,
+and `borrowed_ssubrange_t<R>` denotes <code>subrange&lt;iterator_t<R>, sentinel_t<R>&gt;</code>;</ins>
+
+<li>otherwise,
+<del>both `borrowed_iterator_t<R>` and `borrowed_subrange_t<R>` denote `dangling`.</del>
+<ins>`borrowed_iterator_t<R>`, `borrowed_subrange_t<R>`, and `borrowed_ssubrange_t<R>` denote `dangling`.</ins>
+
+</ul>
+
 
 Header `<scan>` synopsis {#spec-header-synopsis}
 ------------------------
@@ -1264,7 +1349,7 @@ Header `<scan>` synopsis {#spec-header-synopsis}
 namespace std {
   class scan_error;
 
-  template&lt;class Iterator, class... Args&gt;
+  template&lt;class Range, class... Args&gt;
     class scan_result;
 
   template&lt;class Range, class CharT&gt;
@@ -1274,7 +1359,7 @@ namespace std {
 
   template&lt;class Range, class...Args&gt;
     using scan_result_type = expected&lt;
-      scan_result&lt;ranges::borrowed_iterator_t&lt;Range&gt;, Args...&gt;,
+      scan_result&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, Args...&gt;,
       scan_error&gt;;
 
   template&lt;class... Args, scannable_range&lt;char&gt; Range&gt;
@@ -1301,7 +1386,7 @@ namespace std {
       ranges::range_value_t&lt;Range&gt;&gt;&gt;;
 
   template&lt;class Range&gt;
-  using vscan_result_type = expected&lt;ranges::borrowed_iterator_t&lt;Range&gt;, scan_error&gt;;
+  using vscan_result_type = expected&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, scan_error&gt;;
 
   template&lt;scannable_range&lt;char&gt; Range&gt;
   vscan_result_type&lt;Range&gt; vscan(Range&& range,
@@ -1349,9 +1434,9 @@ namespace std {
   template&lt;class Range, class... Args&gt;
     constexpr <i>see below</i> make_scan_args();
 
-  template&lt;class Iterator, class Context, class... Args&gt;
-    expected&lt;scan_result&lt;Iterator, Args...&gt;, scan_error&gt;
-      make_scan_result(expected&lt;Iterator, scan_error&gt;&& source,
+  template&lt;class Range, class Context, class... Args&gt;
+    expected&lt;scan_result&lt;Range, Args...&gt;, scan_error&gt;
+      make_scan_result(expected&lt;Range, scan_error&gt;&& source,
                        <i>scan-arg-store</i>&lt;Context, Args...&gt;&& args);
 }
 </pre>
@@ -1391,35 +1476,39 @@ Class template `scan_result` synopsis {#spec-scan-result-synopsis}
 
 <pre highlight=cpp>
 namespace std {
-  template&lt;class Iterator, class... Args&gt;
+  template&lt;class Range, class... Args&gt;
   class scan_result {
   public:
-    using iterator = Iterator;
+    using range_type = Range;
 
     constexpr scan_result() = default;
     constexpr ~scan_result() = default;
 
-    constexpr scan_result(iterator it, tuple&lt;Args...&gt;&& values);
-    template&lt;class OtherIt, class... OtherArgs&gt;
-      constexpr explicit(<i>see below</i>) scan_result(OtherIt&& it, tuple&lt;OtherArgs...&gt;&& values);
+    constexpr scan_result(range_type r, tuple&lt;Args...&gt;&& values);
+    
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr explicit(<i>see below</i>) scan_result(OtherR&& it, tuple&lt;OtherArgs...&gt;&& values);
 
     constexpr scan_result(const scan_result&) = default;
-    template&lt;class OtherIt, class... OtherArgs&gt;
-      constexpr explicit(<i>see below</i>) scan_result(const scan_result&lt;OtherIt, OtherArgs...&gt;& other);
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr explicit(<i>see below</i>) scan_result(const scan_result&lt;OtherR, OtherArgs...&gt;& other);
 
     constexpr scan_result(scan_result&&) = default;
-    template&lt;class OtherIt, class... OtherArgs&gt;
-      constexpr explicit(<i>see below</i>) scan_result(scan_result&lt;OtherIt, OtherArgs...&gt;&& other);
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr explicit(<i>see below</i>) scan_result(scan_result&lt;OtherR, OtherArgs...&gt;&& other);
 
     constexpr scan_result& operator=(const scan_result&) = default;
-    template&lt;class OtherIt, class... OtherArgs&gt;
-      constexpr scan_result& operator=(const scan_result&lt;OtherIt, OtherArgs...&gt;& other);
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr scan_result& operator=(const scan_result&lt;OtherR, OtherArgs...&gt;& other);
 
     constexpr scan_result& operator=(scan_result&&) = default;
-    template&lt;class OtherIt, class... OtherArgs&gt;
-      constexpr scan_result& operator=(scan_result&lt;OtherIt, OtherArgs...&gt;&& other);
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr scan_result& operator=(scan_result&lt;OtherR, OtherArgs...&gt;&& other);
 
-    constexpr iterator begin() const;
+    constexpr range_type range() const;
+
+    constexpr <i>see below</i> begin() const;
+    constexpr <i>see below</i> end() const;
 
     template&lt;class Self&gt;
       constexpr auto&& values(this Self&&);
@@ -1429,7 +1518,7 @@ namespace std {
       constexpr auto&& value(this Self&&);
 
   private:
-    iterator <i>begin_</i>;        // exposition only
+    range_type <i>range_</i>;        // exposition only
     tuple&lt;Args...&gt; <i>values_</i>; // exposition only
   };
 }
