@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2845R2: Formatting of std::filesystem::path</title>
+  <title>P2845R3: Formatting of std::filesystem::path</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d6e69d22734fef090733a5382926d94ca4a679fc" name="document-revision">
+  <meta content="9f49b11d785c30ca6464fd91ed27762113d1ff67" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2102,8 +2102,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2845R2<br>Formatting of std::filesystem::path</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-07-23">2023-07-23</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2845R3<br>Formatting of std::filesystem::path</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2023-08-25">2023-08-25</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2111,7 +2111,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dt>Audience:
      <dd>SG16
      <dt>Project:
-     <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
+     <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -2121,13 +2121,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes from R1</span></a>
-    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes from R0</span></a>
-    <li><a href="#problems"><span class="secno">4</span> <span class="content">Problems</span></a>
-    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
-    <li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes from R2</span></a>
+    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes from R1</span></a>
+    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#problems"><span class="secno">5</span> <span class="content">Problems</span></a>
+    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
+    <li><a href="#ack"><span class="secno">9</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2143,12 +2144,17 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>path</c-></code>.</p>
-   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes from R2</span><a class="self-link" href="#changes2"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added missing <code class="highlight"><c- o>:?</c-></code> to the escaping example in <a href="#proposal">Proposal</a>.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Provided control over escaping via format specifiers per SG16 feedback.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added a reference to <a href="http://eel.is/c++draft/format#string">[format.string</a>]
@@ -2159,7 +2165,7 @@ of the <code class="highlight"><c- n>format</c-></code> function.</p>
     <li data-md>
      <p>Added missing transcoding to the definition of the <code class="highlight"><c- n>format</c-></code> function.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="problems"><span class="secno">4. </span><span class="content">Problems</span><a class="self-link" href="#problems"></a></h2>
+   <h2 class="heading settled" data-level="5" id="problems"><span class="secno">5. </span><span class="content">Problems</span><a class="self-link" href="#problems"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p1636" title="Formatters for library types">[P1636]</a> proposed defining a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>path</c-></code> in terms
 of the <code class="highlight"><c- n>ostream</c-></code> insertion operator which, in turn, formats the native
 representation wrapped in <code class="highlight"><c- n>quoted</c-></code>. For example:</p>
@@ -2209,7 +2215,7 @@ literal encodings are UTF-8:</p>
 intermediate conversion goes through CP1251 (the code page used for Belarusian)
 which is not even valid for printing in the console which uses legacy CP866.
 This has been discussed at length in <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> "Formatted output".</p>
-   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>Both of the problems discussed in the previoius section have already been
 solved. The escaping mechanism that can handle invalid code units has been
 introduced in <a data-link-type="biblio" href="#biblio-p2286" title="Formatting Ranges">[P2286]</a> "Formatting Ranges" and encoding issues have been
@@ -2291,7 +2297,7 @@ ill-formed data when escaping because it gives more intuitive result and doesn�
 require non-standard mappings such as WTF-8 (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>).</p>
    <p>For example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
-<c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
+<c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{:?}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
 </pre>
    <p>prints</p>
 <pre class="language-text highlight">"\u{d800}"
@@ -2305,7 +2311,7 @@ characters which is the recommended Unicode practice (<a data-link-type="biblio"
    <p>prints</p>
 <pre class="language-text highlight">�
 </pre>
-   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add to "Header &lt;filesystem> synopsis" <a href="https://eel.is/c++draft/fs.filesystem.syn">[fs.filesystem.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [fs.path.fmt], formatter</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
@@ -2347,12 +2353,12 @@ in Conversion.
 If <code class="highlight"><c- n>Char</c-></code> and <code class="highlight"><c- n>path</c-><c- o>::</c-><c- n>value_type</c-></code> are the same then no transcoding is performed.
 Otherwise, transcoding is implementation-defined.</p>
    <p><em>Returns</em>: An iterator past the end of the output range.</p>
-   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>formatter</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> has been implemented in the
 open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>).</p>
-   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
-   <p>Thanks to Mark de Wever for reviewing an early version of the paper and
-suggesting a number of fixes and improvements.</p>
+   <h2 class="heading settled" data-level="9" id="ack"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Mark de Wever and Roger Orr for reviewing an early version of the
+paper and suggesting a number of fixes and improvements.</p>
   </main>
 <script>
 (function() {

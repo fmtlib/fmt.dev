@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting of std::filesystem::path
 Shortname: P2845
-Revision: 2
+Revision: 3
 Audience: SG16
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-07-23
+Date: 2023-08-25
 Markup Shorthands: markdown yes
 </pre>
 
@@ -38,6 +38,11 @@ Introduction {#intro}
 However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
+
+Changes from R2 {#changes2}
+===============
+
+* Added missing `:?` to the escaping example in [Proposal](#proposal).
 
 Changes from R1 {#changes1}
 ===============
@@ -243,7 +248,7 @@ require non-standard mappings such as WTF-8 ([[WTF]]).
 For example:
 ```c++
 auto p = std::filesystem::path(L"\xd800"); // a lone surrogate
-std::print("{}\n", p);
+std::print("{:?}\n", p);
 ```
 prints
 ```text
@@ -337,8 +342,8 @@ open-source {fmt} library ([[FMT]]).
 Acknowledgements {#ack}
 ================
 
-Thanks to Mark de Wever for reviewing an early version of the paper and
-suggesting a number of fixes and improvements.
+Thanks to Mark de Wever and Roger Orr for reviewing an early version of the
+paper and suggesting a number of fixes and improvements.
 
 <pre class=biblio>
 {
