@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9f49b11d785c30ca6464fd91ed27762113d1ff67" name="document-revision">
+  <meta content="9ec00ba77f63cbd84e8b68b8d0c28c351f87b95b" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2148,6 +2148,9 @@ improved <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>formatter</c->
    <ul>
     <li data-md>
      <p>Added missing <code class="highlight"><c- o>:?</c-></code> to the escaping example in <a href="#proposal">Proposal</a>.</p>
+    <li data-md>
+     <p>Changed the wording around the escaping example to not mention hexadecimal
+escapes since Unicode escapes may be produced as well.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
@@ -2292,9 +2295,9 @@ handle them by formatting ill-formed code units as hexadecimal escapes, e.g.</p>
 it is a bit more complicated because the string is in a different form and
 the mapping between ill-formed code units in one form to another may not be
 well-defined.</p>
-   <p>The current paper proposes applying hexadecimal escapes to the original
-ill-formed data when escaping because it gives more intuitive result and doesn’t
-require non-standard mappings such as WTF-8 (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>).</p>
+   <p>When escaping, the current paper proposes applying it to the original ill-formed
+data because it gives more intuitive result and doesn’t require non-standard
+mappings such as WTF-8 (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>).</p>
    <p>For example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{:?}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
@@ -2302,8 +2305,9 @@ require non-standard mappings such as WTF-8 (<a data-link-type="biblio" href="#b
    <p>prints</p>
 <pre class="language-text highlight">"\u{d800}"
 </pre>
-   <p>When not escaping, we propose substituting invalid code units with replacement
-characters which is the recommended Unicode practice (<a data-link-type="biblio" href="#biblio-unicode-sub" title="The Unicode Standard Version 13.0 – Core Specification, Chapter 3.9, U+FFFD Substitution of Maximal Subparts">[UNICODE-SUB]</a>):</p>
+   <p>When not escaping, the paper proposes substituting invalid code units with
+replacement characters which is the recommended Unicode practice
+(<a data-link-type="biblio" href="#biblio-unicode-sub" title="The Unicode Standard Version 13.0 – Core Specification, Chapter 3.9, U+FFFD Substitution of Maximal Subparts">[UNICODE-SUB]</a>):</p>
    <p>For example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
 <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c->
@@ -2357,8 +2361,8 @@ Otherwise, transcoding is implementation-defined.</p>
    <p>The proposed <code class="highlight"><c- n>formatter</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> has been implemented in the
 open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>).</p>
    <h2 class="heading settled" data-level="9" id="ack"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
-   <p>Thanks to Mark de Wever and Roger Orr for reviewing an early version of the
-paper and suggesting a number of fixes and improvements.</p>
+   <p>Thanks to Mark de Wever, Roger Orr and Tom Honermann for reviewing an early
+version of the paper and suggesting a number of fixes and improvements.</p>
   </main>
 <script>
 (function() {
