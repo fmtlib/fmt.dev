@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2909R0: Dude, where’s my char?</title>
+  <title>P2909R1: Fix formatting of code units as integers&lt;br>(Dude, where’s my char?)</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="627550c831371387b5cdc176c4660ba445840b97" name="document-revision">
+  <meta content="9ec00ba77f63cbd84e8b68b8d0c28c351f87b95b" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2102,8 +2102,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2909R0<br>Dude, where’s my char?</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-07-29">2023-07-29</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2909R1<br>Fix formatting of code units as integers<br>(Dude, where’s my char?)</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-08-25">2023-08-25</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2121,10 +2121,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#proposal"><span class="secno">2</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">3</span> <span class="content">Wording</span></a>
-    <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#polls"><span class="secno">3</span> <span class="content">Polls</span></a>
+    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
+    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2166,7 +2168,45 @@ compiled and run on a different platform or with different compiler flags.</p>
    <p>This particular case can be fixed by adding a cast to <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> but it
 may not be as easy to do when formatting ranges compared to using format
 specifiers.</p>
-   <h2 class="heading settled" data-level="2" id="proposal"><span class="secno">2. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Changed the title from "Dude, where’s my char?" to "Fix formatting of code
+units as integers" per SG16 feedback.</p>
+    <li data-md>
+     <p>Added all affected format specifiers to the before/after table per SG16
+feedback.</p>
+    <li data-md>
+     <p>Clarified how this compares with <code class="highlight"><c- n>printf</c-></code> format specifiers.</p>
+    <li data-md>
+     <p>Added SG16 poll results for R0.</p>
+    <li data-md>
+     <p>Fixed handling of the case of formatting <code class="highlight"><c- b>char</c-></code> as <code class="highlight"><c- b>wchar_t</c-></code> per SG16
+feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <p>SG16 poll results for R0:</p>
+   <p><strong>Poll 1</strong>: Modify P2909R0 "Dude, where’s my char‽" to maintain
+semi-consistency with printf such that the <code class="highlight"><c- n>b</c-></code>, <code class="highlight"><c- n>B</c-></code>, <code class="highlight"><c- n>o</c-></code>, <code class="highlight"><c- n>x</c-></code>, and <code class="highlight"><c- n>X</c-></code> conversions convert all integer types as unsigned.</p>
+<pre class="language-text highlight">SF  F  N  A SA
+ 1  2  0  2  2
+</pre>
+   <p><strong>Outcome</strong>: No consensus for change</p>
+   <p><strong>Poll 2</strong>: Modify P2909R0 "Dude, where’s my char‽" to remove the change
+to handling of the <code class="highlight"><c- n>d</c-></code> specifier.</p>
+<pre class="language-text highlight">SF  F  N  A SA
+ 2  1  2  1  1
+</pre>
+   <p><strong>Outcome</strong>: No consensus for change</p>
+   <p><strong>Poll 3</strong>: Forward P2909R0 "Dude, where’s my char‽", amended with a
+descriptive title, an expanded before/after table, and fixed CharT
+wording, to LEWG with the recommendation to adopt it as a Defect
+Report.</p>
+<pre class="language-text highlight">SF  F  N  A SA
+ 2  2  2  1  0
+</pre>
+   <p><strong>Outcome</strong>: Weak consensus - LEWG may want to look at this closely</p>
+   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>This paper proposes making code unit types formatted as unsigned integers
 instead of implementation-defined.</p>
    <table>
@@ -2183,24 +2223,51 @@ instead of implementation-defined.</p>
 <c- p>}</c->
 </pre>
       <td>
-<pre class="highlight">\<c- n>xf0</c->\<c- n>x9f</c->\<c- n>xa4</c->\<c- n>xb7</c->
+<pre class="language-text highlight">\xf0\x9f\xa4\xb7
 </pre>
        <p>or</p>
-<pre class="highlight">\<c- n>x</c-><c- mi>-10</c->\<c- n>x</c-><c- mi>-61</c->\<c- n>x</c-><c- mi>-5</c-><c- n>c</c->\<c- n>x</c-><c- mi>-49</c->
+<pre class="language-text highlight">\x-10\x-61\x-5c\x-49
 </pre>
        <p>(implementation-defined)</p>
       <td>
 <pre class="language-text highlight">\xf0\x9f\xa4\xb7
 </pre>
+     <tr>
+      <td>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c->
+  <c- s>"{0:b} {0:B} {0:d} {0:o} {0:x} {0:X}"</c-><c- p>,</c->
+  <c- sc>'\xf0'</c-><c- p>);</c->
+</pre>
+      <td>
+<pre class="highlight"><c- mi>11110000</c-> <c- mi>11110000</c-> <c- mi>240</c-> <c- mi>360</c-> <c- n>f0</c-> <c- n>F0</c->
+</pre>
+       <p>or</p>
+<pre class="language-text highlight">-10000 -10000 -16 -20 -10 -10
+</pre>
+       <p>(implementation-defined)</p>
+      <td>
+<pre class="language-text highlight">11110000 11110000 240 360 f0 F0
+</pre>
    </table>
-   <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>This somewhat improves consistency with <code class="highlight"><c- n>x</c-></code> and <code class="highlight"><c- n>o</c-></code> (but not <code class="highlight"><c- n>d</c-></code>) <code class="highlight"><c- n>printf</c-></code> specifiers which always treat arguments as unsigned. For example:</p>
+<pre class="language-c++ highlight"><c- n>printf</c-><c- p>(</c-><c- s>"%x"</c-><c- p>,</c-> <c- sc>'\x80'</c-><c- p>);</c->
+</pre>
+   <p>prints</p>
+<pre class="language-text highlight">ffffff80
+</pre>
+   <p>regardless of whether <code class="highlight"><c- b>char</c-></code> is signed or unsigned.</p>
+   <p>This is not a goal though but a side effect of picking a consistent
+platform-independent representation for code unit types. Unlike <code class="highlight"><c- n>printf</c-></code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> doesn’t need to convey signedness or other type information in
+format specifiers. The latter is an artefact of varargs limitations.</p>
+   <p>As a drive-by fix this paper also clarifies that <a href="http://eel.is/c++draft/format#tab:format.type.char">[tab:format.type.char</a>] applies to both <code class="highlight"><c- n>charT</c-></code> and <code class="highlight"><c- b>char</c-></code>. Previously it was not very clear because <code class="highlight"><c- b>char</c-></code> mapped to <code class="highlight"><c- n>charT</c-></code> in the constructor of <code class="highlight"><c- n>basic_format_arg</c-></code>.</p>
+   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Change in <a href="http://eel.is/c++draft/format#tab:format.type.char">[tab:format.type.char</a>]:</p>
-   <p>Table 69: Meaning of type options for <code class="highlight"><c- n>charT</c-></code> [tab:format.type.char]</p>
+   <p>Table 69: Meaning of type options for <code class="highlight"><c- n>charT</c-></code> [tab:format.type.char]</p>
    <table>
     <tbody>
      <tr>
-      <td>Type 
-      <td>Meaning 
+      <th>Type 
+      <th>Meaning 
      <tr>
       <td>none, <code class="highlight"><c- n>c</c-></code> 
       <td>Copies the character to the output. 
@@ -2208,17 +2275,30 @@ instead of implementation-defined.</p>
       <td><code class="highlight"><c- n>b</c-></code>, <code class="highlight"><c- n>B</c-></code>, <code class="highlight"><c- n>d</c-></code>, <code class="highlight"><c- n>o</c-></code>, <code class="highlight"><c- n>x</c-></code>, <code class="highlight"><c- n>X</c-></code> 
       <td>
        As specified in Table 68
-       <ins> with <code class="highlight"><c- n>value</c-></code> converted to the corresponding unsigned type</ins>
+       <ins> with <code class="highlight"><c- n>value</c-></code> converted to the corresponding
+  unsigned type</ins>
        . 
      <tr>
       <td><code class="highlight"><c- o>?</c-></code> 
       <td>Copies the escaped character ([format.string.escaped]) to the output. 
    </table>
-   <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
-   <p>This is a breaking change but the it only affects the output of negative/large
+   <p>Change in <a href="http://eel.is/c++draft/format#arg-6.2">[format.arg</a>]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>explicit</c-> <c- n>basic_format_arg</c-><c- p>(</c-><c- n>T</c-><c- o>&amp;</c-> <c- n>v</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
+</pre>
+   <p>...</p>
+   <p><em>Effects</em>: Let <code class="highlight"><c- n>TD</c-></code> be <code class="highlight"><c- n>remove_const_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>.</p>
+   <ul>
+    <li data-md>
+     <p>If <code class="highlight"><c- n>TD</c-></code> is <code class="highlight"><c- b>bool</c-></code> or <code class="highlight"><c- n>char_type</c-></code>, initializes <code class="highlight"><c- n>value</c-></code> with <code class="highlight"><c- n>v</c-></code>;</p>
+    <li data-md>
+     <p>otherwise, if <code class="highlight"><c- n>TD</c-></code> is <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- n>char_type</c-></code> is <code class="highlight"><c- b>wchar_t</c-></code>, initializes <code class="highlight"><c- n>value</c-></code> with <code class="highlight"><c- k>static_cast</c-><c- o>&lt;</c-><del><c- n>wchar_t</c-></del><ins><c- n>unsigned</c-> <c- b>char</c-></ins><c- o>></c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code>;</p>
+   </ul>
+   <p>...</p>
+   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <p>This is a breaking change but it only affects the output of negative/large
 code units when output via opt-in format specifiers. There were no issues
 reported when the change was shipped in {fmt} and the number of uses of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is orders of magnitude smaller at the moment.</p>
-   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed change has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>).</p>
   </main>
 <script>

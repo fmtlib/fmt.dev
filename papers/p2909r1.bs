@@ -1,14 +1,14 @@
 <pre class='metadata'>
-Title: Dude, where's my char?
+Title: Fix formatting of code units as integers<br>(Dude, where's my char?)
 Shortname: P2909
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-07-29
+Date: 2023-08-25
 Markup Shorthands: markdown yes
 </pre>
 
@@ -80,6 +80,60 @@ This particular case can be fixed by adding a cast to `unsigned char` but it
 may not be as easy to do when formatting ranges compared to using format
 specifiers.
 
+Changes from R0 {#changes0}
+===============
+
+* Changed the title from "Dude, where’s my char?" to "Fix formatting of code
+    units as integers" per SG16 feedback.
+
+* Added all affected format specifiers to the before/after table per SG16
+    feedback.
+
+* Clarified how this compares with `printf` format specifiers.
+
+* Added SG16 poll results for R0.
+
+* Fixed handling of the case of formatting `char` as `wchar_t` per SG16
+    feedback.
+
+Polls {#polls}
+=====
+
+SG16 poll results for R0:
+
+**Poll 1**: Modify P2909R0 "Dude, where's my char‽" to maintain
+semi-consistency with printf such that the `b`, `B`, `o`, `x`, and `X`
+conversions convert all integer types as unsigned.
+
+```text
+SF  F  N  A SA
+ 1  2  0  2  2
+```
+
+**Outcome**: No consensus for change
+
+**Poll 2**: Modify P2909R0 "Dude, where's my char‽" to remove the change
+to handling of the `d` specifier.
+
+```text
+SF  F  N  A SA
+ 2  1  2  1  1
+```
+
+**Outcome**: No consensus for change
+
+**Poll 3**: Forward P2909R0 "Dude, where's my char‽", amended with a
+descriptive title, an expanded before/after table, and fixed CharT
+wording, to LEWG with the recommendation to adopt it as a Defect
+Report.
+
+```text
+SF  F  N  A SA
+ 2  2  2  1  0
+```
+
+**Outcome**: Weak consensus - LEWG may want to look at this closely
+
 Proposal {#proposal}
 ========
 
@@ -93,29 +147,71 @@ instead of implementation-defined.
   <th>After
 </tr>
 <tr>
-<td>
-```
-// Assuming UTF-8 as a literal encoding.
-for (char c : std::string("🤷")) {
-  std::print("\\x{:02x}", c);
-}
-```
-<td>
-```
-\xf0\x9f\xa4\xb7
-```
-or
+  <td>
+  ```
+  // Assuming UTF-8 as a literal encoding.
+  for (char c : std::string("🤷")) {
+    std::print("\\x{:02x}", c);
+  }
+  ```
+  <td>
+  ```text
+  \xf0\x9f\xa4\xb7
+  ```
+  or
 
-```
-\x-10\x-61\x-5c\x-49
-```
-(implementation-defined)
-<td>
-```text
-\xf0\x9f\xa4\xb7
-```
+  ```text
+  \x-10\x-61\x-5c\x-49
+  ```
+  (implementation-defined)
+  <td>
+  ```text
+  \xf0\x9f\xa4\xb7
+  ```
+</tr>
+<tr>
+  <td>
+  ```
+  std::print(
+    "{0:b} {0:B} {0:d} {0:o} {0:x} {0:X}",
+    '\xf0');
+  ```
+  <td>
+  ```
+  11110000 11110000 240 360 f0 F0
+  ```
+  or
+
+  ```text
+  -10000 -10000 -16 -20 -10 -10
+  ```
+  (implementation-defined)
+  <td>
+  ```text
+  11110000 11110000 240 360 f0 F0
+  ```
 </tr>
 </table>
+
+This somewhat improves consistency with `x` and `o` (but not `d`) `printf`
+specifiers which always treat arguments as unsigned. For example:
+
+```c++
+printf("%x", '\x80');
+```
+
+prints
+
+```text
+ffffff80
+```
+
+regardless of whether `char` is signed or unsigned.
+
+This is not a goal though but a side effect of picking a consistent
+platform-independent representation for code unit types. Unlike `printf`,
+`std::format` doesn't need to convey signedness or other type information in
+format specifiers. The latter is an artefact of varargs limitations.
 
 Wording {#wording}
 =======
@@ -123,12 +219,12 @@ Wording {#wording}
 Change in [[tab:format.type.char](
 http://eel.is/c++draft/format#tab:format.type.char)]:
 
-Table 69: Meaning of type options for `charT` [tab:format.type.char]
+Table 69: Meaning of type options for `charT` [tab:format.type.char]
 
 <table>
 <tr>
-  <td>Type
-  <td>Meaning
+  <th>Type
+  <th>Meaning
 </tr>
 <tr>
   <td>none, `c`
@@ -136,7 +232,8 @@ Table 69: Meaning of type options for `charT` [tab:format.type.char]
 </tr>
 <tr>
   <td>`b`, `B`, `d`, `o`, `x`, `X`
-  <td>As specified in Table 68<ins> with `value` converted to the corresponding unsigned type</ins>.
+  <td>As specified in Table 68<ins> with `value` converted to the corresponding
+  unsigned type</ins>.
 </tr>
 <tr>
   <td>`?`
@@ -144,10 +241,26 @@ Table 69: Meaning of type options for `charT` [tab:format.type.char]
 </tr>
 </table>
 
+Change in [[format.arg](http://eel.is/c++draft/format#arg-6.2)]:
+
+```
+template<class T> explicit basic_format_arg(T& v) noexcept;
+```
+
+...
+
+*Effects*: Let `TD` be `remove_const_t<T>`.
+
+- If `TD` is `bool` or `char_type`, initializes `value` with `v`;
+- otherwise, if `TD` is `char` and `char_type` is `wchar_t`, initializes `value`
+    with <code>static_cast&lt;<del>wchar_t</del><ins>unsigned char</ins>&gt;(v)</code>;
+
+...
+
 Impact on existing code {#impact}
 =======================
 
-This is a breaking change but the it only affects the output of negative/large
+This is a breaking change but it only affects the output of negative/large
 code units when output via opt-in format specifiers. There were no issues
 reported when the change was shipped in {fmt} and the number of uses of
 `std::format` is orders of magnitude smaller at the moment.
