@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Fix formatting of code units as integers<br>(Dude, where's my char?)
 Shortname: P2909
-Revision: 1
+Revision: 2
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-08-25
+Date: 2023-09-16
 Markup Shorthands: markdown yes
 </pre>
 
@@ -79,6 +79,15 @@ compiled and run on a different platform or with different compiler flags.
 This particular case can be fixed by adding a cast to `unsigned char` but it
 may not be as easy to do when formatting ranges compared to using format
 specifiers.
+
+Changes from R1 {#changes1}
+===============
+
+* Added instructions to bump the `__cpp_lib_format` feature test macro per
+    LEWG feedback.
+
+* Added a missing cast for the case of formatting `char` as `wchar_t` per LEWG
+    feedback.
 
 Changes from R0 {#changes0}
 ===============
@@ -213,8 +222,17 @@ platform-independent representation for code unit types. Unlike `printf`,
 `std::format` doesn't need to convey signedness or other type information in
 format specifiers. The latter is an artefact of varargs limitations.
 
+The current paper updates the `__cpp_lib_format` feature test macro instead of
+introducing a new one since the amount of work to check the macro and perform
+different action based on it is comparable to switching to the type with
+signdness that doesn't depend on the implementation (`signed char` or
+`unsigned char`).
+
 Wording {#wording}
 =======
+
+Update the value of the feature-testing macro `__cpp_lib_format` to the date of
+adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
 
 Change in [[tab:format.type.char](
 http://eel.is/c++draft/format#tab:format.type.char)]:
@@ -253,7 +271,7 @@ template<class T> explicit basic_format_arg(T& v) noexcept;
 
 - If `TD` is `bool` or `char_type`, initializes `value` with `v`;
 - otherwise, if `TD` is `char` and `char_type` is `wchar_t`, initializes `value`
-    with <code>static_cast&lt;<del>wchar_t</del><ins>unsigned char</ins>&gt;(v)</code>;
+    with <code>static_cast&lt;wchar_t&gt;(<del>v</del><ins>static_cast&lt;unsigned char&gt;(v)</ins>)</code>;
 
 ...
 
