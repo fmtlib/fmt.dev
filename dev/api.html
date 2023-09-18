@@ -319,7 +319,7 @@ types.</p>
 with the same format specifiers. The <code class="docutils literal notranslate"><span class="pre">format_as</span></code> function should take an
 object of your type and return an object of a formattable type. It should be
 defined in the same namespace as your type.</p>
-<p>Example (<a class="reference external" href="https://godbolt.org/z/r7vvGE1v7">https://godbolt.org/z/r7vvGE1v7</a>):</p>
+<p>Example (<a class="reference external" href="https://godbolt.org/z/nvME4arz8">https://godbolt.org/z/nvME4arz8</a>):</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span>
 
 <span class="k">namespace</span><span class="w"> </span><span class="nn">kevin_namespacy</span><span class="w"> </span><span class="p">{</span>
@@ -334,67 +334,12 @@ defined in the same namespace as your type.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Using the specialization API is more complex but gives you full control over
-parsing and formatting. To use this method specialize the <code class="docutils literal notranslate"><span class="pre">formatter</span></code> struct
-template for your type and implement <code class="docutils literal notranslate"><span class="pre">parse</span></code> and <code class="docutils literal notranslate"><span class="pre">format</span></code> methods.
-For example:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span>
-
-<span class="k">struct</span><span class="w"> </span><span class="nc">point</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
-<span class="p">};</span>
-
-<span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">point</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="c1">// Presentation format: &#39;f&#39; - fixed, &#39;e&#39; - exponential.</span>
-<span class="w">  </span><span class="kt">char</span><span class="w"> </span><span class="n">presentation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sc">&#39;f&#39;</span><span class="p">;</span>
-
-<span class="w">  </span><span class="c1">// Parses format specifications of the form [&#39;f&#39; | &#39;e&#39;].</span>
-<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">parse</span><span class="p">(</span><span class="n">format_parse_context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">format_parse_context</span><span class="o">::</span><span class="n">iterator</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1">// [ctx.begin(), ctx.end()) is a character range that contains a part of</span>
-<span class="w">    </span><span class="c1">// the format string starting from the format specifications to be parsed,</span>
-<span class="w">    </span><span class="c1">// e.g. in</span>
-<span class="w">    </span><span class="c1">//</span>
-<span class="w">    </span><span class="c1">//   fmt::format(&quot;{:f} - point of interest&quot;, point{1, 2});</span>
-<span class="w">    </span><span class="c1">//</span>
-<span class="w">    </span><span class="c1">// the range will contain &quot;f} - point of interest&quot;. The formatter should</span>
-<span class="w">    </span><span class="c1">// parse specifiers until &#39;}&#39; or the end of the range. In this example</span>
-<span class="w">    </span><span class="c1">// the formatter should parse the &#39;f&#39; specifier and return an iterator</span>
-<span class="w">    </span><span class="c1">// pointing to &#39;}&#39;.</span>
-
-<span class="w">    </span><span class="c1">// Please also note that this character range may be empty, in case of</span>
-<span class="w">    </span><span class="c1">// the &quot;{}&quot; format string, so therefore you should check ctx.begin()</span>
-<span class="w">    </span><span class="c1">// for equality with ctx.end().</span>
-
-<span class="w">    </span><span class="c1">// Parse the presentation format and store it in the formatter:</span>
-<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">it</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">it</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;f&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">*</span><span class="n">it</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">))</span><span class="w"> </span><span class="n">presentation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">it</span><span class="o">++</span><span class="p">;</span>
-
-<span class="w">    </span><span class="c1">// Check if reached the end of the range:</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">it</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">*</span><span class="n">it</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;}&#39;</span><span class="p">)</span><span class="w"> </span><span class="n">throw_format_error</span><span class="p">(</span><span class="s">&quot;invalid format&quot;</span><span class="p">);</span>
-
-<span class="w">    </span><span class="c1">// Return an iterator past the end of the parsed range:</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">it</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
-
-<span class="w">  </span><span class="c1">// Formats the point p using the parsed format specification (presentation)</span>
-<span class="w">  </span><span class="c1">// stored in this formatter.</span>
-<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">format</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">point</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">format_context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">format_context</span><span class="o">::</span><span class="n">iterator</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1">// ctx.out() is an output iterator to write to.</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">presentation</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="sc">&#39;f&#39;</span>
-<span class="w">              </span><span class="o">?</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format_to</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">out</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;({:.1f}, {:.1f})&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">)</span>
-<span class="w">              </span><span class="o">:</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format_to</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="n">out</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;({:.1e}, {:.1e})&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">};</span>
-</pre></div>
-</div>
-<p>Then you can pass objects of type <code class="docutils literal notranslate"><span class="pre">point</span></code> to any formatting function:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">point</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">};</span>
-<span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:f}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
-<span class="c1">// s == &quot;(1.0, 2.0)&quot;</span>
-</pre></div>
-</div>
-<p>You can also reuse existing formatters via inheritance or composition, for
-example:</p>
+<p>Using specialization is more complex but gives you full control over parsing and
+formatting. To use this method specialize the <code class="docutils literal notranslate"><span class="pre">formatter</span></code> struct template for
+your type and implement <code class="docutils literal notranslate"><span class="pre">parse</span></code> and <code class="docutils literal notranslate"><span class="pre">format</span></code> methods.</p>
+<p>The recommended way of defining a formatter is by reusing an existing one via
+inheritance or composition. This way you can support standard format specifiers
+without implementing them yourself. For example:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// color.h:</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span>
 
@@ -422,13 +367,68 @@ example:</p>
 </pre></div>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">formatter&lt;string_view&gt;::format</span></code> is defined in <code class="docutils literal notranslate"><span class="pre">fmt/format.h</span></code> so
-it has to be included in the source file.
-Since <code class="docutils literal notranslate"><span class="pre">parse</span></code> is inherited from <code class="docutils literal notranslate"><span class="pre">formatter&lt;string_view&gt;</span></code> it will recognize
-all string format specifications, for example</p>
+it has to be included in the source file. Since <code class="docutils literal notranslate"><span class="pre">parse</span></code> is inherited from
+<code class="docutils literal notranslate"><span class="pre">formatter&lt;string_view&gt;</span></code> it will recognize all string format specifications,
+for example</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:&gt;10}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="o">::</span><span class="n">blue</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>will return <code class="docutils literal notranslate"><span class="pre">&quot;</span>&#160;&#160;&#160;&#160;&#160; <span class="pre">blue&quot;</span></code>.</p>
+<p>The experimental <code class="docutils literal notranslate"><span class="pre">nested_formatter</span></code> provides an easy way applying a formatter
+to one or more subobjects.</p>
+<p>For example:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">point</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">point</span><span class="o">&gt;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">nested_formatter</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">format</span><span class="p">(</span><span class="n">point</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">format_context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">write_padded</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="k">auto</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">format_to</span><span class="p">(</span><span class="n">out</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;({}, {})&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">nested</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">),</span><span class="w"> </span><span class="n">nested</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">));</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;[{:&gt;20.2f}]&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">point</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>prints:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="w">          </span><span class="p">(</span><span class="mf">1.00</span><span class="p">,</span><span class="w"> </span><span class="mf">2.00</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>Notice that fill, align and width are applied to the whole object which is the
+recommended behavior while the remaining specifiers apply to elements.</p>
+<p>In general the formatter has the following form:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">fmt</span><span class="o">::</span><span class="n">formatter</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Parses format specifiers and stores them in the formatter.</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// [ctx.begin(), ctx.end()) is a, possibly empty, character range that</span>
+<span class="w">  </span><span class="c1">// contains a part of the format string starting from the format</span>
+<span class="w">  </span><span class="c1">// specifications to be parsed, e.g. in</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">//   fmt::format(&quot;{:f} continued&quot;, ...);</span>
+<span class="w">  </span><span class="c1">//</span>
+<span class="w">  </span><span class="c1">// the range will contain &quot;f} continued&quot;. The formatter should parse</span>
+<span class="w">  </span><span class="c1">// specifiers until &#39;}&#39; or the end of the range. In this example the</span>
+<span class="w">  </span><span class="c1">// formatter should parse the &#39;f&#39; specifier and return an iterator</span>
+<span class="w">  </span><span class="c1">// pointing to &#39;}&#39;.</span>
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">parse</span><span class="p">(</span><span class="n">format_parse_context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">format_parse_context</span><span class="o">::</span><span class="n">iterator</span><span class="p">;</span>
+
+<span class="w">  </span><span class="c1">// Formats value using the parsed format specification stored in this</span>
+<span class="w">  </span><span class="c1">// formatter and writes the output to ctx.out().</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">format</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">format_context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ctx</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="w">    </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">format_context</span><span class="o">::</span><span class="n">iterator</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>It is recommended to at least support fill, align and width that apply to the
+whole object and have the same semantics as in standard formatters.</p>
 <p>You can also write a formatter for a hierarchy of classes:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// demo.h:</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;type_traits&gt;</span>
