@@ -134,6 +134,29 @@ For ``build2`` newcomers or to get more details and use cases, you can read the
 ``build2``
 `toolchain introduction <https://build2.org/build2-toolchain/doc/build2-toolchain-intro.xhtml>`_.
 
+Usage with meson
+================
+
+`Meson's wrapdb <https://mesonbuild.com/Wrapdb-projects.html>` includes a fmt
+package, which repackages fmt to be built by meson as a subproject.
+
+**Usage:**
+
+- Install the ``fmt`` subproject from the wrapdb by running
+
+    meson wrap install fmt
+
+  from the root of your project
+
+- In your project's ``meson.build``` file, add an entry for the new subproject:
+
+    fmt = subproject('fmt')
+    fmt_dep = fmt.get_variable('fmt_dep')
+
+- Include the new dependency object to link with fmt:
+
+    my_build_target = executable('name', 'src/main.cc', dependencies: [fmt_dep])
+
 Building the Documentation
 ==========================
 
