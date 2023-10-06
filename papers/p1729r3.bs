@@ -11,7 +11,7 @@ Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
   This paper discusses a new text parsing facility to complement the text
   formatting functionality of <code>std::format</code>, proposed in [[P0645]].
-Date: 2023-08-05
+Date: 2023-10-05
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
@@ -26,6 +26,8 @@ Changes since R2 {#history-since-r2}
 * Default `CharT` to `char` in `scanner` for consistency with `formatter`.
 * Clarify handling of literal characters.
 * Clarify meaning of the width specifier, and its difference to the one in `std::format`.
+* Clarify meaning of "whitespace", per SG16 feedback.
+* Clarify handling of locale and different encodings, per SG16 feedback.
 
 Changes since R1 {#history-since-r1}
 ----------------
@@ -61,6 +63,12 @@ This paper explores the possibility of adding a symmetric parsing facility,
 to complement the `std::format` family, called `std::scan`.
 This facility is based on the same design principles and
 shares many features with `std::format`.
+
+This facility is not a parser per se, as it is probably not sufficient
+for parsing something more complicated, e.g. JSON.
+This is not a parser combinator library.
+This is intended to be an almost-drop-in replacement for `sscanf`,
+capable of being a building block for a more complicated parser.
 
 Examples {#examples}
 ========
@@ -247,6 +255,15 @@ Whether a character is a whitespace character is determined as if by calling
 `std::isspace` with the current or passed locale if using the `L` format
 specifier. Otherwise, the behavior is locale-independent (as if by using
 `std::locale::classic()`).
+
+In this proposal, "whitespace" is defined to be the Unicode code points
+with the Pattern_White_Space property, as defined by UAX #31.
+Those code points are currently:
+
+ * ASCII whitespace characters (U+0009 to U+000D, U+0020)
+ * U+0085 (next line)
+ * U+200E and U+200F (LEFT-TO-RIGHT MARK and RIGHT-TO-LEFT MARK)
+ * U+2028 and U+2029 (LINE SEPARATOR and PARAGRAPH SEPARATOR)
 
 <div class=example>
 ```c++
@@ -564,6 +581,35 @@ Enables scanning of values in locale-specific forms.
 
  * For `bool`, the textual representation uses the appropriate strings
     from `numpunct::truename` and `numpunct::falsename`.
+
+<h5 id="fmt-localized-discussion">Design discussion</h5>
+
+As proposed, when using localized scanning, the grouping of thousands
+separators in the input must exactly match the value retrieved from
+`numpunct::grouping`. This behavior is consistent with iostreams.
+It may, however, be undesirable: it is possible, that the user
+would supply values with incorrect thousands separator grouping,
+but that may need not be an error. The number is still unambiguously
+parseable, with the check for grouping only done after parsing.
+
+It may also be desirable to split up the behavior of skipping and checking
+of thousands separators from the realm of localization. For example,
+in the POSIX-extended version of `sscanf`, there's the `'` format specifier,
+which allows opting-into reading of thousands separators.
+
+When a locale isn't used, a set of options similar to the thousands separator
+options used with the `en_US` locale (i.e. `,` with `"\3"` grouping).
+This would enable skipping of thousands separators without involving locale.
+
+<div class=example>
+```c++
+// NOT PROPOSED,
+// hypothetical example, with a ' format specifier
+
+auto r = std::scan<int>("123,456", "{:'}");
+// r->value() == 123456
+```
+</div>
 
 <h4 id="fmt-type-string">Type specifiers: strings</h4>
 
@@ -1079,7 +1125,7 @@ string corresponding to the current argument, and `scanner<tm>::scan` parses the
 input range `ctx.range()` and stores the result in `t`.
 
 An implementation of `scanner<T>::scan` can potentially use the istream extraction
-`operator>>` for user-defined type `T`, if available. 
+`operator>>` for user-defined type `T`, if available.
 
 Locales {#locales}
 -------
@@ -1096,6 +1142,41 @@ doing the same for the current facility by performing locale-independent parsing
 by default and designating separate format specifiers for locale-specific ones.
 In particular, locale-specific behavior can be opted into by using the `L`
 format specifier, and supplying a `std::locale` object.
+
+<div class=example>
+```c++
+std::locale::global(std::locale::classic());
+
+// {} uses no locale
+// {:L} uses the global locale
+auto r0 = std::scan<double, double>("1.23 4.56", "{} {:L}");
+// r0->values(): (1.23, 4.56)
+
+// {} uses no locale
+// {:L} uses the supplied locale
+auto r1 = std::scan<double, double>(std::locale{"fi_FI"}, "1.23 4,56", "{} {}");
+// r1->values(): (1.23, 4.56)
+```
+</div>
+
+Encoding {#encoding}
+--------
+
+In a similar manner as with `std::format`, input given to `std::scan` is assumed
+to be in the literal encoding. Errors in encoding are handled in a "garbage in, garbage out" manner.
+
+Note: Encountering invalid encoding inside `std::scan` could be a use case
+for erroneous behavior in the library. That's because be provide well defined-behavior
+for handling invalid encoding, but it's still likely to be an error.
+
+<div class=example>
+```cpp
+// Invalid UTF-8
+auto r = std::scan<std::string>("a\xc3 ", "{}");
+// r->value() == "a\xc3"
+// Erroneous behavior?
+```
+</div>
 
 Performance {#performance}
 -----------
@@ -1222,6 +1303,15 @@ This syntax is intentionally way more limited, as is meant for simple character 
 [[SCNLIB]] implements this syntax, providing support for matching single characters/code points
 (`{:[abc]}`), code point ranges (`{:[a-z]}`), and regex-like wildcards (`{:[:alpha:]}` or `{:[\\w]})`.
 
+Reading code points (or even grapheme clusters?) {#scan-code-point}
+------------------------------------------------
+
+`char32_t` in nowadays the type denoting a Unicode code point.
+Reading individual code points, or even Unicode grapheme clusters, could be a useful feature.
+Currently, this proposal only supports reading of individual code units (`char` or `wchar_t`).
+
+[[SCNLIB]] supports reading Unicode code points with `char32_t`.
+
 Reading strings and chars of different width {#scan-transcode}
 --------------------------------------------
 
@@ -1261,14 +1351,16 @@ and assigned over if a value is read successfully.
 It may be useful to be able to provide an initial value different from a value-constructed
 one, for example, for preallocating a `string`, and possibly reusing it:
 
-  ```c++
-  string str;
-  str.reserve(n);
-  auto r0 = scan<string>(..., "{}", {std::move(str)});
-  // ...
-  r0->value().clear();
-  auto r1 = scan<string>(..., "{}", {std::move(r0->value())});
-  ```
+<div class=example>
+```c++
+string str;
+str.reserve(n);
+auto r0 = scan<string>(..., "{}", {std::move(str)});
+// ...
+r0->value().clear();
+auto r1 = scan<string>(..., "{}", {std::move(r0->value())});
+```
+</div>
 
 Assignment suppression / discarding values {#discard}
 ------------------------------------------

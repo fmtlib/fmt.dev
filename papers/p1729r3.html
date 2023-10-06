@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5fcd28d6d, updated Tue May 30 13:12:11 2023 -0700" name="generator">
   <link href="http://wg21.link/P1729R2" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="83e7cdc5b62995d23dcd3edbfbc2afde2fb27842" name="document-revision">
+  <meta content="9f49b11d785c30ca6464fd91ed27762113d1ff67" name="document-revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2092,7 +2092,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P1729R3<br>Text Parsing</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2023-08-05">2023-08-05</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2023-10-05">2023-10-05</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2148,9 +2148,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#safety"><span class="secno">4.8</span> <span class="content">Safety</span></a>
       <li><a href="#extensibility"><span class="secno">4.9</span> <span class="content">Extensibility</span></a>
       <li><a href="#locales"><span class="secno">4.10</span> <span class="content">Locales</span></a>
-      <li><a href="#performance"><span class="secno">4.11</span> <span class="content">Performance</span></a>
-      <li><a href="#chrono"><span class="secno">4.12</span> <span class="content">Integration with chrono</span></a>
-      <li><a href="#deep-impact"><span class="secno">4.13</span> <span class="content">Impact on existing code</span></a>
+      <li><a href="#encoding"><span class="secno">4.11</span> <span class="content">Encoding</span></a>
+      <li><a href="#performance"><span class="secno">4.12</span> <span class="content">Performance</span></a>
+      <li><a href="#chrono"><span class="secno">4.13</span> <span class="content">Integration with chrono</span></a>
+      <li><a href="#deep-impact"><span class="secno">4.14</span> <span class="content">Impact on existing code</span></a>
      </ol>
     <li><a href="#existing-work"><span class="secno">5</span> <span class="content">Existing work</span></a>
     <li>
@@ -2158,10 +2159,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <ol class="toc">
       <li><a href="#istream-integration"><span class="secno">6.1</span> <span class="content">Integration with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istream</c-></code>s</span></a>
       <li><a href="#char-set-match"><span class="secno">6.2</span> <span class="content"><code class="highlight"><c- n>scanf</c-></code>-like <code class="highlight"><c- p>[</c-><c- n>character</c-> <c- n>set</c-><c- p>]</c-></code> matching</span></a>
-      <li><a href="#scan-transcode"><span class="secno">6.3</span> <span class="content">Reading strings and chars of different width</span></a>
-      <li><a href="#range-scanning"><span class="secno">6.4</span> <span class="content">Scanning of ranges</span></a>
-      <li><a href="#default-values"><span class="secno">6.5</span> <span class="content">Default values for scanned values</span></a>
-      <li><a href="#discard"><span class="secno">6.6</span> <span class="content">Assignment suppression / discarding values</span></a>
+      <li><a href="#scan-code-point"><span class="secno">6.3</span> <span class="content">Reading code points (or even grapheme clusters?)</span></a>
+      <li><a href="#scan-transcode"><span class="secno">6.4</span> <span class="content">Reading strings and chars of different width</span></a>
+      <li><a href="#range-scanning"><span class="secno">6.5</span> <span class="content">Scanning of ranges</span></a>
+      <li><a href="#default-values"><span class="secno">6.6</span> <span class="content">Default values for scanned values</span></a>
+      <li><a href="#discard"><span class="secno">6.7</span> <span class="content">Assignment suppression / discarding values</span></a>
      </ol>
     <li>
      <a href="#spec"><span class="secno">7</span> <span class="content">Specification</span></a>
@@ -2196,6 +2198,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <p>Clarify handling of literal characters.</p>
     <li data-md>
      <p>Clarify meaning of the width specifier, and its difference to the one in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+    <li data-md>
+     <p>Clarify meaning of "whitespace", per SG16 feedback.</p>
+    <li data-md>
+     <p>Clarify handling of locale and different encodings, per SG16 feedback.</p>
    </ul>
    <h3 class="heading settled" data-level="1.2" id="history-since-r1"><span class="secno">1.2. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
    <ul>
@@ -2234,6 +2240,11 @@ raised in <a data-link-type="biblio" href="#biblio-p1361" title="Integration of 
 to complement the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> family, called <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>.
 This facility is based on the same design principles and
 shares many features with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+   <p>This facility is not a parser per se, as it is probably not sufficient
+for parsing something more complicated, e.g. JSON.
+This is not a parser combinator library.
+This is intended to be an almost-drop-in replacement for <code class="highlight"><c- n>sscanf</c-></code>,
+capable of being a building block for a more complicated parser.</p>
    <h2 class="heading settled" data-level="3" id="examples"><span class="secno">3. </span><span class="content">Examples</span><a class="self-link" href="#examples"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="example-basic"><span class="secno">3.1. </span><span class="content">Basic example</span><a class="self-link" href="#example-basic"></a></h3>
 <pre class="language-c++ highlight"><c- k>if</c-> <c- p>(</c-><c- k>auto</c-> <c- n>result</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- p>,</c-> <c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"answer = 42"</c-><c- p>,</c-> <c- s>"{} = {}"</c-><c- p>))</c-> <c- p>{</c->
@@ -2381,6 +2392,19 @@ the format string, an identical character is consumed from the input range.
 For whitespace characters, all available whitespace characters are consumed.
 Whether a character is a whitespace character is determined as if by calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>isspace</c-></code> with the current or passed locale if using the <code class="highlight"><c- n>L</c-></code> format
 specifier. Otherwise, the behavior is locale-independent (as if by using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>()</c-></code>).</p>
+   <p>In this proposal, "whitespace" is defined to be the Unicode code points
+with the Pattern_White_Space property, as defined by UAX #31.
+Those code points are currently:</p>
+   <ul>
+    <li data-md>
+     <p>ASCII whitespace characters (U+0009 to U+000D, U+0020)</p>
+    <li data-md>
+     <p>U+0085 (next line)</p>
+    <li data-md>
+     <p>U+200E and U+200F (LEFT-TO-RIGHT MARK and RIGHT-TO-LEFT MARK)</p>
+    <li data-md>
+     <p>U+2028 and U+2029 (LINE SEPARATOR and PARAGRAPH SEPARATOR)</p>
+   </ul>
    <div class="example" id="example-ed0e931a">
     <a class="self-link" href="#example-ed0e931a"></a> 
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"abcd"</c-><c- p>,</c-> <c- s>"ab{}d"</c-><c- p>);</c-> <c- c1>// r0->value() == 'c'</c->
@@ -2646,6 +2670,29 @@ from <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>decimal_point
      <p>For <code class="highlight"><c- b>bool</c-></code>, the textual representation uses the appropriate strings
 from <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>truename</c-></code> and <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>falsename</c-></code>.</p>
    </ul>
+   <h5 class="heading settled" data-level="4.3.5.1" id="fmt-localized-discussion"><span class="secno">4.3.5.1. </span><span class="content">Design discussion</span><a class="self-link" href="#fmt-localized-discussion"></a></h5>
+   <p>As proposed, when using localized scanning, the grouping of thousands
+separators in the input must exactly match the value retrieved from <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>grouping</c-></code>. This behavior is consistent with iostreams.
+It may, however, be undesirable: it is possible, that the user
+would supply values with incorrect thousands separator grouping,
+but that may need not be an error. The number is still unambiguously
+parseable, with the check for grouping only done after parsing.</p>
+   <p>It may also be desirable to split up the behavior of skipping and checking
+of thousands separators from the realm of localization. For example,
+in the POSIX-extended version of <code class="highlight"><c- n>sscanf</c-></code>, there’s the <code class="highlight">'</code> format specifier,
+which allows opting-into reading of thousands separators.</p>
+   <p>When a locale isn’t used, a set of options similar to the thousands separator
+options used with the <code class="highlight"><c- n>en_US</c-></code> locale (i.e. <code class="highlight"><c- p>,</c-></code> with <code class="highlight"><c- s>"</c-><c- se>\3</c-><c- s>"</c-></code> grouping).
+This would enable skipping of thousands separators without involving locale.</p>
+   <div class="example" id="example-d9a97c4b">
+    <a class="self-link" href="#example-d9a97c4b"></a> 
+<pre class="language-c++ highlight"><c- c1>// NOT PROPOSED,</c->
+<c- c1>// hypothetical example, with a ' format specifier</c->
+
+<c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"123,456"</c-><c- p>,</c-> <c- s>"{:'}"</c-><c- p>);</c->
+<c- c1>// r->value() == 123456</c->
+</pre>
+   </div>
    <h4 class="heading settled" data-level="4.3.6" id="fmt-type-string"><span class="secno">4.3.6. </span><span class="content">Type specifiers: strings</span><a class="self-link" href="#fmt-type-string"></a></h4>
    <table>
     <tbody>
@@ -3036,7 +3083,36 @@ locales at either end.</p>
 doing the same for the current facility by performing locale-independent parsing
 by default and designating separate format specifiers for locale-specific ones.
 In particular, locale-specific behavior can be opted into by using the <code class="highlight"><c- n>L</c-></code> format specifier, and supplying a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-></code> object.</p>
-   <h3 class="heading settled" data-level="4.11" id="performance"><span class="secno">4.11. </span><span class="content">Performance</span><a class="self-link" href="#performance"></a></h3>
+   <div class="example" id="example-725cd461">
+    <a class="self-link" href="#example-725cd461"></a> 
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>());</c->
+
+<c- c1>// {} uses no locale</c->
+<c- c1>// {:L} uses the global locale</c->
+<c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>double</c-><c- p>,</c-> <c- b>double</c-><c- o>></c-><c- p>(</c-><c- s>"1.23 4.56"</c-><c- p>,</c-> <c- s>"{} {:L}"</c-><c- p>);</c->
+<c- c1>// r0->values(): (1.23, 4.56)</c->
+
+<c- c1>// {} uses no locale</c->
+<c- c1>// {:L} uses the supplied locale</c->
+<c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>double</c-><c- p>,</c-> <c- b>double</c-><c- o>></c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>{</c-><c- s>"fi_FI"</c-><c- p>},</c-> <c- s>"1.23 4,56"</c-><c- p>,</c-> <c- s>"{} {}"</c-><c- p>);</c->
+<c- c1>// r1->values(): (1.23, 4.56)</c->
+</pre>
+   </div>
+   <h3 class="heading settled" data-level="4.11" id="encoding"><span class="secno">4.11. </span><span class="content">Encoding</span><a class="self-link" href="#encoding"></a></h3>
+   <p>In a similar manner as with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, input given to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is assumed
+to be in the literal encoding. Errors in encoding are handled in a "garbage in, garbage out" manner.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> Encountering invalid encoding inside <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> could be a use case
+for erroneous behavior in the library. That’s because be provide well defined-behavior
+for handling invalid encoding, but it’s still likely to be an error.</p>
+   <div class="example" id="example-97cbf05c">
+    <a class="self-link" href="#example-97cbf05c"></a> 
+<pre class="language-cpp highlight"><c- c1>// Invalid UTF-8</c->
+<c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"a</c-><c- se>\xc3</c-><c- s> "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->
+<c- c1>// r->value() == "a\xc3"</c->
+<c- c1>// Erroneous behavior?</c->
+</pre>
+   </div>
+   <h3 class="heading settled" data-level="4.12" id="performance"><span class="secno">4.12. </span><span class="content">Performance</span><a class="self-link" href="#performance"></a></h3>
    <p>The API allows efficient implementation that minimizes virtual function calls
 and dynamic memory allocations, and avoids unnecessary copies. In particular,
 since it doesn’t need to guarantee the lifetime of the input across multiple
@@ -3053,7 +3129,7 @@ way.</p>
 checking at compile-time, whether scanning a <code class="highlight"><c- n>string_view</c-></code> would dangle, or
 if it’s possible at all (it’s not possible to read a <code class="highlight"><c- n>string_view</c-></code> from a non-<code class="highlight"><c- n>contiguous_range</c-></code>).
 This is the case, because the concept <code class="highlight"><c- n>scannable</c-></code> is defined in terms of the scanned type <code class="highlight"><c- n>T</c-></code> and the input range character type <code class="highlight"><c- n>CharT</c-></code>, not the type of the input range itself.</p>
-   <h3 class="heading settled" data-level="4.12" id="chrono"><span class="secno">4.12. </span><span class="content">Integration with chrono</span><a class="self-link" href="#chrono"></a></h3>
+   <h3 class="heading settled" data-level="4.13" id="chrono"><span class="secno">4.13. </span><span class="content">Integration with chrono</span><a class="self-link" href="#chrono"></a></h3>
    <p>The proposed facility can be integrated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>parse</c-></code> (<a data-link-type="biblio" href="#biblio-p0355" title="Extending <chrono> to Calendars and Time Zones">[P0355]</a>)
 via the extension mechanism, similarly to the integration between chrono and text
 formatting proposed in <a data-link-type="biblio" href="#biblio-p1361" title="Integration of chrono with text formatting">[P1361]</a>. This will improve consistency between parsing
@@ -3071,7 +3147,7 @@ memory allocations without resolving to the deprecated <code class="highlight"><
 <c- k>const</c-> <c- k>auto</c-><c- o>&amp;</c-> <c- p>[</c-><c- n>key</c-><c- p>,</c-> <c- n>time</c-><c- p>]</c-> <c- o>=</c-> <c- n>result</c-><c- o>-></c-><c- n>values</c-><c- p>();</c->
 </pre>
    <p>Note that the <code class="highlight"><c- n>scan</c-></code> version additionally validates the separator.</p>
-   <h3 class="heading settled" data-level="4.13" id="deep-impact"><span class="secno">4.13. </span><span class="content">Impact on existing code</span><a class="self-link" href="#deep-impact"></a></h3>
+   <h3 class="heading settled" data-level="4.14" id="deep-impact"><span class="secno">4.14. </span><span class="content">Impact on existing code</span><a class="self-link" href="#deep-impact"></a></h3>
    <p>The proposed API is defined in a new header and should have no impact on
 existing code.</p>
    <h2 class="heading settled" data-level="5" id="existing-work"><span class="secno">5. </span><span class="content">Existing work</span><a class="self-link" href="#existing-work"></a></h2>
@@ -3118,7 +3194,12 @@ Properly specified, this could be useful.</p>
 This syntax is intentionally way more limited, as is meant for simple character matching.</p>
    <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> implements this syntax, providing support for matching single characters/code points
 (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>abc</c-><c- p>]}</c-></code>), code point ranges (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>a</c-><c- o>-</c-><c- n>z</c-><c- p>]}</c-></code>), and regex-like wildcards (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- o>:</c-><c- n>alpha</c-><c- o>:</c-><c- p>]}</c-></code> or <code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c->\\<c- n>w</c-><c- p>]})</c-></code>.</p>
-   <h3 class="heading settled" data-level="6.3" id="scan-transcode"><span class="secno">6.3. </span><span class="content">Reading strings and chars of different width</span><a class="self-link" href="#scan-transcode"></a></h3>
+   <h3 class="heading settled" data-level="6.3" id="scan-code-point"><span class="secno">6.3. </span><span class="content">Reading code points (or even grapheme clusters?)</span><a class="self-link" href="#scan-code-point"></a></h3>
+   <p><code class="highlight"><c- b>char32_t</c-></code> in nowadays the type denoting a Unicode code point.
+Reading individual code points, or even Unicode grapheme clusters, could be a useful feature.
+Currently, this proposal only supports reading of individual code units (<code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code>).</p>
+   <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> supports reading Unicode code points with <code class="highlight"><c- b>char32_t</c-></code>.</p>
+   <h3 class="heading settled" data-level="6.4" id="scan-transcode"><span class="secno">6.4. </span><span class="content">Reading strings and chars of different width</span><a class="self-link" href="#scan-transcode"></a></h3>
    <p>In C++, we have character types other than <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>, too:
 namely <code class="highlight"><c- b>char8_t</c-></code>, <code class="highlight"><c- b>char16_t</c-></code>, and <code class="highlight"><c- b>char32_t</c-></code>.
 Currently, this proposal only supports reading strings with the same
@@ -3138,13 +3219,15 @@ Providing support for reading differently-encoded strings could be useful.</p>
   <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- p>,</c-> <c- n>wstring</c-><c- p>,</c-> <c- n>u8string</c-><c- p>,</c-> <c- n>u16string</c-><c- p>,</c-> <c- n>u32string</c-><c- o>></c-><c- p>(</c->L<c- s>"abc def ghi jkl mno"</c-><c- p>,</c-> L<c- s>"{} {} {} {} {}"</c-><c- p>);</c->
 </pre>
    </div>
-   <h3 class="heading settled" data-level="6.4" id="range-scanning"><span class="secno">6.4. </span><span class="content">Scanning of ranges</span><a class="self-link" href="#range-scanning"></a></h3>
+   <h3 class="heading settled" data-level="6.5" id="range-scanning"><span class="secno">6.5. </span><span class="content">Scanning of ranges</span><a class="self-link" href="#range-scanning"></a></h3>
    <p>Introduced in <a data-link-type="biblio" href="#biblio-p2286" title="Formatting Ranges">[P2286]</a> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, enabling the user to use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> to scan ranges, could be useful.</p>
-   <h3 class="heading settled" data-level="6.5" id="default-values"><span class="secno">6.5. </span><span class="content">Default values for scanned values</span><a class="self-link" href="#default-values"></a></h3>
+   <h3 class="heading settled" data-level="6.6" id="default-values"><span class="secno">6.6. </span><span class="content">Default values for scanned values</span><a class="self-link" href="#default-values"></a></h3>
    <p>Currently, the values returned by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> are value-constructed,
 and assigned over if a value is read successfully.
 It may be useful to be able to provide an initial value different from a value-constructed
 one, for example, for preallocating a <code class="highlight"><c- n>string</c-></code>, and possibly reusing it:</p>
+   <div class="example" id="example-cdfbeaa1">
+    <a class="self-link" href="#example-cdfbeaa1"></a> 
 <pre class="language-c++ highlight"><c- n>string</c-> <c- n>str</c-><c- p>;</c->
 <c- n>str</c-><c- p>.</c-><c- n>reserve</c-><c- p>(</c-><c- n>n</c-><c- p>);</c->
 <c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- p>{</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>str</c-><c- p>)});</c->
@@ -3152,7 +3235,8 @@ one, for example, for preallocating a <code class="highlight"><c- n>string</c-><
 <c- n>r0</c-><c- o>-></c-><c- n>value</c-><c- p>().</c-><c- n>clear</c-><c- p>();</c->
 <c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>scan</c-><c- o>&lt;</c-><c- n>string</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- p>{</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>r0</c-><c- o>-></c-><c- n>value</c-><c- p>())});</c->
 </pre>
-   <h3 class="heading settled" data-level="6.6" id="discard"><span class="secno">6.6. </span><span class="content">Assignment suppression / discarding values</span><a class="self-link" href="#discard"></a></h3>
+   </div>
+   <h3 class="heading settled" data-level="6.7" id="discard"><span class="secno">6.7. </span><span class="content">Assignment suppression / discarding values</span><a class="self-link" href="#discard"></a></h3>
    <p><code class="highlight"><c- n>scanf</c-></code> supports discarding scanned values with the <code class="highlight"><c- o>*</c-></code> specifier in the format string. <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> provides similar functionality through a special type, <code class="highlight"><c- n>scn</c-><c- o>::</c-><c- n>discard</c-></code>:</p>
    <div class="example" id="example-beec30a1">
     <a class="self-link" href="#example-beec30a1"></a> 
