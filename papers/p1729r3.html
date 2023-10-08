@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 5fcd28d6d, updated Tue May 30 13:12:11 2023 -0700" name="generator">
   <link href="http://wg21.link/P1729R2" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9f49b11d785c30ca6464fd91ed27762113d1ff67" name="document-revision">
+  <meta content="0933f4d1c5670a78b9c91c794126569b6d951f52" name="document-revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2308,10 +2308,13 @@ capable of being a building block for a more complicated parser.</p>
   <c- p>.</c-><c- n>transform</c-><c- p>([](</c-><c- k>auto</c-> <c- n>result</c-><c- p>)</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>result</c-><c- p>.</c-><c- n>value</c-><c- p>();</c->
   <c- p>});</c->
-<c- k>auto</c-> <c- n>num</c-> <c- o>=</c-> <c- o>*</c-><c- n>result</c-><c- p>;</c->
+<c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>result</c-><c- p>)</c-> <c- p>{</c->
+  <c- c1>// handle error</c->
+<c- p>}</c->
+<c- b>int</c-> <c- n>num</c-> <c- o>=</c-> <c- o>*</c-><c- n>result</c-><c- p>;</c->
 
 <c- c1>// With [</c-><a data-link-type="biblio" href="#biblio-p2561" title="A control flow operator"><c- c1>P2561</c-></a><c- c1>]:</c->
-<c- k>auto</c-> <c- n>num</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>).</c-><c- k>try</c-><c- o>?</c-><c- p>.</c-><c- n>value</c-><c- p>();</c->
+<c- b>int</c-> <c- n>num</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>).</c-><c- k>try</c-><c- o>?</c-><c- p>.</c-><c- n>value</c-><c- p>();</c->
 </pre>
    <h3 class="heading settled" data-level="3.6" id="example-userdef"><span class="secno">3.6. </span><span class="content">Scanning an user-defined type</span><a class="self-link" href="#example-userdef"></a></h3>
 <pre class="language-c++ highlight"><c- k>struct</c-> <c- nc>mytype</c-> <c- p>{</c->
@@ -2389,11 +2392,9 @@ conveying the type information</p>
 in <code class="highlight"><c- n>scanf</c-></code>, which can simplify a, possibly automated, migration.</p>
    <p>Maintaining similarity with <code class="highlight"><c- n>scanf</c-></code>, for any literal non-whitespace character in
 the format string, an identical character is consumed from the input range.
-For whitespace characters, all available whitespace characters are consumed.
-Whether a character is a whitespace character is determined as if by calling <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>isspace</c-></code> with the current or passed locale if using the <code class="highlight"><c- n>L</c-></code> format
-specifier. Otherwise, the behavior is locale-independent (as if by using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>()</c-></code>).</p>
+For whitespace characters, all available whitespace characters are consumed.</p>
    <p>In this proposal, "whitespace" is defined to be the Unicode code points
-with the Pattern_White_Space property, as defined by UAX #31.
+with the Pattern_White_Space property, as defined by UAX #31 (UAX31-R3a).
 Those code points are currently:</p>
    <ul>
     <li data-md>
@@ -2405,6 +2406,12 @@ Those code points are currently:</p>
     <li data-md>
      <p>U+2028 and U+2029 (LINE SEPARATOR and PARAGRAPH SEPARATOR)</p>
    </ul>
+   <p>Unicode defines a lot of different things
+in the realm of whitespace, all for different kinds of use cases.
+The Pattern_White_Space-property is chosen for its stability (it’s guaranteed to not change),
+and because its intended use is for classifying things that should be treated as
+whitespace in machine-readable syntaxes. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>isspace</c-></code> is insufficient for usage in a Unicode world,
+because it only accepts a single code unit as input.</p>
    <div class="example" id="example-ed0e931a">
     <a class="self-link" href="#example-ed0e931a"></a> 
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"abcd"</c-><c- p>,</c-> <c- s>"ab{}d"</c-><c- p>);</c-> <c- c1>// r0->value() == 'c'</c->
@@ -2532,8 +2539,8 @@ can be used with both <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>f
 with round-trip semantics.</p>
    <p class="note" role="note"><span class="marker">Note:</span> For format type specifiers other than <code class="highlight"><c- sc>'c'</c-></code> (default for <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>, can be specified for <code class="highlight"><c- n>basic_string</c-></code> and <code class="highlight"><c- n>basic_string_view</c-></code>),
 leading whitespace is skipped regardless of alignment specifiers.</p>
-   <div class="example" id="example-4d47add1">
-    <a class="self-link" href="#example-4d47add1"></a> 
+   <div class="example" id="example-4783cbd9">
+    <a class="self-link" href="#example-4783cbd9"></a> 
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"   42"</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c-> <c- c1>// r0->value() == 42, r0->range() == ""</c->
 <c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"   x"</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c-> <c- c1>// r1->value() == ' ', r1->range() == "  x"</c->
 <c- k>auto</c-> <c- n>r2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"x   "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c-> <c- c1>// r2->value() == 'x', r2->range() == "   "</c->
@@ -2560,6 +2567,8 @@ leading whitespace is skipped regardless of alignment specifiers.</p>
 
 <c- k>auto</c-> <c- n>rJ</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42**"</c-><c- p>,</c-> <c- s>"{:*^6}"</c-><c- p>);</c-> <c- c1>// rJ->value() == 42, rJ->range() == ""</c->
 <c- k>auto</c-> <c- n>rK</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"*42**"</c-><c- p>,</c-> <c- s>"{:*^5}"</c-><c- p>);</c->  <c- c1>// rK->value() == 42, rK->range() == ""</c->
+<c- k>auto</c-> <c- n>rL</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^6}"</c-><c- p>);</c-> <c- c1>// ERROR (not enough fill characters after value)</c->
+<c- k>auto</c-> <c- n>rM</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^5}"</c-><c- p>);</c-> <c- c1>// ERROR (not enough fill characters after value)</c->
 </pre>
    </div>
    <p class="note" role="note"><span class="marker">Note:</span> This behavior, while compatible with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>,
@@ -2779,9 +2788,19 @@ These flags are consistent with <code class="highlight"><c- n>scanf</c-></code>.
       <td><code class="highlight"><c- o>?</c-></code> 
       <td>Copies an escaped character from the input. 
    </table>
-   <p class="note" role="note"><span class="marker">Note:</span> This is not encoding or Unicode-aware.
+   <div class="example" id="example-d51379f7">
+    <a class="self-link" href="#example-d51379f7"></a> This is not encoding or Unicode-aware.
 Reading a <code class="highlight"><c- n>CharT</c-></code> with the <code class="highlight"><c- n>c</c-></code> type specifier
-will just read a single code unit of type <code class="highlight"><c- n>CharT</c-></code>.</p>
+will just read a single code unit of type <code class="highlight"><c- n>CharT</c-></code>.
+This can lead to invalid encoding in the scanned values. 
+<pre class="language-c++ highlight"><c- c1>// As proposed:</c->
+<c- c1>// U+12345 is 0xF0 0x92 0x8D 0x85 in UTF-8</c->
+<c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>san</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"\u{12345}"</c-><c- p>,</c-> <c- s>"{}{}"</c-><c- p>);</c->
+<c- k>auto</c-><c- o>&amp;</c-> <c- p>[</c-><c- n>ch</c-><c- p>,</c-> <c- n>str</c-><c- p>]</c-> <c- o>=</c-> <c- n>r</c-><c- o>-></c-><c- n>values</c-><c- p>();</c->
+<c- c1>// ch == '\xF0'</c->
+<c- c1>// str == "\x92\x8d\x85" (invalid utf-8)</c->
+</pre>
+   </div>
    <h4 class="heading settled" data-level="4.3.9" id="fmt-type-bool"><span class="secno">4.3.9. </span><span class="content">Type specifiers: <code class="highlight"><c- b>bool</c-></code></span><a class="self-link" href="#fmt-type-bool"></a></h4>
    <table>
     <tbody>
@@ -3100,10 +3119,23 @@ In particular, locale-specific behavior can be opted into by using the <code cla
    </div>
    <h3 class="heading settled" data-level="4.11" id="encoding"><span class="secno">4.11. </span><span class="content">Encoding</span><a class="self-link" href="#encoding"></a></h3>
    <p>In a similar manner as with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, input given to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is assumed
-to be in the literal encoding. Errors in encoding are handled in a "garbage in, garbage out" manner.</p>
-   <p class="note" role="note"><span class="marker">Note:</span> Encountering invalid encoding inside <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> could be a use case
+to be in the (ordinary/wide) literal encoding.
+Errors in encoding are handled in a "garbage in, garbage out" manner:
+invalidly encoded code points are treated as if they were the Unicode noncharacter U+FFFF,
+which doesn’t match any other character or pattern.</p>
+   <div class="note" role="note"> Encountering invalid encoding inside <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> could be a use case
 for erroneous behavior in the library. That’s because be provide well defined-behavior
-for handling invalid encoding, but it’s still likely to be an error.</p>
+for handling invalid encoding, but it’s still likely to be an error.
+As motivation for erroneous behavior,
+Unicode conformance requirement C.10 says that ill-formed input shall not be treated as a character,
+and treat it as an error instead. </div>
+   <p>Other potential options for handling invalid encoding would be:</p>
+   <ul>
+    <li data-md>
+     <p>treat is as UB</p>
+    <li data-md>
+     <p>always sanitize input encoding (potentially very slow when done character-by-character with <code class="highlight"><c- n>forward_range</c-></code>s)</p>
+   </ul>
    <div class="example" id="example-97cbf05c">
     <a class="self-link" href="#example-97cbf05c"></a> 
 <pre class="language-cpp highlight"><c- c1>// Invalid UTF-8</c->

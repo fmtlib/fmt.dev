@@ -154,10 +154,13 @@ auto result = std::scan&lt;int&gt;(..., "{}")
   .transform([](auto result) {
     return result.value();
   });
-auto num = *result;
+if (!result) {
+  // handle error
+}
+int num = *result;
 
 // With [<a data-link-type=biblio data-biblio-type=informative>P2561</a>]:
-auto num = std::scan&lt;int&gt;(..., "{}").try?.value();
+int num = std::scan&lt;int&gt;(..., "{}").try?.value();
 </pre>
 
 Scanning an user-defined type {#example-userdef}
@@ -251,19 +254,23 @@ in `scanf`, which can simplify a, possibly automated, migration.
 Maintaining similarity with `scanf`, for any literal non-whitespace character in
 the format string, an identical character is consumed from the input range.
 For whitespace characters, all available whitespace characters are consumed.
-Whether a character is a whitespace character is determined as if by calling
-`std::isspace` with the current or passed locale if using the `L` format
-specifier. Otherwise, the behavior is locale-independent (as if by using
-`std::locale::classic()`).
 
 In this proposal, "whitespace" is defined to be the Unicode code points
-with the Pattern_White_Space property, as defined by UAX #31.
+with the Pattern_White_Space property, as defined by UAX #31 (UAX31-R3a).
 Those code points are currently:
 
  * ASCII whitespace characters (U+0009 to U+000D, U+0020)
  * U+0085 (next line)
  * U+200E and U+200F (LEFT-TO-RIGHT MARK and RIGHT-TO-LEFT MARK)
  * U+2028 and U+2029 (LINE SEPARATOR and PARAGRAPH SEPARATOR)
+
+Unicode defines a lot of different things
+in the realm of whitespace, all for different kinds of use cases.
+The Pattern_White_Space-property is chosen for its stability (it's guaranteed to not change),
+and because its intended use is for classifying things that should be treated as
+whitespace in machine-readable syntaxes.
+`std::isspace` is insufficient for usage in a Unicode world,
+because it only accepts a single code unit as input.
 
 <div class=example>
 ```c++
@@ -461,6 +468,8 @@ auto rI = std::scan<int>("**42*", "{:*^}"); // ERROR (not enough fill characters
 
 auto rJ = std::scan<int>("**42**", "{:*^6}"); // rJ->value() == 42, rJ->range() == ""
 auto rK = std::scan<int>("*42**", "{:*^5}");  // rK->value() == 42, rK->range() == ""
+auto rL = std::scan<int>("**42*", "{:*^6}"); // ERROR (not enough fill characters after value)
+auto rM = std::scan<int>("**42*", "{:*^5}"); // ERROR (not enough fill characters after value)
 ```
 </div>
 
@@ -735,9 +744,21 @@ These flags are consistent with `scanf`.
 </tr>
 </table>
 
-Note: This is not encoding or Unicode-aware.
+<div class=example>
+This is not encoding or Unicode-aware.
 Reading a `CharT` with the `c` type specifier
 will just read a single code unit of type `CharT`.
+This can lead to invalid encoding in the scanned values.
+
+```c++
+// As proposed:
+// U+12345 is 0xF0 0x92 0x8D 0x85 in UTF-8
+auto r = std::san<char, std::string>("\u{12345}", "{}{}");
+auto& [ch, str] = r->values();
+// ch == '\xF0'
+// str == "\x92\x8d\x85" (invalid utf-8)
+```
+</div>
 
 <h4 id="fmt-type-bool">Type specifiers: `bool`</h4>
 
@@ -1163,11 +1184,24 @@ Encoding {#encoding}
 --------
 
 In a similar manner as with `std::format`, input given to `std::scan` is assumed
-to be in the literal encoding. Errors in encoding are handled in a "garbage in, garbage out" manner.
+to be in the (ordinary/wide) literal encoding.
+Errors in encoding are handled in a "garbage in, garbage out" manner:
+invalidly encoded code points are treated as if they were the Unicode noncharacter U+FFFF,
+which doesn't match any other character or pattern.
 
-Note: Encountering invalid encoding inside `std::scan` could be a use case
+<div class=note>
+Encountering invalid encoding inside `std::scan` could be a use case
 for erroneous behavior in the library. That's because be provide well defined-behavior
 for handling invalid encoding, but it's still likely to be an error.
+As motivation for erroneous behavior,
+Unicode conformance requirement C.10 says that ill-formed input shall not be treated as a character,
+and treat it as an error instead.
+</div>
+
+Other potential options for handling invalid encoding would be:
+
+ * treat is as UB
+ * always sanitize input encoding (potentially very slow when done character-by-character with `forward_range`s)
 
 <div class=example>
 ```cpp
