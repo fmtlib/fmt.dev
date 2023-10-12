@@ -1561,11 +1561,11 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 5fcd28d6d, updated Tue May 30 13:12:11 2023 -0700" name="generator">
-  <link href="http://wg21.link/P1729R2" rel="canonical">
+  <meta content="Bikeshed version 3383f409d, updated Fri Apr 28 15:49:22 2023 -0700" name="generator">
+  <link href="http://wg21.link/D1729R3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0933f4d1c5670a78b9c91c794126569b6d951f52" name="document-revision">
-<style>/* Boilerplate: style-autolinks */
+  <meta content="74739573c552b3d6564dcc07ac4d8ab32b01cb07" name="document-revision">
+<style>/* style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
     font-size: inherit;
@@ -1626,16 +1626,8 @@ pre .property::before, pre .property::after {
 [data-link-type=biblio] {
     white-space: pre;
 }
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --selflink-text: black;
-        --selflink-bg: silver;
-        --selflink-hover-text: white;
-    }
-}
 </style>
-<style>/* Boilerplate: style-colors */
+<style>/* style-colors */
 
 /* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
 :root {
@@ -1744,6 +1736,175 @@ pre .property::before, pre .property::after {
 
     --editedrec-bg: darkorange;
 }
+</style>
+<style>/* style-counters */
+body {
+    counter-reset: example figure issue;
+}
+.issue {
+    counter-increment: issue;
+}
+.issue:not(.no-marker)::before {
+    content: "Issue " counter(issue);
+}
+
+.example {
+    counter-increment: example;
+}
+.example:not(.no-marker)::before {
+    content: "Example " counter(example);
+}
+.invalid.example:not(.no-marker)::before,
+.illegal.example:not(.no-marker)::before {
+    content: "Invalid Example" counter(example);
+}
+
+figcaption {
+    counter-increment: figure;
+}
+figcaption:not(.no-marker)::before {
+    content: "Figure " counter(figure) " ";
+}
+</style>
+<style>/* style-issues */
+a[href].issue-return {
+    float: right;
+    float: inline-end;
+    color: var(--issueheading-text);
+    font-weight: bold;
+    text-decoration: none;
+}
+</style>
+<style>/* style-md-lists */
+/* This is a weird hack for me not yet following the commonmark spec
+   regarding paragraph and lists. */
+[data-md] > :first-child {
+    margin-top: 0;
+}
+[data-md] > :last-child {
+    margin-bottom: 0;
+}
+</style>
+<style>/* style-selflinks */
+
+:root {
+    --selflink-text: white;
+    --selflink-bg: gray;
+    --selflink-hover-text: black;
+}
+.heading, .issue, .note, .example, li, dt {
+    position: relative;
+}
+a.self-link {
+    position: absolute;
+    top: 0;
+    left: calc(-1 * (3.5rem - 26px));
+    width: calc(3.5rem - 26px);
+    height: 2em;
+    text-align: center;
+    border: none;
+    transition: opacity .2s;
+    opacity: .5;
+}
+a.self-link:hover {
+    opacity: 1;
+}
+.heading > a.self-link {
+    font-size: 83%;
+}
+.example > a.self-link,
+.note > a.self-link,
+.issue > a.self-link {
+    /* These blocks are overflow:auto, so positioning outside
+       doesn't work. */
+    left: auto;
+    right: 0;
+}
+li > a.self-link {
+    left: calc(-1 * (3.5rem - 26px) - 2em);
+}
+dfn > a.self-link {
+    top: auto;
+    left: auto;
+    opacity: 0;
+    width: 1.5em;
+    height: 1.5em;
+    background: var(--selflink-bg);
+    color: var(--selflink-text);
+    font-style: normal;
+    transition: opacity .2s, background-color .2s, color .2s;
+}
+dfn:hover > a.self-link {
+    opacity: 1;
+}
+dfn > a.self-link:hover {
+    color: var(--selflink-hover-text);
+}
+
+a.self-link::before            { content: "¶"; }
+.heading > a.self-link::before { content: "§"; }
+dfn > a.self-link::before      { content: "#"; }
+</style>
+<style>/* style-syntax-highlighting */
+
+code.highlight { padding: .1em; border-radius: .3em; }
+pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
+
+.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
+c-[a] { color: #990055 } /* Keyword.Declaration */
+c-[b] { color: #990055 } /* Keyword.Type */
+c-[c] { color: #708090 } /* Comment */
+c-[d] { color: #708090 } /* Comment.Multiline */
+c-[e] { color: #0077aa } /* Name.Attribute */
+c-[f] { color: #669900 } /* Name.Tag */
+c-[g] { color: #222222 } /* Name.Variable */
+c-[k] { color: #990055 } /* Keyword */
+c-[l] { color: #000000 } /* Literal */
+c-[m] { color: #000000 } /* Literal.Number */
+c-[n] { color: #0077aa } /* Name */
+c-[o] { color: #999999 } /* Operator */
+c-[p] { color: #999999 } /* Punctuation */
+c-[s] { color: #a67f59 } /* Literal.String */
+c-[t] { color: #a67f59 } /* Literal.String.Single */
+c-[u] { color: #a67f59 } /* Literal.String.Double */
+c-[cp] { color: #708090 } /* Comment.Preproc */
+c-[c1] { color: #708090 } /* Comment.Single */
+c-[cs] { color: #708090 } /* Comment.Special */
+c-[kc] { color: #990055 } /* Keyword.Constant */
+c-[kn] { color: #990055 } /* Keyword.Namespace */
+c-[kp] { color: #990055 } /* Keyword.Pseudo */
+c-[kr] { color: #990055 } /* Keyword.Reserved */
+c-[ld] { color: #000000 } /* Literal.Date */
+c-[nc] { color: #0077aa } /* Name.Class */
+c-[no] { color: #0077aa } /* Name.Constant */
+c-[nd] { color: #0077aa } /* Name.Decorator */
+c-[ni] { color: #0077aa } /* Name.Entity */
+c-[ne] { color: #0077aa } /* Name.Exception */
+c-[nf] { color: #0077aa } /* Name.Function */
+c-[nl] { color: #0077aa } /* Name.Label */
+c-[nn] { color: #0077aa } /* Name.Namespace */
+c-[py] { color: #0077aa } /* Name.Property */
+c-[ow] { color: #999999 } /* Operator.Word */
+c-[mb] { color: #000000 } /* Literal.Number.Bin */
+c-[mf] { color: #000000 } /* Literal.Number.Float */
+c-[mh] { color: #000000 } /* Literal.Number.Hex */
+c-[mi] { color: #000000 } /* Literal.Number.Integer */
+c-[mo] { color: #000000 } /* Literal.Number.Oct */
+c-[sb] { color: #a67f59 } /* Literal.String.Backtick */
+c-[sc] { color: #a67f59 } /* Literal.String.Char */
+c-[sd] { color: #a67f59 } /* Literal.String.Doc */
+c-[se] { color: #a67f59 } /* Literal.String.Escape */
+c-[sh] { color: #a67f59 } /* Literal.String.Heredoc */
+c-[si] { color: #a67f59 } /* Literal.String.Interpol */
+c-[sx] { color: #a67f59 } /* Literal.String.Other */
+c-[sr] { color: #a67f59 } /* Literal.String.Regex */
+c-[ss] { color: #a67f59 } /* Literal.String.Symbol */
+c-[vc] { color: #0077aa } /* Name.Variable.Class */
+c-[vg] { color: #0077aa } /* Name.Variable.Global */
+c-[vi] { color: #0077aa } /* Name.Variable.Instance */
+c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
+</style>
+<style>/* style-darkmode */
 
 @media (prefers-color-scheme: dark) {
     :root {
@@ -1856,174 +2017,14 @@ pre .property::before, pre .property::after {
        which is quite common in practice... */
     img { background: white; }
 }
-</style>
-<style>/* Boilerplate: style-counters */
-body {
-    counter-reset: example figure issue;
-}
-.issue {
-    counter-increment: issue;
-}
-.issue:not(.no-marker)::before {
-    content: "Issue " counter(issue);
-}
 
-.example {
-    counter-increment: example;
+@media (prefers-color-scheme: dark) {
+    :root {
+        --selflink-text: black;
+        --selflink-bg: silver;
+        --selflink-hover-text: white;
+    }
 }
-.example:not(.no-marker)::before {
-    content: "Example " counter(example);
-}
-.invalid.example:not(.no-marker)::before,
-.illegal.example:not(.no-marker)::before {
-    content: "Invalid Example" counter(example);
-}
-
-figcaption {
-    counter-increment: figure;
-}
-figcaption:not(.no-marker)::before {
-    content: "Figure " counter(figure) " ";
-}
-</style>
-<style>/* Boilerplate: style-issues */
-a[href].issue-return {
-    float: right;
-    float: inline-end;
-    color: var(--issueheading-text);
-    font-weight: bold;
-    text-decoration: none;
-}
-</style>
-<style>/* Boilerplate: style-md-lists */
-/* This is a weird hack for me not yet following the commonmark spec
-   regarding paragraph and lists. */
-[data-md] > :first-child {
-    margin-top: 0;
-}
-[data-md] > :last-child {
-    margin-bottom: 0;
-}
-</style>
-<style>/* Boilerplate: style-selflinks */
-
-:root {
-    --selflink-text: white;
-    --selflink-bg: gray;
-    --selflink-hover-text: black;
-}
-.heading, .issue, .note, .example, li, dt {
-    position: relative;
-}
-a.self-link {
-    position: absolute;
-    top: 0;
-    left: calc(-1 * (3.5rem - 26px));
-    width: calc(3.5rem - 26px);
-    height: 2em;
-    text-align: center;
-    border: none;
-    transition: opacity .2s;
-    opacity: .5;
-}
-a.self-link:hover {
-    opacity: 1;
-}
-.heading > a.self-link {
-    font-size: 83%;
-}
-.example > a.self-link,
-.note > a.self-link,
-.issue > a.self-link {
-    /* These blocks are overflow:auto, so positioning outside
-       doesn't work. */
-    left: auto;
-    right: 0;
-}
-li > a.self-link {
-    left: calc(-1 * (3.5rem - 26px) - 2em);
-}
-dfn > a.self-link {
-    top: auto;
-    left: auto;
-    opacity: 0;
-    width: 1.5em;
-    height: 1.5em;
-    background: var(--selflink-bg);
-    color: var(--selflink-text);
-    font-style: normal;
-    transition: opacity .2s, background-color .2s, color .2s;
-}
-dfn:hover > a.self-link {
-    opacity: 1;
-}
-dfn > a.self-link:hover {
-    color: var(--selflink-hover-text);
-}
-
-a.self-link::before            { content: "¶"; }
-.heading > a.self-link::before { content: "§"; }
-dfn > a.self-link::before      { content: "#"; }
-</style>
-<style>/* Boilerplate: style-syntax-highlighting */
-
-code.highlight { padding: .1em; border-radius: .3em; }
-pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
-
-.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
-c-[a] { color: #990055 } /* Keyword.Declaration */
-c-[b] { color: #990055 } /* Keyword.Type */
-c-[c] { color: #708090 } /* Comment */
-c-[d] { color: #708090 } /* Comment.Multiline */
-c-[e] { color: #0077aa } /* Name.Attribute */
-c-[f] { color: #669900 } /* Name.Tag */
-c-[g] { color: #222222 } /* Name.Variable */
-c-[k] { color: #990055 } /* Keyword */
-c-[l] { color: #000000 } /* Literal */
-c-[m] { color: #000000 } /* Literal.Number */
-c-[n] { color: #0077aa } /* Name */
-c-[o] { color: #999999 } /* Operator */
-c-[p] { color: #999999 } /* Punctuation */
-c-[s] { color: #a67f59 } /* Literal.String */
-c-[t] { color: #a67f59 } /* Literal.String.Single */
-c-[u] { color: #a67f59 } /* Literal.String.Double */
-c-[cp] { color: #708090 } /* Comment.Preproc */
-c-[c1] { color: #708090 } /* Comment.Single */
-c-[cs] { color: #708090 } /* Comment.Special */
-c-[kc] { color: #990055 } /* Keyword.Constant */
-c-[kn] { color: #990055 } /* Keyword.Namespace */
-c-[kp] { color: #990055 } /* Keyword.Pseudo */
-c-[kr] { color: #990055 } /* Keyword.Reserved */
-c-[ld] { color: #000000 } /* Literal.Date */
-c-[nc] { color: #0077aa } /* Name.Class */
-c-[no] { color: #0077aa } /* Name.Constant */
-c-[nd] { color: #0077aa } /* Name.Decorator */
-c-[ni] { color: #0077aa } /* Name.Entity */
-c-[ne] { color: #0077aa } /* Name.Exception */
-c-[nf] { color: #0077aa } /* Name.Function */
-c-[nl] { color: #0077aa } /* Name.Label */
-c-[nn] { color: #0077aa } /* Name.Namespace */
-c-[py] { color: #0077aa } /* Name.Property */
-c-[ow] { color: #999999 } /* Operator.Word */
-c-[mb] { color: #000000 } /* Literal.Number.Bin */
-c-[mf] { color: #000000 } /* Literal.Number.Float */
-c-[mh] { color: #000000 } /* Literal.Number.Hex */
-c-[mi] { color: #000000 } /* Literal.Number.Integer */
-c-[mo] { color: #000000 } /* Literal.Number.Oct */
-c-[sb] { color: #a67f59 } /* Literal.String.Backtick */
-c-[sc] { color: #a67f59 } /* Literal.String.Char */
-c-[sd] { color: #a67f59 } /* Literal.String.Doc */
-c-[se] { color: #a67f59 } /* Literal.String.Escape */
-c-[sh] { color: #a67f59 } /* Literal.String.Heredoc */
-c-[si] { color: #a67f59 } /* Literal.String.Interpol */
-c-[sx] { color: #a67f59 } /* Literal.String.Other */
-c-[sr] { color: #a67f59 } /* Literal.String.Regex */
-c-[ss] { color: #a67f59 } /* Literal.String.Symbol */
-c-[vc] { color: #0077aa } /* Name.Variable.Class */
-c-[vg] { color: #0077aa } /* Name.Variable.Global */
-c-[vi] { color: #0077aa } /* Name.Variable.Instance */
-c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
-
 
 @media (prefers-color-scheme: dark) {
     .highlight:not(.idl) { background: rgba(255, 255, 255, .05); }
@@ -2092,11 +2093,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P1729R3<br>Text Parsing</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2023-10-05">2023-10-05</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-10-11">2023-10-11</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
-     <dd><a class="u-url" href="http://wg21.link/P1729R2">http://wg21.link/P1729R2</a>
+     <dd><a class="u-url" href="http://wg21.link/D1729R3">http://wg21.link/D1729R3</a>
      <dt class="editor">Authors:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:isocpp@eliaskosunen.com">Elias Kosunen</a>
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
@@ -2788,14 +2789,14 @@ These flags are consistent with <code class="highlight"><c- n>scanf</c-></code>.
       <td><code class="highlight"><c- o>?</c-></code> 
       <td>Copies an escaped character from the input. 
    </table>
-   <div class="example" id="example-d51379f7">
-    <a class="self-link" href="#example-d51379f7"></a> This is not encoding or Unicode-aware.
+   <div class="example" id="example-3d838e15">
+    <a class="self-link" href="#example-3d838e15"></a> This is not encoding or Unicode-aware.
 Reading a <code class="highlight"><c- n>CharT</c-></code> with the <code class="highlight"><c- n>c</c-></code> type specifier
 will just read a single code unit of type <code class="highlight"><c- n>CharT</c-></code>.
 This can lead to invalid encoding in the scanned values. 
 <pre class="language-c++ highlight"><c- c1>// As proposed:</c->
 <c- c1>// U+12345 is 0xF0 0x92 0x8D 0x85 in UTF-8</c->
-<c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>san</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"\u{12345}"</c-><c- p>,</c-> <c- s>"{}{}"</c-><c- p>);</c->
+<c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"\u{12345}"</c-><c- p>,</c-> <c- s>"{}{}"</c-><c- p>);</c->
 <c- k>auto</c-><c- o>&amp;</c-> <c- p>[</c-><c- n>ch</c-><c- p>,</c-> <c- n>str</c-><c- p>]</c-> <c- o>=</c-> <c- n>r</c-><c- o>-></c-><c- n>values</c-><c- p>();</c->
 <c- c1>// ch == '\xF0'</c->
 <c- c1>// str == "\x92\x8d\x85" (invalid utf-8)</c->
@@ -3102,8 +3103,8 @@ locales at either end.</p>
 doing the same for the current facility by performing locale-independent parsing
 by default and designating separate format specifiers for locale-specific ones.
 In particular, locale-specific behavior can be opted into by using the <code class="highlight"><c- n>L</c-></code> format specifier, and supplying a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-></code> object.</p>
-   <div class="example" id="example-725cd461">
-    <a class="self-link" href="#example-725cd461"></a> 
+   <div class="example" id="example-092ec9ed">
+    <a class="self-link" href="#example-092ec9ed"></a> 
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>());</c->
 
 <c- c1>// {} uses no locale</c->
@@ -3113,7 +3114,7 @@ In particular, locale-specific behavior can be opted into by using the <code cla
 
 <c- c1>// {} uses no locale</c->
 <c- c1>// {:L} uses the supplied locale</c->
-<c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>double</c-><c- p>,</c-> <c- b>double</c-><c- o>></c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>{</c-><c- s>"fi_FI"</c-><c- p>},</c-> <c- s>"1.23 4,56"</c-><c- p>,</c-> <c- s>"{} {}"</c-><c- p>);</c->
+<c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>double</c-><c- p>,</c-> <c- b>double</c-><c- o>></c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>{</c-><c- s>"fi_FI"</c-><c- p>},</c-> <c- s>"1.23 4,56"</c-><c- p>,</c-> <c- s>"{} {:L}"</c-><c- p>);</c->
 <c- c1>// r1->values(): (1.23, 4.56)</c->
 </pre>
    </div>
@@ -3308,13 +3309,13 @@ one, for example, for preallocating a <code class="highlight"><c- n>string</c-><
    <ul>
     <li>
      if <code class="highlight"><c- n>R</c-></code> models <code class="highlight"><c- n>borrowed_range</c-></code>, then <code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, 
-     <del>and <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><r><c- o>></c-></r></code>;</del>
-     <ins><code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><r><c- o>></c-></r></code>,
-and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><r><c- p>,</c-> <c- n>sentinel_t</c-><r><c- o>></c-></r></r></code>;</ins>
+     <del>and <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>;</del>
+     <ins><code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>,
+and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>;</ins>
     <li>
      otherwise, 
      <del>both <code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> and <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denote <code class="highlight"><c- n>dangling</c-></code>.</del>
-     <ins><code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denote <code class="highlight"><c- n>dangling</c-></code>.</ins>
+     <ins><code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> all denote <code class="highlight"><c- n>dangling</c-></code>.</ins>
    </ul>
    <h3 class="heading settled" data-level="7.3" id="spec-header-synopsis"><span class="secno">7.3. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>scan</c-><c- o>></c-></code> synopsis</span><a class="self-link" href="#spec-header-synopsis"></a></h3>
 <pre class="highlight"><c- cp>#include</c-> &lt;expected>

@@ -3,15 +3,15 @@ Title: Text Parsing
 Shortname: P1729
 Revision: 3
 Audience: LEWG, SG9, SG16
-Status: D
+Status: P
 Group: WG21
-URL: http://wg21.link/P1729R2
+URL: http://wg21.link/D1729R3
 Editor: Elias Kosunen, isocpp@eliaskosunen.com
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
   This paper discusses a new text parsing facility to complement the text
   formatting functionality of <code>std::format</code>, proposed in [[P0645]].
-Date: 2023-10-05
+Date: 2023-10-11
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
@@ -753,7 +753,7 @@ This can lead to invalid encoding in the scanned values.
 ```c++
 // As proposed:
 // U+12345 is 0xF0 0x92 0x8D 0x85 in UTF-8
-auto r = std::san<char, std::string>("\u{12345}", "{}{}");
+auto r = std::scan<char, std::string>("\u{12345}", "{}{}");
 auto& [ch, str] = r->values();
 // ch == '\xF0'
 // str == "\x92\x8d\x85" (invalid utf-8)
@@ -1175,7 +1175,7 @@ auto r0 = std::scan<double, double>("1.23 4.56", "{} {:L}");
 
 // {} uses no locale
 // {:L} uses the supplied locale
-auto r1 = std::scan<double, double>(std::locale{"fi_FI"}, "1.23 4,56", "{} {}");
+auto r1 = std::scan<double, double>(std::locale{"fi_FI"}, "1.23 4,56", "{} {:L}");
 // r1->values(): (1.23, 4.56)
 ```
 </div>
@@ -1453,13 +1453,13 @@ For a type `R` that models `range`:
 <ul>
 
 <li>if `R` models `borrowed_range`, then `borrowed_iterator_t<R>` denotes `iterator_t<R>`,
-<del>and `borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t<R>&gt;</code>;</del>
-<ins>`borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t<R>&gt;</code>,
-and `borrowed_ssubrange_t<R>` denotes <code>subrange&lt;iterator_t<R>, sentinel_t<R>&gt;</code>;</ins>
+<del>and `borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;&gt;</code>;</del>
+<ins>`borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;&gt;</code>,
+and `borrowed_ssubrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;, sentinel_t&lt;R&gt;&gt;</code>;</ins>
 
 <li>otherwise,
 <del>both `borrowed_iterator_t<R>` and `borrowed_subrange_t<R>` denote `dangling`.</del>
-<ins>`borrowed_iterator_t<R>`, `borrowed_subrange_t<R>`, and `borrowed_ssubrange_t<R>` denote `dangling`.</ins>
+<ins>`borrowed_iterator_t<R>`, `borrowed_subrange_t<R>`, and `borrowed_ssubrange_t<R>` all denote `dangling`.</ins>
 
 </ul>
 
