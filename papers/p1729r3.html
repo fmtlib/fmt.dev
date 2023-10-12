@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 3383f409d, updated Fri Apr 28 15:49:22 2023 -0700" name="generator">
   <link href="http://wg21.link/D1729R3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="74739573c552b3d6564dcc07ac4d8ab32b01cb07" name="document-revision">
+  <meta content="57c2ee275586f9052a8da8b7ec775bfb97cec4d6" name="document-revision">
 <style>/* style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2093,7 +2093,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P1729R3<br>Text Parsing</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-10-11">2023-10-11</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-10-13">2023-10-13</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2192,17 +2192,31 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h3 class="heading settled" data-level="1.1" id="history-since-r2"><span class="secno">1.1. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
    <ul>
     <li data-md>
-     <p>Return a <code class="highlight"><c- n>subrange</c-></code> from <code class="highlight"><c- n>scan</c-></code>, instead of just an iterator.</p>
+     <p>Return a <code class="highlight"><c- n>subrange</c-></code> from <code class="highlight"><c- n>scan</c-></code>, instead of just an iterator: discussion in <a href="#argument-passing">§ 4.5 Argument passing, and return type of scan</a>.</p>
     <li data-md>
-     <p>Default <code class="highlight"><c- n>CharT</c-></code> to <code class="highlight"><c- b>char</c-></code> in <code class="highlight"><c- n>scanner</c-></code> for consistency with <code class="highlight"><c- n>formatter</c-></code>.</p>
+     <p>Default <code class="highlight"><c- n>CharT</c-></code> to <code class="highlight"><c- b>char</c-></code> in <code class="highlight"><c- n>scanner</c-></code> for consistency with <code class="highlight"><c- n>formatter</c-></code> (previously no default for <code class="highlight"><c- n>CharT</c-></code>).</p>
     <li data-md>
-     <p>Clarify handling of literal characters.</p>
+     <p>Add design discussion about thousands separators in <a href="#fmt-localized-discussion-grouping">§ 4.3.5.1 Design discussion: Thousands separator grouping checking</a> and <a href="#fmt-localized-discussion-thsepflag">§ 4.3.5.2 Design discussion: Separate flag for thousands separators</a>.</p>
     <li data-md>
-     <p>Clarify meaning of the width specifier, and its difference to the one in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+     <p>Add design discussion about additional error information in <a href="#error-handling-discussion-detail">§ 4.6.2 Design discussion: Additional information</a>.</p>
     <li data-md>
-     <p>Clarify meaning of "whitespace", per SG16 feedback.</p>
+     <p>Add clarification about field width calculation in <a href="#fmt-width-precision">§ 4.3.4 Width and precision</a>.</p>
     <li data-md>
-     <p>Clarify handling of locale and different encodings, per SG16 feedback.</p>
+     <p>Add note about scope at the end of <a href="#introduction">§ 2 Introduction</a>.</p>
+    <li data-md>
+     <p>Fix/clarify error handling in example <a href="#example-alt-error">§ 3.5 Alternative error handling</a>.</p>
+    <li data-md>
+     <p>Address SG16 feedback:</p>
+     <ul>
+      <li data-md>
+       <p>Add definition of "whitespace", and clarify matching of non-whitespace literal characters, in <a href="#format-strings">§ 4.2 Format strings</a>.</p>
+      <li data-md>
+       <p>Add section about text encoding <a href="#encoding">§ 4.11 Encoding</a>, and an example about handing reading code units <a href="#fmt-type-char">§ 4.3.8 Type specifiers: CharT</a>.</p>
+      <li data-md>
+       <p>Add example about using locales in <a href="#locales">§ 4.10 Locales</a>.</p>
+      <li data-md>
+       <p>Add potential future extension: <a href="#scan-code-point">§ 6.3 Reading code points (or even grapheme clusters?)</a></p>
+     </ul>
    </ul>
    <h3 class="heading settled" data-level="1.2" id="history-since-r1"><span class="secno">1.2. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
    <ul>
@@ -2680,13 +2694,53 @@ from <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>decimal_point
      <p>For <code class="highlight"><c- b>bool</c-></code>, the textual representation uses the appropriate strings
 from <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>truename</c-></code> and <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>falsename</c-></code>.</p>
    </ul>
-   <h5 class="heading settled" data-level="4.3.5.1" id="fmt-localized-discussion"><span class="secno">4.3.5.1. </span><span class="content">Design discussion</span><a class="self-link" href="#fmt-localized-discussion"></a></h5>
+   <h5 class="heading settled" data-level="4.3.5.1" id="fmt-localized-discussion-grouping"><span class="secno">4.3.5.1. </span><span class="content">Design discussion: Thousands separator grouping checking</span><a class="self-link" href="#fmt-localized-discussion-grouping"></a></h5>
    <p>As proposed, when using localized scanning, the grouping of thousands
 separators in the input must exactly match the value retrieved from <code class="highlight"><c- n>numpunct</c-><c- o>::</c-><c- n>grouping</c-></code>. This behavior is consistent with iostreams.
 It may, however, be undesirable: it is possible, that the user
 would supply values with incorrect thousands separator grouping,
 but that may need not be an error. The number is still unambiguously
 parseable, with the check for grouping only done after parsing.</p>
+   <div class="example" id="example-819a5adb">
+    <a class="self-link" href="#example-819a5adb"></a> 
+<pre class="language-c++ highlight"><c- k>struct</c-> <c- nc>custom_numpunct</c-> <c- o>:</c-> <c- n>std</c-><c- o>::</c-><c- n>numpunct</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- p>{</c->
+  <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>do_grouping</c-><c- p>()</c-> <c- k>const</c-> <c- n>override</c-> <c- p>{</c->
+    <c- k>return</c-> <c- s>"</c-><c- se>\3</c-><c- s>"</c-><c- p>;</c->
+  <c- p>}</c->
+
+  <c- b>char</c-> <c- nf>do_thousands_sep</c-><c- p>()</c-> <c- k>const</c-> <c- n>override</c-> <c- p>{</c->
+    <c- k>return</c-> <c- sc>','</c-><c- p>;</c->
+  <c- p>}</c->
+<c- p>};</c->
+
+<c- k>auto</c-> <c- n>loc</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>(),</c-> <c- n>new</c-> <c- n>custom_numpunct</c-><c- p>);</c->
+
+<c- c1>// As proposed:</c->
+<c- c1>// Check grouping, error if invalid</c->
+<c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- n>loc</c-><c- p>,</c-> <c- s>"123,45"</c-><c- p>,</c-> <c- s>"{:L}"</c-><c- p>);</c->
+<c- c1>// r0.has_value() == false</c->
+
+<c- c1>// ALTERNATIVE:</c->
+<c- c1>// Do not check grouping, only skip it</c->
+<c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- n>loc</c-><c- p>,</c-> <c- s>"123,45"</c-><c- p>,</c-> <c- s>"{:L}"</c-><c- p>);</c->
+<c- c1>// r1.has_value() == true</c->
+<c- c1>// r1->value() == 12345</c->
+
+<c- c1>// Current proposed behavior, _somewhat_ consistent with iostreams:</c->
+<c- n>istringstream</c-> <c- n>iss</c-><c- p>{</c-><c- s>"123,45"</c-><c- p>};</c->
+<c- n>iss</c-><c- p>.</c-><c- n>imbue</c-><c- p>(</c-><c- n>locale</c-><c- p>(</c-><c- n>locale</c-><c- o>::</c-><c- n>classic</c-><c- p>(),</c-> <c- n>new</c-> <c- n>custom_numpunct</c-><c- p>));</c->
+
+<c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+<c- n>iss</c-> <c- o>>></c-> <c- n>i</c-><c- p>;</c->
+<c- c1>// i == 12345</c->
+<c- c1>// iss.fail() == !iss == true</c->
+</pre>
+   </div>
+   <p>This highlights a problem with using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>expected</c-></code>: we can either have a value, or an error.
+IOStreams can both return an error, and a value.
+This issue is also present with range errors with ints and floats,
+see <a href="#error-handling-discussion-detail">§ 4.6.2 Design discussion: Additional information</a> for more.</p>
+   <h5 class="heading settled" data-level="4.3.5.2" id="fmt-localized-discussion-thsepflag"><span class="secno">4.3.5.2. </span><span class="content">Design discussion: Separate flag for thousands separators</span><a class="self-link" href="#fmt-localized-discussion-thsepflag"></a></h5>
    <p>It may also be desirable to split up the behavior of skipping and checking
 of thousands separators from the realm of localization. For example,
 in the POSIX-extended version of <code class="highlight"><c- n>sscanf</c-></code>, there’s the <code class="highlight">'</code> format specifier,
@@ -2789,8 +2843,8 @@ These flags are consistent with <code class="highlight"><c- n>scanf</c-></code>.
       <td><code class="highlight"><c- o>?</c-></code> 
       <td>Copies an escaped character from the input. 
    </table>
-   <div class="example" id="example-3d838e15">
-    <a class="self-link" href="#example-3d838e15"></a> This is not encoding or Unicode-aware.
+   <div class="example" id="example-f7879d81">
+    <a class="self-link" href="#example-f7879d81"></a> This is not encoding or Unicode-aware.
 Reading a <code class="highlight"><c- n>CharT</c-></code> with the <code class="highlight"><c- n>c</c-></code> type specifier
 will just read a single code unit of type <code class="highlight"><c- n>CharT</c-></code>.
 This can lead to invalid encoding in the scanned values. 
@@ -2800,6 +2854,8 @@ This can lead to invalid encoding in the scanned values.
 <c- k>auto</c-><c- o>&amp;</c-> <c- p>[</c-><c- n>ch</c-><c- p>,</c-> <c- n>str</c-><c- p>]</c-> <c- o>=</c-> <c- n>r</c-><c- o>-></c-><c- n>values</c-><c- p>();</c->
 <c- c1>// ch == '\xF0'</c->
 <c- c1>// str == "\x92\x8d\x85" (invalid utf-8)</c->
+
+<c- c1>// This is the same behavior as with iostreams today</c->
 </pre>
    </div>
    <h4 class="heading settled" data-level="4.3.9" id="fmt-type-bool"><span class="secno">4.3.9. </span><span class="content">Type specifiers: <code class="highlight"><c- b>bool</c-></code></span><a class="self-link" href="#fmt-type-bool"></a></h4>
@@ -2913,9 +2969,15 @@ With this, a new type alias is introduced, <code class="highlight"><c- n>ranges<
   <c- n>ranges</c-><c- o>::</c-><c- n>subrange</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>ranges</c-><c- o>::</c-><c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-><c- p>,</c->
   <c- n>ranges</c-><c- o>::</c-><c- n>dangling</c-><c- o>></c-><c- p>;</c->
 </pre>
-   <p>Compare this with <code class="highlight"><c- n>borrowed_subrange_t</c-></code>, which is defined as <code class="highlight"><c- n>ranges</c-><c- o>::</c-><c- n>subrange</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- n>gt</c-><c- p>;</c-></code>,
-when the range models <code class="highlight"><c- n>borrowed_range</c-></code>.
-The name of this alias is subject to extreme bikeshedding.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> The name <code class="highlight"><c- n>borrowed_ssubrange_t</c-></code> is absolutely horrendeous, and is begging for a better alternative.</p>
+   <p>Compare this with <code class="highlight"><c- n>borrowed_subrange_t</c-></code>, which is defined as <code class="highlight"><c- n>ranges</c-><c- o>::</c-><c- n>subrange</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>,
+when the range models <code class="highlight"><c- n>borrowed_range</c-></code>.</p>
+   <p>This is novel in the Ranges space: previously all algorithms have either returned an iterator,
+or a subrange of two iterators. We believe that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> warrants a diversion:
+if (for <code class="highlight"><c- n>I</c-> <c- o>=</c-> <c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> and <code class="highlight"><c- n>S</c-> <c- o>=</c-> <c- n>ranges</c-><c- o>::</c-><c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>) <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>random_access_iterator</c-><c- o>&lt;</c-><c- n>I</c-><c- o>></c-> <c- o>||</c-> <c- n>std</c-><c- o>::</c-><c- n>sized_sentinel_for</c-><c- o>&lt;</c-><c- n>I</c-><c- o>></c-> <c- o>||</c-> <c- n>std</c-><c- o>::</c-><c- n>assignable_from</c-><c- o>&lt;</c-><c- n>I</c-><c- o>&amp;</c-><c- p>,</c-> <c- n>S</c-><c- o>></c-></code> is <code class="highlight">false</code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> will need to go through the rest of the input, in order to get an the end iterator to return.
+A superior alternative is to simply return the sentinel, since that’s always correct
+(the leftover range always has the same end as the source range) and requires no additional computation.</p>
+   <p>See this StackOverflow answer by Barry Revzin for more context: <a data-link-type="biblio" href="#biblio-barry-so-answer" title="Why the standard defines `borrowed_subrange_t` as `common_range`">[BARRY-SO-ANSWER]</a>.</p>
    <h4 class="heading settled" data-level="4.5.1" id="return-type-alternatives"><span class="secno">4.5.1. </span><span class="content">Design alternatives</span><a class="self-link" href="#return-type-alternatives"></a></h4>
    <p>As proposed, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> returns an <code class="highlight"><c- n>expected</c-></code>, containing either an iterator and a tuple, or a <code class="highlight"><c- n>scan_error</c-></code>.</p>
    <p>An alternative could be returning a <code class="highlight"><c- n>tuple</c-></code>, with a result object as its first (0th) element, and the parsed values occupying the rest.
@@ -2979,11 +3041,7 @@ it gives more details about the error, but its contents are unspecified.</p>
   <c- n>constexpr</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>msg</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- p>};</c->
 </pre>
-   <p class="note" role="note"><span class="marker">Note:</span> Only having <code class="highlight"><c- n>value_out_of_range</c-></code> does not give a way to differentiate
-between different kinds of out-of-range errors, like overflowing
-(absolute value too large, either positive or negative), or underflowing
-(value not representable, between zero and the smallest subnormal).</p>
-   <h4 class="heading settled" data-level="4.6.1" id="error-handling-discussion"><span class="secno">4.6.1. </span><span class="content">Design discussion</span><a class="self-link" href="#error-handling-discussion"></a></h4>
+   <h4 class="heading settled" data-level="4.6.1" id="error-handling-discussion-type"><span class="secno">4.6.1. </span><span class="content">Design discussion: Essence of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan_error</c-></code></span><a class="self-link" href="#error-handling-discussion-type"></a></h4>
    <p>The reason why we propose adding the type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan_error</c-></code> instead of just using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> is,
 that we want to avoid losing information. The enumerators of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> are insufficient for
 this use, as evident by the table below: there are no clear one-to-one mappings between <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>code_type</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code>, but <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> would need to cover a lot of cases.</p>
@@ -3031,6 +3089,80 @@ Even with the <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>co
        <p><b>No.</b> Worse user experience for loss of diagnostic information</p>
      </ol>
    </ol>
+   <h4 class="heading settled" data-level="4.6.2" id="error-handling-discussion-detail"><span class="secno">4.6.2. </span><span class="content">Design discussion: Additional information</span><a class="self-link" href="#error-handling-discussion-detail"></a></h4>
+   <p>Only having <code class="highlight"><c- n>value_out_of_range</c-></code> does not give a way to differentiate
+between different kinds of out-of-range errors, like overflowing
+(absolute value too large, either positive or negative), or underflowing
+(value not representable, between zero and the smallest subnormal).</p>
+   <p>Both <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istream</c-></code> (through <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>num_get</c-></code>), and
+the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>strto</c-><c- o>*</c-></code> family of functions support differentiating between
+differentiating between different kinds of overflow and underflow,
+through the magnitude of the returned value. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>from_chars</c-></code> currently does not (see <a data-link-type="biblio" href="#biblio-lwg3081" title="Floating point from_chars API does not distinguish between overflow and underflow">[LWG3081]</a>). <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scanf</c-></code> does not, either.</p>
+   <div class="example" id="example-3c33295d">
+    <a class="self-link" href="#example-3c33295d"></a> 
+<pre class="language-c++ highlight"><c- c1>// larger than INT32_MAX</c->
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>source</c-><c- p>{</c-><c- s>"999999999999999999999999999999"</c-><c- p>};</c->
+
+<c- p>{</c->
+  <c- n>std</c-><c- o>::</c-><c- n>istringstream</c-> <c- n>iss</c-><c- p>{</c-><c- n>source</c-><c- p>};</c->
+  <c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+  <c- n>iss</c-> <c- o>>></c-> <c- n>i</c-><c- p>;</c->
+  <c- c1>// iss.fail() == true</c->
+  <c- c1>// i == INT32_MAX</c->
+<c- p>}</c->
+
+<c- p>{</c->
+  <c- c1>// (assuming sizeof(long) == 4)</c->
+  <c- k>auto</c-> <c- n>i</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>strtol</c-><c- p>(</c-><c- n>source</c-><c- p>.</c-><c- n>c_str</c-><c- p>(),</c-> <c- n>nullptr</c-><c- p>,</c-> <c- mi>10</c-><c- p>);</c->
+  <c- c1>// i == LONG_MAX</c->
+  <c- c1>// errno == ERANGE</c->
+<c- p>}</c->
+
+<c- p>{</c->
+  <c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+  <c- k>auto</c-> <c- p>[</c-><c- n>ec</c-><c- p>,</c-> <c- n>ptr</c-><c- p>]</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>from_chars</c-><c- p>(</c-><c- n>source</c-><c- p>.</c-><c- n>data</c-><c- p>(),</c-> <c- n>source</c-><c- p>.</c-><c- n>data</c-><c- p>()</c-> <c- o>+</c-> <c- n>source</c-><c- p>.</c-><c- n>size</c-><c- p>(),</c-> <c- n>i</c-><c- p>);</c->
+  <c- c1>// ec == std::errc::result_out_of_range</c->
+  <c- c1>// i == 0 (!)</c->
+<c- p>}</c->
+
+<c- p>{</c->
+  <c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+  <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>sscanf</c-><c- p>(</c-><c- n>source</c-><c- p>.</c-><c- n>c_str</c-><c- p>(),</c-> <c- s>"%d"</c-><c- p>,</c-> <c- o>&amp;</c-><c- n>i</c-><c- p>);</c->
+  <c- c1>// r == 1  (?)</c->
+  <c- c1>// i == -1 (?)</c->
+  <c- c1>// errno == ERANGE</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <p>This is predicated on an issue with using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>expected</c-></code>:
+we can only ever either return an error, or a value.
+Those aforementioned facilities can both return an error code,
+while simultaneously communicating additional information
+about possible errors through the scanned value.</p>
+   <p>Nevertheless, there’s a simple reason for using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>expected</c-></code>:
+it prevents user errors. Because an <code class="highlight"><c- n>expected</c-></code> can indeed
+only hold either a value or an error, there’s never a situation
+where an user accidentally forgets to check for an error,
+and mistakenly uses the scanned value directly instead:</p>
+   <div class="example" id="example-01213677">
+    <a class="self-link" href="#example-01213677"></a> 
+<pre class="language-c++ highlight"><c- b>int</c-> <c- n>i</c-><c- p>{};</c->
+<c- n>std</c-><c- o>::</c-><c- n>cin</c-> <c- o>>></c-> <c- n>i</c-><c- p>;</c->
+<c- c1>// We would need to check std::cin.operator bool() first,</c->
+<c- c1>// to determine whether &lt;code data-opaque bs-autolink-syntax='`i`'>i&lt;/code> was successfully read:</c->
+<c- c1>// that’s very easy to forget</c->
+
+<c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>);</c->
+<c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- n>r</c-><c- o>-></c-><c- n>value</c-><c- p>();</c->
+<c- c1>//        ^</c->
+<c- c1>//      dereference</c->
+<c- c1>// does not allow for accidentally accessing the value if we had an error</c->
+</pre>
+   </div>
+   <p>It’s a tradeoff.
+Either we allow for an additional avenue for error reporting through the scanned value,
+or we use <code class="highlight"><c- n>expected</c-></code> to prevent reading the values during an error.
+Currently, this paper propses doing the latter.</p>
    <h3 class="heading settled" data-level="4.7" id="binary-footprint"><span class="secno">4.7. </span><span class="content">Binary footprint and type erasure</span><a class="self-link" href="#binary-footprint"></a></h3>
    <p>We propose using a type erasure technique to reduce the per-call binary code size.
 The scanning function that uses variadic templates can be implemented as a
@@ -3130,13 +3262,6 @@ for handling invalid encoding, but it’s still likely to be an error.
 As motivation for erroneous behavior,
 Unicode conformance requirement C.10 says that ill-formed input shall not be treated as a character,
 and treat it as an error instead. </div>
-   <p>Other potential options for handling invalid encoding would be:</p>
-   <ul>
-    <li data-md>
-     <p>treat is as UB</p>
-    <li data-md>
-     <p>always sanitize input encoding (potentially very slow when done character-by-character with <code class="highlight"><c- n>forward_range</c-></code>s)</p>
-   </ul>
    <div class="example" id="example-97cbf05c">
     <a class="self-link" href="#example-97cbf05c"></a> 
 <pre class="language-cpp highlight"><c- c1>// Invalid UTF-8</c->
@@ -3145,6 +3270,18 @@ and treat it as an error instead. </div>
 <c- c1>// Erroneous behavior?</c->
 </pre>
    </div>
+   <p>Other potential options for handling invalid encoding would be:</p>
+   <ul>
+    <li data-md>
+     <p>treat is as UB</p>
+    <li data-md>
+     <p>always sanitize input encoding (potentially very slow when done character-by-character with <code class="highlight"><c- n>forward_range</c-></code>s)</p>
+    <li data-md>
+     <p>check for encoding when reading code units and strings, while potentially introducing a format specifier for "raw mode",
+which skips these checks</p>
+   </ul>
+   <p class="note" role="note"><span class="marker">Note:</span> This topic is under active contention in SG16.
+See also example in <a href="#fmt-type-char">§ 4.3.8 Type specifiers: CharT</a>.</p>
    <h3 class="heading settled" data-level="4.12" id="performance"><span class="secno">4.12. </span><span class="content">Performance</span><a class="self-link" href="#performance"></a></h3>
    <p>The API allows efficient implementation that minimizes virtual function calls
 and dynamic memory allocations, and avoids unnecessary copies. In particular,
@@ -3727,10 +3864,14 @@ and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>
   <dl>
    <dt id="biblio-attr">[ATTR]
    <dd><a href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"><cite>Common Function Attributes</cite></a>. URL: <a href="https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html">https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html</a>
+   <dt id="biblio-barry-so-answer">[BARRY-SO-ANSWER]
+   <dd><a href="https://stackoverflow.com/a/66819929"><cite>Why the standard defines `borrowed_subrange_t` as `common_range`</cite></a>. URL: <a href="https://stackoverflow.com/a/66819929">https://stackoverflow.com/a/66819929</a>
    <dt id="biblio-codesearch">[CODESEARCH]
    <dd>Andrew Tomazos. <a href="https://codesearch.isocpp.org"><cite>Code search engine website</cite></a>. URL: <a href="https://codesearch.isocpp.org">https://codesearch.isocpp.org</a>
    <dt id="biblio-fmt">[FMT]
    <dd>Victor Zverovich et al. <a href="https://github.com/fmtlib/fmt"><cite>The fmt library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dt id="biblio-lwg3081">[LWG3081]
+   <dd>Greg Falcon. <a href="https://wg21.link/lwg3081"><cite>Floating point from_chars API does not distinguish between overflow and underflow</cite></a>. Open. URL: <a href="https://wg21.link/lwg3081">https://wg21.link/lwg3081</a>
    <dt id="biblio-n4412">[N4412]
    <dd>Jens Maurer. <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html"><cite>N4412: Shortcomings of iostreams</cite></a>. URL: <a href="http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html">http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html</a>
    <dt id="biblio-p0355">[P0355]

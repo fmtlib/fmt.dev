@@ -11,7 +11,7 @@ Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
   This paper discusses a new text parsing facility to complement the text
   formatting functionality of <code>std::format</code>, proposed in [[P0645]].
-Date: 2023-10-11
+Date: 2023-10-13
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
@@ -22,12 +22,18 @@ Revision history {#history}
 Changes since R2 {#history-since-r2}
 ----------------
 
-* Return a `subrange` from `scan`, instead of just an iterator.
-* Default `CharT` to `char` in `scanner` for consistency with `formatter`.
-* Clarify handling of literal characters.
-* Clarify meaning of the width specifier, and its difference to the one in `std::format`.
-* Clarify meaning of "whitespace", per SG16 feedback.
-* Clarify handling of locale and different encodings, per SG16 feedback.
+ * Return a `subrange` from `scan`, instead of just an iterator: discussion in [[#argument-passing]].
+ * Default `CharT` to `char` in `scanner` for consistency with `formatter` (previously no default for `CharT`).
+ * Add design discussion about thousands separators in [[#fmt-localized-discussion-grouping]] and [[#fmt-localized-discussion-thsepflag]].
+ * Add design discussion about additional error information in [[#error-handling-discussion-detail]].
+ * Add clarification about field width calculation in [[#fmt-width-precision]].
+ * Add note about scope at the end of [[#introduction]].
+ * Fix/clarify error handling in example [[#example-alt-error]].
+ * Address SG16 feedback:
+    * Add definition of "whitespace", and clarify matching of non-whitespace literal characters, in [[#format-strings]].
+    * Add section about text encoding [[#encoding]], and an example about handing reading code units [[#fmt-type-char]].
+    * Add example about using locales in [[#locales]].
+    * Add potential future extension: [[#scan-code-point]]
 
 Changes since R1 {#history-since-r1}
 ----------------
@@ -591,7 +597,7 @@ Enables scanning of values in locale-specific forms.
  * For `bool`, the textual representation uses the appropriate strings
     from `numpunct::truename` and `numpunct::falsename`.
 
-<h5 id="fmt-localized-discussion">Design discussion</h5>
+<h5 id="fmt-localized-discussion-grouping">Design discussion: Thousands separator grouping checking</h5>
 
 As proposed, when using localized scanning, the grouping of thousands
 separators in the input must exactly match the value retrieved from
@@ -600,6 +606,49 @@ It may, however, be undesirable: it is possible, that the user
 would supply values with incorrect thousands separator grouping,
 but that may need not be an error. The number is still unambiguously
 parseable, with the check for grouping only done after parsing.
+
+<div class=example>
+```c++
+struct custom_numpunct : std::numpunct<char> {
+  std::string do_grouping() const override {
+    return "\3";
+  }
+
+  char do_thousands_sep() const override {
+    return ',';
+  }
+};
+
+auto loc = std::locale(std::locale::classic(), new custom_numpunct);
+
+// As proposed:
+// Check grouping, error if invalid
+auto r0 = std::scan<int>(loc, "123,45", "{:L}");
+// r0.has_value() == false
+
+// ALTERNATIVE:
+// Do not check grouping, only skip it
+auto r1 = std::scan<int>(loc, "123,45", "{:L}");
+// r1.has_value() == true
+// r1->value() == 12345
+
+// Current proposed behavior, _somewhat_ consistent with iostreams:
+istringstream iss{"123,45"};
+iss.imbue(locale(locale::classic(), new custom_numpunct));
+
+int i{};
+iss >> i;
+// i == 12345
+// iss.fail() == !iss == true
+```
+</div>
+
+This highlights a problem with using `std::expected`: we can either have a value, or an error.
+IOStreams can both return an error, and a value.
+This issue is also present with range errors with ints and floats,
+see [[#error-handling-discussion-detail]] for more.
+
+<h5 id="fmt-localized-discussion-thsepflag">Design discussion: Separate flag for thousands separators</h5>
 
 It may also be desirable to split up the behavior of skipping and checking
 of thousands separators from the realm of localization. For example,
@@ -757,6 +806,8 @@ auto r = std::scan<char, std::string>("\u{12345}", "{}{}");
 auto& [ch, str] = r->values();
 // ch == '\xF0'
 // str == "\x92\x8d\x85" (invalid utf-8)
+
+// This is the same behavior as with iostreams today
 ```
 </div>
 
@@ -909,9 +960,22 @@ using borrowed_ssubrange_t = std::conditional_t<
   ranges::dangling>;
 ```
 
-Compare this with `borrowed_subrange_t`, which is defined as <code>ranges::subrange&lt;ranges::iterator_t&lt;R&gt;gt;</code>,
+Note:
+The name `borrowed_ssubrange_t` is absolutely horrendeous, and is begging for a better alternative.
+
+Compare this with `borrowed_subrange_t`, which is defined as
+<code>ranges::subrange&lt;ranges::iterator_t&lt;R&gt;, ranges::iterator_t&lt;R&gt;&gt;</code>,
 when the range models `borrowed_range`.
-The name of this alias is subject to extreme bikeshedding.
+
+This is novel in the Ranges space: previously all algorithms have either returned an iterator,
+or a subrange of two iterators. We believe that `std::scan` warrants a diversion:
+if (for `I = ranges::iterator_t<R>` and `S = ranges::sentinel_t<R>`)
+`std::random_access_iterator<I> || std::sized_sentinel_for<I> || std::assignable_from<I&, S>` is `false`,
+`std::scan` will need to go through the rest of the input, in order to get an the end iterator to return.
+A superior alternative is to simply return the sentinel, since that's always correct
+(the leftover range always has the same end as the source range) and requires no additional computation.
+
+See this StackOverflow answer by Barry Revzin for more context: [[BARRY-SO-ANSWER]].
 
 <h4 id="return-type-alternatives">Design alternatives</h4>
 
@@ -990,12 +1054,7 @@ public:
 };
 ```
 
-Note: Only having `value_out_of_range` does not give a way to differentiate
-between different kinds of out-of-range errors, like overflowing
-(absolute value too large, either positive or negative), or underflowing
-(value not representable, between zero and the smallest subnormal).
-
-<h4 id="error-handling-discussion">Design discussion</h4>
+<h4 id="error-handling-discussion-type">Design discussion: Essence of `std::scan_error`</h4>
 
 The reason why we propose adding the type `std::scan_error` instead of just using `std::errc` is,
 that we want to avoid losing information. The enumerators of `std::errc` are insufficient for
@@ -1057,6 +1116,90 @@ There are multiple dimensions of design decisions to be done here:
    3. <b>No.</b> Worse user experience for loss of diagnostic information
 
 </ol>
+
+<h4 id="error-handling-discussion-detail">Design discussion: Additional information</h4>
+
+Only having `value_out_of_range` does not give a way to differentiate
+between different kinds of out-of-range errors, like overflowing
+(absolute value too large, either positive or negative), or underflowing
+(value not representable, between zero and the smallest subnormal).
+
+Both `std::istream` (through `std::num_get`), and
+the `std::strto*` family of functions support differentiating between
+differentiating between different kinds of overflow and underflow,
+through the magnitude of the returned value.
+`std::from_chars` currently does not (see [[LWG3081]]).
+`std::scanf` does not, either.
+
+<div class=example>
+```c++
+// larger than INT32_MAX
+std::string source{"999999999999999999999999999999"};
+
+{
+  std::istringstream iss{source};
+  int i{};
+  iss >> i;
+  // iss.fail() == true
+  // i == INT32_MAX
+}
+
+{
+  // (assuming sizeof(long) == 4)
+  auto i = std::strtol(source.c_str(), nullptr, 10);
+  // i == LONG_MAX
+  // errno == ERANGE
+}
+
+{
+  int i{};
+  auto [ec, ptr] = std::from_chars(source.data(), source.data() + source.size(), i);
+  // ec == std::errc::result_out_of_range
+  // i == 0 (!)
+}
+
+{
+  int i{};
+  auto r = std::sscanf(source.c_str(), "%d", &i);
+  // r == 1  (?)
+  // i == -1 (?)
+  // errno == ERANGE
+}
+```
+</div>
+
+This is predicated on an issue with using `std::expected`:
+we can only ever either return an error, or a value.
+Those aforementioned facilities can both return an error code,
+while simultaneously communicating additional information
+about possible errors through the scanned value.
+
+Nevertheless, there's a simple reason for using `std::expected`:
+it prevents user errors. Because an `expected` can indeed
+only hold either a value or an error, there's never a situation
+where an user accidentally forgets to check for an error,
+and mistakenly uses the scanned value directly instead:
+
+<div class=example>
+```c++
+int i{};
+std::cin >> i;
+// We would need to check std::cin.operator bool() first,
+// to determine whether `i` was successfully read:
+// that's very easy to forget
+
+auto r = std::scan<int>(..., "{}");
+int i = r->value();
+//        ^
+//      dereference
+// does not allow for accidentally accessing the value if we had an error
+```
+</div>
+
+It's a tradeoff.
+Either we allow for an additional avenue for error reporting through the scanned value,
+or we use `expected` to prevent reading the values during an error.
+Currently, this paper propses doing the latter.
 
 Binary footprint and type erasure {#binary-footprint}
 ---------------------------------
@@ -1198,11 +1341,6 @@ Unicode conformance requirement C.10 says that ill-formed input shall not be tre
 and treat it as an error instead.
 </div>
 
-Other potential options for handling invalid encoding would be:
-
- * treat is as UB
- * always sanitize input encoding (potentially very slow when done character-by-character with `forward_range`s)
-
 <div class=example>
 ```cpp
 // Invalid UTF-8
@@ -1211,6 +1349,16 @@ auto r = std::scan<std::string>("a\xc3 ", "{}");
 // Erroneous behavior?
 ```
 </div>
+
+Other potential options for handling invalid encoding would be:
+
+ * treat is as UB
+ * always sanitize input encoding (potentially very slow when done character-by-character with `forward_range`s)
+ * check for encoding when reading code units and strings, while potentially introducing a format specifier for "raw mode",
+    which skips these checks
+
+Note: This topic is under active contention in SG16.
+See also example in [[#fmt-type-char]].
 
 Performance {#performance}
 -----------
@@ -1795,6 +1943,10 @@ namespace std {
   "ATTR": {
     "title": "Common Function Attributes",
     "href": "https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"
+  },
+  "BARRY-SO-ANSWER": {
+    "title": "Why the standard defines `borrowed_subrange_t` as `common_range`",
+    "href": "https://stackoverflow.com/a/66819929"
   },
   "P1433": {
     "title": "Compile Time Regular Expressions",
