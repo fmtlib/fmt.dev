@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2918R1: Runtime format strings II</title>
+  <title>D2918R2: Runtime format strings II</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1561,9 +1561,8 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
+  <meta content="Bikeshed version 82ce88815, updated Thu Sep 7 16:33:55 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d0741befce9f65c377457b3f8528925c0a2439f3" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2102,16 +2101,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2918R1<br>Runtime format strings II</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-07-15">2023-07-15</time></span></h2>
+   <h1 class="p-name no-ref" id="title">D2918R2<br>Runtime format strings II</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2023-11-07">2023-11-07</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
-     <dd>LEWG
+     <dd>LEWG, LWG
      <dt>Project:
-     <dd>ISO/IEC JTC1/SC22/WG21 14882: Programming Language — C++
+     <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -2122,13 +2121,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#problems"><span class="secno">2</span> <span class="content">Problems</span></a>
-    <li><a href="#changes"><span class="secno">3</span> <span class="content">Changes</span></a>
-    <li><a href="#polls"><span class="secno">4</span> <span class="content">Polls</span></a>
-    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
-    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
-    <li><a href="#ack"><span class="secno">9</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes since R2</span></a>
+    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#polls"><span class="secno">5</span> <span class="content">Polls</span></a>
+    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
+    <li><a href="#impact"><span class="secno">7</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">9</span> <span class="content">Implementation</span></a>
+    <li><a href="#ack"><span class="secno">10</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2170,19 +2170,34 @@ following example:</p>
    <p>This innocent-looking code exhibits undefined behavior because format arguments
 store a reference to a temporary which is destroyed before use. This has been
 discovered and fixed in <a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a> which now rejects such code at compile time.</p>
-   <h2 class="heading settled" data-level="3" id="changes"><span class="secno">3. </span><span class="content">Changes</span><a class="self-link" href="#changes"></a></h2>
+   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes1"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added instructions to bump the <code class="highlight"><c- n>__cpp_lib_format</c-></code> feature test macro per
+LWG feedback.</p>
+    <li data-md>
+     <p>Made the exposition-only member <code class="highlight"><i><c- n>str</c-></i></code> of <code class="highlight"><i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></code> private per LWG feedback.</p>
+    <li data-md>
+     <p>Added a constructor for <code class="highlight"><i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></code> per LWG
+feedback.</p>
+    <li data-md>
+     <p>Made functions added in this paper <code class="highlight"><c- k>noexcept</c-></code> per LWG feedback.</p>
+    <li data-md>
+     <p>Made <code class="highlight"><i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i></code> immovable per LWG feedback.</p>
+   </ul>
+   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added poll results.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="5" id="polls"><span class="secno">5. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
    <p>LEWG <a href="https://github.com/cplusplus/papers/issues/1578">poll results</a>:</p>
    <p><strong>POLL</strong>: Send P2918R1 (Runtime Format Strings II) to Library for C++26.</p>
 <pre class="highlight"><c- n>SF</c->  <c- n>F</c->  <c- n>N</c->  <c- n>A</c-> <c- n>SA</c->
  <c- mi>4</c->  <c- mi>6</c->  <c- mi>0</c->  <c- mi>0</c->  <c- mi>0</c->
 </pre>
    <p><strong>Outcome</strong>: Unanimous consent in favor.</p>
-   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>This paper proposes adding the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> function to explicitly mark
 a format string as a runtime one and opt out of compile-time format string
 checks.</p>
@@ -2206,9 +2221,11 @@ available in {fmt} since <code class="highlight"><c- k>consteval</c-></code>-bas
 > 100k calls of <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>format</c-></code> only ~0.1% use <code class="highlight"><c- n>make_format_args</c-></code>.</p>
    <p>This was previously part of <a data-link-type="biblio" href="#biblio-p2905" title="Runtime format strings">[P2905]</a> but moved to a separate paper per LEWG
 feedback with the original paper focusing on the safety fix only.</p>
-   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This paper adds a new API and has no impact on existing code.</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_format</c-></code> to the date of
+adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
    <p>Change in <a href="https://eel.is/c++draft/format#syn">[format.syn</a>]:</p>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- p>...</c->
@@ -2219,11 +2236,22 @@ feedback with the original paper focusing on the safety fix only.</p>
 
   <ins>
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <i><c- nc>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i> <c- p>{</c->  <i><c- c1>// exposition-only</c-></i>
+  <c- k>private</c-><c- o>:</c->
     <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <i><c- n>str</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+
+  <c- k>public</c-><c- o>:</c->
+    <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- p>(</c-><c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>s</c-><c- p>)</c-> <c- k>noexcept</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>)</c-> <c- p>{}</c->
+
+    <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- p>(</c-><c- k>const</c-> <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&amp;</c-><c- p>)</c-> <c- o>=</c-> <c- k>delete</c-><c- p>;</c->
+    <c- k>const</c-> <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&amp;</c-> <c- k>operator</c-><c- o>=</c-><c- p>(</c-><c- k>const</c-> <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&amp;</c-><c- p>)</c-> <c- o>=</c-> <c- k>delete</c-><c- p>;</c->
   <c- p>};</c->
 
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- p>{</c-><c- n>fmt</c-><c- p>};</c-> <c- p>}</c->
-  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- p>{</c-><c- n>fmt</c-><c- p>};</c-> <c- p>}</c-></ins>
+  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>)</c-> <c- k>noexcept</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>fmt</c-><c- p>;</c->
+  <c- p>}</c->
+  <i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>wstring_view</c-> <c- n>fmt</c-><c- p>)</c-> <c- k>noexcept</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>fmt</c-><c- p>;</c->
+  <c- p>}</c-></ins>
 
   <c- p>...</c->
 <c- p>}</c->
@@ -2237,15 +2265,15 @@ feedback with the original paper focusing on the safety fix only.</p>
 
   <c- k>public</c-><c- o>:</c->
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic_format_string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
-    <ins><c- n>basic_format_string</c-><c- p>(</c-><i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>charT</c-><c- o>>&amp;&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>.</c-><i><c- n>str</c-></i><c- p>)</c-> <c- p>{}</c-></ins>
+    <ins><c- n>basic_format_string</c-><c- p>(</c-><i><c- n>runtime</c-><c- o>-</c-><c- n>format</c-><c- o>-</c-><c- n>string</c-></i><c- o>&lt;</c-><c- n>charT</c-><c- o>>&amp;&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- k>noexcept</c-> <c- o>:</c-> <c- n>str</c-><c- p>(</c-><c- n>s</c-><c- p>.</c-><i><c- n>str</c-></i><c- p>)</c-> <c- p>{}</c-></ins>
 
     <c- k>constexpr</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>get</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- p>{</c-> <c- k>return</c-> <c- n>str</c-><c- p>;</c-> <c- p>}</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed API has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>).</p>
-   <h2 class="heading settled" data-level="9" id="ack"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="10" id="ack"><span class="secno">10. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Mateusz Pusz for the suggestion to pass <em>runtime-format-string</em> by
 rvalue reference that improves safety of the API.</p>
   </main>

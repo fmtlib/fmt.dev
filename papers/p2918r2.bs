@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Runtime format strings II
-Shortname: P2918
-Revision: 1
-Audience: LEWG
-Status: P
+Shortname: D2918
+Revision: 2
+Audience: LEWG, LWG
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-07-15
+Date: 2023-11-07
 Markup Shorthands: markdown yes
 </pre>
 
@@ -76,8 +76,20 @@ This innocent-looking code exhibits undefined behavior because format arguments
 store a reference to a temporary which is destroyed before use. This has been
 discovered and fixed in [[FMT]] which now rejects such code at compile time.
 
-Changes {#changes}
-=======
+Changes since R2 {#changes1}
+================
+
+* Added instructions to bump the `__cpp_lib_format` feature test macro per
+    LWG feedback.
+* Made the exposition-only member <code><i>str</i></code> of
+    <code><i>runtime-format-string</i></code> private per LWG feedback.
+* Added a constructor for <code><i>runtime-format-string</i></code> per LWG
+    feedback.
+* Made functions added in this paper `noexcept` per LWG feedback.
+* Made <code><i>runtime-format-string</i></code> immovable per LWG feedback.
+
+Changes since R1 {#changes0}
+================
 
 * Added poll results.
 
@@ -139,7 +151,8 @@ This paper adds a new API and has no impact on existing code.
 Wording {#wording}
 =======
 
-<!-- TODO: construct basic_format_string from runtime-format-string -->
+Update the value of the feature-testing macro `__cpp_lib_format` to the date of
+adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
 
 Change in [[format.syn](https://eel.is/c++draft/format#syn)]:
 
@@ -153,11 +166,22 @@ namespace std {
 
   <ins>
   template&lt;class charT> struct <i>runtime-format-string</i> {  <i>// exposition-only</i>
+  private:
     basic_string_view&lt;charT> <i>str</i>;  <i>// exposition-only</i>
+
+  public:
+    <i>runtime-format-string</i>(basic_string_view&lt;charT> s) noexcept : str(s) {}
+
+    <i>runtime-format-string</i>(const <i>runtime-format-string</i>&) = delete;
+    const <i>runtime-format-string</i>& operator=(const <i>runtime-format-string</i>&) = delete;
   };
 
-  <i>runtime-format-string</i>&lt;char&gt; runtime_format(string_view fmt) { return {fmt}; }
-  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime_format(wstring_view fmt) { return {fmt}; }</ins>
+  <i>runtime-format-string</i>&lt;char&gt; runtime_format(string_view fmt) noexcept {
+    return fmt;
+  }
+  <i>runtime-format-string</i>&lt;wchar_t&gt; runtime_format(wstring_view fmt) noexcept {
+    return fmt;
+  }</ins>
 
   ...
 }
@@ -174,7 +198,7 @@ namespace std {
 
   public:
     template&lt;class T> consteval basic_format_string(const T& s);
-    <ins>basic_format_string(<i>runtime-format-string</i>&lt;charT>&& s) : str(s.<i>str</i>) {}</ins>
+    <ins>basic_format_string(<i>runtime-format-string</i>&lt;charT>&& s) noexcept : str(s.<i>str</i>) {}</ins>
 
     constexpr basic_string_view&lt;charT> get() const noexcept { return str; }
   };
