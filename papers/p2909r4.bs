@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Fix formatting of code units as integers<br>(Dude, where's my char?)
 Shortname: P2909
-Revision: 3
+Revision: 4
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-10-07
+Date: 2023-11-07
 Markup Shorthands: markdown yes
 </pre>
 
@@ -79,6 +79,14 @@ compiled and run on a different platform or with different compiler flags.
 This particular case can be fixed by adding a cast to `unsigned char` but it
 may not be as easy to do when formatting ranges compared to using format
 specifiers.
+
+Changes from R3 {#changes3}
+===============
+
+* Replaced `__cpp_lib_format` with a more specific `__cpp_lib_format_uchar` per
+    LWG feedback.
+* Replaced "the corresponding unsigned type" to "the unsigned version of the
+    underlying type" per LWG feedback to better accommodate `wchar_t`.
 
 Changes from R2 {#changes2}
 ===============
@@ -258,8 +266,8 @@ signdness that doesn't depend on the implementation (`signed char` or
 Wording {#wording}
 =======
 
-Update the value of the feature-testing macro `__cpp_lib_format` to the date of
-adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
+Add a feature-testing macro `__cpp_lib_format_uchar` with the value set to the
+date of adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
 
 Change in [[tab:format.type.char](
 http://eel.is/c++draft/format#tab:format.type.char)]:
@@ -277,8 +285,8 @@ Table 69: Meaning of type options for `charT` [tab:format.type.char]
 </tr>
 <tr>
   <td>`b`, `B`, `d`, `o`, `x`, `X`
-  <td>As specified in Table 68<ins> with `value` converted to the corresponding
-  unsigned type</ins>.
+  <td>As specified in Table 68<ins> with `value` converted to the unsigned
+  version of the underlying type</ins>.
 </tr>
 <tr>
   <td>`?`

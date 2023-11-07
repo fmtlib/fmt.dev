@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2909R3: Fix formatting of code units as integers&lt;br>(Dude, where’s my char?)</title>
+  <title>P2909R4: Fix formatting of code units as integers&lt;br>(Dude, where’s my char?)</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1561,9 +1561,8 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version b06c00b8e, updated Tue Jul 11 13:41:16 2023 -0700" name="generator">
+  <meta content="Bikeshed version 82ce88815, updated Thu Sep 7 16:33:55 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="b87eb2cec1599542270cd9ee771bf37b49a3f583" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2102,8 +2101,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2909R3<br>Fix formatting of code units as integers<br>(Dude, where’s my char?)</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-10-07">2023-10-07</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2909R4<br>Fix formatting of code units as integers<br>(Dude, where’s my char?)</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-11-07">2023-11-07</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2121,14 +2120,15 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes from R2</span></a>
-    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes from R1</span></a>
-    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes from R0</span></a>
-    <li><a href="#polls"><span class="secno">5</span> <span class="content">Polls</span></a>
-    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
-    <li><a href="#impact"><span class="secno">8</span> <span class="content">Impact on existing code</span></a>
-    <li><a href="#impl"><span class="secno">9</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes3"><span class="secno">2</span> <span class="content">Changes from R3</span></a>
+    <li><a href="#changes2"><span class="secno">3</span> <span class="content">Changes from R2</span></a>
+    <li><a href="#changes1"><span class="secno">4</span> <span class="content">Changes from R1</span></a>
+    <li><a href="#changes0"><span class="secno">5</span> <span class="content">Changes from R0</span></a>
+    <li><a href="#polls"><span class="secno">6</span> <span class="content">Polls</span></a>
+    <li><a href="#proposal"><span class="secno">7</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#impact"><span class="secno">9</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#impl"><span class="secno">10</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2170,12 +2170,21 @@ compiled and run on a different platform or with different compiler flags.</p>
    <p>This particular case can be fixed by adding a cast to <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> but it
 may not be as easy to do when formatting ranges compared to using format
 specifiers.</p>
-   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes from R2</span><a class="self-link" href="#changes2"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes3"><span class="secno">2. </span><span class="content">Changes from R3</span><a class="self-link" href="#changes3"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Replaced <code class="highlight"><c- n>__cpp_lib_format</c-></code> with a more specific <code class="highlight"><c- n>__cpp_lib_format_uchar</c-></code> per
+LWG feedback.</p>
+    <li data-md>
+     <p>Replaced "the corresponding unsigned type" to "the unsigned version of the
+underlying type" per LWG feedback to better accommodate <code class="highlight"><c- b>wchar_t</c-></code>.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes2"><span class="secno">3. </span><span class="content">Changes from R2</span><a class="self-link" href="#changes2"></a></h2>
    <ul>
     <li data-md>
      <p>Added LEWG poll results.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
+   <h2 class="heading settled" data-level="4" id="changes1"><span class="secno">4. </span><span class="content">Changes from R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Added instructions to bump the <code class="highlight"><c- n>__cpp_lib_format</c-></code> feature test macro per
@@ -2184,7 +2193,7 @@ LEWG feedback.</p>
      <p>Added a missing cast for the case of formatting <code class="highlight"><c- b>char</c-></code> as <code class="highlight"><c- b>wchar_t</c-></code> per LEWG
 feedback.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="5" id="changes0"><span class="secno">5. </span><span class="content">Changes from R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Changed the title from "Dude, where’s my char?" to "Fix formatting of code
@@ -2200,7 +2209,7 @@ feedback.</p>
      <p>Fixed handling of the case of formatting <code class="highlight"><c- b>char</c-></code> as <code class="highlight"><c- b>wchar_t</c-></code> per SG16
 feedback.</p>
    </ul>
-   <h2 class="heading settled" data-level="5" id="polls"><span class="secno">5. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="6" id="polls"><span class="secno">6. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
    <p>LEWG poll results for R1:</p>
    <p><strong>POLL</strong>: Forward P2909R1 to LWG for C++26 (and as a defect) (to be confirmed by
 Electronic Polling)</p>
@@ -2235,7 +2244,7 @@ Report.</p>
  2  2  2  1  0
 </pre>
    <p><strong>Outcome</strong>: Weak consensus - LEWG may want to look at this closely</p>
-   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="7" id="proposal"><span class="secno">7. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>This paper proposes making code unit types formatted as unsigned integers
 instead of implementation-defined.</p>
    <table>
@@ -2292,9 +2301,9 @@ format specifiers. The latter is an artefact of varargs limitations.</p>
 introducing a new one since the amount of work to check the macro and perform
 different action based on it is comparable to switching to the type with
 signdness that doesn’t depend on the implementation (<code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> or <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code>).</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
-   <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_format</c-></code> to the date of
-adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Add a feature-testing macro <code class="highlight"><c- n>__cpp_lib_format_uchar</c-></code> with the value set to the
+date of adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
    <p>Change in <a href="http://eel.is/c++draft/format#tab:format.type.char">[tab:format.type.char</a>]:</p>
    <p>Table 69: Meaning of type options for <code class="highlight"><c- n>charT</c-></code> [tab:format.type.char]</p>
    <table>
@@ -2309,8 +2318,8 @@ adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
       <td><code class="highlight"><c- n>b</c-></code>, <code class="highlight"><c- n>B</c-></code>, <code class="highlight"><c- n>d</c-></code>, <code class="highlight"><c- n>o</c-></code>, <code class="highlight"><c- n>x</c-></code>, <code class="highlight"><c- n>X</c-></code> 
       <td>
        As specified in Table 68
-       <ins> with <code class="highlight"><c- n>value</c-></code> converted to the corresponding
-  unsigned type</ins>
+       <ins> with <code class="highlight"><c- n>value</c-></code> converted to the unsigned
+  version of the underlying type</ins>
        . 
      <tr>
       <td><code class="highlight"><c- o>?</c-></code> 
@@ -2328,11 +2337,11 @@ adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
      <p>otherwise, if <code class="highlight"><c- n>TD</c-></code> is <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- n>char_type</c-></code> is <code class="highlight"><c- b>wchar_t</c-></code>, initializes <code class="highlight"><c- n>value</c-></code> with <code class="highlight"><c- k>static_cast</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-><c- p>(</c-><del><c- n>v</c-></del><ins><c- n>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></ins><c- p>)</c-></code>;</p>
    </ul>
    <p>...</p>
-   <h2 class="heading settled" data-level="8" id="impact"><span class="secno">8. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="9" id="impact"><span class="secno">9. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This is a breaking change but it only affects the output of negative/large
 code units when output via opt-in format specifiers. There were no issues
 reported when the change was shipped in {fmt} and the number of uses of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> is orders of magnitude smaller at the moment.</p>
-   <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed change has been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>).</p>
   </main>
 <script>
