@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting of std::filesystem::path
-Shortname: D2845
-Revision: 4
-Audience: LEWG
+Shortname: P2845
+Revision: 5
+Audience: LWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-10-01
+Date: 2023-11-24
 Markup Shorthands: markdown yes
 </pre>
 
@@ -39,10 +39,17 @@ However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
 
-Changes from R3 {#changes2}
+Changes from R4 {#changes4}
 ===============
 
-* Added SG16 Poll Results.
+* Replaced "invalid code units" with a more specific "maximal subparts of
+    ill-formed subsequences" per LEWG feedback.
+* Added LEWG poll results for R4.
+
+Changes from R3 {#changes3}
+===============
+
+* Added SG16 poll results.
 
 Changes from R2 {#changes2}
 ===============
@@ -68,7 +75,33 @@ Changes from R0 {#changes0}
 
 * Added missing transcoding to the definition of the `format` function.
 
-SG16 Poll Results {#poll-results}
+LEWG Poll Results {#lewg-polls}
+=================
+
+**POLL**: Forward P2845R4 (Formatting of std::filesystem::path) with modified
+wording for Effects to use the term "replacement of a maximal subpart" to LWG
+for C++26 to be confirmed with a Library Evolution electronic poll.
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>11
+  <td>9
+  <td>0
+  <td>0
+  <td>0
+</tr>
+</table>
+
+**Outcome**: Unanimous consent to forward.
+
+SG16 Poll Results {#sg16-polls}
 =================
 
 **POLL**: Forward P2845R2, Formatting of` std::filesystem::path`, to LEWG with a 
@@ -362,9 +395,9 @@ where the productions <i>fill-and-align</i> and <i>width</i> are described in
 Writes `s` into `ctx.out()`, adjusted according to the *path-format-spec*.
 If `Char` is `char`, `path::value_type` is `wchar_t` and the literal encoding
 is UTF-8 then the escaped path is transcoded from the native encoding for wide
-character strings to UTF-8 with invalid code units substituted with U+FFFD
-REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD Substitution
-in Conversion.
+character strings to UTF-8 with maximal subparts of ill-formed subsequences
+substituted with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard,
+Chapter 3.9 U+FFFD Substitution in Conversion.
 If `Char` and `path::value_type` are the same then no transcoding is performed.
 Otherwise, transcoding is implementation-defined.
 
