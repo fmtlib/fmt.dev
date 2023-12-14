@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 82ce88815, updated Thu Sep 7 16:33:55 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ee89e667f426d6e24f53e0daf3fd36bfb188b2f7" name="document-revision">
+  <meta content="a85e544e60403685800b442856c31a30f56506af" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2123,11 +2123,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#abstract"><span class="secno">1</span> <span class="content">Abstract</span></a>
     <li><a href="#introduction"><span class="secno">2</span> <span class="content">Introduction</span></a>
     <li><a href="#motivation-and-scope"><span class="secno">3</span> <span class="content">Motivation and Scope</span></a>
-    <li><a href="#impact-on-the-standard"><span class="secno">4</span> <span class="content">Impact on the Standard</span></a>
-    <li><a href="#proposed-change"><span class="secno">5</span> <span class="content">Proposed Change</span></a>
-    <li><a href="#technical-specifications"><span class="secno">6</span> <span class="content">Technical Specifications</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation {#impl}</span></a>
+    <li><a href="#proposed-change"><span class="secno">4</span> <span class="content">Proposed Change</span></a>
+    <li><a href="#impact-on-the-standard"><span class="secno">5</span> <span class="content">Impact on the Standard</span></a>
+    <li><a href="#implementation"><span class="secno">6</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2136,24 +2134,25 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <p style="text-align: right"> "It is a mistake to think you can solve any major problems just with potatoes." ― Douglas Adams </p>
+   <p style="text-align: right"> "It is a mistake to think you can solve any major problems just with potatoes."
+ ― Douglas Adams </p>
    <h2 class="heading settled" data-level="1" id="abstract"><span class="secno">1. </span><span class="content">Abstract</span><a class="self-link" href="#abstract"></a></h2>
    <p>This proposal recommends the addition of a <code class="highlight"><c- n>format_as</c-></code> extension point in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, specifically for enhancing the formatting capabilities of
 enumeration types in C++. This extension will enable users to define custom
-string or integral representations for enum values efficiently and in a
-type-safe manner, utilizing the existing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> infrastructure.</p>
+string representations for enum values efficiently and in a type-safe manner,
+utilizing the existing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> infrastructure.</p>
    <h2 class="heading settled" data-level="2" id="introduction"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, as introduced in C++20, has significantly improved string
 formatting in C++. However, custom formatting for enumeration types currently
-requires creating verbose formatter specializations. This proposal aims to
-introduce a more intuitive and simpler method to define custom formats for
-enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers it is also more
+requires creating somewhat verbose formatter specializations. This proposal
+aims to introduce a more intuitive and simpler method to define custom formats
+for enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers it is also more
 efficient than a formatter specialization.</p>
    <h2 class="heading settled" data-level="3" id="motivation-and-scope"><span class="secno">3. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p>Enums are fundamental in C++ for representing sets of named constants. There
 is often a need to convert these enums to string representations, especially
 for logging, debugging, or interfacing with users. The current methods for
-customizing enum formatting in std::format are not as user-friendly or
+customizing enum formatting in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> are not as user-friendly or
 integrated as they could be.</p>
    <p>With the introduction of a <code class="highlight"><c- n>format_as</c-></code> extension for enums, we aim to:</p>
    <ul>
@@ -2164,39 +2163,92 @@ integrated as they could be.</p>
     <li data-md>
      <p>Ensure compatibility with existing code and minimal disruption.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="impact-on-the-standard"><span class="secno">4. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
+   <p>Consider the following example:</p>
+<pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
+<c- k>enum</c-> <c- n>class</c-> <c- n>film</c-> <c- p>{</c->
+  <c- n>house_of_cards</c-><c- p>,</c-> <c- n>american_beauty</c-><c- p>,</c-> <c- n>se7en</c-> <c- o>=</c-> <c- mi>7</c->
+<c- p>};</c->
+<c- p>}</c->
+</pre>
+   <p>If we want to format this enum as an underlying type with<code class="highlight"> <c- n>std</c-><c- o>::</c-><c- n>format</c-></code> we have
+two options. The first option is defining a formatter specialization:</p>
+<pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;></c->
+<c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-><c- o>></c-> <c- o>:</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>),</c-> <c- n>ctx</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>};</c->
+</pre>
+   <p>The drawback of this option is that even with forwarding to another formatter
+there is a fair amount of boilerplate and it cannot be done in the same
+namespace.</p>
+   <p>The second option is converting the enum to the underlying type:</p>
+<pre class="language-c++ highlight"><c- n>film</c-> <c- n>f</c-> <c- o>=</c-> <c- n>kevin_namespacy</c-><c- o>::</c-><c- n>se7en</c-><c- p>;</c->
+<c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>));</c->
+</pre>
+   <p>The drawback of the second option is that the conversion has to be done at every
+call site.</p>
+   <h2 class="heading settled" data-level="4" id="proposed-change"><span class="secno">4. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposed-change"></a></h2>
+   <p>We propose adding a <code class="highlight"><c- n>format_as</c-></code> extension point to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. <code class="highlight"><c- n>format_as</c-></code> is a function discovered by the argument-dependent lookup (ADL) that takes an
+enum to be formatted as the argument and converts it to an object of another
+formattable type, normally an integer or a string.</p>
+   <p>This significantly improves user experience by eliminating almost all
+boilerplate:</p>
+   <table>
+    <tbody>
+     <tr>
+      <th>Before 
+      <th>After 
+     <tr>
+      <td>
+<pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
+<c- k>enum</c-> <c- n>class</c-> <c- n>film</c-> <c- p>{...};</c->
+<c- p>}</c->
+<c- n>template</c-> <c- o>&lt;></c->
+<c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-><c- o>></c-> <c- o>:</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>),</c-> <c- n>ctx</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>};</c->
+</pre>
+      <td>
+<pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
+<c- k>enum</c-> <c- n>class</c-> <c- n>film</c-> <c- p>{...};</c->
+<c- k>auto</c-> <c- n>format_as</c-><c- p>(</c-><c- n>film</c-> <c- n>f</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>);</c-> <c- p>}</c->
+<c- p>}</c->
+</pre>
+   </table>
+   <p>The semantics of <code class="highlight"><c- n>format_as</c-></code> is the same as the corresponding "forwarding" <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
+   <p><code class="highlight"><c- n>format_as</c-></code> can be used to format enums as strings as well:</p>
+<pre class="language-c++ highlight"><c- k>enum</c-> <c- n>class</c-> <c- n>color</c-> <c- p>{</c-><c- n>red</c-><c- p>,</c-> <c- n>green</c-><c- p>,</c-> <c- n>blue</c-><c- p>};</c->
+
+<c- k>auto</c-> <c- n>format_as</c-><c- p>(</c-><c- n>color</c-> <c- n>c</c-><c- p>)</c-> <c- o>-></c-> <c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- p>{</c->
+  <c- k>switch</c-> <c- p>(</c-><c- n>c</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>case</c-> <c- no>color</c-><c- o>::</c-><c- no>red</c-><c- p>:</c->   <c- k>return</c-> <c- s>"red"</c-><c- p>;</c->
+    <c- k>case</c-> <c- no>color</c-><c- o>::</c-><c- no>green</c-><c- p>:</c-> <c- k>return</c-> <c- s>"green"</c-><c- p>;</c->
+    <c- k>case</c-> <c- no>color</c-><c- o>::</c-><c- no>blue</c-><c- p>:</c->  <c- k>return</c-> <c- s>"blue"</c-><c- p>;</c->
+  <c- p>}</c->
+<c- p>}</c->
+
+<c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>color</c-><c- o>::</c-><c- n>red</c-><c- p>);</c-> <c- c1>// s == "red"</c->
+</pre>
+   <p>Apart from usability improvement, if the target type is one of the built-in
+types, formatting can be implemented more efficiently. Instead of going through
+the general-purpose <code class="highlight"><c- n>formatter</c-></code> API the enum can be converted directly to
+the built-in type at the call site. And conversion from an enum to its
+underlying type is effectively a noop so there is no effect on the binary size.</p>
+   <p>TODO: perf comparison</p>
+   <h2 class="heading settled" data-level="5" id="impact-on-the-standard"><span class="secno">5. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
 component and does not necessitate alterations to current language features or
 core library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
-   <h2 class="heading settled" data-level="5" id="proposed-change"><span class="secno">5. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposed-change"></a></h2>
-   <p>
-    We propose adding the following to the 
-    <format> library:</format>
-   </p>
-<pre class="language-cpp highlight"><c- k>enum</c-> <c- k>class</c-> <c- nc>Color</c-> <c- p>{</c-> <c- n>Red</c-><c- p>,</c-> <c- n>Green</c-><c- p>,</c-> <c- n>Blue</c-> <c- p>};</c->
-
-<c- k>constexpr</c-> <c- k>auto</c-> <c- n>format_as</c-><c- p>(</c-><c- k>const</c-> <c- n>Color</c-><c- o>&amp;</c-> <c- n>color</c-><c- p>)</c-> <c- o>-></c-> <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- p>{</c->
-    <c- k>switch</c-> <c- p>(</c-><c- n>color</c-><c- p>)</c-> <c- p>{</c->
-        <c- k>case</c-> <c- no>Color</c-><c- o>::</c-><c- no>Red</c-><c- p>:</c->   <c- k>return</c-> <c- s>"Red"</c-><c- p>;</c->
-        <c- k>case</c-> <c- no>Color</c-><c- o>::</c-><c- no>Green</c-><c- p>:</c-> <c- k>return</c-> <c- s>"Green"</c-><c- p>;</c->
-        <c- k>case</c-> <c- no>Color</c-><c- o>::</c-><c- no>Blue</c-><c- p>:</c->  <c- k>return</c-> <c- s>"Blue"</c-><c- p>;</c->
-        <c- k>default</c-><c- o>:</c->           <c- k>return</c-> <c- s>"Unknown"</c-><c- p>;</c->
-    <c- p>}</c->
-<c- p>}</c->
-</pre>
-   <p>TODO: compare and constrast with the formatter specialization</p>
-   <h2 class="heading settled" data-level="6" id="technical-specifications"><span class="secno">6. </span><span class="content">Technical Specifications</span><a class="self-link" href="#technical-specifications"></a></h2>
-   <p>The <code class="highlight"><c- n>format_as</c-></code> function template specialization for enums should ideally be <code class="highlight"><c- k>constexpr</c-></code>.
-The function should return either a string or an object that is compatible with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
-Consideration should be given to how this interacts with existing formatter
-specializations and overloads.</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
-   <p>[Appropriate standard wording to be developed here, adhering to the guidelines of the ISO C++ standards committee.]</p>
-   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation {#impl}</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="6" id="implementation"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
-(<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>).</p>
-   <p>TODO: how long it was available</p>
+(<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of December 2023 has been shipping for two major versions.
+It has been recently extended to all user-defined types and not just enums but
+this is not proposed in the current paper since usage experience is still
+limited.</p>
   </main>
 <script>
 (function() {
