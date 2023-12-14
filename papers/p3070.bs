@@ -120,7 +120,7 @@ enum class film {...};
 }
 template <>
 struct std::formatter<kevin_namespacy::film> : formatter<int> {
-  auto format(kevin_namespacy::film f, format_context& ctx) {
+  auto format(kevin_namespacy::film f, format_context& ctx) const {
     return formatter<int>::format(std::to_underlying(f), ctx);
   }
 };
@@ -155,12 +155,25 @@ auto s = std::format("{}", color::red); // s == "red"
 ```
 
 Apart from usability improvement, if the target type is one of the built-in
-types, formatting can be implemented more efficiently. Instead of going through
-the general-purpose `formatter` API the enum can be converted directly to
-the built-in type at the call site. And conversion from an enum to its
-underlying type is effectively a noop so there is no effect on the binary size.
+types directly supported by `std::format`, formatting can be implemented more
+efficiently. Instead of going through the general-purpose `formatter` API the
+enum can be converted directly to the built-in type at the call site.
+And conversion from an enum to its underlying type is effectively a noop so
+there is no effect on the binary size.
 
-TODO: perf comparison
+The difference can be seen on the following benchmark results for an enum
+similar to `std::byte`:
+
+<pre>
+---------------------------------------------------------------------
+Benchmark                           Time             CPU   Iterations
+---------------------------------------------------------------------
+BM_Formatter                     17.7 ns         17.7 ns     38037070
+BM_FormatAs                      8.90 ns         8.88 ns     79036210
+</pre>
+
+Considering that `format_as` has almost 2x better performance, this paper also
+proposes making `std::byte` formattable using the new facility.
 
 # Impact on the Standard
 
@@ -178,6 +191,50 @@ The proposed extension API has been implemented in the open-source {fmt} library
 It has been recently extended to all user-defined types and not just enums but
 this is not proposed in the current paper since usage experience is still
 limited.
+
+# Appendix A: Benchmark
+
+This appendix gives the source code of the benchmark used for comparing
+performance of `format_as` with a `formatter` specialization.
+
+```c++
+#include <benchmark/benchmark.h>
+#include <fmt/core.h>
+
+enum class byte_for_formatter : unsigned char {};
+
+template <>
+struct fmt::formatter<byte_for_formatter> : fmt::formatter<unsigned char> {
+  auto format(byte_for_formatter b, fmt::format_context& ctx) {
+    return fmt::formatter<unsigned char>::format(
+      static_cast<unsigned char>(b), ctx);
+  }
+};
+
+enum class byte_for_format_as : unsigned char {};
+
+auto format_as(byte_for_format_as b) { return static_cast<unsigned char>(b); }
+
+static void BM_Formatter(benchmark::State& state) {
+  auto b = byte_for_formatter();
+  for (auto _ : state) {
+    std::string formatted = fmt::format("{}", b);
+    benchmark::DoNotOptimize(formatted);
+  }
+}
+BENCHMARK(BM_Formatter);
+
+static void BM_FormatAs(benchmark::State& state) {
+  auto b = byte_for_format_as();
+  for (auto _ : state) {
+    std::string formatted = fmt::format("{}", b);
+    benchmark::DoNotOptimize(formatted);
+  }
+}
+BENCHMARK(BM_FormatAs);
+
+BENCHMARK_MAIN();
+```
 
 <pre class=biblio>
 {

@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 82ce88815, updated Thu Sep 7 16:33:55 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a85e544e60403685800b442856c31a30f56506af" name="document-revision">
+  <meta content="178e31e83fc4d125d6c6dcfa3cd46efc8b456cbd" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2126,6 +2126,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#proposed-change"><span class="secno">4</span> <span class="content">Proposed Change</span></a>
     <li><a href="#impact-on-the-standard"><span class="secno">5</span> <span class="content">Impact on the Standard</span></a>
     <li><a href="#implementation"><span class="secno">6</span> <span class="content">Implementation</span></a>
+    <li><a href="#appendix-a-benchmark"><span class="secno"></span> <span class="content">Appendix A: Benchmark</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2206,7 +2207,7 @@ boilerplate:</p>
 <c- p>}</c->
 <c- n>template</c-> <c- o>&lt;></c->
 <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-><c- o>></c-> <c- o>:</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- p>{</c->
-  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>),</c-> <c- n>ctx</c-><c- p>);</c->
   <c- p>}</c->
 <c- p>};</c->
@@ -2233,11 +2234,19 @@ boilerplate:</p>
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>color</c-><c- o>::</c-><c- n>red</c-><c- p>);</c-> <c- c1>// s == "red"</c->
 </pre>
    <p>Apart from usability improvement, if the target type is one of the built-in
-types, formatting can be implemented more efficiently. Instead of going through
-the general-purpose <code class="highlight"><c- n>formatter</c-></code> API the enum can be converted directly to
-the built-in type at the call site. And conversion from an enum to its
-underlying type is effectively a noop so there is no effect on the binary size.</p>
-   <p>TODO: perf comparison</p>
+types directly supported by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, formatting can be implemented more
+efficiently. Instead of going through the general-purpose <code class="highlight"><c- n>formatter</c-></code> API the
+enum can be converted directly to the built-in type at the call site.
+And conversion from an enum to its underlying type is effectively a noop so
+there is no effect on the binary size.</p>
+   <p>The difference can be seen on the following benchmark results for an enum
+similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code>:</p>
+<pre class="highlight"><c- o>-------------------------------------------------------------------</c->—   <wbr><c- n>Benchmark</c->                           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
+<c- o>-------------------------------------------------------------------</c->—   <wbr><c- n>BM_Formatter</c->                     <c- mf>17.7</c-> <c- n>ns</c->         <c- mf>17.7</c-> <c- n>ns</c->     <c- mi>38037070</c->
+<c- n>BM_FormatAs</c->                      <c- mf>8.90</c-> <c- n>ns</c->         <c- mf>8.88</c-> <c- n>ns</c->     <c- mi>79036210</c->
+</pre>
+   <p>Considering that <code class="highlight"><c- n>format_as</c-></code> has almost 2x better performance, this paper also
+proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable using the new facility.</p>
    <h2 class="heading settled" data-level="5" id="impact-on-the-standard"><span class="secno">5. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
 component and does not necessitate alterations to current language features or
@@ -2249,6 +2258,46 @@ a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>fo
 It has been recently extended to all user-defined types and not just enums but
 this is not proposed in the current paper since usage experience is still
 limited.</p>
+   <h2 class="heading settled" id="appendix-a-benchmark"><span class="content">Appendix A: Benchmark</span><a class="self-link" href="#appendix-a-benchmark"></a></h2>
+   <p>This appendix gives the source code of the benchmark used for comparing
+performance of <code class="highlight"><c- n>format_as</c-></code> with a <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
+<pre class="language-c++ highlight"><c- cp>#include</c-> &lt;benchmark/benchmark.h>
+<c- cp>#include</c-> &lt;fmt/core.h>
+
+<c- k>enum</c-> <c- n>class</c-> <c- n>byte_for_formatter</c-> <c- o>:</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- p>{};</c->
+
+<c- n>template</c-> <c- o>&lt;></c->
+<c- k>struct</c-> <c- nc>fmt</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>byte_for_formatter</c-><c- o>></c-> <c- o>:</c-> <c- n>fmt</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>></c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>byte_for_formatter</c-> <c- n>b</c-><c- p>,</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>fmt</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>>::</c-><c- n>format</c-><c- p>(</c->
+      <c- n>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>b</c-><c- p>),</c-> <c- n>ctx</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>};</c->
+
+<c- k>enum</c-> <c- n>class</c-> <c- n>byte_for_format_as</c-> <c- o>:</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- p>{};</c->
+
+<c- k>auto</c-> <c- n>format_as</c-><c- p>(</c-><c- n>byte_for_format_as</c-> <c- n>b</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- n>static_cast</c-><c- o>&lt;</c-><c- b>unsigned</c-> <c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>b</c-><c- p>);</c-> <c- p>}</c->
+
+<c- k>static</c-> <c- b>void</c-> <c- n>BM_Formatter</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>state</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>b</c-> <c- o>=</c-> <c- n>byte_for_formatter</c-><c- p>();</c->
+  <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>_</c-> <c- o>:</c-> <c- n>state</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>formatted</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>b</c-><c- p>);</c->
+    <c- n>benchmark</c-><c- o>::</c-><c- n>DoNotOptimize</c-><c- p>(</c-><c- n>formatted</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>}</c->
+<c- n>BENCHMARK</c-><c- p>(</c-><c- n>BM_Formatter</c-><c- p>);</c->
+
+<c- k>static</c-> <c- b>void</c-> <c- nf>BM_FormatAs</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>state</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>b</c-> <c- o>=</c-> <c- n>byte_for_format_as</c-><c- p>();</c->
+  <c- k>for</c-> <c- p>(</c-><c- k>auto</c-> <c- n>_</c-> <c- o>:</c-> <c- n>state</c-><c- p>)</c-> <c- p>{</c->
+    <c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>formatted</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>b</c-><c- p>);</c->
+    <c- n>benchmark</c-><c- o>::</c-><c- n>DoNotOptimize</c-><c- p>(</c-><c- n>formatted</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>}</c->
+<c- n>BENCHMARK</c-><c- p>(</c-><c- n>BM_FormatAs</c-><c- p>);</c->
+
+<c- n>BENCHMARK_MAIN</c-><c- p>();</c->
+</pre>
   </main>
 <script>
 (function() {
