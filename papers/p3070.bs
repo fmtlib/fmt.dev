@@ -26,34 +26,78 @@ Markup Shorthands: markdown yes
 </style>
 
 <p style="text-align: right">
-"The Tao is constantly moving, the path is always changing."
-― Lao Tzu
+"It is a mistake to think you can solve any major problems just with potatoes." ― Douglas Adams
 </p>
 
-Introduction {#intro}
-============
+# Abstract
 
-This paper proposes a new extension API for `std::format` that makes it easy to
-format enums as other types (normally integers or strings) and can be extended
-in the future for user-defined types other than enums.
+This proposal recommends the addition of a `format_as` extension point in
+`std::format`, specifically for enhancing the formatting capabilities of
+enumeration types in C++. This extension will enable users to define custom
+string or integral representations for enum values efficiently and in a
+type-safe manner, utilizing the existing `std::format` infrastructure.
 
-Problems {#problems}
-========
+# Introduction
 
-TODO: show that defining a formatter for enum is cumbersome
+`std::format`, as introduced in C++20, has significantly improved string
+formatting in C++. However, custom formatting for enumeration types currently
+requires creating verbose formatter specializations. This proposal aims to
+introduce a more intuitive and simpler method to define custom formats for
+enums using `format_as`. When formatting enums as integers it is also more
+efficient than a formatter specialization.
 
-Proposal {#proposal}
-========
+# Motivation and Scope
 
-TODO: performance
+Enums are fundamental in C++ for representing sets of named constants. There
+is often a need to convert these enums to string representations, especially
+for logging, debugging, or interfacing with users. The current methods for
+customizing enum formatting in `std::format` are not as user-friendly or
+integrated as they could be.
 
-Wording {#wording}
-=======
+With the introduction of a `format_as` extension for enums, we aim to:
 
-TODO
+* Simplify the process of defining custom formatting representations for enums.
+* Improve enum formatting efficiency.
+* Ensure compatibility with existing code and minimal disruption.
 
-Implementation {#impl}
-==============
+# Proposed Change
+
+We propose adding the following to the <format> library:
+
+```cpp
+enum class Color { Red, Green, Blue };
+
+auto format_as(Color color) -> std::string {
+  switch (color) {
+    case Color::Red:   return "Red";
+    case Color::Green: return "Green";
+    case Color::Blue:  return "Blue";
+    default:           return "Unknown";
+  }
+}
+```
+
+TODO: compare and constrast with the formatter specialization
+
+The `format_as` function template specialization for enums should ideally be
+`constexpr`.
+The function should return either a string or an object that is compatible with
+`std::format`.
+Consideration should be given to how this interacts with existing formatter
+specializations and overloads.
+
+# Impact on the Standard
+
+This proposal is an additive change to the existing `<format>` standard library
+component and does not necessitate alterations to current language features or
+core library interfaces. It is a backward-compatible enhancement that addresses
+a common use case in `std::format`.
+
+# Wording
+
+[Appropriate standard wording to be developed here, adhering to the guidelines of the ISO C++ standards committee.]
+
+# Implementation {#impl}
 
 The proposed extension API has been implemented in the open-source {fmt} library
 ([[FMT]]).
