@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 82ce88815, updated Thu Sep 7 16:33:55 2023 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="178e31e83fc4d125d6c6dcfa3cd46efc8b456cbd" name="document-revision">
+  <meta content="3d1d3c7b367ba9fedc1a4d60be08992354908451" name="document-revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2120,12 +2120,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#abstract"><span class="secno">1</span> <span class="content">Abstract</span></a>
-    <li><a href="#introduction"><span class="secno">2</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivation-and-scope"><span class="secno">3</span> <span class="content">Motivation and Scope</span></a>
-    <li><a href="#proposed-change"><span class="secno">4</span> <span class="content">Proposed Change</span></a>
-    <li><a href="#impact-on-the-standard"><span class="secno">5</span> <span class="content">Impact on the Standard</span></a>
-    <li><a href="#implementation"><span class="secno">6</span> <span class="content">Implementation</span></a>
+    <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#motivation-and-scope"><span class="secno">2</span> <span class="content">Motivation and Scope</span></a>
+    <li><a href="#proposed-change"><span class="secno">3</span> <span class="content">Proposed Change</span></a>
+    <li><a href="#impact-on-the-standard"><span class="secno">4</span> <span class="content">Impact on the Standard</span></a>
+    <li><a href="#implementation"><span class="secno">5</span> <span class="content">Implementation</span></a>
     <li><a href="#appendix-a-benchmark"><span class="secno"></span> <span class="content">Appendix A: Benchmark</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2137,19 +2136,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <p style="text-align: right"> "It is a mistake to think you can solve any major problems just with potatoes."
  ― Douglas Adams </p>
-   <h2 class="heading settled" data-level="1" id="abstract"><span class="secno">1. </span><span class="content">Abstract</span><a class="self-link" href="#abstract"></a></h2>
-   <p>This proposal recommends the addition of a <code class="highlight"><c- n>format_as</c-></code> extension point in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, specifically for enhancing the formatting capabilities of
-enumeration types in C++. This extension will enable users to define custom
-string representations for enum values efficiently and in a type-safe manner,
-utilizing the existing <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> infrastructure.</p>
-   <h2 class="heading settled" data-level="2" id="introduction"><span class="secno">2. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
+   <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, as introduced in C++20, has significantly improved string
 formatting in C++. However, custom formatting for enumeration types currently
 requires creating somewhat verbose formatter specializations. This proposal
 aims to introduce a more intuitive and simpler method to define custom formats
 for enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers it is also more
 efficient than a formatter specialization.</p>
-   <h2 class="heading settled" data-level="3" id="motivation-and-scope"><span class="secno">3. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
+   <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
    <p>Enums are fundamental in C++ for representing sets of named constants. There
 is often a need to convert these enums to string representations, especially
 for logging, debugging, or interfacing with users. The current methods for
@@ -2189,7 +2183,7 @@ namespace.</p>
 </pre>
    <p>The drawback of the second option is that the conversion has to be done at every
 call site.</p>
-   <h2 class="heading settled" data-level="4" id="proposed-change"><span class="secno">4. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposed-change"></a></h2>
+   <h2 class="heading settled" data-level="3" id="proposed-change"><span class="secno">3. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposed-change"></a></h2>
    <p>We propose adding a <code class="highlight"><c- n>format_as</c-></code> extension point to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. <code class="highlight"><c- n>format_as</c-></code> is a function discovered by the argument-dependent lookup (ADL) that takes an
 enum to be formatted as the argument and converts it to an object of another
 formattable type, normally an integer or a string.</p>
@@ -2247,12 +2241,12 @@ similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></c
 </pre>
    <p>Considering that <code class="highlight"><c- n>format_as</c-></code> has almost 2x better performance, this paper also
 proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable using the new facility.</p>
-   <h2 class="heading settled" data-level="5" id="impact-on-the-standard"><span class="secno">5. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
+   <h2 class="heading settled" data-level="4" id="impact-on-the-standard"><span class="secno">4. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
 component and does not necessitate alterations to current language features or
 core library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
-   <h2 class="heading settled" data-level="6" id="implementation"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
+   <h2 class="heading settled" data-level="5" id="implementation"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
 (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of December 2023 has been shipping for two major versions.
 It has been recently extended to all user-defined types and not just enums but
