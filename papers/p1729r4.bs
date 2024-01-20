@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Text Parsing
 Shortname: P1729
-Revision: 3
+Revision: 4
 Audience: LEWG, SG9, SG16
 Status: P
 Group: WG21
@@ -1210,9 +1210,7 @@ small inline wrapper around its non-variadic counterpart:
 
 <pre highlight=cpp>
 template&lt;scannable_range&lt;char&gt; Range&gt;
-auto vscan(Range&& range,
-           string_view fmt,
-           scan_args_for&lt;Range&gt; args)
+auto vscan(Range&& range, string_view fmt, scan_args args)
   -> expected&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, scan_error&gt;;
 
 template &lt;typename... Args, scannable_range&lt;char&gt; SourceRange&gt;
@@ -1648,41 +1646,34 @@ namespace std {
   template &lt;class... Args, scannable_range&lt;wchar_t&gt; Range&gt;
     scan_result_type&lt;Range, Args...&gt; scan(const locale& loc, Range&& range, wformat_string&lt;Args...&gt; fmt);
 
-  template&lt;class Range, class CharT&gt;
-    class basic_scan_context;
+  template&lt;class Range, class charT&gt; class basic_scan_context;
+  using scan_context = basic_scan_context&lt;<i>unspecified</i>, char&gt;;
+  using wscan_context = basic_scan_context&lt;<i>unspecified</i>, wchar_t&gt;;
   
-  template&lt;class Context&gt;
-    class basic_scan_args;
-
-  template&lt;class Range&gt;
-    using scan_args_for = basic_scan_args&lt;basic_scan_context&lt;
-      <i>unspecified</i>,
-      ranges::range_value_t&lt;Range&gt;&gt;&gt;;
+  template&lt;class Context&gt; class basic_scan_args;
+  using scan_args = basic_scan_args&lt;scan_context&gt;;
+  using wscan_args = basic_scan_args&lt;wscan_context&gt;;
 
   template&lt;class Range&gt;
   using vscan_result_type = expected&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, scan_error&gt;;
 
   template&lt;scannable_range&lt;char&gt; Range&gt;
-  vscan_result_type&lt;Range&gt; vscan(Range&& range,
-                                 string_view fmt,
-                                 scan_args_for&lt;Range&gt; args);
+  vscan_result_type&lt;Range&gt; vscan(Range&& range, string_view fmt, scan_args args);
 
   template&lt;scannable_range&lt;wchar_t&gt; Range&gt;
-  vscan_result_type&lt;Range&gt; vscan(Range&& range,
-                                 wstring_view fmt,
-                                 scan_args_for&lt;Range&gt; args);
+  vscan_result_type&lt;Range&gt; vscan(Range&& range, wstring_view fmt, wscan_args args);
 
   template&lt;scannable_range&lt;char&gt; Range&gt;
   vscan_result_type&lt;Range&gt; vscan(const locale& loc,
                                  Range&& range,
                                  string_view fmt,
-                                 scan_args_for&lt;Range&gt; args);
+                                 scan_args args);
 
   template&lt;scannable_range&lt;wchar_t&gt; Range&gt;
   vscan_result_type&lt;Range&gt; vscan(const locale& loc,
                                  Range&& range,
                                  wstring_view fmt,
-                                 scan_args_for&lt;Range&gt; args);
+                                 wscan_args args);
 
   template&lt;class T, class CharT = char&gt;
     struct scanner;
