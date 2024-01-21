@@ -24,6 +24,7 @@ Changes since R3 {#history-since-r3}
 
 * Replace `scan_args_for` with `scan_args` and `wscan_args` for consistency with `std::format`.
 * Rename `borrowed_ssubrange_t` to `borrowed_tail_subrange_t` partly based on the naming from ranges-v3 (`tail_view`).
+* Replace `format_string` with `scan_format_string`.
 
 Changes since R2 {#history-since-r2}
 ----------------
@@ -219,11 +220,11 @@ The signature of `std::scan` is as follows:
 
 ```c++
 template <class... Args, scannable_range<char> Range>
-auto scan(Range&& range, format_string<Args...> fmt)
+auto scan(Range&& range, scan_format_string<Args...> fmt)
   -> expected<scan_result<ranges::borrowed_tail_subrange_t<Range>, Args...>, scan_error>;
 
 template <class... Args, scannable_range<wchar_t> Range>
-auto scan(Range&& range, wformat_string<Args...> fmt)
+auto scan(Range&& range, wscan_format_string<Args...> fmt)
   -> expected<scan_result<ranges::borrowed_tail_subrange_t<Range>, Args...>, scan_error>;
 ```
 
@@ -1217,7 +1218,7 @@ auto vscan(Range&& range, string_view fmt, scan_args args)
   -> expected&lt;ranges::borrowed_tail_subrange_t&lt;Range&gt;, scan_error&gt;;
 
 template &lt;typename... Args, scannable_range&lt;char&gt; SourceRange&gt;
-auto scan(SourceRange&& source, format_string&lt;Args...&gt; format)
+auto scan(SourceRange&& source, scan_format_string&lt;Args...&gt; format)
     -> expected&lt;scan_result&lt;ranges::borrowed_tail_subrange_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
   auto args = make_scan_args&lt;SourceRange, Args...&gt;();
   auto result = vscan(std::forward&lt;SourceRange&gt;(range), format, args);
@@ -1622,6 +1623,16 @@ Header `<scan>` synopsis {#spec-header-synopsis}
 #include &lt;ranges&gt;
 
 namespace std {
+  template&lt;class charT, class... Args&gt;
+    struct basic_scan_format_string;
+
+  template&lt;class... Args&gt;
+    using scan_format_string =
+      basic_scan_format_string&lt;char, type_identity_t&lt;Args&gt;...&gt;;
+  template&lt;class... Args&gt;
+    using wscan_format_string =
+      basic_scan_format_string&lt;wchar_t, type_identity_t&lt;Args&gt;...&gt;;
+
   class scan_error;
 
   template&lt;class Range, class... Args&gt;
@@ -1638,16 +1649,20 @@ namespace std {
       scan_error&gt;;
 
   template&lt;class... Args, scannable_range&lt;char&gt; Range&gt;
-    scan_result_type&lt;Range, Args...&gt; scan(Range&& range, format_string&lt;Args...&gt; fmt);
+    scan_result_type&lt;Range, Args...&gt; scan(Range&& range,
+                                          scan_format_string&lt;Args...&gt; fmt);
 
   template&lt;class... Args, scannable_range&lt;wchar_t&gt; Range&gt;
-    scan_result_type&lt;Range, Args...&gt; scan(Range&& range, wformat_string&lt;Args...&gt; fmt);
+    scan_result_type&lt;Range, Args...&gt; scan(Range&& range,
+                                          wscan_format_string&lt;Args...&gt; fmt);
 
   template&lt;class... Args, scannable_range&lt;char&gt; Range&gt;
-    scan_result_type&lt;Range, Args...&gt; scan(const locale& loc, Range&& range, format_string&lt;Args...&gt; fmt);
+    scan_result_type&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
+                                          scan_format_string&lt;Args...&gt; fmt);
 
   template &lt;class... Args, scannable_range&lt;wchar_t&gt; Range&gt;
-    scan_result_type&lt;Range, Args...&gt; scan(const locale& loc, Range&& range, wformat_string&lt;Args...&gt; fmt);
+    scan_result_type&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
+                                          wscan_format_string&lt;Args...&gt; fmt);
 
   template&lt;class Range, class charT&gt; class basic_scan_context;
   using scan_context = basic_scan_context&lt;<i>unspecified</i>, char&gt;;
