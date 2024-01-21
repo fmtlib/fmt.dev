@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/D1729R3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6b1a4ae9e11d90b3a22ab1068227456982b2c081" name="revision">
+  <meta content="ccac321f7517c2bb00ba626d2cecd5f53e69de2f" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2116,8 +2116,9 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
     <li>
      <a href="#history"><span class="secno">1</span> <span class="content">Revision history</span></a>
      <ol class="toc">
-      <li><a href="#history-since-r2"><span class="secno">1.1</span> <span class="content">Changes since R2</span></a>
-      <li><a href="#history-since-r1"><span class="secno">1.2</span> <span class="content">Changes since R1</span></a>
+      <li><a href="#history-since-r3"><span class="secno">1.1</span> <span class="content">Changes since R3</span></a>
+      <li><a href="#history-since-r2"><span class="secno">1.2</span> <span class="content">Changes since R2</span></a>
+      <li><a href="#history-since-r1"><span class="secno">1.3</span> <span class="content">Changes since R1</span></a>
      </ol>
     <li><a href="#introduction"><span class="secno">2</span> <span class="content">Introduction</span></a>
     <li>
@@ -2183,7 +2184,14 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="history"><span class="secno">1. </span><span class="content">Revision history</span><a class="self-link" href="#history"></a></h2>
-   <h3 class="heading settled" data-level="1.1" id="history-since-r2"><span class="secno">1.1. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
+   <h3 class="heading settled" data-level="1.1" id="history-since-r3"><span class="secno">1.1. </span><span class="content">Changes since R3</span><a class="self-link" href="#history-since-r3"></a></h3>
+   <ul>
+    <li data-md>
+     <p>Replace <code class="highlight"><c- n>scan_args_for</c-></code> with <code class="highlight"><c- n>scan_args</c-></code> and <code class="highlight"><c- n>wscan_args</c-></code> for consistency with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+    <li data-md>
+     <p>Rename <code class="highlight"><c- n>borrowed_ssubrange_t</c-></code> to <code class="highlight"><c- n>borrowed_tail_subrange_t</c-></code> partly based on the naming from ranges-v3 (<code class="highlight"><c- n>tail_view</c-></code>).</p>
+   </ul>
+   <h3 class="heading settled" data-level="1.2" id="history-since-r2"><span class="secno">1.2. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
    <ul>
     <li data-md>
      <p>Return a <code class="highlight"><c- n>subrange</c-></code> from <code class="highlight"><c- n>scan</c-></code>, instead of just an iterator: discussion in <a href="#argument-passing">§ 4.5 Argument passing, and return type of scan</a>.</p>
@@ -2212,7 +2220,7 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
        <p>Add potential future extension: <a href="#scan-code-point">§ 6.3 Reading code points (or even grapheme clusters?)</a></p>
      </ul>
    </ul>
-   <h3 class="heading settled" data-level="1.2" id="history-since-r1"><span class="secno">1.2. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
+   <h3 class="heading settled" data-level="1.3" id="history-since-r1"><span class="secno">1.3. </span><span class="content">Changes since R1</span><a class="self-link" href="#history-since-r1"></a></h3>
    <ul>
     <li data-md>
      <p>Thoroughly describe the design</p>
@@ -2358,11 +2366,11 @@ is the function template <code class="highlight"><c- n>std</c-><c- o>::</c-><c- 
 The signature of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is as follows:</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
 <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>)</c->
-  <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
+  <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
 <c- n>template</c-> <c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
 <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>wformat_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>)</c->
-  <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
+  <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> reads values of type <code class="highlight"><c- n>Args</c-><c- p>...</c-></code> from the <code class="highlight"><c- n>range</c-></code> it’s given,
 according to the instructions given to it in the format string, <code class="highlight"><c- n>fmt</c-></code>. <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> returns a <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>expected</c-></code>, containing either a <code class="highlight"><c- n>scan_result</c-></code>, or a <code class="highlight"><c- n>scan_error</c-></code>.
@@ -2958,19 +2966,18 @@ Back then, the only way to use a return-value API was through <code class="highl
 both at compile-time and runtime. These concerns have since been alleviated, as compiler technology has improved.</p>
    </ul>
    <p>The return type of <code class="highlight"><c- n>scan</c-></code>, <code class="highlight"><c- n>scan_result</c-></code>, contains a <code class="highlight"><c- n>subrange</c-></code> over the unparsed input.
-With this, a new type alias is introduced, <code class="highlight"><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-></code>, that is defined as follows:</p>
+With this, a new type alias is introduced, <code class="highlight"><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-></code>, that is defined as follows:</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>R</c-><c- o>></c->
-<c- k>using</c-> <c- n>borrowed_ssubrange_t</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>conditional_t</c-><c- o>&lt;</c->
+<c- k>using</c-> <c- n>borrowed_tail_subrange_t</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>conditional_t</c-><c- o>&lt;</c->
   <c- n>ranges</c-><c- o>::</c-><c- n>borrowed_range</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c->
   <c- n>ranges</c-><c- o>::</c-><c- n>subrange</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>ranges</c-><c- o>::</c-><c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-><c- p>,</c->
   <c- n>ranges</c-><c- o>::</c-><c- n>dangling</c-><c- o>></c-><c- p>;</c->
 </pre>
-   <p class="note" role="note"><span class="marker">Note:</span> The name <code class="highlight"><c- n>borrowed_ssubrange_t</c-></code> is absolutely horrendeous, and is begging for a better alternative.</p>
    <p>Compare this with <code class="highlight"><c- n>borrowed_subrange_t</c-></code>, which is defined as <code class="highlight"><c- n>ranges</c-><c- o>::</c-><c- n>subrange</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>,
 when the range models <code class="highlight"><c- n>borrowed_range</c-></code>.</p>
-   <p>This is novel in the Ranges space: previously all algorithms have either returned an iterator,
+   <p>This is novel in the ranges space: previously all algorithms have either returned an iterator,
 or a subrange of two iterators. We believe that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> warrants a diversion:
-if (for <code class="highlight"><c- n>I</c-> <c- o>=</c-> <c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> and <code class="highlight"><c- n>S</c-> <c- o>=</c-> <c- n>ranges</c-><c- o>::</c-><c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>) <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>random_access_iterator</c-><c- o>&lt;</c-><c- n>I</c-><c- o>></c-> <c- o>||</c-> <c- n>std</c-><c- o>::</c-><c- n>sized_sentinel_for</c-><c- o>&lt;</c-><c- n>I</c-><c- o>></c-> <c- o>||</c-> <c- n>std</c-><c- o>::</c-><c- n>assignable_from</c-><c- o>&lt;</c-><c- n>I</c-><c- o>&amp;</c-><c- p>,</c-> <c- n>S</c-><c- o>></c-></code> is <code class="highlight">false</code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> will need to go through the rest of the input, in order to get an the end iterator to return.
+if (for <code class="highlight"><c- n>I</c-> <c- o>=</c-> <c- n>ranges</c-><c- o>::</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> and <code class="highlight"><c- n>S</c-> <c- o>=</c-> <c- n>ranges</c-><c- o>::</c-><c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>) <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>random_access_iterator</c-><c- o>&lt;</c-><c- n>I</c-><c- o>></c-> <c- o>||</c-> <c- n>std</c-><c- o>::</c-><c- n>sized_sentinel_for</c-><c- o>&lt;</c-><c- n>I</c-><c- o>></c-> <c- o>||</c-> <c- n>std</c-><c- o>::</c-><c- n>assignable_from</c-><c- o>&lt;</c-><c- n>I</c-><c- o>&amp;</c-><c- p>,</c-> <c- n>S</c-><c- o>></c-></code> is <code class="highlight">false</code>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> will need to go through the rest of the input, in order to get the end iterator to return.
 A superior alternative is to simply return the sentinel, since that’s always correct
 (the leftover range always has the same end as the source range) and requires no additional computation.</p>
    <p>See this StackOverflow answer by Barry Revzin for more context: <a data-link-type="biblio" href="#biblio-barry-so-answer" title="Why the standard defines `borrowed_subrange_t` as `common_range`">[BARRY-SO-ANSWER]</a>.</p>
@@ -3165,11 +3172,11 @@ The scanning function that uses variadic templates can be implemented as a
 small inline wrapper around its non-variadic counterpart:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
 <c- k>auto</c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>)</c->
-  <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
+  <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
 <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>SourceRange</c-><c- o>></c->
 <c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>SourceRange</c-><c- o>&amp;&amp;</c-> <c- n>source</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>format</c-><c- p>)</c->
-    <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-> <c- p>{</c->
+    <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-> <c- p>{</c->
   <c- k>auto</c-> <c- n>args</c-> <c- o>=</c-> <c- n>make_scan_args</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>();</c->
   <c- k>auto</c-> <c- n>result</c-> <c- o>=</c-> <c- n>vscan</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- o>></c-><c- p>(</c-><c- n>range</c-><c- p>),</c-> <c- n>format</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
   <c- k>return</c-> <c- n>make_scan_result</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>result</c-><c- p>),</c-> <c- n>std</c-><c- o>::</c-><c- n>move</c-><c- p>(</c-><c- n>args</c-><c- p>));</c->
@@ -3430,7 +3437,7 @@ one, for example, for preallocating a <code class="highlight"><c- n>string</c-><
     <c- k>using</c-> <c- n>borrowed_subrange_t</c-> <c- o>=</c-> <i><c- n>see</c-> <c- n>below</c-></i><c- p>;</c->   <c- c1>// freestanding</c->
   
   <ins><c- k>template</c-><c- o>&lt;</c-><c- n>range</c-> <c- n>R</c-><c- o>></c->
-    <c- k>using</c-> <c- n>borrowed_ssubrange_t</c-> <c- o>=</c-> <i><c- n>see</c-> <c- n>below</c-></i><c- p>;</c->  <c- c1>// freestanding</c-></ins>
+    <c- k>using</c-> <c- n>borrowed_tail_subrange_t</c-> <c- o>=</c-> <i><c- n>see</c-> <c- n>below</c-></i><c- p>;</c->  <c- c1>// freestanding</c-></ins>
 
   <c- c1>// ...</c->
 <c- p>}</c->
@@ -3442,11 +3449,11 @@ one, for example, for preallocating a <code class="highlight"><c- n>string</c-><
      if <code class="highlight"><c- n>R</c-></code> models <code class="highlight"><c- n>borrowed_range</c-></code>, then <code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, 
      <del>and <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>;</del>
      <ins><code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>,
-and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>;</ins>
+and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denotes <code class="highlight"><c- n>subrange</c-><c- o>&lt;</c-><c- n>iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>sentinel_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>></c-></code>;</ins>
     <li>
      otherwise, 
      <del>both <code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> and <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> denote <code class="highlight"><c- n>dangling</c-></code>.</del>
-     <ins><code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> all denote <code class="highlight"><c- n>dangling</c-></code>.</ins>
+     <ins><code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> all denote <code class="highlight"><c- n>dangling</c-></code>.</ins>
    </ul>
    <h3 class="heading settled" data-level="7.3" id="spec-header-synopsis"><span class="secno">7.3. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>scan</c-><c- o>></c-></code> synopsis</span><a class="self-link" href="#spec-header-synopsis"></a></h3>
 <pre class="highlight"><c- cp>#include</c-> &lt;expected>
@@ -3466,7 +3473,7 @@ and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-><c- n>Args</c-><c- o>></c->
     <c- k>using</c-> <c- n>scan_result_type</c-> <c- o>=</c-> <c- n>expected</c-><c- o>&lt;</c->
-      <c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c->
+      <c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c->
       <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
@@ -3490,7 +3497,7 @@ and <code class="highlight"><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>
   <c- k>using</c-> <c- n>wscan_args</c-> <c- o>=</c-> <c- n>basic_scan_args</c-><c- o>&lt;</c-><c- n>wscan_context</c-><c- o>></c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- o>></c->
-  <c- k>using</c-> <c- n>vscan_result_type</c-> <c- o>=</c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_ssubrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
+  <c- k>using</c-> <c- n>vscan_result_type</c-> <c- o>=</c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
   <c- n>vscan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->

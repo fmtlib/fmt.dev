@@ -19,6 +19,12 @@ Max ToC Depth: 2
 Revision history {#history}
 ================
 
+Changes since R3 {#history-since-r3}
+----------------
+
+* Replace `scan_args_for` with `scan_args` and `wscan_args` for consistency with `std::format`.
+* Rename `borrowed_ssubrange_t` to `borrowed_tail_subrange_t` partly based on the naming from ranges-v3 (`tail_view`).
+
 Changes since R2 {#history-since-r2}
 ----------------
 
@@ -214,11 +220,11 @@ The signature of `std::scan` is as follows:
 ```c++
 template <class... Args, scannable_range<char> Range>
 auto scan(Range&& range, format_string<Args...> fmt)
-  -> expected<scan_result<ranges::borrowed_ssubrange_t<Range>, Args...>, scan_error>;
+  -> expected<scan_result<ranges::borrowed_tail_subrange_t<Range>, Args...>, scan_error>;
 
 template <class... Args, scannable_range<wchar_t> Range>
 auto scan(Range&& range, wformat_string<Args...> fmt)
-  -> expected<scan_result<ranges::borrowed_ssubrange_t<Range>, Args...>, scan_error>;
+  -> expected<scan_result<ranges::borrowed_tail_subrange_t<Range>, Args...>, scan_error>;
 ```
 
 `std::scan` reads values of type `Args...` from the `range` it's given,
@@ -950,28 +956,25 @@ The rationale behind this change is as follows:
     both at compile-time and runtime. These concerns have since been alleviated, as compiler technology has improved.
 
 The return type of `scan`, `scan_result`, contains a `subrange` over the unparsed input.
-With this, a new type alias is introduced, `ranges::borrowed_ssubrange_t`, that is defined as follows:
+With this, a new type alias is introduced, `ranges::borrowed_tail_subrange_t`, that is defined as follows:
 
 ```
 template <typename R>
-using borrowed_ssubrange_t = std::conditional_t<
+using borrowed_tail_subrange_t = std::conditional_t<
   ranges::borrowed_range<R>,
   ranges::subrange<ranges::iterator_t<R>, ranges::sentinel_t<R>>,
   ranges::dangling>;
 ```
 
-Note:
-The name `borrowed_ssubrange_t` is absolutely horrendeous, and is begging for a better alternative.
-
 Compare this with `borrowed_subrange_t`, which is defined as
 <code>ranges::subrange&lt;ranges::iterator_t&lt;R&gt;, ranges::iterator_t&lt;R&gt;&gt;</code>,
 when the range models `borrowed_range`.
 
-This is novel in the Ranges space: previously all algorithms have either returned an iterator,
+This is novel in the ranges space: previously all algorithms have either returned an iterator,
 or a subrange of two iterators. We believe that `std::scan` warrants a diversion:
 if (for `I = ranges::iterator_t<R>` and `S = ranges::sentinel_t<R>`)
 `std::random_access_iterator<I> || std::sized_sentinel_for<I> || std::assignable_from<I&, S>` is `false`,
-`std::scan` will need to go through the rest of the input, in order to get an the end iterator to return.
+`std::scan` will need to go through the rest of the input, in order to get the end iterator to return.
 A superior alternative is to simply return the sentinel, since that's always correct
 (the leftover range always has the same end as the source range) and requires no additional computation.
 
@@ -1211,11 +1214,11 @@ small inline wrapper around its non-variadic counterpart:
 <pre highlight=cpp>
 template&lt;scannable_range&lt;char&gt; Range&gt;
 auto vscan(Range&& range, string_view fmt, scan_args args)
-  -> expected&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, scan_error&gt;;
+  -> expected&lt;ranges::borrowed_tail_subrange_t&lt;Range&gt;, scan_error&gt;;
 
 template &lt;typename... Args, scannable_range&lt;char&gt; SourceRange&gt;
 auto scan(SourceRange&& source, format_string&lt;Args...&gt; format)
-    -> expected&lt;scan_result&lt;ranges::borrowed_ssubrange_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
+    -> expected&lt;scan_result&lt;ranges::borrowed_tail_subrange_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
   auto args = make_scan_args&lt;SourceRange, Args...&gt;();
   auto result = vscan(std::forward&lt;SourceRange&gt;(range), format, args);
   return make_scan_result(std::move(result), std::move(args));
@@ -1585,7 +1588,7 @@ namespace std::ranges {
     using borrowed_subrange_t = <i>see below</i>;   // freestanding
   
   <ins>template&lt;range R&gt;
-    using borrowed_ssubrange_t = <i>see below</i>;  // freestanding</ins>
+    using borrowed_tail_subrange_t = <i>see below</i>;  // freestanding</ins>
 
   // ...
 }
@@ -1601,11 +1604,11 @@ For a type `R` that models `range`:
 <li>if `R` models `borrowed_range`, then `borrowed_iterator_t<R>` denotes `iterator_t<R>`,
 <del>and `borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;&gt;</code>;</del>
 <ins>`borrowed_subrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;&gt;</code>,
-and `borrowed_ssubrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;, sentinel_t&lt;R&gt;&gt;</code>;</ins>
+and `borrowed_tail_subrange_t<R>` denotes <code>subrange&lt;iterator_t&lt;R&gt;, sentinel_t&lt;R&gt;&gt;</code>;</ins>
 
 <li>otherwise,
 <del>both `borrowed_iterator_t<R>` and `borrowed_subrange_t<R>` denote `dangling`.</del>
-<ins>`borrowed_iterator_t<R>`, `borrowed_subrange_t<R>`, and `borrowed_ssubrange_t<R>` all denote `dangling`.</ins>
+<ins>`borrowed_iterator_t<R>`, `borrowed_subrange_t<R>`, and `borrowed_tail_subrange_t<R>` all denote `dangling`.</ins>
 
 </ul>
 
@@ -1631,7 +1634,7 @@ namespace std {
 
   template&lt;class Range, class...Args&gt;
     using scan_result_type = expected&lt;
-      scan_result&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, Args...&gt;,
+      scan_result&lt;ranges::borrowed_tail_subrange_t&lt;Range&gt;, Args...&gt;,
       scan_error&gt;;
 
   template&lt;class... Args, scannable_range&lt;char&gt; Range&gt;
@@ -1655,7 +1658,7 @@ namespace std {
   using wscan_args = basic_scan_args&lt;wscan_context&gt;;
 
   template&lt;class Range&gt;
-  using vscan_result_type = expected&lt;ranges::borrowed_ssubrange_t&lt;Range&gt;, scan_error&gt;;
+  using vscan_result_type = expected&lt;ranges::borrowed_tail_subrange_t&lt;Range&gt;, scan_error&gt;;
 
   template&lt;scannable_range&lt;char&gt; Range&gt;
   vscan_result_type&lt;Range&gt; vscan(Range&& range, string_view fmt, scan_args args);
