@@ -24,8 +24,12 @@ Changes since R3 {#history-since-r3}
 
 * Replace `scan_args_for` with `scan_args` and `wscan_args` for consistency with `std::format`.
 * Rename `borrowed_ssubrange_t` to `borrowed_tail_subrange_t` partly based on the naming from ranges-v3 (`tail_view`).
-* Replace `format_string` with `scan_format_string`.
+* Replace `format_string` with `scan_format_string`, with a `Range` template parameter.
 * Make `[v]scan_result_type` (the return types of `std::scan` and `std::vscan`) exposition only.
+* Remove `visit_scan_arg`: follow [[P2637]] and use `std::variant::visit`, instead.
+* Add discussion on `stdin` support, guided by SG9 polls.
+* Make encoding errors be errors for strings, instead of garbage-in-garbage-out.
+* Add further discussion on field widths.
 
 Changes since R2 {#history-since-r2}
 ----------------
@@ -221,11 +225,11 @@ The signature of `std::scan` is as follows:
 
 ```c++
 template <class... Args, scannable_range<char> Range>
-auto scan(Range&& range, scan_format_string<Args...> fmt)
+auto scan(Range&& range, scan_format_string<Range, Args...> fmt)
   -> expected<scan_result<ranges::borrowed_tail_subrange_t<Range>, Args...>, scan_error>;
 
 template <class... Args, scannable_range<wchar_t> Range>
-auto scan(Range&& range, wscan_format_string<Args...> fmt)
+auto scan(Range&& range, wscan_format_string<Range, Args...> fmt)
   -> expected<scan_result<ranges::borrowed_tail_subrange_t<Range>, Args...>, scan_error>;
 ```
 
@@ -348,6 +352,7 @@ scnlib also has types:
  * 'rnn', 'Rnn' for arbitrary base (r = radix)
  * 'U' for Unicode code point
  * '[...]' for scanf-like set of characters
+ * '/.../' for regex
 -->
 </td>
 
@@ -568,6 +573,12 @@ except some grapheme clusters are 2 ([format.string.std] &para; 13):
 This essentially maps 1 field width unit = 1 user perceived character.
 It should be noted, that with this definition, grapheme clusters like emoji have a field width of 2.
 This behavior is present in `std::format` today, but can potentially be surprising to users.
+
+This meaning for the width specifier is different from `scanf`, where the width means
+the number of code units to read. This is because the purpose of that specifier in `scanf`
+is to prevent buffer overflow. Because the current interface of the proposed `std::scan` doesn't
+allow reading into an user-defined buffer, this isn't a concern. The behavior is still different from `scanf`,
+which can be concerning.
 
 <div class=note>
 Other options can be considered, if compatibility with `std::format` can be set aside.
@@ -833,7 +844,7 @@ auto& [ch, str] = r->values();
 </tr>
 
 <tr>
-<td>`b`, `B`, `d`, `o`, `u`, `x`, `X`
+<td>`b`, `B`, `d`, `i`, `o`, `u`, `x`, `X`
 <td>Allows for integral representation, i.e. `0` or `1`
 </tr>
 
@@ -1219,7 +1230,7 @@ auto vscan(Range&& range, string_view fmt, scan_args args)
   -> expected&lt;ranges::borrowed_tail_subrange_t&lt;Range&gt;, scan_error&gt;;
 
 template &lt;typename... Args, scannable_range&lt;char&gt; SourceRange&gt;
-auto scan(SourceRange&& source, scan_format_string&lt;Args...&gt; format)
+auto scan(SourceRange&& source, scan_format_string&lt;Range, Args...&gt; format)
     -> expected&lt;scan_result&lt;ranges::borrowed_tail_subrange_t&lt;SourceRange&gt;, Args...&gt;, scan_error&gt; {
   auto args = make_scan_args&lt;SourceRange, Args...&gt;();
   auto result = vscan(std::forward&lt;SourceRange&gt;(range), format, args);
@@ -1331,37 +1342,29 @@ Encoding {#encoding}
 
 In a similar manner as with `std::format`, input given to `std::scan` is assumed
 to be in the (ordinary/wide) literal encoding.
-Errors in encoding are handled in a "garbage in, garbage out" manner:
-invalidly encoded code points are treated as if they were the Unicode noncharacter U+FFFF,
-which doesn't match any other character or pattern.
 
-<div class=note>
-Encountering invalid encoding inside `std::scan` could be a use case
-for erroneous behavior in the library. That's because be provide well defined-behavior
-for handling invalid encoding, but it's still likely to be an error.
-As motivation for erroneous behavior,
-Unicode conformance requirement C.10 says that ill-formed input shall not be treated as a character,
-and treat it as an error instead.
-</div>
+If an error in encoding is encountered while reading a value of a string type
+(`basic_string`, `basic_string_view`), an `invalid_scanned_value` error is returned.
+For other types, the reading is stopped, as the parser can't parse a numeric value from
+something that isn't digits.
 
 <div class=example>
-```cpp
+```c++
 // Invalid UTF-8
 auto r = std::scan<std::string>("a\xc3 ", "{}");
-// r->value() == "a\xc3"
-// Erroneous behavior?
+// r == false
+// r->error() == std::scan_error::invalid_scanner_value
+
+auto r2 = std::scan<int>("1\xc3 ", "{}");
+// r2 == true
+// r2->value() == 1
+// r2->range() == "\xc3 "
 ```
 </div>
 
-Other potential options for handling invalid encoding would be:
-
- * treat is as UB
- * always sanitize input encoding (potentially very slow when done character-by-character with `forward_range`s)
- * check for encoding when reading code units and strings, while potentially introducing a format specifier for "raw mode",
-    which skips these checks
-
-Note: This topic is under active contention in SG16.
-See also example in [[#fmt-type-char]].
+Because `std::scan` is, as indicated by the paper title, a <i>text parsing</i> facility,
+raw bytes input into a `string` isn't supported. That can be achieved with simpler range algorithms
+already in the standard.
 
 Performance {#performance}
 -----------
@@ -1427,8 +1430,8 @@ Existing work {#existing-work}
 
 [[SCNLIB]] is a C++ library that, among other things,
 provides an interface similar to the one described in this paper.
-As of the publication of this paper, the `dev`-branch of [[SCNLIB]]
-contains the reference implementation for this proposal.
+As of the publication of this paper, the latest release (v2.0.0) of [[SCNLIB]]
+is the reference implementation of this proposal.
 
 [[FMT]] has a prototype implementation of an earlier version of the proposal.
 
@@ -1443,23 +1446,43 @@ if it is deemed critical for v1.
 
 All of the possible future extensions described below are implemented in [[SCNLIB]].
 
-Integration with `std::istream`s {#istream-integration}
---------------------------------
+Integration with `stdio` {#stdio-integration}
+------------------------
 
-Today, in C++, standard I/O is largely done with iostreams, and not with ranges.
-The library proposed in this paper doesn't support that use case well.
-The proposed concept of `scannable_range` requires `forward_range`,
-so facilities like `istreambuf_iterator`, which only models `input_iterator`,
-can't be used.
+In the SG9 meeting in Kona (11/2023), it was polled, that:
 
-Integration with iostreams is needed to enable working with files and `stdin`.
-This can be worked around with something like `std::getline`,
-and using its result with `std::scan`, but error recovery with that gets very tricky very fast.
+<blockquote>
+SG9 feels that it essential for std::scan to be useable with stdin and cin
+(and the paper would be incomplete without this feature).
 
-A possible solution would be a more robust `istream_view`, that models at least `forward_range`,
-either through caching the read characters in the view itself, or by utilizing the stream buffer.
-[[SCNLIB]] implements this by providing a generic `caching_view`, which wraps an `input_range`
-and a buffer, and provides an interface that models `bidirectional_range`.
+<table>
+<tr>
+<th>SF</th>
+<th>F</th>
+<th>N</th>
+<th>A</th>
+<th>SA</th>
+</tr>
+
+<tr>
+<td>0</td>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+<td>0</td>
+</tr>
+</table>
+</blockquote>
+
+We've decided to follow the route of `std::format` + `std::print`,
+i.e. to not complicate and bloat this paper further by involving I/O.
+This is still an important avenue of future expansion,
+and the library proposed in this paper is designed and specified in such a way
+as to easily allow that expansion.
+
+[[SCNLIB]] implements this by providing a function, `scn::input`,
+for interfacing with `stdin`, and by allowing passing in `FILE*`s as input
+to `scn::scan`, in addition to `scannable_range`s.
 
 `scanf`-like `[character set]` matching {#char-set-match}
 ---------------------------------------
@@ -1486,7 +1509,8 @@ It should be noted, that while the syntax is quite similar, this is not a regula
 This syntax is intentionally way more limited, as is meant for simple character matching.
 
 [[SCNLIB]] implements this syntax, providing support for matching single characters/code points
-(`{:[abc]}`), code point ranges (`{:[a-z]}`), and regex-like wildcards (`{:[:alpha:]}` or `{:[\\w]})`.
+(`{:[abc]}`) and code point ranges (`{:[a-z]}`).
+Full regex matching is also supported with `{:/.../}`.
 
 Reading code points (or even grapheme clusters?) {#scan-code-point}
 ------------------------------------------------
@@ -1619,20 +1643,20 @@ Header `<scan>` synopsis {#spec-header-synopsis}
 ------------------------
 
 <pre highlight=cpp>
-#include &lt;expected&gt;
-#include &lt;format&gt;
-#include &lt;ranges&gt;
-
 namespace std {
-  template&lt;class charT, class... Args&gt;
+  template&lt;class charT, class Range, class... Args&gt;
     struct basic_scan_format_string;
 
-  template&lt;class... Args&gt;
+  template&lt;class Range, class... Args&gt;
     using scan_format_string =
-      basic_scan_format_string&lt;char, type_identity_t&lt;Args&gt;...&gt;;
-  template&lt;class... Args&gt;
+      basic_scan_format_string&lt;char,
+                               type_identity_t&lt;Range&gt;,
+                               type_identity_t&lt;Args&gt;...&gt;;
+  template&lt;class Range, class... Args&gt;
     using wscan_format_string =
-      basic_scan_format_string&lt;wchar_t, type_identity_t&lt;Args&gt;...&gt;;
+      basic_scan_format_string&lt;wchar_t,
+                               type_identity_t&lt;Range&gt;,
+                               type_identity_t&lt;Args&gt;...&gt;;
 
   class scan_error;
 
@@ -1651,19 +1675,19 @@ namespace std {
 
   template&lt;class... Args, scannable_range&lt;char&gt; Range&gt;
     <i>scan-result-type</i>&lt;Range, Args...&gt; scan(Range&& range,
-                                          scan_format_string&lt;Args...&gt; fmt);
+                                          scan_format_string&lt;Range, Args...&gt; fmt);
 
   template&lt;class... Args, scannable_range&lt;wchar_t&gt; Range&gt;
     <i>scan-result-type</i>&lt;Range, Args...&gt; scan(Range&& range,
-                                          wscan_format_string&lt;Args...&gt; fmt);
+                                          wscan_format_string&lt;Range, Args...&gt; fmt);
 
   template&lt;class... Args, scannable_range&lt;char&gt; Range&gt;
     <i>scan-result-type</i>&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
-                                          scan_format_string&lt;Args...&gt; fmt);
+                                          scan_format_string&lt;Range, Args...&gt; fmt);
 
   template &lt;class... Args, scannable_range&lt;wchar_t&gt; Range&gt;
     <i>scan-result-type</i>&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
-                                          wscan_format_string&lt;Args...&gt; fmt);
+                                          wscan_format_string&lt;Range, Args...&gt; fmt);
 
   template&lt;class Range, class charT&gt; class basic_scan_context;
   using scan_context = basic_scan_context&lt;<i>unspecified</i>, char&gt;;
@@ -1710,9 +1734,6 @@ namespace std {
 
   template&lt;class Context&gt;
     class basic_scan_arg;
-
-  template&lt;class Visitor, class Context&gt;
-    decltype(auto) visit_scan_arg(Visitor&& vis, basic_scan_arg&lt;Context&gt; arg);
   
   template&lt;class Context, class... Args&gt;
     class <i>scan-arg-store</i>; // exposition only
@@ -1804,8 +1825,26 @@ namespace std {
       constexpr auto&& value(this Self&&);
 
   private:
-    range_type <i>range_</i>;        // exposition only
+    range_type <i>range_</i>;      // exposition only
     tuple&lt;Args...&gt; <i>values_</i>; // exposition only
+  };
+}
+</pre>
+
+Class template `basic_scan_format_string` synopsis {#spec-scan-format-string-synopsis}
+--------------------------------------------------
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class charT, class Range, class... Args&gt;
+  struct basic_scan_format_string {
+  private:
+    basic_string_view&lt;charT&gt; <i>str</i>;  // exposition only
+
+  public:
+    template&lt;class T&gt; consteval basic_scan_format_string(const T& s);
+
+    constexpr basic_string_view&lt;charT&gt; get() const noexcept { return <i>str</i>; }
   };
 }
 </pre>
@@ -1827,7 +1866,8 @@ namespace std {
     constexpr basic_scan_arg&lt;basic_scan_context&gt; arg(size_t id) const noexcept;
     std::locale locale();
 
-    constexpr iterator current() const;
+    constexpr iterator begin() const;
+    constexpr sentinel end() const;
     constexpr range_type range() const;
     constexpr void advance_to(iterator it);
 
@@ -1874,7 +1914,7 @@ namespace std {
     concept <i>scannable-with</i> =            // exposition only
       semiregular&lt;Scanner&gt; &&
       requires(Scanner& s, const Scanner& cs, T& t, Context& ctx,
-               basic_format_parse_context&lt;typename Context::char_type&gt;& pctx)
+               basic_scan_parse_context&lt;typename Context::char_type&gt;& pctx)
       {
         { s.parse(pctx) } -> same_as&lt;expected&lt;typename decltype(pctx)::iterator, scan_error&gt;&gt;;
         { cs.scan(t, ctx) } -> same_as&lt;expected&lt;typename Context::iterator, scan_error&gt;&gt;;
@@ -1882,7 +1922,7 @@ namespace std {
 
   template&lt;class T, class CharT&gt;
     concept scannable =
-      <i>scannable-with</i>&lt;remove_reference_t&lt;T&gt;, basic_scan_context&lt;<i>unspecified</i>&gt;&gt;;
+      <i>scannable-with</i>&lt;remove_reference_t&lt;T&gt;, basic_scan_context&lt;<i>unspecified</i>, CharT&gt;&gt;;
 }
 </pre>
 
@@ -1994,6 +2034,11 @@ namespace std {
     "title": "A control flow operator",
     "authors": ["Barry Revzin"],
     "href": "https://wg21.link/p2561"
+  },
+  "P2637": {
+    "title": "Member `visit`",
+    "authors": ["Barry Revzin"],
+    "href": "https://wg21.link/p2637"
   }
 }
 </pre>
