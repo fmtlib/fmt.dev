@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/D1729R3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c07897026ab6994797b1fa5ce5817fc8f891db4f" name="revision">
+  <meta content="a4ddab1b318ccdc6b636fc806ed5036dcf3639f0" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2192,6 +2192,8 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
      <p>Rename <code class="highlight"><c- n>borrowed_ssubrange_t</c-></code> to <code class="highlight"><c- n>borrowed_tail_subrange_t</c-></code> partly based on the naming from ranges-v3 (<code class="highlight"><c- n>tail_view</c-></code>).</p>
     <li data-md>
      <p>Replace <code class="highlight"><c- n>format_string</c-></code> with <code class="highlight"><c- n>scan_format_string</c-></code>.</p>
+    <li data-md>
+     <p>Make <code class="highlight"><c- p>[</c-><c- n>v</c-><c- p>]</c-><c- n>scan_result_type</c-></code> (the return types of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vscan</c-></code>) exposition only.</p>
    </ul>
    <h3 class="heading settled" data-level="1.2" id="history-since-r2"><span class="secno">1.2. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
    <ul>
@@ -3484,24 +3486,24 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
       <c- n>same_as</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_value_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>CharT</c-><c- o>></c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-><c- n>Args</c-><c- o>></c->
-    <c- k>using</c-> <c- n>scan_result_type</c-> <c- o>=</c-> <c- n>expected</c-><c- o>&lt;</c->
+    <c- k>using</c-> <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i> <c- o>=</c-> <c- n>expected</c-><c- o>&lt;</c->
       <c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c->
-      <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
+      <c- n>scan_error</c-><c- o>></c-><c- p>;</c-> <c- c1>// exposition only</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-    <c- n>scan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
+    <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
                                           <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-    <c- n>scan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
+    <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
                                           <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-    <c- n>scan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
+    <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
                                           <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-> <c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-    <c- n>scan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
+    <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
                                           <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>class</c-> <c- nc>basic_scan_context</c-><c- p>;</c->
@@ -3513,22 +3515,24 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
   <c- k>using</c-> <c- n>wscan_args</c-> <c- o>=</c-> <c- n>basic_scan_args</c-><c- o>&lt;</c-><c- n>wscan_context</c-><c- o>></c-><c- p>;</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- o>></c->
-  <c- k>using</c-> <c- n>vscan_result_type</c-> <c- o>=</c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
+    <c- k>using</c-> <i><c- n>vscan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i> <c- o>=</c->  <c- n>expected</c-><c- o>&lt;</c->
+      <c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c->
+      <c- n>scan_error</c-><c- o>></c-><c- p>;</c-> <c- c1>// exposition only</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-  <c- n>vscan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
+    <i><c- n>vscan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-  <c- n>vscan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>wscan_args</c-> <c- n>args</c-><c- p>);</c->
+    <i><c- n>vscan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>wscan_args</c-> <c- n>args</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-  <c- n>vscan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c->
-                                 <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
-                                 <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c->
-                                 <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
+    <i><c- n>vscan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c->
+                                   <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
+                                   <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c->
+                                   <c- n>scan_args</c-> <c- n>args</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-  <c- n>vscan_result_type</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c->
+    <i><c- n>vscan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-> <c- n>vscan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c->
                                  <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
                                  <c- n>wstring_view</c-> <c- n>fmt</c-><c- p>,</c->
                                  <c- n>wscan_args</c-> <c- n>args</c-><c- p>);</c->
