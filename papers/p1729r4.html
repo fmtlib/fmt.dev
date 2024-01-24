@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/D1729R3" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a4ddab1b318ccdc6b636fc806ed5036dcf3639f0" name="revision">
+  <meta content="af55a8071467e18656c626e62cb28e30252dca69" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2153,7 +2153,7 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
     <li>
      <a href="#future"><span class="secno">6</span> <span class="content">Future extensions</span></a>
      <ol class="toc">
-      <li><a href="#istream-integration"><span class="secno">6.1</span> <span class="content">Integration with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istream</c-></code>s</span></a>
+      <li><a href="#stdio-integration"><span class="secno">6.1</span> <span class="content">Integration with <code class="highlight"><c- n>stdio</c-></code></span></a>
       <li><a href="#char-set-match"><span class="secno">6.2</span> <span class="content"><code class="highlight"><c- n>scanf</c-></code>-like <code class="highlight"><c- p>[</c-><c- n>character</c-> <c- n>set</c-><c- p>]</c-></code> matching</span></a>
       <li><a href="#scan-code-point"><span class="secno">6.3</span> <span class="content">Reading code points (or even grapheme clusters?)</span></a>
       <li><a href="#scan-transcode"><span class="secno">6.4</span> <span class="content">Reading strings and chars of different width</span></a>
@@ -2169,11 +2169,12 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
       <li><a href="#spec-header-synopsis"><span class="secno">7.3</span> <span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>scan</c-><c- o>></c-></code> synopsis</span></a>
       <li><a href="#spec-scan-error-synopsis"><span class="secno">7.4</span> <span class="content">Class <code class="highlight"><c- n>scan_error</c-></code> synopsis</span></a>
       <li><a href="#spec-scan-result-synopsis"><span class="secno">7.5</span> <span class="content">Class template <code class="highlight"><c- n>scan_result</c-></code> synopsis</span></a>
-      <li><a href="#spec-scan-context-synopsis"><span class="secno">7.6</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_context</c-></code> synopsis</span></a>
-      <li><a href="#spec-scan-args-synopsis"><span class="secno">7.7</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_args</c-></code> synopsis</span></a>
-      <li><a href="#spec-scannable"><span class="secno">7.8</span> <span class="content">Concept <code class="highlight"><c- n>scannable</c-></code></span></a>
-      <li><a href="#spec-scan-arg-synopsis"><span class="secno">7.9</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_arg</c-></code> synopsis</span></a>
-      <li><a href="#spec-scan-arg-store"><span class="secno">7.10</span> <span class="content">Exposition-only class template <code class="highlight"><i><c- n>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i></code> synopsis</span></a>
+      <li><a href="#spec-scan-format-string-synopsis"><span class="secno">7.6</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_format_string</c-></code> synopsis</span></a>
+      <li><a href="#spec-scan-context-synopsis"><span class="secno">7.7</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_context</c-></code> synopsis</span></a>
+      <li><a href="#spec-scan-args-synopsis"><span class="secno">7.8</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_args</c-></code> synopsis</span></a>
+      <li><a href="#spec-scannable"><span class="secno">7.9</span> <span class="content">Concept <code class="highlight"><c- n>scannable</c-></code></span></a>
+      <li><a href="#spec-scan-arg-synopsis"><span class="secno">7.10</span> <span class="content">Class template <code class="highlight"><c- n>basic_scan_arg</c-></code> synopsis</span></a>
+      <li><a href="#spec-scan-arg-store"><span class="secno">7.11</span> <span class="content">Exposition-only class template <code class="highlight"><i><c- n>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i></code> synopsis</span></a>
      </ol>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2191,9 +2192,17 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
     <li data-md>
      <p>Rename <code class="highlight"><c- n>borrowed_ssubrange_t</c-></code> to <code class="highlight"><c- n>borrowed_tail_subrange_t</c-></code> partly based on the naming from ranges-v3 (<code class="highlight"><c- n>tail_view</c-></code>).</p>
     <li data-md>
-     <p>Replace <code class="highlight"><c- n>format_string</c-></code> with <code class="highlight"><c- n>scan_format_string</c-></code>.</p>
+     <p>Replace <code class="highlight"><c- n>format_string</c-></code> with <code class="highlight"><c- n>scan_format_string</c-></code>, with a <code class="highlight"><c- n>Range</c-></code> template parameter.</p>
     <li data-md>
      <p>Make <code class="highlight"><c- p>[</c-><c- n>v</c-><c- p>]</c-><c- n>scan_result_type</c-></code> (the return types of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vscan</c-></code>) exposition only.</p>
+    <li data-md>
+     <p>Remove <code class="highlight"><c- n>visit_scan_arg</c-></code>: follow <a data-link-type="biblio" href="#biblio-p2637" title="Member `visit`">[P2637]</a> and use <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>variant</c-><c- o>::</c-><c- n>visit</c-></code>, instead.</p>
+    <li data-md>
+     <p>Add discussion on <code class="highlight"><c- n>stdin</c-></code> support, guided by SG9 polls.</p>
+    <li data-md>
+     <p>Make encoding errors be errors for strings, instead of garbage-in-garbage-out.</p>
+    <li data-md>
+     <p>Add further discussion on field widths.</p>
    </ul>
    <h3 class="heading settled" data-level="1.2" id="history-since-r2"><span class="secno">1.2. </span><span class="content">Changes since R2</span><a class="self-link" href="#history-since-r2"></a></h3>
    <ul>
@@ -2369,11 +2378,11 @@ library, integrate well with the chrono library, and provide an API similar to <
 is the function template <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, the input counterpart of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.
 The signature of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is as follows:</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-<c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>)</c->
+<c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>)</c->
   <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
 <c- n>template</c-> <c- o>&lt;</c-><c- n>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
-<c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>)</c->
+<c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c-> <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>)</c->
   <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> reads values of type <code class="highlight"><c- n>Args</c-><c- p>...</c-></code> from the <code class="highlight"><c- n>range</c-></code> it’s given,
@@ -2665,6 +2674,10 @@ Derived Extracted Property as described by UAX #44 of the Unicode Standard</p>
    <p>This essentially maps 1 field width unit = 1 user perceived character.
 It should be noted, that with this definition, grapheme clusters like emoji have a field width of 2.
 This behavior is present in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> today, but can potentially be surprising to users.</p>
+   <p>This meaning for the width specifier is different from <code class="highlight"><c- n>scanf</c-></code>, where the width means
+the number of code units to read. This is because the purpose of that specifier in <code class="highlight"><c- n>scanf</c-></code> is to prevent buffer overflow. Because the current interface of the proposed <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> doesn’t
+allow reading into an user-defined buffer, this isn’t a concern. The behavior is still different from <code class="highlight"><c- n>scanf</c-></code>,
+which can be concerning.</p>
    <div class="note" role="note">
      Other options can be considered, if compatibility with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> can be set aside.
 These options include: 
@@ -2876,7 +2889,7 @@ This can lead to invalid encoding in the scanned values.
       <td><code class="highlight"><c- n>s</c-></code> 
       <td>Allows for textual representation, i.e. <code class="highlight">true</code> or <code class="highlight">false</code> 
      <tr>
-      <td><code class="highlight"><c- n>b</c-></code>, <code class="highlight"><c- n>B</c-></code>, <code class="highlight"><c- n>d</c-></code>, <code class="highlight"><c- n>o</c-></code>, <code class="highlight"><c- n>u</c-></code>, <code class="highlight"><c- n>x</c-></code>, <code class="highlight"><c- n>X</c-></code> 
+      <td><code class="highlight"><c- n>b</c-></code>, <code class="highlight"><c- n>B</c-></code>, <code class="highlight"><c- n>d</c-></code>, <code class="highlight"><c- n>i</c-></code>, <code class="highlight"><c- n>o</c-></code>, <code class="highlight"><c- n>u</c-></code>, <code class="highlight"><c- n>x</c-></code>, <code class="highlight"><c- n>X</c-></code> 
       <td>Allows for integral representation, i.e. <code class="highlight"><c- mi>0</c-></code> or <code class="highlight"><c- mi>1</c-></code> 
      <tr>
       <td>none 
@@ -3179,7 +3192,7 @@ small inline wrapper around its non-variadic counterpart:</p>
   <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-><c- p>;</c->
 
 <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>SourceRange</c-><c- o>></c->
-<c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>SourceRange</c-><c- o>&amp;&amp;</c-> <c- n>source</c-><c- p>,</c-> <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>format</c-><c- p>)</c->
+<c- k>auto</c-> <c- n>scan</c-><c- p>(</c-><c- n>SourceRange</c-><c- o>&amp;&amp;</c-> <c- n>source</c-><c- p>,</c-> <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>format</c-><c- p>)</c->
     <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- n>scan_result</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- o>></c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-> <c- p>{</c->
   <c- k>auto</c-> <c- n>args</c-> <c- o>=</c-> <c- n>make_scan_args</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>();</c->
   <c- k>auto</c-> <c- n>result</c-> <c- o>=</c-> <c- n>vscan</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>SourceRange</c-><c- o>></c-><c- p>(</c-><c- n>range</c-><c- p>),</c-> <c- n>format</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
@@ -3257,36 +3270,27 @@ In particular, locale-specific behavior can be opted into by using the <code cla
    </div>
    <h3 class="heading settled" data-level="4.11" id="encoding"><span class="secno">4.11. </span><span class="content">Encoding</span><a class="self-link" href="#encoding"></a></h3>
    <p>In a similar manner as with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, input given to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is assumed
-to be in the (ordinary/wide) literal encoding.
-Errors in encoding are handled in a "garbage in, garbage out" manner:
-invalidly encoded code points are treated as if they were the Unicode noncharacter U+FFFF,
-which doesn’t match any other character or pattern.</p>
-   <div class="note" role="note"> Encountering invalid encoding inside <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> could be a use case
-for erroneous behavior in the library. That’s because be provide well defined-behavior
-for handling invalid encoding, but it’s still likely to be an error.
-As motivation for erroneous behavior,
-Unicode conformance requirement C.10 says that ill-formed input shall not be treated as a character,
-and treat it as an error instead. </div>
-   <div class="example" id="example-97cbf05c">
-    <a class="self-link" href="#example-97cbf05c"></a> 
-<pre class="language-cpp highlight"><c- c1>// Invalid UTF-8</c->
+to be in the (ordinary/wide) literal encoding.</p>
+   <p>If an error in encoding is encountered while reading a value of a string type
+(<code class="highlight"><c- n>basic_string</c-></code>, <code class="highlight"><c- n>basic_string_view</c-></code>), an <code class="highlight"><c- n>invalid_scanned_value</c-></code> error is returned.
+For other types, the reading is stopped, as the parser can’t parse a numeric value from
+something that isn’t digits.</p>
+   <div class="example" id="example-047db6d3">
+    <a class="self-link" href="#example-047db6d3"></a> 
+<pre class="language-c++ highlight"><c- c1>// Invalid UTF-8</c->
 <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"a</c-><c- se>\xc3</c-><c- s> "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->
-<c- c1>// r->value() == "a\xc3"</c->
-<c- c1>// Erroneous behavior?</c->
+<c- c1>// r == false</c->
+<c- c1>// r->error() == std::scan_error::invalid_scanner_value</c->
+
+<c- k>auto</c-> <c- n>r2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"1</c-><c- se>\xc3</c-><c- s> "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->
+<c- c1>// r2 == true</c->
+<c- c1>// r2->value() == 1</c->
+<c- c1>// r2->range() == "\xc3 "</c->
 </pre>
    </div>
-   <p>Other potential options for handling invalid encoding would be:</p>
-   <ul>
-    <li data-md>
-     <p>treat is as UB</p>
-    <li data-md>
-     <p>always sanitize input encoding (potentially very slow when done character-by-character with <code class="highlight"><c- n>forward_range</c-></code>s)</p>
-    <li data-md>
-     <p>check for encoding when reading code units and strings, while potentially introducing a format specifier for "raw mode",
-which skips these checks</p>
-   </ul>
-   <p class="note" role="note"><span class="marker">Note:</span> This topic is under active contention in SG16.
-See also example in <a href="#fmt-type-char">§ 4.3.8 Type specifiers: CharT</a>.</p>
+   <p>Because <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code> is, as indicated by the paper title, a <i>text parsing</i> facility,
+raw bytes input into a <code class="highlight"><c- n>string</c-></code> isn’t supported. That can be achieved with simpler range algorithms
+already in the standard.</p>
    <h3 class="heading settled" data-level="4.12" id="performance"><span class="secno">4.12. </span><span class="content">Performance</span><a class="self-link" href="#performance"></a></h3>
    <p>The API allows efficient implementation that minimizes virtual function calls
 and dynamic memory allocations, and avoids unnecessary copies. In particular,
@@ -3328,7 +3332,7 @@ existing code.</p>
    <h2 class="heading settled" data-level="5" id="existing-work"><span class="secno">5. </span><span class="content">Existing work</span><a class="self-link" href="#existing-work"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> is a C++ library that, among other things,
 provides an interface similar to the one described in this paper.
-As of the publication of this paper, the <code class="highlight"><c- n>dev</c-></code>-branch of <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> contains the reference implementation for this proposal.</p>
+As of the publication of this paper, the latest release (v2.0.0) of <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> is the reference implementation of this proposal.</p>
    <p><a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a> has a prototype implementation of an earlier version of the proposal.</p>
    <h2 class="heading settled" data-level="6" id="future"><span class="secno">6. </span><span class="content">Future extensions</span><a class="self-link" href="#future"></a></h2>
    <p>To keep the scope of this paper somewhat manageable,
@@ -3337,17 +3341,35 @@ This leaves the design space open for future extensions and other proposals.
 However, we are not categorically against exploring this design space,
 if it is deemed critical for v1.</p>
    <p>All of the possible future extensions described below are implemented in <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a>.</p>
-   <h3 class="heading settled" data-level="6.1" id="istream-integration"><span class="secno">6.1. </span><span class="content">Integration with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>istream</c-></code>s</span><a class="self-link" href="#istream-integration"></a></h3>
-   <p>Today, in C++, standard I/O is largely done with iostreams, and not with ranges.
-The library proposed in this paper doesn’t support that use case well.
-The proposed concept of <code class="highlight"><c- n>scannable_range</c-></code> requires <code class="highlight"><c- n>forward_range</c-></code>,
-so facilities like <code class="highlight"><c- n>istreambuf_iterator</c-></code>, which only models <code class="highlight"><c- n>input_iterator</c-></code>,
-can’t be used.</p>
-   <p>Integration with iostreams is needed to enable working with files and <code class="highlight"><c- n>stdin</c-></code>.
-This can be worked around with something like <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>getline</c-></code>,
-and using its result with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, but error recovery with that gets very tricky very fast.</p>
-   <p>A possible solution would be a more robust <code class="highlight"><c- n>istream_view</c-></code>, that models at least <code class="highlight"><c- n>forward_range</c-></code>,
-either through caching the read characters in the view itself, or by utilizing the stream buffer. <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> implements this by providing a generic <code class="highlight"><c- n>caching_view</c-></code>, which wraps an <code class="highlight"><c- n>input_range</c-></code> and a buffer, and provides an interface that models <code class="highlight"><c- n>bidirectional_range</c-></code>.</p>
+   <h3 class="heading settled" data-level="6.1" id="stdio-integration"><span class="secno">6.1. </span><span class="content">Integration with <code class="highlight"><c- n>stdio</c-></code></span><a class="self-link" href="#stdio-integration"></a></h3>
+   <p>In the SG9 meeting in Kona (11/2023), it was polled, that:</p>
+   <blockquote>
+     SG9 feels that it essential for std::scan to be useable with stdin and cin
+(and the paper would be incomplete without this feature). 
+    <table>
+     <tbody>
+      <tr>
+       <th>SF
+       <th>F
+       <th>N
+       <th>A
+       <th>SA
+      <tr>
+       <td>0
+       <td>5
+       <td>1
+       <td>3
+       <td>0
+    </table>
+   </blockquote>
+   <p>We’ve decided to follow the route of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> + <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>,
+i.e. to not complicate and bloat this paper further by involving I/O.
+This is still an important avenue of future expansion,
+and the library proposed in this paper is designed and specified in such a way
+as to easily allow that expansion.</p>
+   <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> implements this by providing a function, <code class="highlight"><c- n>scn</c-><c- o>::</c-><c- n>input</c-></code>,
+for interfacing with <code class="highlight"><c- n>stdin</c-></code>, and by allowing passing in <code class="highlight"><c- b>FILE</c-><c- o>*</c-></code>s as input
+to <code class="highlight"><c- n>scn</c-><c- o>::</c-><c- n>scan</c-></code>, in addition to <code class="highlight"><c- n>scannable_range</c-></code>s.</p>
    <h3 class="heading settled" data-level="6.2" id="char-set-match"><span class="secno">6.2. </span><span class="content"><code class="highlight"><c- n>scanf</c-></code>-like <code class="highlight"><c- p>[</c-><c- n>character</c-> <c- n>set</c-><c- p>]</c-></code> matching</span><a class="self-link" href="#char-set-match"></a></h3>
    <p><code class="highlight"><c- n>scanf</c-></code> supports the <code class="highlight"><c- p>[</c-></code> format specifier, which allows for matching for a set of accepted
 characters. Unfortunately, because some of the syntax for specifying that set is
@@ -3368,7 +3390,8 @@ Properly specified, this could be useful.</p>
    <p>It should be noted, that while the syntax is quite similar, this is not a regular expression.
 This syntax is intentionally way more limited, as is meant for simple character matching.</p>
    <p><a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> implements this syntax, providing support for matching single characters/code points
-(<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>abc</c-><c- p>]}</c-></code>), code point ranges (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>a</c-><c- o>-</c-><c- n>z</c-><c- p>]}</c-></code>), and regex-like wildcards (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- o>:</c-><c- n>alpha</c-><c- o>:</c-><c- p>]}</c-></code> or <code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c->\\<c- n>w</c-><c- p>]})</c-></code>.</p>
+(<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>abc</c-><c- p>]}</c-></code>) and code point ranges (<code class="highlight"><c- p>{</c-><c- o>:</c-><c- p>[</c-><c- n>a</c-><c- o>-</c-><c- n>z</c-><c- p>]}</c-></code>).
+Full regex matching is also supported with <code class="highlight"><c- p>{</c-><c- o>:/</c-><c- p>...</c-><c- o>/</c-><c- p>}</c-></code>.</p>
    <h3 class="heading settled" data-level="6.3" id="scan-code-point"><span class="secno">6.3. </span><span class="content">Reading code points (or even grapheme clusters?)</span><a class="self-link" href="#scan-code-point"></a></h3>
    <p><code class="highlight"><c- b>char32_t</c-></code> in nowadays the type denoting a Unicode code point.
 Reading individual code points, or even Unicode grapheme clusters, could be a useful feature.
@@ -3460,20 +3483,20 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
      <ins><code class="highlight"><c- n>borrowed_iterator_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, <code class="highlight"><c- n>borrowed_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code>, and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-></code> all denote <code class="highlight"><c- n>dangling</c-></code>.</ins>
    </ul>
    <h3 class="heading settled" data-level="7.3" id="spec-header-synopsis"><span class="secno">7.3. </span><span class="content">Header <code class="highlight"><c- o>&lt;</c-><c- n>scan</c-><c- o>></c-></code> synopsis</span><a class="self-link" href="#spec-header-synopsis"></a></h3>
-<pre class="highlight"><c- cp>#include</c-> &lt;expected>
-<c- cp>#include</c-> &lt;format>
-<c- cp>#include</c-> &lt;ranges>
-
-<c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+<pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>struct</c-> <c- nc>basic_scan_format_string</c-><c- p>;</c->
 
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>using</c-> <c- n>scan_format_string</c-> <c- o>=</c->
-      <c- n>basic_scan_format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+      <c- n>basic_scan_format_string</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c->
+                               <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c->
+                               <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>using</c-> <c- n>wscan_format_string</c-> <c- o>=</c->
-      <c- n>basic_scan_format_string</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
+      <c- n>basic_scan_format_string</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c->
+                               <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Range</c-><c- o>></c-><c- p>,</c->
+                               <c- n>type_identity_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>...</c-><c- o>></c-><c- p>;</c->
 
   <c- k>class</c-> <c- nc>scan_error</c-><c- p>;</c->
 
@@ -3492,19 +3515,19 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
     <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
-                                          <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
+                                          <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
     <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
-                                          <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
+                                          <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
     <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
-                                          <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
+                                          <c- n>scan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-> <c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- p>,</c-> <c- n>scannable_range</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- o>></c-> <c- n>Range</c-><c- o>></c->
     <i><c- n>scan</c-><c- o>-</c-><c- n>result</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- k>const</c-> <c- n>locale</c-><c- o>&amp;</c-> <c- n>loc</c-><c- p>,</c-> <c- n>Range</c-><c- o>&amp;&amp;</c-> <c- n>range</c-><c- p>,</c->
-                                          <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
+                                          <c- n>wscan_format_string</c-><c- o>&lt;</c-><c- n>Range</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>);</c->
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>class</c-> <c- nc>basic_scan_context</c-><c- p>;</c->
   <c- k>using</c-> <c- n>scan_context</c-> <c- o>=</c-> <c- n>basic_scan_context</c-><c- o>&lt;</c-><i><c- n>unspecified</c-></i><c- p>,</c-> <c- b>char</c-><c- o>></c-><c- p>;</c->
@@ -3551,9 +3574,6 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- o>></c->
     <c- k>class</c-> <c- nc>basic_scan_arg</c-><c- p>;</c->
-
-  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Visitor</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Context</c-><c- o>></c->
-    <c- k>decltype</c-><c- p>(</c-><c- k>auto</c-><c- p>)</c-> <c- n>visit_scan_arg</c-><c- p>(</c-><c- n>Visitor</c-><c- o>&amp;&amp;</c-> <c- n>vis</c-><c- p>,</c-> <c- n>basic_scan_arg</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>></c-> <c- n>arg</c-><c- p>);</c->
   
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
     <c- k>class</c-> <i><c- nc>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i><c- p>;</c-> <c- c1>// exposition only</c->
@@ -3637,12 +3657,26 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
       <c- k>constexpr</c-> <c- k>auto</c-><c- o>&amp;&amp;</c-> <c- n>value</c-><c- p>(</c-><c- k>this</c-> <c- n>Self</c-><c- o>&amp;&amp;</c-><c- p>);</c->
 
   <c- k>private</c-><c- o>:</c->
-    <c- n>range_type</c-> <i><c- n>range_</c-></i><c- p>;</c->        <c- c1>// exposition only</c->
+    <c- n>range_type</c-> <i><c- n>range_</c-></i><c- p>;</c->      <c- c1>// exposition only</c->
     <c- n>tuple</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <i><c- n>values_</c-></i><c- p>;</c-> <c- c1>// exposition only</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="7.6" id="spec-scan-context-synopsis"><span class="secno">7.6. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_context</c-></code> synopsis</span><a class="self-link" href="#spec-scan-context-synopsis"></a></h3>
+   <h3 class="heading settled" data-level="7.6" id="spec-scan-format-string-synopsis"><span class="secno">7.6. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_format_string</c-></code> synopsis</span><a class="self-link" href="#spec-scan-format-string-synopsis"></a></h3>
+<pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- k>struct</c-> <c- nc>basic_scan_format_string</c-> <c- p>{</c->
+  <c- k>private</c-><c- o>:</c->
+    <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <i><c- n>str</c-></i><c- p>;</c->  <c- c1>// exposition only</c->
+
+  <c- k>public</c-><c- o>:</c->
+    <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>consteval</c-> <c- n>basic_scan_format_string</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>);</c->
+
+    <c- k>constexpr</c-> <c- n>basic_string_view</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>get</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- p>{</c-> <c- k>return</c-> <i><c- n>str</c-></i><c- p>;</c-> <c- p>}</c->
+  <c- p>};</c->
+<c- p>}</c->
+</pre>
+   <h3 class="heading settled" data-level="7.7" id="spec-scan-context-synopsis"><span class="secno">7.7. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_context</c-></code> synopsis</span><a class="self-link" href="#spec-scan-context-synopsis"></a></h3>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Range</c-><c- p>,</c-> <c- k>class</c-> <c- nc>CharT</c-><c- o>></c->
   <c- k>class</c-> <c- nc>basic_scan_context</c-> <c- p>{</c->
@@ -3656,7 +3690,8 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
     <c- k>constexpr</c-> <c- n>basic_scan_arg</c-><c- o>&lt;</c-><c- n>basic_scan_context</c-><c- o>></c-> <c- n>arg</c-><c- p>(</c-><c- b>size_t</c-> <c- n>id</c-><c- p>)</c-> <c- k>const</c-> <c- k>noexcept</c-><c- p>;</c->
     <c- n>std</c-><c- o>::</c-><c- n>locale</c-> <c- nf>locale</c-><c- p>();</c->
 
-    <c- k>constexpr</c-> <c- n>iterator</c-> <c- nf>current</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>iterator</c-> <c- nf>begin</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
+    <c- k>constexpr</c-> <c- n>sentinel</c-> <c- nf>end</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
     <c- k>constexpr</c-> <c- n>range_type</c-> <c- nf>range</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
     <c- k>constexpr</c-> <c- b>void</c-> <c- nf>advance_to</c-><c- p>(</c-><c- n>iterator</c-> <c- n>it</c-><c- p>);</c->
 
@@ -3668,7 +3703,7 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
   <c- p>};</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="7.7" id="spec-scan-args-synopsis"><span class="secno">7.7. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_args</c-></code> synopsis</span><a class="self-link" href="#spec-scan-args-synopsis"></a></h3>
+   <h3 class="heading settled" data-level="7.8" id="spec-scan-args-synopsis"><span class="secno">7.8. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_args</c-></code> synopsis</span><a class="self-link" href="#spec-scan-args-synopsis"></a></h3>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- o>></c->
   <c- k>class</c-> <c- nc>basic_scan_args</c-> <c- p>{</c->
@@ -3688,14 +3723,14 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
     <c- n>basic_scan_args</c-><c- p>(</c-><i><c- n>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i><c- o>&lt;</c-><c- n>Context</c-><c- p>,</c-> <c- n>Args</c-><c- p>...</c-><c- o>></c-><c- p>)</c-> <c- o>-></c-> <c- n>basic_scan_args</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>></c-><c- p>;</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="7.8" id="spec-scannable"><span class="secno">7.8. </span><span class="content">Concept <code class="highlight"><c- n>scannable</c-></code></span><a class="self-link" href="#spec-scannable"></a></h3>
+   <h3 class="heading settled" data-level="7.9" id="spec-scannable"><span class="secno">7.9. </span><span class="content">Concept <code class="highlight"><c- n>scannable</c-></code></span><a class="self-link" href="#spec-scannable"></a></h3>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Context</c-><c- p>,</c->
            <c- k>class</c-> <c- nc>Scanner</c-> <c- o>=</c-> <c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>scanner_type</c-><c- o>&lt;</c-><c- n>remove_const_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>>></c->
     <c- k>concept</c-> <i><c- nc>scannable</c-><c- o>-</c-><c- n>with</c-></i> <c- o>=</c->            <c- c1>// exposition only</c->
       <c- n>semiregular</c-><c- o>&lt;</c-><c- n>Scanner</c-><c- o>></c-> <c- o>&amp;&amp;</c->
       <c- k>requires</c-><c- p>(</c-><c- n>Scanner</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>,</c-> <c- k>const</c-> <c- n>Scanner</c-><c- o>&amp;</c-> <c- n>cs</c-><c- p>,</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>,</c->
-               <c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>pctx</c-><c- p>)</c->
+               <c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>pctx</c-><c- p>)</c->
       <c- p>{</c->
         <c- p>{</c-> <c- n>s</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pctx</c-><c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-><c- n>expected</c-><c- o>&lt;</c-><c- k>typename</c-> <c- nc>decltype</c-><c- p>(</c-><c- n>pctx</c-><c- p>)</c-><c- o>::</c-><c- n>iterator</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>>></c-><c- p>;</c->
         <c- p>{</c-> <c- n>cs</c-><c- p>.</c-><c- n>scan</c-><c- p>(</c-><c- n>t</c-><c- p>,</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-><c- n>expected</c-><c- o>&lt;</c-><c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- n>iterator</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>>></c-><c- p>;</c->
@@ -3703,10 +3738,10 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
 
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>CharT</c-><c- o>></c->
     <c- k>concept</c-> <c- nc>scannable</c-> <c- o>=</c->
-      <i><c- n>scannable</c-><c- o>-</c-><c- n>with</c-></i><c- o>&lt;</c-><c- n>remove_reference_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>basic_scan_context</c-><c- o>&lt;</c-><i><c- n>unspecified</c-></i><c- o>>></c-><c- p>;</c->
+      <i><c- n>scannable</c-><c- o>-</c-><c- n>with</c-></i><c- o>&lt;</c-><c- n>remove_reference_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>basic_scan_context</c-><c- o>&lt;</c-><i><c- n>unspecified</c-></i><c- p>,</c-> <c- n>CharT</c-><c- o>>></c-><c- p>;</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="7.9" id="spec-scan-arg-synopsis"><span class="secno">7.9. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_arg</c-></code> synopsis</span><a class="self-link" href="#spec-scan-arg-synopsis"></a></h3>
+   <h3 class="heading settled" data-level="7.10" id="spec-scan-arg-synopsis"><span class="secno">7.10. </span><span class="content">Class template <code class="highlight"><c- n>basic_scan_arg</c-></code> synopsis</span><a class="self-link" href="#spec-scan-arg-synopsis"></a></h3>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- o>></c->
   <c- k>class</c-> <c- nc>basic_scan_arg</c-> <c- p>{</c->
@@ -3734,7 +3769,7 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
   <c- p>};</c->
 <c- p>}</c->
 </pre>
-   <h3 class="heading settled" data-level="7.10" id="spec-scan-arg-store"><span class="secno">7.10. </span><span class="content">Exposition-only class template <code class="highlight"><i><c- n>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i></code> synopsis</span><a class="self-link" href="#spec-scan-arg-store"></a></h3>
+   <h3 class="heading settled" data-level="7.11" id="spec-scan-arg-store"><span class="secno">7.11. </span><span class="content">Exposition-only class template <code class="highlight"><i><c- n>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i></code> synopsis</span><a class="self-link" href="#spec-scan-arg-store"></a></h3>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- p>,</c-> <c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- k>class</c-> <i><c- nc>scan</c-><c- o>-</c-><c- n>arg</c-><c- o>-</c-><c- n>store</c-></i> <c- p>{</c->                                  <c- c1>// exposition only</c->
@@ -3900,6 +3935,8 @@ and <code class="highlight"><c- n>borrowed_tail_subrange_t</c-><c- o>&lt;</c-><c
    <dd>Barry Revzin. <a href="https://wg21.link/p2286"><cite>Formatting Ranges</cite></a>. URL: <a href="https://wg21.link/p2286">https://wg21.link/p2286</a>
    <dt id="biblio-p2561">[P2561]
    <dd>Barry Revzin. <a href="https://wg21.link/p2561"><cite>A control flow operator</cite></a>. URL: <a href="https://wg21.link/p2561">https://wg21.link/p2561</a>
+   <dt id="biblio-p2637">[P2637]
+   <dd>Barry Revzin. <a href="https://wg21.link/p2637"><cite>Member `visit`</cite></a>. URL: <a href="https://wg21.link/p2637">https://wg21.link/p2637</a>
    <dt id="biblio-parse">[PARSE]
    <dd><a href="https://pypi.org/project/parse/"><cite>Python `parse` package</cite></a>. URL: <a href="https://pypi.org/project/parse/">https://pypi.org/project/parse/</a>
    <dt id="biblio-scnlib">[SCNLIB]
