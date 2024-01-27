@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting of std::filesystem::path
 Shortname: P2845
-Revision: 5
-Audience: LWG
+Revision: 6
+Audience: SG16, LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-11-24
+Date: 2024-01-27
 Markup Shorthands: markdown yes
 </pre>
 
@@ -38,6 +38,11 @@ Introduction {#intro}
 However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
+
+Changes from R5 {#changes5}
+===============
+
+* Added generic format support per LWG feedback.
 
 Changes from R4 {#changes4}
 ===============
@@ -373,10 +378,12 @@ constexpr format_parse_context::iterator parse(format_parse_context& ctx);
 parsed specifiers in `*this`.
 
 <i>path-format-spec</i>:<br>
-&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code>?</code><i><sub>opt</sub></i>
+&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code>?</code><i><sub>opt</sub></i> <code>g</code><i><sub>opt</sub></i>
 
 where the productions <i>fill-and-align</i> and <i>width</i> are described in
-[[format.string](http://eel.is/c++draft/format#string)].
+[[format.string](http://eel.is/c++draft/format#string)]. If the `?` option is
+used then the path is formatted as an escaped string ([[format.string.escaped](
+http://eel.is/c++draft/format.string.escaped)]).
 
 *Returns*: An iterator past the end of the *path-format-spec*.
 
@@ -386,18 +393,13 @@ where the productions <i>fill-and-align</i> and <i>width</i> are described in
       format(const filesystem::path& p, FormatContext& ctx) const;
 </pre>
 
-*Effects*: Let `s` be
-
-* `p.native()` escaped per [[format.string.escaped](
-    http://eel.is/c++draft/format#string.escaped)] if `?` is specified, or
-* `p.native()` otherwise.
-
-Writes `s` into `ctx.out()`, adjusted according to the *path-format-spec*.
-If `Char` is `char`, `path::value_type` is `wchar_t` and the literal encoding
-is UTF-8 then the escaped path is transcoded from the native encoding for wide
-character strings to UTF-8 with maximal subparts of ill-formed subsequences
-substituted with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard,
-Chapter 3.9 U+FFFD Substitution in Conversion.
+*Effects*: Let `s` be `p.generic()` if the `g` option is used, otherwise
+`p.native()`. Writes `s` into `ctx.out()`, adjusted according to the
+*path-format-spec*. If `Char` is `char`, `path::value_type` is `wchar_t` and the
+literal encoding is UTF-8 then the escaped path is transcoded from the native
+encoding for wide character strings to UTF-8 with maximal subparts of ill-formed
+subsequences substituted with U+FFFD REPLACEMENT CHARACTER per the Unicode
+Standard, Chapter 3.9 U+FFFD Substitution in Conversion.
 If `Char` and `path::value_type` are the same then no transcoding is performed.
 Otherwise, transcoding is implementation-defined.
 
@@ -413,7 +415,8 @@ Acknowledgements {#ack}
 ================
 
 Thanks to Mark de Wever, Roger Orr and Tom Honermann for reviewing an early
-version of the paper and suggesting a number of fixes and improvements.
+version of the paper and suggesting a number of fixes and improvements. Thanks
+Jonathan Wakely for wording suggestions.
 
 <pre class=biblio>
 {
