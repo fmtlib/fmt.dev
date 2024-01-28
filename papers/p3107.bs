@@ -9,4 +9,178 @@ URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
 Date: 2024-01-28
+Markup Shorthands: markdown yes
+</pre>
+
+Introduction {#intro}
+============
+
+C++23 introduced a new formatted output facility, `std::print` ([[P2093]]).
+It was defined in terms of formatting into a temporary `std::string` to simplify
+specification and make it clear that noninterleaved output is desired.
+Unfortunately, it turned out that this doesn't permit a more efficient
+implementation strategy of writing directly to a stream buffer under a lock
+which was reported in [[LWG4042]]. This paper proposes fixing this shortcoming.
+
+Problem {#problem}
+=======
+
+As reported in [[LWG4042]], `std::print`/`std::vprint*` is currently defined in
+terms of formatting into a temporary `std::string`, e.g.
+[[print.fun](https://eel.is/c++draft/print.fun)]:
+
+> ```
+void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
+```
+>
+> *Preconditions*: `stream` is a valid pointer to an output C stream.
+>
+> *Effects*: Writes the result of `vformat(fmt, args)` to `stream`.
+>
+> *Throws*: Any exception thrown by the call to `vformat`
+> ([[format.err.report](https://eel.is/c++draft/format.err.report)]).
+> `system_error` if writing to `stream` fails. May throw `bad_alloc`.
+
+This prohibits a more efficient implementation strategy of formatting directly
+into a stream buffer under a lock (`flockfile`/`funlockfile` in POSIX,
+[[STDIO-LOCK]]) like C stdio and other formatting facilities do.
+
+Another problem is that such double buffering may require unbounded memory
+allocations, making `std::print` unsuitable for resource-constrained
+applications.
+
+Proposal {#proposal}
+========
+
+The current paper proposes expressing the desire to have noniterleaved
+output in a way that that permits a more efficient implementation similar
+to `printf`'s. It is based on the locking mechanism provided by C streams,
+quoting Section 7.21.2 Streams of the C standard ([[N2310-STREAMS]]):
+
+> 7 Each stream has an associated lock that is used to prevent data races
+> when multiple threads of execution access a stream, and to restrict the
+> interleaving of stream operations performed by multiple threads. Only one
+> thread may hold this lock at a time. The lock is reentrant: a single thread
+> may hold the lock multiple times at a given time.
+
+> 8 All functions that read, write, position, or query the position of a stream
+> lock the stream before accessing it. They release the lock associated with the
+> stream when the access is complete.
+
+TODO: summarize perf and link to perf section
+
+TODO: explain the proposal and problems including the one reported by Tim and
+how to work around them (construct std::string explicitly)
+
+TODO: advantages: line buffering?
+
+Performance {#perf}
+===========
+
+The following benchmark similar to the one from [[P2093]] demonstrates the
+difference between different implementation strategies based on the reference
+implementation of `print` from [[FMT]]. This benchmark formats a simple message
+and prints it to the output stream redirected to `/dev/null`. It uses the Google
+Benchmark library [[GOOGLE-BENCH]] to measure timings:
+
+```
+#include <cstdio>
+#include <iostream>
+
+#include <benchmark/benchmark.h>
+#include <fmt/base.h>
+
+void printf(benchmark::State& s) {
+  while (s.KeepRunning())
+    std::printf("The answer is %d.\n", 42);
+}
+BENCHMARK(printf);
+
+void vprint_string(fmt::string_view fmt, fmt::format_args args) {
+  auto s = fmt::vformat(fmt, args);
+  int result = fwrite(s.data(), 1, s.size(), stdout);
+  if (result < s.size()) throw fmt::format_error("fwrite error");
+}
+
+template <typename... T>
+void print_string(fmt::format_string<T...> fmt, T&&... args) {
+  vprint_string(fmt, fmt::make_format_args(args...));
+}
+
+void print_string(benchmark::State& s) {
+  while (s.KeepRunning()) {
+    print_string("The answer is {}.\n", 42);
+  }
+}
+BENCHMARK(print_string);
+
+void vprint_stack_buffer(fmt::string_view fmt, fmt::format_args args) {
+  auto buf = fmt::memory_buffer();
+  fmt::vformat_to(std::back_inserter(buf), fmt, args);
+  int result = fwrite(buf.data(), 1, buf.size(), stdout);
+  if (result < s.size()) throw fmt::format_error("fwrite error");
+}
+
+template <typename... T>
+void print_stack_buffer(fmt::format_string<T...> fmt, T&&... args) {
+  vprint_string(fmt, fmt::make_format_args(args...));
+}
+
+void print_stack_buffer(benchmark::State& s) {
+  while (s.KeepRunning()) {
+    print_string("The answer is {}.\n", 42);
+  }
+}
+BENCHMARK(print_stack_buffer);
+
+void print_direct(benchmark::State& s) {
+  while (s.KeepRunning())
+    fmt::print("The answer is {}.\n", 42);
+}
+BENCHMARK(print_direct);
+
+BENCHMARK_MAIN();
+```
+
+TODO: benchmark (std::string, on stack, direct) based on
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html#perf
+
+TODO: check and report what other languages do (C printf, C++ ostream, )
+
+Implementation {#impl}
+==============
+
+This proposal has been implemented in the open-source {fmt} library ([[FMT]])
+providing major performance improvements and improved compatibility with stdio.
+
+<pre class=biblio>
+{
+  "FMT": {
+    "title": "The {fmt} library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "GOOGLE-BENCH": {
+    "title": "Google Benchmark: A microbenchmark support library",
+    "href": "https://github.com/google/benchmark"
+  },
+  "LWG4042": {
+    "title": "LWG Issue 4042: `std::print` should permit an efficient implementation",
+    "href": "https://cplusplus.github.io/LWG/issue4042"
+  },
+  "P2093": {
+    "title": "Formatted output",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2093"
+  },
+  "N2310-STREAMS": {
+    "title": "7.21.2 Streams. ISO/IEC 9899:202x. Programming languages — C",
+    "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2310.pdf#page=233"
+  },
+  "STDIO-LOCK": {
+    "title": "The Open Group Base Specifications Issue 7, 2018 edition. IEEE Std 1003.1-2017. flockfile, ftrylockfile, funlockfile - stdio locking functions",
+    "href": "https://pubs.opengroup.org/onlinepubs/9699919799/functions/flockfile.html"
+  }
+}
 </pre>
