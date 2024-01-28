@@ -22,8 +22,8 @@ Unfortunately, it turned out that this doesn't permit a more efficient
 implementation strategy of writing directly to a stream buffer under a lock
 which was reported in [[LWG4042]]. This paper proposes fixing this shortcoming.
 
-Problem {#problem}
-=======
+Problems {#problem}
+========
 
 As reported in [[LWG4042]], `std::print`/`std::vprint*` is currently defined in
 terms of formatting into a temporary `std::string`, e.g.
@@ -47,7 +47,7 @@ into a stream buffer under a lock (`flockfile`/`funlockfile` in POSIX,
 
 Another problem is that such double buffering may require unbounded memory
 allocations, making `std::print` unsuitable for resource-constrained
-applications.
+applications creating incentives for continued use of unsafe APIs.
 
 Proposal {#proposal}
 ========
@@ -77,22 +77,21 @@ TODO: advantages: line buffering?
 Performance {#perf}
 ===========
 
-The following benchmark similar to the one from [[P2093]] demonstrates the
-difference between different implementation strategies based on the reference
-implementation of `print` from [[FMT]]. This benchmark formats a simple message
-and prints it to the output stream redirected to `/dev/null`. It uses the Google
-Benchmark library [[GOOGLE-BENCH]] to measure timings:
+The following benchmark demonstrates the difference in performance between
+different implementation strategies using the reference implementation of
+`print` from [[FMT]]. This benchmark is based on the one from [[P2093]] but
+modified to avoid the small string optimization effects. It formats a simple
+message and prints it to the output stream redirected to `/dev/null`. It uses
+the Google Benchmark library [[GOOGLE-BENCH]] to measure timings:
 
 ```
 #include <cstdio>
-#include <iostream>
-
 #include <benchmark/benchmark.h>
-#include <fmt/base.h>
+#include <fmt/format.h>
 
 void printf(benchmark::State& s) {
   while (s.KeepRunning())
-    std::printf("The answer is %d.\n", 42);
+    std::printf("The answer to life, the universe, and everything is %d.\n", 42);
 }
 BENCHMARK(printf);
 
@@ -109,41 +108,87 @@ void print_string(fmt::format_string<T...> fmt, T&&... args) {
 
 void print_string(benchmark::State& s) {
   while (s.KeepRunning()) {
-    print_string("The answer is {}.\n", 42);
+    print_string("The answer to life, the universe, and everything is {}.\n", 42);
   }
 }
 BENCHMARK(print_string);
 
-void vprint_stack_buffer(fmt::string_view fmt, fmt::format_args args) {
+void vprint_stack(fmt::string_view fmt, fmt::format_args args) {
   auto buf = fmt::memory_buffer();
   fmt::vformat_to(std::back_inserter(buf), fmt, args);
   int result = fwrite(buf.data(), 1, buf.size(), stdout);
-  if (result < s.size()) throw fmt::format_error("fwrite error");
+  if (result < buf.size()) throw fmt::format_error("fwrite error");
 }
 
 template <typename... T>
-void print_stack_buffer(fmt::format_string<T...> fmt, T&&... args) {
-  vprint_string(fmt, fmt::make_format_args(args...));
+void print_stack(fmt::format_string<T...> fmt, T&&... args) {
+  vprint_stack(fmt, fmt::make_format_args(args...));
 }
 
-void print_stack_buffer(benchmark::State& s) {
+void print_stack(benchmark::State& s) {
   while (s.KeepRunning()) {
-    print_string("The answer is {}.\n", 42);
+    print_stack("The answer to life, the universe, and everything is {}.\n", 42);
   }
 }
-BENCHMARK(print_stack_buffer);
+BENCHMARK(print_stack);
 
 void print_direct(benchmark::State& s) {
   while (s.KeepRunning())
-    fmt::print("The answer is {}.\n", 42);
+    fmt::print("The answer to life, the universe, and everything is {}.\n", 42);
 }
 BENCHMARK(print_direct);
 
 BENCHMARK_MAIN();
 ```
 
-TODO: benchmark (std::string, on stack, direct) based on
-https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html#perf
+Here `print_string` formats into a temporary string, `print_stack` formats into
+a buffer allocated on stack and `print_direct` formats directly into the C
+stream buffer under a lock. `printf` is included for comparison.
+
+The benchmark was compiled with Apple clang version 15.0.0 (clang-1500.1.0.2.5)
+with `-O3 -DNDEBUG` and run on macOS 14.2.1 with M1 Pro CPU. Below are the
+results:
+
+```
+Run on (8 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x8)
+Load Average: 5.03, 3.99, 3.89
+-------------------------------------------------------
+Benchmark             Time             CPU   Iterations
+-------------------------------------------------------
+printf             81.8 ns         81.5 ns      8496899
+print_string       88.5 ns         88.2 ns      7993240
+print_stack        63.8 ns         61.9 ns     11524151
+print_direct       51.3 ns         51.0 ns     13846580
+```
+
+Note that estimated CPU frequency is incorrect.
+
+On Linux(Ubuntu 22.04.3 LTS) with gcc 11.4.0, glibc/libstdc++ and Intel Core
+i9-9900K CPU the results are similar except that `printf` is slightly faster
+than `print` with the stack-allocated buffer optimization:
+
+```
+Run on (16 X 3600 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 256 KiB (x8)
+  L3 Unified 16384 KiB (x1)
+Load Average: 0.00, 0.00, 0.00
+-------------------------------------------------------
+Benchmark             Time             CPU   Iterations
+-------------------------------------------------------
+printf             52.1 ns         52.1 ns     13386398
+print_string       65.7 ns         65.7 ns     10674838
+print_stack        55.8 ns         55.8 ns     12535414
+print_direct       46.3 ns         46.3 ns     15087266
+```
+
+TODO: summarize benchmark results
 
 TODO: check and report what other languages do (C printf, C++ ostream, )
 

@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="1694324385d2becc3e894959999a515eb046d52d" name="revision">
+  <meta content="23f165ada38897d34d71c8227af1c49046d07fe9" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2105,7 +2105,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#problem"><span class="secno">2</span> <span class="content">Problem</span></a>
+    <li><a href="#problem"><span class="secno">2</span> <span class="content">Problems</span></a>
     <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
     <li><a href="#perf"><span class="secno">4</span> <span class="content">Performance</span></a>
     <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
@@ -2124,7 +2124,7 @@ specification and make it clear that noninterleaved output is desired.
 Unfortunately, it turned out that this doesn’t permit a more efficient
 implementation strategy of writing directly to a stream buffer under a lock
 which was reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>. This paper proposes fixing this shortcoming.</p>
-   <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
+   <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
    <p>As reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>/<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vprint</c-><c- o>*</c-></code> is currently defined in
 terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code>, e.g. <a href="https://eel.is/c++draft/print.fun">[print.fun</a>]:</p>
    <blockquote>
@@ -2137,7 +2137,7 @@ terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o
 into a stream buffer under a lock (<code class="highlight"><c- n>flockfile</c-></code>/<code class="highlight"><c- n>funlockfile</c-></code> in POSIX, <a data-link-type="biblio" href="#biblio-stdio-lock" title="The Open Group Base Specifications Issue 7, 2018 edition. IEEE Std 1003.1-2017. flockfile, ftrylockfile, funlockfile - stdio locking functions">[STDIO-LOCK]</a>) like C stdio and other formatting facilities do.</p>
    <p>Another problem is that such double buffering may require unbounded memory
 allocations, making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> unsuitable for resource-constrained
-applications.</p>
+applications creating incentives for continued use of unsafe APIs.</p>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The current paper proposes expressing the desire to have noniterleaved
 output in a way that that permits a more efficient implementation similar
@@ -2160,20 +2160,18 @@ stream when the access is complete.</p>
 how to work around them (construct std::string explicitly)</p>
    <p>TODO: advantages: line buffering?</p>
    <h2 class="heading settled" data-level="4" id="perf"><span class="secno">4. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
-   <p>The following benchmark similar to the one from <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> demonstrates the
-difference between different implementation strategies based on the reference
-implementation of <code class="highlight"><c- n>print</c-></code> from <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>. This benchmark formats a simple message
-and prints it to the output stream redirected to <code class="highlight"><c- o>/</c-><c- n>dev</c-><c- o>/</c-><c- n>null</c-></code>. It uses the Google
-Benchmark library <a data-link-type="biblio" href="#biblio-google-bench" title="Google Benchmark: A microbenchmark support library">[GOOGLE-BENCH]</a> to measure timings:</p>
+   <p>The following benchmark demonstrates the difference in performance between
+different implementation strategies using the reference implementation of <code class="highlight"><c- n>print</c-></code> from <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>. This benchmark is based on the one from <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> but
+modified to avoid the small string optimization effects. It formats a simple
+message and prints it to the output stream redirected to <code class="highlight"><c- o>/</c-><c- n>dev</c-><c- o>/</c-><c- n>null</c-></code>. It uses
+the Google Benchmark library <a data-link-type="biblio" href="#biblio-google-bench" title="Google Benchmark: A microbenchmark support library">[GOOGLE-BENCH]</a> to measure timings:</p>
 <pre class="highlight"><c- cp>#include</c-> &lt;cstdio>
-<c- cp>#include</c-> &lt;iostream>
-
 <c- cp>#include</c-> &lt;benchmark/benchmark.h>
-<c- cp>#include</c-> &lt;fmt/base.h>
+<c- cp>#include</c-> &lt;fmt/format.h>
 
 <c- b>void</c-> <c- nf>printf</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- p>{</c->
   <c- k>while</c-> <c- p>(</c-><c- n>s</c-><c- p>.</c-><c- n>KeepRunning</c-><c- p>())</c->
-    <c- n>std</c-><c- o>::</c-><c- n>printf</c-><c- p>(</c-><c- s>"The answer is %d.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
+    <c- n>std</c-><c- o>::</c-><c- n>printf</c-><c- p>(</c-><c- s>"The answer to life, the universe, and everything is %d.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
 <c- p>}</c->
 <c- n>BENCHMARK</c-><c- p>(</c-><c- n>printf</c-><c- p>);</c->
 
@@ -2190,40 +2188,78 @@ Benchmark library <a data-link-type="biblio" href="#biblio-google-bench" title="
 
 <c- b>void</c-> <c- n>print_string</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- p>{</c->
   <c- k>while</c-> <c- p>(</c-><c- n>s</c-><c- p>.</c-><c- n>KeepRunning</c-><c- p>())</c-> <c- p>{</c->
-    <c- n>print_string</c-><c- p>(</c-><c- s>"The answer is {}.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
+    <c- n>print_string</c-><c- p>(</c-><c- s>"The answer to life, the universe, and everything is {}.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
   <c- p>}</c->
 <c- p>}</c->
 <c- n>BENCHMARK</c-><c- p>(</c-><c- n>print_string</c-><c- p>);</c->
 
-<c- b>void</c-> <c- nf>vprint_stack_buffer</c-><c- p>(</c-><c- n>fmt</c-><c- o>::</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format_args</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+<c- b>void</c-> <c- nf>vprint_stack</c-><c- p>(</c-><c- n>fmt</c-><c- o>::</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format_args</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
   <c- k>auto</c-> <c- n>buf</c-> <c- o>=</c-> <c- n>fmt</c-><c- o>::</c-><c- n>memory_buffer</c-><c- p>();</c->
   <c- n>fmt</c-><c- o>::</c-><c- n>vformat_to</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>back_inserter</c-><c- p>(</c-><c- n>buf</c-><c- p>),</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
   <c- b>int</c-> <c- n>result</c-> <c- o>=</c-> <c- n>fwrite</c-><c- p>(</c-><c- n>buf</c-><c- p>.</c-><c- n>data</c-><c- p>(),</c-> <c- mi>1</c-><c- p>,</c-> <c- n>buf</c-><c- p>.</c-><c- n>size</c-><c- p>(),</c-> <c- n>stdout</c-><c- p>);</c->
-  <c- k>if</c-> <c- p>(</c-><c- n>result</c-> <c- o>&lt;</c-> <c- n>s</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- k>throw</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format_error</c-><c- p>(</c-><c- s>"fwrite error"</c-><c- p>);</c->
+  <c- k>if</c-> <c- p>(</c-><c- n>result</c-> <c- o>&lt;</c-> <c- n>buf</c-><c- p>.</c-><c- n>size</c-><c- p>())</c-> <c- k>throw</c-> <c- n>fmt</c-><c- o>::</c-><c- n>format_error</c-><c- p>(</c-><c- s>"fwrite error"</c-><c- p>);</c->
 <c- p>}</c->
 
 <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-><c- p>...</c-> <c- n>T</c-><c- o>></c->
-<c- b>void</c-> <c- n>print_stack_buffer</c-><c- p>(</c-><c- n>fmt</c-><c- o>::</c-><c- n>format_string</c-><c- o>&lt;</c-><c- n>T</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>T</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
-  <c- n>vprint_string</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>fmt</c-><c- o>::</c-><c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+<c- b>void</c-> <c- n>print_stack</c-><c- p>(</c-><c- n>fmt</c-><c- o>::</c-><c- n>format_string</c-><c- o>&lt;</c-><c- n>T</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>T</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>)</c-> <c- p>{</c->
+  <c- n>vprint_stack</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>fmt</c-><c- o>::</c-><c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
 <c- p>}</c->
 
-<c- b>void</c-> <c- n>print_stack_buffer</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- p>{</c->
+<c- b>void</c-> <c- n>print_stack</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- p>{</c->
   <c- k>while</c-> <c- p>(</c-><c- n>s</c-><c- p>.</c-><c- n>KeepRunning</c-><c- p>())</c-> <c- p>{</c->
-    <c- n>print_string</c-><c- p>(</c-><c- s>"The answer is {}.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
+    <c- n>print_stack</c-><c- p>(</c-><c- s>"The answer to life, the universe, and everything is {}.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
   <c- p>}</c->
 <c- p>}</c->
-<c- n>BENCHMARK</c-><c- p>(</c-><c- n>print_stack_buffer</c-><c- p>);</c->
+<c- n>BENCHMARK</c-><c- p>(</c-><c- n>print_stack</c-><c- p>);</c->
 
 <c- b>void</c-> <c- nf>print_direct</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>)</c-> <c- p>{</c->
   <c- k>while</c-> <c- p>(</c-><c- n>s</c-><c- p>.</c-><c- n>KeepRunning</c-><c- p>())</c->
-    <c- n>fmt</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"The answer is {}.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
+    <c- n>fmt</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"The answer to life, the universe, and everything is {}.</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- mi>42</c-><c- p>);</c->
 <c- p>}</c->
 <c- n>BENCHMARK</c-><c- p>(</c-><c- n>print_direct</c-><c- p>);</c->
 
 <c- n>BENCHMARK_MAIN</c-><c- p>();</c->
 </pre>
-   <p>TODO: benchmark (std::string, on stack, direct) based on
-https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2093r14.html#perf</p>
+   <p>Here <code class="highlight"><c- n>print_string</c-></code> formats into a temporary string, <code class="highlight"><c- n>print_stack</c-></code> formats into
+a buffer allocated on stack and <code class="highlight"><c- n>print_direct</c-></code> formats directly into the C
+stream buffer under a lock. <code class="highlight"><c- n>printf</c-></code> is included for comparison.</p>
+   <p>The benchmark was compiled with Apple clang version 15.0.0 (clang-1500.1.0.2.5)
+with <code class="highlight"><c- o>-</c-><c- n>O3</c-> <c- o>-</c-><c- n>DNDEBUG</c-></code> and run on macOS 14.2.1 with M1 Pro CPU. Below are the
+results:</p>
+<pre class="highlight"><c- n>Run</c-> <c- n>on</c-> <c- p>(</c-><c- mi>8</c-> <c- n>X</c-> <c- mi>24</c-> <c- n>MHz</c-> <c- n>CPU</c-> <c- n>s</c-><c- p>)</c->
+<c- n>CPU</c-> <c- n>Caches</c-><c- o>:</c->
+  <c- n>L1</c-> <c- n>Data</c-> <c- mi>64</c-> <c- n>KiB</c->
+  <c- n>L1</c-> <c- n>Instruction</c-> <c- mi>128</c-> <c- n>KiB</c->
+  <c- n>L2</c-> <c- n>Unified</c-> <c- mi>4096</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x8</c-><c- p>)</c->
+<c- n>Load</c-> <c- n>Average</c-><c- o>:</c-> <c- mf>5.03</c-><c- p>,</c-> <c- mf>3.99</c-><c- p>,</c-> <c- mf>3.89</c->
+<c- o>-------------------------------------------------------</c->
+<c- n>Benchmark</c->             <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
+<c- o>-------------------------------------------------------</c->
+<c- n>printf</c->             <c- mf>81.8</c-> <c- n>ns</c->         <c- mf>81.5</c-> <c- n>ns</c->      <c- mi>8496899</c->
+<c- n>print_string</c->       <c- mf>88.5</c-> <c- n>ns</c->         <c- mf>88.2</c-> <c- n>ns</c->      <c- mi>7993240</c->
+<c- n>print_stack</c->        <c- mf>63.8</c-> <c- n>ns</c->         <c- mf>61.9</c-> <c- n>ns</c->     <c- mi>11524151</c->
+<c- n>print_direct</c->       <c- mf>51.3</c-> <c- n>ns</c->         <c- mf>51.0</c-> <c- n>ns</c->     <c- mi>13846580</c->
+</pre>
+   <p>Note that estimated CPU frequency is incorrect.</p>
+   <p>On Linux(Ubuntu 22.04.3 LTS) with gcc 11.4.0, glibc/libstdc++ and Intel Core
+i9-9900K CPU the results are similar except that <code class="highlight"><c- n>printf</c-></code> is slightly faster
+than <code class="highlight"><c- n>print</c-></code> with the stack-allocated buffer optimization:</p>
+<pre class="highlight"><c- n>Run</c-> <c- n>on</c-> <c- p>(</c-><c- mi>16</c-> <c- n>X</c-> <c- mi>3600</c-> <c- n>MHz</c-> <c- n>CPU</c-> <c- n>s</c-><c- p>)</c->
+<c- n>CPU</c-> <c- n>Caches</c-><c- o>:</c->
+  <c- n>L1</c-> <c- n>Data</c-> <c- mi>32</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x8</c-><c- p>)</c->
+  <c- n>L1</c-> <c- n>Instruction</c-> <c- mi>32</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x8</c-><c- p>)</c->
+  <c- n>L2</c-> <c- n>Unified</c-> <c- mi>256</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x8</c-><c- p>)</c->
+  <c- n>L3</c-> <c- n>Unified</c-> <c- mi>16384</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x1</c-><c- p>)</c->
+<c- n>Load</c-> <c- n>Average</c-><c- o>:</c-> <c- mf>0.00</c-><c- p>,</c-> <c- mf>0.00</c-><c- p>,</c-> <c- mf>0.00</c->
+<c- o>-------------------------------------------------------</c->
+<c- n>Benchmark</c->             <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
+<c- o>-------------------------------------------------------</c->
+<c- n>printf</c->             <c- mf>52.1</c-> <c- n>ns</c->         <c- mf>52.1</c-> <c- n>ns</c->     <c- mi>13386398</c->
+<c- n>print_string</c->       <c- mf>65.7</c-> <c- n>ns</c->         <c- mf>65.7</c-> <c- n>ns</c->     <c- mi>10674838</c->
+<c- n>print_stack</c->        <c- mf>55.8</c-> <c- n>ns</c->         <c- mf>55.8</c-> <c- n>ns</c->     <c- mi>12535414</c->
+<c- n>print_direct</c->       <c- mf>46.3</c-> <c- n>ns</c->         <c- mf>46.3</c-> <c- n>ns</c->     <c- mi>15087266</c->
+</pre>
+   <p>TODO: summarize benchmark results</p>
    <p>TODO: check and report what other languages do (C printf, C++ ostream, )</p>
    <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>This proposal has been implemented in the open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>)
