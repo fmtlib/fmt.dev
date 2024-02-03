@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="23f165ada38897d34d71c8227af1c49046d07fe9" name="revision">
+  <meta content="1152cb63e63ae7248f483ee7a843a8a8d067054f" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2109,6 +2109,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
     <li><a href="#perf"><span class="secno">4</span> <span class="content">Performance</span></a>
     <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2120,10 +2121,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p>C++23 introduced a new formatted output facility, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> (<a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a>).
 It was defined in terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code> to simplify
-specification and make it clear that noninterleaved output is desired.
-Unfortunately, it turned out that this doesn’t permit a more efficient
-implementation strategy of writing directly to a stream buffer under a lock
-which was reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>. This paper proposes fixing this shortcoming.</p>
+the specification and to clearly indicate the requirement for non-interleaved
+output. Unfortunately, it was discovered that this approach does not allow for a
+more efficient implementation strategy, such as writing directly to a stream
+buffer under a lock, as reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>. This paper proposes a solution
+to address this shortcoming.</p>
    <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
    <p>As reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>/<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vprint</c-><c- o>*</c-></code> is currently defined in
 terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code>, e.g. <a href="https://eel.is/c++draft/print.fun">[print.fun</a>]:</p>
@@ -2135,12 +2137,20 @@ terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o
    </blockquote>
    <p>This prohibits a more efficient implementation strategy of formatting directly
 into a stream buffer under a lock (<code class="highlight"><c- n>flockfile</c-></code>/<code class="highlight"><c- n>funlockfile</c-></code> in POSIX, <a data-link-type="biblio" href="#biblio-stdio-lock" title="The Open Group Base Specifications Issue 7, 2018 edition. IEEE Std 1003.1-2017. flockfile, ftrylockfile, funlockfile - stdio locking functions">[STDIO-LOCK]</a>) like C stdio and other formatting facilities do.</p>
+   <p>The inability to achieve this with the current wording stems from the observable
+effects: throwing an exception from a user-defined formatter currently prevents
+any output from a formatting function, whereas with the direct method, the
+output written to the stream before the exception occurred is preserved. Most
+errors are caught at compile time, making this situation uncommon. The current
+behavior can be easily replicated by explicitly formatting into an intermediate
+string or buffer.</p>
    <p>Another problem is that such double buffering may require unbounded memory
 allocations, making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> unsuitable for resource-constrained
-applications creating incentives for continued use of unsafe APIs.</p>
+applications creating incentives for continued use of unsafe APIs. In the direct
+method, there are usually no memory allocations.</p>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>The current paper proposes expressing the desire to have noniterleaved
-output in a way that that permits a more efficient implementation similar
+   <p>The current paper proposes expressing the desire to have non-iterleaved
+output in a way that permits a more efficient implementation similar
 to <code class="highlight"><c- n>printf</c-></code>’s. It is based on the locking mechanism provided by C streams,
 quoting Section 7.21.2 Streams of the C standard (<a data-link-type="biblio" href="#biblio-n2310-streams" title="7.21.2 Streams. ISO/IEC 9899:202x. Programming languages — C">[N2310-STREAMS]</a>):</p>
    <blockquote>
@@ -2149,16 +2159,24 @@ when multiple threads of execution access a stream, and to restrict the
 interleaving of stream operations performed by multiple threads. Only one
 thread may hold this lock at a time. The lock is reentrant: a single thread
 may hold the lock multiple times at a given time.</p>
-   </blockquote>
-   <blockquote>
     <p>8 All functions that read, write, position, or query the position of a stream
 lock the stream before accessing it. They release the lock associated with the
 stream when the access is complete.</p>
    </blockquote>
-   <p>TODO: summarize perf and link to perf section</p>
-   <p>TODO: explain the proposal and problems including the one reported by Tim and
-how to work around them (construct std::string explicitly)</p>
-   <p>TODO: advantages: line buffering?</p>
+   <p>As shown in <a href="#perf">Performance</a>, this can give more than 20% speed up even
+compared to writing to a stack-allocated buffer.</p>
+   <p>All of the following languages use an implementation consistent with the current
+proposal (no intermediate buffering):</p>
+   <ul>
+    <li data-md>
+     <p>C (<code class="highlight"><c- n>printf</c-></code>)</p>
+    <li data-md>
+     <p>Rust (<code class="highlight"><c- n>println</c-><c- o>!</c-></code>)</p>
+    <li data-md>
+     <p>Java (<code class="highlight"><c- n>System</c-><c- p>.</c-><c- n>out</c-><c- p>.</c-><c- n>format</c-></code>)</p>
+   </ul>
+   <p>IOStreams don’t provide atomicity which is even weaker than the guarantees
+provided by these languages and the current proposal.</p>
    <h2 class="heading settled" data-level="4" id="perf"><span class="secno">4. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>The following benchmark demonstrates the difference in performance between
 different implementation strategies using the reference implementation of <code class="highlight"><c- n>print</c-></code> from <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>. This benchmark is based on the one from <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> but
@@ -2259,11 +2277,46 @@ than <code class="highlight"><c- n>print</c-></code> with the stack-allocated bu
 <c- n>print_stack</c->        <c- mf>55.8</c-> <c- n>ns</c->         <c- mf>55.8</c-> <c- n>ns</c->     <c- mi>12535414</c->
 <c- n>print_direct</c->       <c- mf>46.3</c-> <c- n>ns</c->         <c- mf>46.3</c-> <c- n>ns</c->     <c- mi>15087266</c->
 </pre>
-   <p>TODO: summarize benchmark results</p>
-   <p>TODO: check and report what other languages do (C printf, C++ ostream, )</p>
+   <p>Direct output is 42-72% faster than writing to a temporary string and 21-24%
+faster than writing to a stack-allocated buffer on this benchmark.</p>
    <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>This proposal has been implemented in the open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>)
-providing major performance improvements and improved compatibility with stdio.</p>
+bringing major performance improvements.</p>
+   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>) as indicated:</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Preconditions</em>: <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream.</p>
+   <p>
+    <em>Effects</em>: 
+    <del>The function initializes an automatic variable via</del>
+   </p>
+<pre class="highlight"><del><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c-></del>
+</pre>
+   <p>
+    <ins> Let <code class="highlight"><c- n>out</c-></code> denote the the character representation of formatting arguments
+provided by <code class="highlight"><c- n>args</c-></code> formatted according to specifications given in <code class="highlight"><c- n>fmt</c-></code>.</ins>
+   </p>
+   <ins>Locks <code class="highlight"><c- n>stream</c-></code>.</ins>
+    If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
+the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. If the native Unicode API is used,
+the function flushes <code class="highlight"><c- n>stream</c-></code> before writing <code class="highlight"><c- n>out</c-></code>. 
+   <ins>Releases the lock </ins>
+   . 
+   <p>...</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Preconditions</em>: <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream.</p>
+   <p>
+    <em>Effects</em>: 
+    <del>Writes the result of <code class="highlight"><c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>)</c-></code> to <code class="highlight"><c- n>stream</c-></code>.</del>
+    <ins> Locks <code class="highlight"><c- n>stream</c-></code>, writes the character representation of formatting arguments
+provided by <code class="highlight"><c- n>args</c-></code> formatted according to specifications given in <code class="highlight"><c- n>fmt</c-></code> to <code class="highlight"><c- n>stream</c-></code> and releases the lock.</ins>
+   </p>
+   <p><em>Throws</em>: Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="https://eel.is/c++draft/format.err.report">[format.err.report</a>). <code class="highlight"><c- n>system_error</c-></code> if writing to <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>.</p>
+   <p>...</p>
   </main>
 <script>
 (function() {

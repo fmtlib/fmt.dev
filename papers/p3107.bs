@@ -17,10 +17,11 @@ Introduction {#intro}
 
 C++23 introduced a new formatted output facility, `std::print` ([[P2093]]).
 It was defined in terms of formatting into a temporary `std::string` to simplify
-specification and make it clear that noninterleaved output is desired.
-Unfortunately, it turned out that this doesn't permit a more efficient
-implementation strategy of writing directly to a stream buffer under a lock
-which was reported in [[LWG4042]]. This paper proposes fixing this shortcoming.
+the specification and to clearly indicate the requirement for non-interleaved
+output. Unfortunately, it was discovered that this approach does not allow for a
+more efficient implementation strategy, such as writing directly to a stream
+buffer under a lock, as reported in [[LWG4042]]. This paper proposes a solution
+to address this shortcoming.
 
 Problems {#problem}
 ========
@@ -45,15 +46,24 @@ This prohibits a more efficient implementation strategy of formatting directly
 into a stream buffer under a lock (`flockfile`/`funlockfile` in POSIX,
 [[STDIO-LOCK]]) like C stdio and other formatting facilities do.
 
+The inability to achieve this with the current wording stems from the observable
+effects: throwing an exception from a user-defined formatter currently prevents
+any output from a formatting function, whereas with the direct method, the
+output written to the stream before the exception occurred is preserved. Most
+errors are caught at compile time, making this situation uncommon. The current
+behavior can be easily replicated by explicitly formatting into an intermediate
+string or buffer.
+
 Another problem is that such double buffering may require unbounded memory
 allocations, making `std::print` unsuitable for resource-constrained
-applications creating incentives for continued use of unsafe APIs.
+applications creating incentives for continued use of unsafe APIs. In the direct
+method, there are usually no memory allocations.
 
 Proposal {#proposal}
 ========
 
-The current paper proposes expressing the desire to have noniterleaved
-output in a way that that permits a more efficient implementation similar
+The current paper proposes expressing the desire to have non-iterleaved
+output in a way that permits a more efficient implementation similar
 to `printf`'s. It is based on the locking mechanism provided by C streams,
 quoting Section 7.21.2 Streams of the C standard ([[N2310-STREAMS]]):
 
@@ -62,17 +72,29 @@ quoting Section 7.21.2 Streams of the C standard ([[N2310-STREAMS]]):
 > interleaving of stream operations performed by multiple threads. Only one
 > thread may hold this lock at a time. The lock is reentrant: a single thread
 > may hold the lock multiple times at a given time.
-
+>
 > 8 All functions that read, write, position, or query the position of a stream
 > lock the stream before accessing it. They release the lock associated with the
 > stream when the access is complete.
 
-TODO: summarize perf and link to perf section
+As shown in [Performance](#perf), this can give more than 20% speed up even
+compared to writing to a stack-allocated buffer.
 
-TODO: explain the proposal and problems including the one reported by Tim and
-how to work around them (construct std::string explicitly)
+All of the following languages use an implementation consistent with the current
+proposal (no intermediate buffering):
 
-TODO: advantages: line buffering?
+* C (`printf`)
+* Rust (`println!`)
+* Java (`System.out.format`)
+
+<!--
+C: direct output: https://www.godbolt.org/z/j4Msbjj1d
+Rust: direct output: https://rust.godbolt.org/z/9drjr5fvY
+Java: direct output: https://java.godbolt.org/z/b4joY89b8
+-->
+
+IOStreams don't provide atomicity which is even weaker than the guarantees
+provided by these languages and the current proposal.
 
 Performance {#perf}
 ===========
@@ -188,15 +210,63 @@ print_stack        55.8 ns         55.8 ns     12535414
 print_direct       46.3 ns         46.3 ns     15087266
 ```
 
-TODO: summarize benchmark results
-
-TODO: check and report what other languages do (C printf, C++ ostream, )
+Direct output is 42-72% faster than writing to a temporary string and 21-24%
+faster than writing to a stack-allocated buffer on this benchmark.
 
 Implementation {#impl}
 ==============
 
 This proposal has been implemented in the open-source {fmt} library ([[FMT]])
-providing major performance improvements and improved compatibility with stdio.
+bringing major performance improvements.
+
+Wording {#wording}
+=======
+
+Modify [[print.fun](https://eel.is/c++draft/print.fun)) as indicated:
+
+```
+void vprint_unicode(FILE* stream, string_view fmt, format_args args);
+```
+
+*Preconditions*: `stream` is a valid pointer to an output C stream.
+
+*Effects*: <del>The function initializes an automatic variable via</del>
+
+<pre>
+<del>string out = vformat(fmt, args);</del>
+</pre>
+
+<p>
+<ins> Let `out` denote the the character representation of formatting arguments
+provided by `args` formatted according to specifications given in `fmt`.</ins>
+</p>
+
+<ins>Locks `stream`.</ins>
+If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
+the terminal using the native Unicode API; if `out` contains invalid code units,
+the behavior is undefined and implementations are encouraged to diagnose it.
+Otherwise writes `out` to `stream` unchanged. If the native Unicode API is used,
+the function flushes `stream` before writing `out`. <ins>Releases the lock
+</ins>.
+
+...
+
+```
+void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
+```
+
+*Preconditions*: `stream` is a valid pointer to an output C stream.
+
+*Effects*: <del>Writes the result of `vformat(fmt, args)` to `stream`.</del> <ins>
+Locks `stream`, writes the character representation of formatting arguments
+provided by `args` formatted according to specifications given in `fmt` to
+`stream` and releases the lock.</ins>
+
+*Throws*: Any exception thrown by the call to `vformat`
+([[format.err.report](https://eel.is/c++draft/format.err.report)).
+`system_error` if writing to `stream` fails. May throw `bad_alloc`.
+
+...
 
 <pre class=biblio>
 {
