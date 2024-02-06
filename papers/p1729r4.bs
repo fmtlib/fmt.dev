@@ -5,13 +5,13 @@ Revision: 4
 Audience: LEWG, SG9, SG16
 Status: P
 Group: WG21
-URL: http://wg21.link/D1729R3
+URL: http://wg21.link/P1729R4
 Editor: Elias Kosunen, isocpp@eliaskosunen.com
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
   This paper discusses a new text parsing facility to complement the text
   formatting functionality of <code>std::format</code>, proposed in [[P0645]].
-Date: 2023-10-13
+Date: 2024-02-07
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
@@ -25,11 +25,13 @@ Changes since R3 {#history-since-r3}
 * Replace `scan_args_for` with `scan_args` and `wscan_args` for consistency with `std::format`.
 * Rename `borrowed_ssubrange_t` to `borrowed_tail_subrange_t` partly based on the naming from ranges-v3 (`tail_view`).
 * Replace `format_string` with `scan_format_string`, with a `Range` template parameter.
+  * Enables compile-time checking for compatibility of the source range, and arguments to scan
 * Make `[v]scan_result_type` (the return types of `std::scan` and `std::vscan`) exposition only.
 * Remove `visit_scan_arg`: follow [[P2637]] and use `std::variant::visit`, instead.
 * Add discussion on `stdin` support, guided by SG9 polls.
 * Make encoding errors be errors for strings, instead of garbage-in-garbage-out.
 * Add further discussion on field widths.
+* Add example as rationale for mandating `forward_range`.
 
 Changes since R2 {#history-since-r2}
 ----------------
@@ -409,7 +411,7 @@ replacement-field ::= '{' [arg-id] [':' format-spec] '}'
 Like `std::format`, `std::scan` supports manual indexing of
 arguments in format strings. If manual indexing is used,
 all of the argument indices have to be spelled out.
-The same index can only be used once.
+Different from `std::format`, the same index can only be used once.
 
 <div class=example>
 ```c++
@@ -576,8 +578,7 @@ This behavior is present in `std::format` today, but can potentially be surprisi
 This meaning for the width specifier is different from `scanf`, where the width means
 the number of code units to read. This is because the purpose of that specifier in `scanf`
 is to prevent buffer overflow. Because the current interface of the proposed `std::scan` doesn't
-allow reading into an user-defined buffer, this isn't a concern. The behavior is still different from `scanf`,
-which can be concerning.
+allow reading into an user-defined buffer, this isn't a concern.
 
 <div class=note>
 Other options can be considered, if compatibility with `std::format` can be set aside.
@@ -926,15 +927,30 @@ The reference implementation deals with this by providing a range type, that wra
 `std::basic_istreambuf`, and provides a `forward_range`-compatible interface to it.
 At this point, this is deemed out of scope for this proposal.
 
-To prevent excessive code bloat, implementations are encouraged to type-erase the range
-provided to `std::scan`, in a similar fashion as inside `std::format_to`.
-This can be achieved with something similar to `any_view` from Range-v3.
-The reference implementation does something similar to this, inside the implementation of `vscan`,
-where ranges that are both contiguous and sized are internally passed along as `string_view`s,
-and as type-erased `forward_range`s otherwise.
+As mentioned above, `forward_range`s are needed to support proper lookahead and rollback.
+For example, when reading an `int` with the `i` format specifier (detect base from prefix),
+whether a character is part of the `int` can't be determined before reading past it.
 
-It should be noted, that if the range is not type-erased, the library internals need to be exposed
-to the user (in a header), and be instantiated for every different kind of range type the user uses.
+<div class=example>
+```c++
+// Hex value "0xf"
+auto r1 = std::scan<int>("0xf", "{:i}");
+// r1->value() == 0xf
+// r1->range().empty() == true
+
+// (Octal) value "0", with "xg" left over
+auto r2 = std::scan<int>("0xg", "{:i}");
+// r2->value() == 0
+// r2->range() == "xg"
+```
+</div>
+
+This behavior is different from `scanf`.
+
+The same behavior can be observed with floating-point values, when using exponents:
+whether `1e+X` is parsed as a number, or as `1` with the rest left over,
+depends on whether `X` is a valid exponent.
+For user-defined types, arbitrarily-long look-/rollback can be required.
 
 Argument passing, and return type of `scan` {#argument-passing}
 -------------------------------------------
@@ -966,6 +982,9 @@ The rationale behind this change is as follows:
  
  - Previously, there were real performance implications when using complicated tuples,
     both at compile-time and runtime. These concerns have since been alleviated, as compiler technology has improved.
+
+It should be noted, that not using output parameters removes a channel for user customization.
+For example, [[FMT]] uses `fmt::arg` to specify named arguments. The same isn't directly possible here.
 
 The return type of `scan`, `scan_result`, contains a `subrange` over the unparsed input.
 With this, a new type alias is introduced, `ranges::borrowed_tail_subrange_t`, that is defined as follows:
@@ -1361,9 +1380,9 @@ auto r2 = std::scan<int>("1\xc3 ", "{}");
 ```
 </div>
 
-Because `std::scan` is, as indicated by the paper title, a <i>text parsing</i> facility,
-raw bytes input into a `string` isn't supported. That can be achieved with simpler range algorithms
-already in the standard.
+Reading raw bytes (not in the literal encoding) into a `string` isn't directly supported.
+This can be achieved either with simpler range algorithms already in the standard,
+or by using a custom type or scanner.
 
 Performance {#performance}
 -----------
@@ -1382,15 +1401,10 @@ e.g.
 auto r = std::scan<std::string_view, int>("answer = 42", "{} = {}");
 ```
 
-This has lifetime implications similar to returning match objects in [[P1433]]
-and iterators or subranges in the ranges library and can be mitigated in the same
-way.
-
-It should be noted, that as proposed, this library does not support
-checking at compile-time, whether scanning a `string_view` would dangle, or
-if it's possible at all (it's not possible to read a `string_view` from a non-`contiguous_range`).
-This is the case, because the concept `scannable` is defined in terms of the scanned type `T`
-and the input range character type `CharT`, not the type of the input range itself.
+Because the format strings are checked at compile time, while being aware
+of the exact types to scan, and the source range type, it's possible to check
+at compile time, whether scanning a `string_view` would dangle, or if it'S
+possible at all (reading from a non-`contiguous_range`).
 
 Integration with chrono {#chrono}
 -----------------------
@@ -1570,6 +1584,9 @@ auto r1 = scan<string>(..., "{}", {std::move(r0->value())});
 ```
 </div>
 
+This same facility could be also used for additional user customization,
+as pointed out in [[#argument-passing]].
+
 Assignment suppression / discarding values {#discard}
 ------------------------------------------
 
@@ -1667,7 +1684,7 @@ namespace std {
       ranges::forward_range&lt;Range&gt; &&
       same_as&lt;ranges::range_value_t&lt;Range&gt;, CharT&gt;;
 
-  template&lt;class Range, class...Args&gt;
+  template&lt;class Range, class... Args&gt;
     using <i>scan-result-type</i> = expected&lt;
       scan_result&lt;ranges::borrowed_tail_subrange_t&lt;Range&gt;, Args...&gt;,
       scan_error&gt;; // exposition only
@@ -1697,7 +1714,7 @@ namespace std {
   using wscan_args = basic_scan_args&lt;wscan_context&gt;;
 
   template&lt;class Range&gt;
-    using <i>vscan-result-type</i> =  expected&lt;
+    using <i>vscan-result-type</i> = expected&lt;
       ranges::borrowed_tail_subrange_t&lt;Range&gt;,
       scan_error&gt;; // exposition only
 
@@ -1715,9 +1732,9 @@ namespace std {
 
   template&lt;scannable_range&lt;wchar_t&gt; Range&gt;
     <i>vscan-result-type</i>&lt;Range&gt; vscan(const locale& loc,
-                                 Range&& range,
-                                 wstring_view fmt,
-                                 wscan_args args);
+                                   Range&& range,
+                                   wstring_view fmt,
+                                   wscan_args args);
 
   template&lt;class T, class CharT = char&gt;
     struct scanner;
@@ -1998,11 +2015,6 @@ namespace std {
   "BARRY-SO-ANSWER": {
     "title": "Why the standard defines `borrowed_subrange_t` as `common_range`",
     "href": "https://stackoverflow.com/a/66819929"
-  },
-  "P1433": {
-    "title": "Compile Time Regular Expressions",
-    "authors": ["Hana Dusíková"],
-    "href": "https://wg21.link/p1433"
   },
   "SCNLIB": {
     "title": "scnlib: scanf for modern C++",
