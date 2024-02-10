@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/P1729R4" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6cedaafdf7cd49bd9fd0583880daf456b129cdbc" name="revision">
+  <meta content="ae39a55c23ed541b171e5721debe258bdc7a8b89" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2129,7 +2129,7 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
       <li><a href="#example-range"><span class="secno">3.3</span> <span class="content">Reading from a range</span></a>
       <li><a href="#example-loop"><span class="secno">3.4</span> <span class="content">Reading multiple values in a loop</span></a>
       <li><a href="#example-alt-error"><span class="secno">3.5</span> <span class="content">Alternative error handling</span></a>
-      <li><a href="#example-userdef"><span class="secno">3.6</span> <span class="content">Scanning an user-defined type</span></a>
+      <li><a href="#example-userdef"><span class="secno">3.6</span> <span class="content">Scanning a user-defined type</span></a>
      </ol>
     <li>
      <a href="#design"><span class="secno">4</span> <span class="content">Design</span></a>
@@ -2270,10 +2270,9 @@ the time of writing. So although formatted input functions are less popular than
 their output counterparts, they are still widely used.</p>
    <p>The lack of a general-purpose parsing facility based on format strings has been
 raised in <a data-link-type="biblio" href="#biblio-p1361" title="Integration of chrono with text formatting">[P1361]</a> in the context of formatting and parsing of dates and times.</p>
-   <p>This paper explores the possibility of adding a symmetric parsing facility,
-to complement the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> family, called <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>.
-This facility is based on the same design principles and
-shares many features with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+   <p>This paper proposes adding a symmetric parsing facility, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan</c-></code>, to
+complement <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. This facility is based on the same design principles
+and shares many features with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
    <p>This facility is not a parser per se, as it is probably not sufficient
 for parsing something more complicated, e.g. JSON.
 This is not a parser combinator library.
@@ -2291,12 +2290,14 @@ capable of being a building block for a more complicated parser.</p>
   <c- c1>//            scanned</c->
   <c- c1>//            values</c->
 
-  <c- c1>// result->range() gives an empty range (result->begin() == result->end())</c->
+  <c- c1>// result is a std::expected&lt;std::scan_result&lt;...>>.</c->
+  <c- c1>// result->range() gives an empty range.</c->
+  <c- c1>// result->begin() == result->end()</c->
   <c- c1>// key == "answer"</c->
   <c- c1>// value == 42</c->
 <c- p>}</c-> <c- k>else</c-> <c- p>{</c->
-  <c- c1>// We'll end up here if we had an error.</c->
-  <c- c1>// Inspect the returned scan_error with result.error().</c->
+  <c- c1>// We would end up here if we had an error.</c->
+  <c- n>std</c-><c- o>::</c-><c- n>scan_error</c-> <c- n>error</c-> <c- o>=</c-> <c- n>result</c-><c- p>.</c-><c- n>error</c-><c- p>();</c->
 <c- p>}</c->
 </pre>
    <h3 class="heading settled" data-level="3.2" id="example-multiple"><span class="secno">3.2. </span><span class="content">Reading multiple values at once</span><a class="self-link" href="#example-multiple"></a></h3>
@@ -2349,13 +2350,14 @@ capable of being a building block for a more complicated parser.</p>
 <c- c1>// With [</c-><a data-link-type="biblio" href="#biblio-p2561" title="A control flow operator"><c- c1>P2561</c-></a><c- c1>]:</c->
 <c- b>int</c-> <c- n>num</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(...,</c-> <c- s>"{}"</c-><c- p>).</c-><c- k>try</c-><c- o>?</c-><c- p>.</c-><c- n>value</c-><c- p>();</c->
 </pre>
-   <h3 class="heading settled" data-level="3.6" id="example-userdef"><span class="secno">3.6. </span><span class="content">Scanning an user-defined type</span><a class="self-link" href="#example-userdef"></a></h3>
+   <h3 class="heading settled" data-level="3.6" id="example-userdef"><span class="secno">3.6. </span><span class="content">Scanning a user-defined type</span><a class="self-link" href="#example-userdef"></a></h3>
 <pre class="language-c++ highlight"><c- k>struct</c-> <c- nc>mytype</c-> <c- p>{</c->
   <c- b>int</c-> <c- n>a</c-><c- p>{},</c-> <c- n>b</c-><c- p>{};</c->
 <c- p>};</c->
 
-<c- c1>// Specialize std::scanner to add support for user-defined types</c->
-<c- c1>// Inherit from std::scanner&lt;string> to get format string parsing (scanner::parse()) from it</c->
+<c- c1>// Specialize std::scanner to add support for user-defined types.</c->
+<c- c1>// Inherit from std::scanner&lt;std::string> to get format string parsing</c->
+<c- c1>// (scanner::parse()) from it.</c->
 <c- n>template</c-> <c- o>&lt;></c->
 <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>scanner</c-><c- o>&lt;</c-><c- n>mytype</c-><c- o>></c-> <c- o>:</c-> <c- n>std</c-><c- o>::</c-><c- n>scanner</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-> <c- p>{</c->
   <c- n>template</c-> <c- o>&lt;</c-><c- n>typename</c-> <c- n>Context</c-><c- o>></c->

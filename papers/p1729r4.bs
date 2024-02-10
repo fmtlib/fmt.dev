@@ -79,10 +79,9 @@ their output counterparts, they are still widely used.
 The lack of a general-purpose parsing facility based on format strings has been
 raised in [[P1361]] in the context of formatting and parsing of dates and times.
 
-This paper explores the possibility of adding a symmetric parsing facility,
-to complement the `std::format` family, called `std::scan`.
-This facility is based on the same design principles and
-shares many features with `std::format`.
+This paper proposes adding a symmetric parsing facility, `std::scan`, to
+complement `std::format`. This facility is based on the same design principles
+and shares many features with `std::format`.
 
 This facility is not a parser per se, as it is probably not sufficient
 for parsing something more complicated, e.g. JSON.
@@ -107,12 +106,14 @@ if (auto result = std::scan<std::string, int>("answer = 42", "{} = {}")) {
   //            scanned
   //            values
 
-  // result->range() gives an empty range (result->begin() == result->end())
+  // result is a std::expected<std::scan_result<...>>.
+  // result->range() gives an empty range.
+  // result->begin() == result->end()
   // key == "answer"
   // value == 42
 } else {
-  // We'll end up here if we had an error.
-  // Inspect the returned scan_error with result.error().
+  // We would end up here if we had an error.
+  std::scan_error error = result.error();
 }
 ```
 
@@ -182,16 +183,17 @@ int num = *result;
 int num = std::scan&lt;int&gt;(..., "{}").try?.value();
 </pre>
 
-Scanning an user-defined type {#example-userdef}
------------------------------
+Scanning a user-defined type {#example-userdef}
+----------------------------
 
 ```c++
 struct mytype {
   int a{}, b{};
 };
 
-// Specialize std::scanner to add support for user-defined types
-// Inherit from std::scanner<string> to get format string parsing (scanner::parse()) from it
+// Specialize std::scanner to add support for user-defined types.
+// Inherit from std::scanner<std::string> to get format string parsing
+// (scanner::parse()) from it.
 template <>
 struct std::scanner<mytype> : std::scanner<std::string> {
   template <typename Context>
