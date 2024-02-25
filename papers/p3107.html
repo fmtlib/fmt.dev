@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3107R0: Permit an efficient implementation of std::print</title>
+  <title>P3107R1: Permit an efficient implementation of std::print</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="1152cb63e63ae7248f483ee7a843a8a8d067054f" name="revision">
+  <meta content="9e6c35d5263185745a4c16e325090ee2ac2bce0d" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,7 +2086,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3107R0<br>Permit an efficient implementation of std::print</h1>
+   <h1 class="p-name no-ref" id="title">P3107R1<br>Permit an efficient implementation of std::print</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-01-28">2024-01-28</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2105,11 +2105,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#problem"><span class="secno">2</span> <span class="content">Problems</span></a>
-    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
-    <li><a href="#perf"><span class="secno">4</span> <span class="content">Performance</span></a>
-    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
+    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#problem"><span class="secno">3</span> <span class="content">Problems</span></a>
+    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
+    <li><a href="#perf"><span class="secno">5</span> <span class="content">Performance</span></a>
+    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2126,7 +2128,17 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>. This paper proposes a solution
 to address this shortcoming.</p>
-   <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added preliminary results for libstdc++ provided by Jonathan Wakely.</p>
+    <li data-md>
+     <p>Replaced the definition of <code class="highlight"><c- n>println</c-></code> with a more efficient one that doesn’t
+call <code class="highlight"><c- n>format</c-></code>.</p>
+    <li data-md>
+     <p>Fixed typos.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="problem"><span class="secno">3. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
    <p>As reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>/<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vprint</c-><c- o>*</c-></code> is currently defined in
 terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code>, e.g. <a href="https://eel.is/c++draft/print.fun">[print.fun</a>]:</p>
    <blockquote>
@@ -2148,7 +2160,7 @@ string or buffer.</p>
 allocations, making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> unsuitable for resource-constrained
 applications creating incentives for continued use of unsafe APIs. In the direct
 method, there are usually no memory allocations.</p>
-   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The current paper proposes expressing the desire to have non-iterleaved
 output in a way that permits a more efficient implementation similar
 to <code class="highlight"><c- n>printf</c-></code>’s. It is based on the locking mechanism provided by C streams,
@@ -2177,7 +2189,7 @@ proposal (no intermediate buffering):</p>
    </ul>
    <p>IOStreams don’t provide atomicity which is even weaker than the guarantees
 provided by these languages and the current proposal.</p>
-   <h2 class="heading settled" data-level="4" id="perf"><span class="secno">4. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
+   <h2 class="heading settled" data-level="5" id="perf"><span class="secno">5. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>The following benchmark demonstrates the difference in performance between
 different implementation strategies using the reference implementation of <code class="highlight"><c- n>print</c-></code> from <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>. This benchmark is based on the one from <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> but
 modified to avoid the small string optimization effects. It formats a simple
@@ -2279,11 +2291,20 @@ than <code class="highlight"><c- n>print</c-></code> with the stack-allocated bu
 </pre>
    <p>Direct output is 42-72% faster than writing to a temporary string and 21-24%
 faster than writing to a stack-allocated buffer on this benchmark.</p>
-   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <p>Preliminary testing in libstc++ showed ~25% improvement compared to the
+existing implementation.</p>
+   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>This proposal has been implemented in the open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>)
 bringing major performance improvements.</p>
-   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
-   <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>) as indicated:</p>
+   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>] as indicated:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><del><c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c-></del>
+<ins><c- n>print</c-><c- p>(</c-><c- n>runtime_format</c-><c- p>(</c-><c- n>string</c-><c- p>(</c-><c- n>fmt</c-><c- p>.</c-><c- n>get</c-><c- p>())</c-> <c- o>+</c-> <c- sc>'\n'</c-><c- p>),</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...);</c-></ins>
+</pre>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p><em>Preconditions</em>: <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream.</p>
@@ -2315,8 +2336,11 @@ the function flushes <code class="highlight"><c- n>stream</c-></code> before wri
     <ins> Locks <code class="highlight"><c- n>stream</c-></code>, writes the character representation of formatting arguments
 provided by <code class="highlight"><c- n>args</c-></code> formatted according to specifications given in <code class="highlight"><c- n>fmt</c-></code> to <code class="highlight"><c- n>stream</c-></code> and releases the lock.</ins>
    </p>
-   <p><em>Throws</em>: Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="https://eel.is/c++draft/format.err.report">[format.err.report</a>). <code class="highlight"><c- n>system_error</c-></code> if writing to <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>.</p>
+   <p><em>Throws</em>: Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="https://eel.is/c++draft/format.err.report">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if writing to <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>.</p>
    <p>...</p>
+   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Jonathan Wakely for implementing the proposal in libstdc++,
+providing benchmark results and suggesting various improvements to the paper.</p>
   </main>
 <script>
 (function() {

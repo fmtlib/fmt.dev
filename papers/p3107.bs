@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Permit an efficient implementation of std::print
 Shortname: P3107
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
@@ -22,6 +22,14 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in [[LWG4042]]. This paper proposes a solution
 to address this shortcoming.
+
+Changes since R0 {#changes0}
+================
+
+* Added preliminary results for libstdc++ provided by Jonathan Wakely.
+* Replaced the definition of `println` with a more efficient one that doesn't
+    call `format`.
+* Fixed typos.
 
 Problems {#problem}
 ========
@@ -213,6 +221,9 @@ print_direct       46.3 ns         46.3 ns     15087266
 Direct output is 42-72% faster than writing to a temporary string and 21-24%
 faster than writing to a stack-allocated buffer on this benchmark.
 
+Preliminary testing in libstc++ showed ~25% improvement compared to the
+existing implementation.
+
 Implementation {#impl}
 ==============
 
@@ -222,7 +233,21 @@ bringing major performance improvements.
 Wording {#wording}
 =======
 
-Modify [[print.fun](https://eel.is/c++draft/print.fun)) as indicated:
+Modify [[print.fun](https://eel.is/c++draft/print.fun)] as indicated:
+
+```
+template<class... Args>
+  void println(FILE* stream, format_string<Args...> fmt, Args&&... args);
+```
+
+*Effects*: Equivalent to:
+
+<!-- https://www.godbolt.org/z/evK7jvdaf -->
+
+<pre>
+<del>print(stream, "{}\n", format(fmt, std::forward&lt;Args>(args)...));</del>
+<ins>print(runtime_format(string(fmt.get()) + '\n'), std::forward&lt;Args>(args)...);</ins>
+</pre>
 
 ```
 void vprint_unicode(FILE* stream, string_view fmt, format_args args);
@@ -263,10 +288,16 @@ provided by `args` formatted according to specifications given in `fmt` to
 `stream` and releases the lock.</ins>
 
 *Throws*: Any exception thrown by the call to `vformat`
-([[format.err.report](https://eel.is/c++draft/format.err.report)).
+([[format.err.report](https://eel.is/c++draft/format.err.report)]).
 `system_error` if writing to `stream` fails. May throw `bad_alloc`.
 
 ...
+
+Acknowledgements {#ack}
+================
+
+Thanks to Jonathan Wakely for implementing the proposal in libstdc++,
+providing benchmark results and suggesting various improvements to the paper.
 
 <pre class=biblio>
 {
