@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Permit an efficient implementation of std::print
 Shortname: P3107
-Revision: 1
+Revision: 2
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-02-25
+Date: 2024-03-02
 Markup Shorthands: markdown yes
 </pre>
 
@@ -22,6 +22,16 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in [[LWG4042]]. This paper proposes a solution
 to address this shortcoming.
+
+Changes since R1 {#changes1}
+================
+
+* Made the new behavior an opt in for user-defined formatters to prevent
+    potential deadlocks when they perform locking in their `format` functions.
+* Added a missing `stream` argument in the call to `print` in the *Effects*
+    clause of `println`.
+* Added instructions to update the `__cpp_lib_print` feature testing macro.
+* Provided an example illustrating a problem with interleaved output.
 
 Changes since R0 {#changes0}
 ================
@@ -102,7 +112,102 @@ Java: direct output: https://java.godbolt.org/z/b4joY89b8
 -->
 
 IOStreams don't provide atomicity which is even weaker than the guarantees
-provided by these languages and the current proposal.
+provided by these languages and the current proposal. For example:
+
+<!-- https://www.godbolt.org/z/4M6YbdP3v -->
+
+```c++
+#include <iostream>
+#include <thread>
+
+void worker() {
+  for (int i = 0; i < 3; ++i) {
+    // Simulate work.
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::cout << "thread " << std::this_thread::get_id()
+      << ": work" << i << " done\n";
+  }
+}
+
+int main(){
+  auto t1 = std::jthread(worker);
+  auto t2 = std::jthread(worker);
+}
+```
+
+may produce the following output:
+
+```
+thread 140239754491456: work0 done
+thread 140239746098752: work0 done
+thread thread 140239746098752: work140239754491456: work1 done
+1 done
+thread 140239754491456: work2 done
+thread 140239746098752: work2 done
+```
+
+Neither `printf` not `std::print` have this issue.
+
+<!--
+syncstream talks about posix locks
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0053r7.pdf
+--> 
+
+<!-- TODO: investigate other languages -->
+
+One problem with locking a stream is that it may introduce potential for
+deadlocks in case a user-defined formatter is also doing locking internally.
+For example:
+
+<!-- https://www.godbolt.org/z/xaKG4jdc5 -->
+
+```
+struct deadlockable {
+  int value = 0;
+  mutable std::mutex mutex;
+};
+
+template <> struct std::formatter<deadlockable> {
+  constexpr auto parse(std::format_parse_context& ctx) {
+    return ctx.begin();
+  }
+
+  auto format(const deadlockable& d, std::format_context& ctx) const {
+    std::lock_guard<std::mutex> lock(d.mutex);
+    return std::format_to(ctx.out(), "{}", d.value);
+  }
+};
+
+deadlockable d;
+auto t = std::thread([&]() {
+  std::print("start\n");
+  std::lock_guard<std::mutex> lock(d.mutex);
+  for (int i = 0; i < 1000000; ++i) d.value += 10;
+  std::print("done\n");
+});
+for (int i = 0; i < 100; ++i) std::print("{}", d);
+t.join();
+```
+
+This is obviously bad code because it unnecessarily calls `std::print` under a
+lock but it is still undesirable to have it deadlocked.
+
+To prevent deadlocks while still providing major performance improvements and
+preventing dynamic allocations for the common case, this paper proposes making
+user-defined formatters opt into the new behavior. All standard formatters are
+nonlocking and will be opted in which means that `std::print` can be used as
+a replacement for all current uses of `printf` without concerns that it causes
+unbounded memory allocation. The opt in is done via the `nonlocking` nested
+type:
+
+```
+struct foo {};
+
+template <> struct fmt::formatter<foo> {
+  using nonlocking = void;
+  // ...
+};
+```
 
 Performance {#perf}
 ===========
@@ -233,7 +338,48 @@ bringing major performance improvements.
 Wording {#wording}
 =======
 
+Update the value of the feature-testing macro `__cpp_lib_print` to the date of
+adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
+
 Modify [[print.fun](https://eel.is/c++draft/print.fun)] as indicated:
+
+...
+
+```
+template<class... Args>
+  void print(FILE* stream, format_string<Args...> fmt, Args&&... args);
+```
+
+*Effects*:
+
+<ins>
+Let `locksafe` be `true` if `remove_cvref_t<Arg>::nonlocking` is valid and
+denotes a type for all `Arg` in `Args`, `false` otherwise.
+</ins>
+
+If the ordinary literal encoding ([[lex.charset](
+https://eel.is/c++draft/version.syn)]) is UTF-8, equivalent to:
+
+<pre>
+<del>vprint_unicode(stream, fmt.str, make_format_args(args...));</del>
+<ins>
+locksafe ?
+  vprint_unicode_locking(stream, fmt.str, make_format_args(args...)) :
+  vprint_unicode(stream, fmt.str, make_format_args(args...));</ins>
+</pre>
+
+Otherwise, equivalent to:
+
+<pre>
+<del>vprint_nonunicode(stream, fmt.str, make_format_args(args...));</del>
+<ins>
+locksafe ?
+  vprint_nonunicode_locking(stream, fmt.str, make_format_args(args...)) :
+  vprint_nonunicode(stream, fmt.str, make_format_args(args...));
+</ins>
+</pre>
+
+...
 
 ```
 template<class... Args>
@@ -246,12 +392,24 @@ template<class... Args>
 
 <pre>
 <del>print(stream, "{}\n", format(fmt, std::forward&lt;Args>(args)...));</del>
-<ins>print(runtime_format(string(fmt.get()) + '\n'), std::forward&lt;Args>(args)...);</ins>
+<ins>print(stream, runtime_format(string(fmt.get()) + '\n'), std::forward&lt;Args>(args)...);</ins>
 </pre>
 
 ```
 void vprint_unicode(FILE* stream, string_view fmt, format_args args);
 ```
+
+<ins>
+*Effects*: Equivalent to:
+</ins>
+
+<pre>
+<ins>vprint_unicode_locking(stream, "{}", vformat(fmt, args));</ins>
+</pre>
+
+<pre><ins>
+void vprint_unicode_locking(FILE* stream, string_view fmt, format_args args);
+</ins></pre>
 
 *Preconditions*: `stream` is a valid pointer to an output C stream.
 
@@ -280,6 +438,18 @@ the function flushes `stream` before writing `out`. <ins>Releases the lock
 void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
 ```
 
+<ins>
+*Effects*: Equivalent to:
+</ins>
+
+<pre>
+<ins>vprint_nonunicode_locking("{}", vformat(fmt, args));</ins>
+</pre>
+
+<pre><ins>
+void vprint_nonunicode_locking(FILE* stream, string_view fmt, format_args args);
+</ins></pre>
+
 *Preconditions*: `stream` is a valid pointer to an output C stream.
 
 *Effects*: <del>Writes the result of `vformat(fmt, args)` to `stream`.</del> <ins>
@@ -293,11 +463,48 @@ provided by `args` formatted according to specifications given in `fmt` to
 
 ...
 
+
+Modify [[format.formatter.spec](https://eel.is/c++draft/format.formatter.spec)]
+as indicated:
+
+...
+
+Let `charT` be either`char` or `wchar_t`. Each specialization of `formatter` is
+either enabled or disabled, as described below. A *debug-enabled* specialization
+of `formatter` additionally provides a public, constexpr, non-static member
+function `set_debug_format()` which modifies the state of the `formatter` to be
+as if the type of the *std-format-spec* parsed by the last call to parse were
+`?`. Each header that declares the template `formatter` provides the following
+enabled specializations:
+
+* The debug-enabled specializations
+    ```
+    template<> struct formatter<char, char>;
+    template<> struct formatter<char, wchar_t>;
+    template<> struct formatter<wchar_t, wchar_t>;
+    ```
+    ...
+
+The parse member functions of these formatters interpret the format
+specification as a *std-format-spec* as described in
+[[format.string.std](https://eel.is/c++draft/format.string.std)].
+
+<ins>These formatters define an unspecified nested type named `nonlocking`.</ins>
+
+[*Note 1*: Specializations such as `formatter<wchar_t, char>` and
+`formatter<const char*, wchar_t>` that would require implicit multibyte /
+wide string or character conversion are disabled. — end note]
+
+...
+
 Acknowledgements {#ack}
 ================
 
 Thanks to Jonathan Wakely for implementing the proposal in libstdc++,
 providing benchmark results and suggesting various improvements to the paper.
+
+Thanks to Ben Craig for proposing to make user-defined formatters opt into the
+new behavior to prevent potential deadlocks.
 
 <pre class=biblio>
 {

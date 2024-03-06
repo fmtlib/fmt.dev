@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3107R1: Permit an efficient implementation of std::print</title>
+  <title>P3107R2: Permit an efficient implementation of std::print</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="79595bb4987dc01c700dbc51c7f982a32761879a" name="revision">
+  <meta content="dc3f22fff96cda96b5627b06e836b99304166275" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,8 +2086,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3107R1<br>Permit an efficient implementation of std::print</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-02-25">2024-02-25</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3107R2<br>Permit an efficient implementation of std::print</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-03-02">2024-03-02</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2105,13 +2105,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#problem"><span class="secno">3</span> <span class="content">Problems</span></a>
-    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
-    <li><a href="#perf"><span class="secno">5</span> <span class="content">Performance</span></a>
-    <li><a href="#impl"><span class="secno">6</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
-    <li><a href="#ack"><span class="secno">8</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#problem"><span class="secno">4</span> <span class="content">Problems</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
+    <li><a href="#perf"><span class="secno">6</span> <span class="content">Performance</span></a>
+    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">9</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2128,7 +2129,19 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>. This paper proposes a solution
 to address this shortcoming.</p>
-   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Made the new behavior an opt in for user-defined formatters to prevent
+potential deadlocks when they perform locking in their <code class="highlight"><c- n>format</c-></code> functions.</p>
+    <li data-md>
+     <p>Added a missing <code class="highlight"><c- n>stream</c-></code> argument in the call to <code class="highlight"><c- n>print</c-></code> in the <em>Effects</em> clause of <code class="highlight"><c- n>println</c-></code>.</p>
+    <li data-md>
+     <p>Added instructions to update the <code class="highlight"><c- n>__cpp_lib_print</c-></code> feature testing macro.</p>
+    <li data-md>
+     <p>Provided an example illustrating a problem with interleaved output.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added preliminary results for libstdc++ provided by Jonathan Wakely.</p>
@@ -2138,7 +2151,7 @@ call <code class="highlight"><c- n>format</c-></code>.</p>
     <li data-md>
      <p>Fixed typos.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="problem"><span class="secno">3. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
+   <h2 class="heading settled" data-level="4" id="problem"><span class="secno">4. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
    <p>As reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>/<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vprint</c-><c- o>*</c-></code> is currently defined in
 terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code>, e.g. <a href="https://eel.is/c++draft/print.fun">[print.fun</a>]:</p>
    <blockquote>
@@ -2160,7 +2173,7 @@ string or buffer.</p>
 allocations, making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> unsuitable for resource-constrained
 applications creating incentives for continued use of unsafe APIs. In the direct
 method, there are usually no memory allocations.</p>
-   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The current paper proposes expressing the desire to have non-iterleaved
 output in a way that permits a more efficient implementation similar
 to <code class="highlight"><c- n>printf</c-></code>’s. It is based on the locking mechanism provided by C streams,
@@ -2188,8 +2201,79 @@ proposal (no intermediate buffering):</p>
      <p>Java (<code class="highlight"><c- n>System</c-><c- p>.</c-><c- n>out</c-><c- p>.</c-><c- n>format</c-></code>)</p>
    </ul>
    <p>IOStreams don’t provide atomicity which is even weaker than the guarantees
-provided by these languages and the current proposal.</p>
-   <h2 class="heading settled" data-level="5" id="perf"><span class="secno">5. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
+provided by these languages and the current proposal. For example:</p>
+<pre class="language-c++ highlight"><c- cp>#include</c-> &lt;iostream>
+<c- cp>#include</c-> &lt;thread>
+
+<c- b>void</c-> <c- nf>worker</c-><c- p>()</c-> <c- p>{</c->
+  <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>3</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- p>{</c->
+    <c- c1>// Simulate work.</c->
+    <c- n>std</c-><c- o>::</c-><c- n>this_thread</c-><c- o>::</c-><c- n>sleep_for</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>milliseconds</c-><c- p>(</c-><c- mi>200</c-><c- p>));</c->
+    <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- s>"thread "</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>this_thread</c-><c- o>::</c-><c- n>get_id</c-><c- p>()</c->
+      <c- o>&lt;&lt;</c-> <c- s>": work"</c-> <c- o>&lt;&lt;</c-> <c- n>i</c-> <c- o>&lt;&lt;</c-> <c- s>" done</c-><c- se>\n</c-><c- s>"</c-><c- p>;</c->
+  <c- p>}</c->
+<c- p>}</c->
+
+<c- b>int</c-> <c- nf>main</c-><c- p>(){</c->
+  <c- k>auto</c-> <c- n>t1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>jthread</c-><c- p>(</c-><c- n>worker</c-><c- p>);</c->
+  <c- k>auto</c-> <c- n>t2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>jthread</c-><c- p>(</c-><c- n>worker</c-><c- p>);</c->
+<c- p>}</c->
+</pre>
+   <p>may produce the following output:</p>
+<pre class="highlight"><c- kr>thread</c-> <c- mi>140239754491456</c-><c- o>:</c-> <c- n>work0</c-> <c- n>done</c->
+<c- kr>thread</c-> <c- mi>140239746098752</c-><c- o>:</c-> <c- n>work0</c-> <c- n>done</c->
+<c- kr>thread</c-> <c- kr>thread</c-> <c- mi>140239746098752</c-><c- o>:</c-> <c- n>work140239754491456</c-><c- o>:</c-> <c- n>work1</c-> <c- n>done</c->
+<c- mi>1</c-> <c- n>done</c->
+<c- kr>thread</c-> <c- mi>140239754491456</c-><c- o>:</c-> <c- n>work2</c-> <c- n>done</c->
+<c- kr>thread</c-> <c- mi>140239746098752</c-><c- o>:</c-> <c- n>work2</c-> <c- n>done</c->
+</pre>
+   <p>Neither <code class="highlight"><c- n>printf</c-></code> not <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> have this issue.</p>
+   <p>One problem with locking a stream is that it may introduce potential for
+deadlocks in case a user-defined formatter is also doing locking internally.
+For example:</p>
+<pre class="highlight"><c- k>struct</c-> <c- nc>deadlockable</c-> <c- p>{</c->
+  <c- b>int</c-> <c- n>value</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
+  <c- k>mutable</c-> <c- n>std</c-><c- o>::</c-><c- n>mutex</c-> <c- n>mutex</c-><c- p>;</c->
+<c- p>};</c->
+
+<c- k>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>deadlockable</c-><c- o>></c-> <c- p>{</c->
+  <c- k>constexpr</c-> <c- k>auto</c-> <c- n>parse</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>();</c->
+  <c- p>}</c->
+
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>deadlockable</c-><c- o>&amp;</c-> <c- n>d</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-> <c- p>{</c->
+    <c- n>std</c-><c- o>::</c-><c- n>lock_guard</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>mutex</c-><c- o>></c-> <c- n>lock</c-><c- p>(</c-><c- n>d</c-><c- p>.</c-><c- n>mutex</c-><c- p>);</c->
+    <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>format_to</c-><c- p>(</c-><c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>(),</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>d</c-><c- p>.</c-><c- n>value</c-><c- p>);</c->
+  <c- p>}</c->
+<c- p>};</c->
+
+<c- n>deadlockable</c-> <c- n>d</c-><c- p>;</c->
+<c- k>auto</c-> <c- n>t</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- kr>thread</c-><c- p>([</c-><c- o>&amp;</c-><c- p>]()</c-> <c- p>{</c->
+  <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"start</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
+  <c- n>std</c-><c- o>::</c-><c- n>lock_guard</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>mutex</c-><c- o>></c-> <c- n>lock</c-><c- p>(</c-><c- n>d</c-><c- p>.</c-><c- n>mutex</c-><c- p>);</c->
+  <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>1000000</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- n>d</c-><c- p>.</c-><c- n>value</c-> <c- o>+=</c-> <c- mi>10</c-><c- p>;</c->
+  <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"done</c-><c- se>\n</c-><c- s>"</c-><c- p>);</c->
+<c- p>});</c->
+<c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>100</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>d</c-><c- p>);</c->
+<c- n>t</c-><c- p>.</c-><c- n>join</c-><c- p>();</c->
+</pre>
+   <p>This is obviously bad code because it unnecessarily calls <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> under a
+lock but it is still undesirable to have it deadlocked.</p>
+   <p>To prevent deadlocks while still providing major performance improvements and
+preventing dynamic allocations for the common case, this paper proposes making
+user-defined formatters opt into the new behavior. All standard formatters are
+nonlocking and will be opted in which means that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> can be used as
+a replacement for all current uses of <code class="highlight"><c- n>printf</c-></code> without concerns that it causes
+unbounded memory allocation. The opt in is done via the <code class="highlight"><c- n>nonlocking</c-></code> nested
+type:</p>
+<pre class="highlight"><c- k>struct</c-> <c- nc>foo</c-> <c- p>{};</c->
+
+<c- k>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>fmt</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- p>{</c->
+  <c- k>using</c-> <c- n>nonlocking</c-> <c- o>=</c-> <c- b>void</c-><c- p>;</c->
+  <c- c1>// ...</c->
+<c- p>};</c->
+</pre>
+   <h2 class="heading settled" data-level="6" id="perf"><span class="secno">6. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>The following benchmark demonstrates the difference in performance between
 different implementation strategies using the reference implementation of <code class="highlight"><c- n>print</c-></code> from <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>. This benchmark is based on the one from <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> but
 modified to avoid the small string optimization effects. It formats a simple
@@ -2293,20 +2377,50 @@ than <code class="highlight"><c- n>print</c-></code> with the stack-allocated bu
 faster than writing to a stack-allocated buffer on this benchmark.</p>
    <p>Preliminary testing in libstc++ showed ~25% improvement compared to the
 existing implementation.</p>
-   <h2 class="heading settled" data-level="6" id="impl"><span class="secno">6. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>This proposal has been implemented in the open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>)
 bringing major performance improvements.</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_print</c-></code> to the date of
+adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
    <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>] as indicated:</p>
+   <p>...</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects</em>:</p>
+   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight">true</code> if <code class="highlight"><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>::</c-><c- n>nonlocking</c-></code> is valid and
+denotes a type for all <code class="highlight"><c- n>Arg</c-></code> in <code class="highlight"><c- n>Args</c-></code>, <code class="highlight">false</code> otherwise. </ins>
+   <p>If the ordinary literal encoding (<a href="https://eel.is/c++draft/version.syn">[lex.charset</a>]) is UTF-8, equivalent to:</p>
+<pre class="highlight"><del><c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c-></del>
+<ins>
+<c- n>locksafe</c-> <c- o>?</c->
+  <c- n>vprint_unicode_locking</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...))</c-> <c- o>:</c->
+  <c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c-></ins>
+</pre>
+   <p>Otherwise, equivalent to:</p>
+<pre class="highlight"><del><c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c-></del>
+<ins>
+<c- n>locksafe</c-> <c- o>?</c->
+  <c- n>vprint_nonunicode_locking</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...))</c-> <c- o>:</c->
+  <c- n>vprint_nonunicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+</ins>
+</pre>
+   <p>...</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>println</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p><em>Effects</em>: Equivalent to:</p>
 <pre class="highlight"><del><c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>format</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...));</c-></del>
-<ins><c- n>print</c-><c- p>(</c-><c- n>runtime_format</c-><c- p>(</c-><c- n>string</c-><c- p>(</c-><c- n>fmt</c-><c- p>.</c-><c- n>get</c-><c- p>())</c-> <c- o>+</c-> <c- sc>'\n'</c-><c- p>),</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...);</c-></ins>
+<ins><c- n>print</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>runtime_format</c-><c- p>(</c-><c- n>string</c-><c- p>(</c-><c- n>fmt</c-><c- p>.</c-><c- n>get</c-><c- p>())</c-> <c- o>+</c-> <c- sc>'\n'</c-><c- p>),</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>></c-><c- p>(</c-><c- n>args</c-><c- p>)...);</c-></ins>
 </pre>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </pre>
+   <ins> <em>Effects</em>: Equivalent to: </ins>
+<pre class="highlight"><ins><c- n>vprint_unicode_locking</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c-></ins>
+</pre>
+<pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_unicode_locking</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</ins></pre>
    <p><em>Preconditions</em>: <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream.</p>
    <p>
     <em>Effects</em>: 
@@ -2329,6 +2443,11 @@ the function flushes <code class="highlight"><c- n>stream</c-></code> before wri
    <p>...</p>
 <pre class="highlight"><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
 </pre>
+   <ins> <em>Effects</em>: Equivalent to: </ins>
+<pre class="highlight"><ins><c- n>vprint_nonunicode_locking</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>));</c-></ins>
+</pre>
+<pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode_locking</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</ins></pre>
    <p><em>Preconditions</em>: <code class="highlight"><c- n>stream</c-></code> is a valid pointer to an output C stream.</p>
    <p>
     <em>Effects</em>: 
@@ -2338,9 +2457,35 @@ provided by <code class="highlight"><c- n>args</c-></code> formatted according t
    </p>
    <p><em>Throws</em>: Any exception thrown by the call to <code class="highlight"><c- n>vformat</c-></code> (<a href="https://eel.is/c++draft/format.err.report">[format.err.report</a>]). <code class="highlight"><c- n>system_error</c-></code> if writing to <code class="highlight"><c- n>stream</c-></code> fails. May throw <code class="highlight"><c- n>bad_alloc</c-></code>.</p>
    <p>...</p>
-   <h2 class="heading settled" data-level="8" id="ack"><span class="secno">8. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Modify <a href="https://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]
+as indicated:</p>
+   <p>...</p>
+   <p>Let <code class="highlight"><c- n>charT</c-></code> be either<code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is
+either enabled or disabled, as described below. A <em>debug-enabled</em> specialization
+of <code class="highlight"><c- n>formatter</c-></code> additionally provides a public, constexpr, non-static member
+function <code class="highlight"><c- n>set_debug_format</c-><c- p>()</c-></code> which modifies the state of the <code class="highlight"><c- n>formatter</c-></code> to be
+as if the type of the <em>std-format-spec</em> parsed by the last call to parse were <code class="highlight"><c- o>?</c-></code>. Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following
+enabled specializations:</p>
+   <ul>
+    <li data-md>
+     <p>The debug-enabled specializations</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-><c- p>;</c->
+</pre>
+     <p>...</p>
+   </ul>
+   <p>The parse member functions of these formatters interpret the format
+specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>].</p>
+   <ins>These formatters define an unspecified nested type named <code class="highlight"><c- n>nonlocking</c-></code>.</ins>
+   <p>[<em>Note 1</em>: Specializations such as <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></code> and <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-></code> that would require implicit multibyte /
+wide string or character conversion are disabled. — end note]</p>
+   <p>...</p>
+   <h2 class="heading settled" data-level="9" id="ack"><span class="secno">9. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Jonathan Wakely for implementing the proposal in libstdc++,
 providing benchmark results and suggesting various improvements to the paper.</p>
+   <p>Thanks to Ben Craig for proposing to make user-defined formatters opt into the
+new behavior to prevent potential deadlocks.</p>
   </main>
 <script>
 (function() {
