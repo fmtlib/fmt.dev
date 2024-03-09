@@ -32,6 +32,7 @@ Changes since R1 {#changes1}
     clause of `println`.
 * Added instructions to update the `__cpp_lib_print` feature testing macro.
 * Provided an example illustrating a problem with interleaved output.
+* Provided an example illustrating a problem with locking in C++ and Java.
 
 Changes since R0 {#changes0}
 ================
@@ -153,15 +154,13 @@ syncstream talks about posix locks
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0053r7.pdf
 --> 
 
-<!-- TODO: investigate other languages -->
-
 One problem with locking a stream is that it may introduce potential for
 deadlocks in case a user-defined formatter is also doing locking internally.
 For example:
 
 <!-- https://www.godbolt.org/z/xaKG4jdc5 -->
 
-```
+```c++
 struct deadlockable {
   int value = 0;
   mutable std::mutex mutex;
@@ -189,8 +188,89 @@ for (int i = 0; i < 100; ++i) std::print("{}", d);
 t.join();
 ```
 
-This is obviously bad code because it unnecessarily calls `std::print` under a
-lock but it is still undesirable to have it deadlocked.
+The same problem exist in other languages, for example:
+
+```java
+class Deadlockable {
+  public int value;
+  public String toString() {
+    synchronized (this) {
+      return Integer.toString(value);
+    }
+  }
+}
+
+class Hello {
+  public static void main(String[] args) throws InterruptedException {
+    Deadlockable d = new Deadlockable();
+
+    Thread t = new Thread(new Runnable() {
+      private Deadlockable d;
+
+      public Runnable init(Deadlockable d) {
+        this.d = d;
+        return this;
+      }
+
+      @Override
+      public void run() {
+        System.out.println("start");
+        synchronized (d) {
+          for (int i = 0; i < 1000000; ++i) d.value += 10;
+          System.out.format("done");
+        }
+      }
+    }.init(d));
+    t.start();
+    for (int i = 0; i < 100; ++i) System.out.format("%s", d);
+    t.join();
+  }
+}
+```
+
+```
+Found one Java-level deadlock:
+=============================
+"main":
+  waiting to lock monitor 0x0000600002fb4750 (object 0x000000070fe120e8, a Deadlockable),
+  which is held by "Thread-0"
+
+"Thread-0":
+  waiting for ownable synchronizer 0x000000070fe08998, (a java.util.concurrent.locks.ReentrantLock$NonfairSync),
+  which is held by "main"
+
+Java stack information for the threads listed above:
+===================================================
+"main":
+  at Deadlockable.toString(Hello.java:5)
+  - waiting to lock <0x000000070fe120e8> (a Deadlockable)
+  at java.util.Formatter$FormatSpecifier.printString(java.base@21.0.2/Formatter.java:3158)
+  at java.util.Formatter$FormatSpecifier.print(java.base@21.0.2/Formatter.java:3036)
+  at java.util.Formatter.format(java.base@21.0.2/Formatter.java:2791)
+  at java.io.PrintStream.implFormat(java.base@21.0.2/PrintStream.java:1367)
+  at java.io.PrintStream.format(java.base@21.0.2/PrintStream.java:1346)
+  at Hello.main(Hello.java:32)
+"Thread-0":
+  at jdk.internal.misc.Unsafe.park(java.base@21.0.2/Native Method)
+  - parking to wait for  <0x000000070fe08998> (a java.util.concurrent.locks.ReentrantLock$NonfairSync)
+  at java.util.concurrent.locks.LockSupport.park(java.base@21.0.2/LockSupport.java:221)
+  at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.2/AbstractQueuedSynchronizer.java:754)
+  at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@21.0.2/AbstractQueuedSynchronizer.java:990)
+  at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@21.0.2/ReentrantLock.java:153)
+  at java.util.concurrent.locks.ReentrantLock.lock(java.base@21.0.2/ReentrantLock.java:322)
+  at jdk.internal.misc.InternalLock.lock(java.base@21.0.2/InternalLock.java:74)
+  at java.io.PrintStream.format(java.base@21.0.2/PrintStream.java:1344)
+  at Hello$1.run(Hello.java:27)
+  - locked <0x000000070fe120e8> (a Deadlockable)
+  at java.lang.Thread.runWith(java.base@21.0.2/Thread.java:1596)
+  at java.lang.Thread.run(java.base@21.0.2/Thread.java:1583)
+
+Found 1 deadlock.
+```
+
+This is obviously bad code because it unnecessarily calls `std::print` /
+`System.out.format` under a lock but it is still undesirable to have it
+deadlocked.
 
 To prevent deadlocks while still providing major performance improvements and
 preventing dynamic allocations for the common case, this paper proposes making

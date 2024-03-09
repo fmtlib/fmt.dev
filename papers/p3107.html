@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="dc3f22fff96cda96b5627b06e836b99304166275" name="revision">
+  <meta content="f3f8a457b42e28c5b4607b2f157afef04554a96d" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2140,6 +2140,8 @@ potential deadlocks when they perform locking in their <code class="highlight"><
      <p>Added instructions to update the <code class="highlight"><c- n>__cpp_lib_print</c-></code> feature testing macro.</p>
     <li data-md>
      <p>Provided an example illustrating a problem with interleaved output.</p>
+    <li data-md>
+     <p>Provided an example illustrating a problem with locking in C++ and Java.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
@@ -2231,13 +2233,13 @@ provided by these languages and the current proposal. For example:</p>
    <p>One problem with locking a stream is that it may introduce potential for
 deadlocks in case a user-defined formatter is also doing locking internally.
 For example:</p>
-<pre class="highlight"><c- k>struct</c-> <c- nc>deadlockable</c-> <c- p>{</c->
+<pre class="language-c++ highlight"><c- k>struct</c-> <c- nc>deadlockable</c-> <c- p>{</c->
   <c- b>int</c-> <c- n>value</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
-  <c- k>mutable</c-> <c- n>std</c-><c- o>::</c-><c- n>mutex</c-> <c- n>mutex</c-><c- p>;</c->
+  <c- n>mutable</c-> <c- n>std</c-><c- o>::</c-><c- n>mutex</c-> <c- n>mutex</c-><c- p>;</c->
 <c- p>};</c->
 
-<c- k>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>deadlockable</c-><c- o>></c-> <c- p>{</c->
-  <c- k>constexpr</c-> <c- k>auto</c-> <c- n>parse</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>deadlockable</c-><c- o>></c-> <c- p>{</c->
+  <c- n>constexpr</c-> <c- k>auto</c-> <c- n>parse</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>ctx</c-><c- p>.</c-><c- n>begin</c-><c- p>();</c->
   <c- p>}</c->
 
@@ -2257,8 +2259,83 @@ For example:</p>
 <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>100</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>d</c-><c- p>);</c->
 <c- n>t</c-><c- p>.</c-><c- n>join</c-><c- p>();</c->
 </pre>
-   <p>This is obviously bad code because it unnecessarily calls <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> under a
-lock but it is still undesirable to have it deadlocked.</p>
+   <p>The same problem exist in other languages, for example:</p>
+<pre class="language-java highlight"><c- a>class</c-> <c- nc>Deadlockable</c-> <c- p>{</c->
+  <c- a>public</c-> <c- b>int</c-> <c- n>value</c-><c- p>;</c->
+  <c- a>public</c-> <c- n>String</c-> <c- nf>toString</c-><c- p>()</c-> <c- p>{</c->
+    <c- a>synchronized</c-> <c- p>(</c-><c- k>this</c-><c- p>)</c-> <c- p>{</c->
+      <c- k>return</c-> <c- n>Integer</c-><c- p>.</c-><c- e>toString</c-><c- p>(</c-><c- n>value</c-><c- p>);</c->
+    <c- p>}</c->
+  <c- p>}</c->
+<c- p>}</c->
+
+<c- a>class</c-> <c- nc>Hello</c-> <c- p>{</c->
+  <c- a>public</c-> <c- a>static</c-> <c- b>void</c-> <c- nf>main</c-><c- p>(</c-><c- n>String</c-><c- o>[]</c-> <c- n>args</c-><c- p>)</c-> <c- a>throws</c-> <c- n>InterruptedException</c-> <c- p>{</c->
+    <c- n>Deadlockable</c-> <c- n>d</c-> <c- o>=</c-> <c- k>new</c-> <c- n>Deadlockable</c-><c- p>();</c->
+
+    <c- n>Thread</c-> <c- n>t</c-> <c- o>=</c-> <c- k>new</c-> <c- n>Thread</c-><c- p>(</c-><c- k>new</c-> <c- n>Runnable</c-><c- p>()</c-> <c- p>{</c->
+      <c- a>private</c-> <c- n>Deadlockable</c-> <c- n>d</c-><c- p>;</c->
+
+      <c- a>public</c-> <c- n>Runnable</c-> <c- nf>init</c-><c- p>(</c-><c- n>Deadlockable</c-> <c- n>d</c-><c- p>)</c-> <c- p>{</c->
+        <c- k>this</c-><c- p>.</c-><c- e>d</c-> <c- o>=</c-> <c- n>d</c-><c- p>;</c->
+        <c- k>return</c-> <c- k>this</c-><c- p>;</c->
+      <c- p>}</c->
+
+      <c- nd>@Override</c->
+      <c- a>public</c-> <c- b>void</c-> <c- nf>run</c-><c- p>()</c-> <c- p>{</c->
+        <c- n>System</c-><c- p>.</c-><c- e>out</c-><c- p>.</c-><c- e>println</c-><c- p>(</c-><c- s>"start"</c-><c- p>);</c->
+        <c- a>synchronized</c-> <c- p>(</c-><c- n>d</c-><c- p>)</c-> <c- p>{</c->
+          <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>1000000</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- n>d</c-><c- p>.</c-><c- e>value</c-> <c- o>+=</c-> <c- mi>10</c-><c- p>;</c->
+          <c- n>System</c-><c- p>.</c-><c- e>out</c-><c- p>.</c-><c- e>format</c-><c- p>(</c-><c- s>"done"</c-><c- p>);</c->
+        <c- p>}</c->
+      <c- p>}</c->
+    <c- p>}.</c-><c- e>init</c-><c- p>(</c-><c- n>d</c-><c- p>));</c->
+    <c- n>t</c-><c- p>.</c-><c- e>start</c-><c- p>();</c->
+    <c- k>for</c-> <c- p>(</c-><c- b>int</c-> <c- n>i</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c-> <c- n>i</c-> <c- o>&lt;</c-> <c- mi>100</c-><c- p>;</c-> <c- o>++</c-><c- n>i</c-><c- p>)</c-> <c- n>System</c-><c- p>.</c-><c- e>out</c-><c- p>.</c-><c- e>format</c-><c- p>(</c-><c- s>"%s"</c-><c- p>,</c-> <c- n>d</c-><c- p>);</c->
+    <c- n>t</c-><c- p>.</c-><c- e>join</c-><c- p>();</c->
+  <c- p>}</c->
+<c- p>}</c->
+</pre>
+<pre class="highlight"><c- n>Found</c-> <c- n>one</c-> <c- n>Java</c-><c- o>-</c-><c- n>level</c-> <c- n>deadlock</c-><c- o>:</c->
+<c- o>=============================</c->
+<c- s>"main"</c-><c- o>:</c->
+  <c- n>waiting</c-> <c- n>to</c-> <c- n>lock</c-> <c- n>monitor</c-> <c- mh>0x0000600002fb4750</c-> <c- p>(</c-><c- n>object</c-> <c- mh>0x000000070fe120e8</c-><c- p>,</c-> <c- n>a</c-> <c- n>Deadlockable</c-><c- p>),</c->
+  <c- n>which</c-> <c- n>is</c-> <c- n>held</c-> <c- n>by</c-> <c- s>"Thread-0"</c->
+
+<c- s>"Thread-0"</c-><c- o>:</c->
+  <c- n>waiting</c-> <c- k>for</c-> <c- n>ownable</c-> <c- n>synchronizer</c-> <c- mh>0x000000070fe08998</c-><c- p>,</c-> <c- p>(</c-><c- n>a</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>ReentrantLock$NonfairSync</c-><c- p>),</c->
+  <c- n>which</c-> <c- n>is</c-> <c- n>held</c-> <c- n>by</c-> <c- s>"main"</c->
+
+<c- n>Java</c-> <c- n>stack</c-> <c- n>information</c-> <c- k>for</c-> <c- n>the</c-> <c- n>threads</c-> <c- n>listed</c-> <c- n>above</c-><c- o>:</c->
+<c- o>===================================================</c->
+<c- s>"main"</c-><c- o>:</c->
+  <c- n>at</c-> <c- n>Deadlockable</c-><c- p>.</c-><c- n>toString</c-><c- p>(</c-><c- n>Hello</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>5</c-><c- p>)</c->
+  <c- o>-</c-> <c- n>waiting</c-> <c- n>to</c-> <c- n>lock</c-> <c- o>&lt;</c-><c- mh>0x000000070fe120e8</c-><c- o>></c-> <c- p>(</c-><c- n>a</c-> <c- n>Deadlockable</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>Formatter$FormatSpecifier</c-><c- p>.</c-><c- n>printString</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>Formatter</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>3158</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>Formatter$FormatSpecifier</c-><c- p>.</c-><c- n>print</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>Formatter</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>3036</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>Formatter</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>Formatter</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>2791</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>io</c-><c- p>.</c-><c- n>PrintStream</c-><c- p>.</c-><c- n>implFormat</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>PrintStream</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>1367</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>io</c-><c- p>.</c-><c- n>PrintStream</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>PrintStream</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>1346</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>Hello</c-><c- p>.</c-><c- n>main</c-><c- p>(</c-><c- n>Hello</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>32</c-><c- p>)</c->
+<c- s>"Thread-0"</c-><c- o>:</c->
+  <c- n>at</c-> <c- n>jdk</c-><c- p>.</c-><c- n>internal</c-><c- p>.</c-><c- n>misc</c-><c- p>.</c-><c- n>Unsafe</c-><c- p>.</c-><c- n>park</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>Native</c-> <c- n>Method</c-><c- p>)</c->
+  <c- o>-</c-> <c- n>parking</c-> <c- n>to</c-> <c- n>wait</c-> <c- k>for</c->  <c- o>&lt;</c-><c- mh>0x000000070fe08998</c-><c- o>></c-> <c- p>(</c-><c- n>a</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>ReentrantLock$NonfairSync</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>LockSupport</c-><c- p>.</c-><c- n>park</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>LockSupport</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>221</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>AbstractQueuedSynchronizer</c-><c- p>.</c-><c- n>acquire</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>AbstractQueuedSynchronizer</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>754</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>AbstractQueuedSynchronizer</c-><c- p>.</c-><c- n>acquire</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>AbstractQueuedSynchronizer</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>990</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>ReentrantLock$Sync</c-><c- p>.</c-><c- n>lock</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>ReentrantLock</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>153</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>util</c-><c- p>.</c-><c- n>concurrent</c-><c- p>.</c-><c- n>locks</c-><c- p>.</c-><c- n>ReentrantLock</c-><c- p>.</c-><c- n>lock</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>ReentrantLock</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>322</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>jdk</c-><c- p>.</c-><c- n>internal</c-><c- p>.</c-><c- n>misc</c-><c- p>.</c-><c- n>InternalLock</c-><c- p>.</c-><c- n>lock</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>InternalLock</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>74</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>io</c-><c- p>.</c-><c- n>PrintStream</c-><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>PrintStream</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>1344</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>Hello$1</c-><c- p>.</c-><c- n>run</c-><c- p>(</c-><c- n>Hello</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>27</c-><c- p>)</c->
+  <c- o>-</c-> <c- n>locked</c-> <c- o>&lt;</c-><c- mh>0x000000070fe120e8</c-><c- o>></c-> <c- p>(</c-><c- n>a</c-> <c- n>Deadlockable</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>lang</c-><c- p>.</c-><c- n>Thread</c-><c- p>.</c-><c- n>runWith</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>Thread</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>1596</c-><c- p>)</c->
+  <c- n>at</c-> <c- n>java</c-><c- p>.</c-><c- n>lang</c-><c- p>.</c-><c- n>Thread</c-><c- p>.</c-><c- n>run</c-><c- p>(</c-><c- n>java</c-><c- p>.</c-><c- n>base</c->@<c- mf>21.0.2</c-><c- o>/</c-><c- n>Thread</c-><c- p>.</c-><c- n>java</c-><c- o>:</c-><c- mi>1583</c-><c- p>)</c->
+
+<c- n>Found</c-> <c- mi>1</c-> <c- n>deadlock</c-><c- p>.</c->
+</pre>
+   <p>This is obviously bad code because it unnecessarily calls <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> / <code class="highlight"><c- n>System</c-><c- p>.</c-><c- n>out</c-><c- p>.</c-><c- n>format</c-></code> under a lock but it is still undesirable to have it
+deadlocked.</p>
    <p>To prevent deadlocks while still providing major performance improvements and
 preventing dynamic allocations for the common case, this paper proposes making
 user-defined formatters opt into the new behavior. All standard formatters are
