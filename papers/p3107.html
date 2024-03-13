@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0288ea2daf461bf91229fba505166b6a8bacef66" name="revision">
+  <meta content="01dd7bb8115e990188e91ba39f398d158af42852" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2176,7 +2176,7 @@ allocations, making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>pri
 applications creating incentives for continued use of unsafe APIs. In the direct
 method, there are usually no memory allocations.</p>
    <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>The current paper proposes expressing the desire to have non-iterleaved
+   <p>The current paper proposes expressing the desire to have non-interleaved
 output in a way that permits a more efficient implementation similar
 to <code class="highlight"><c- n>printf</c-></code>’s. It is based on the locking mechanism provided by C streams,
 quoting Section 7.21.2 Streams of the C standard (<a data-link-type="biblio" href="#biblio-n2310-streams" title="7.21.2 Streams. ISO/IEC 9899:202x. Programming languages — C">[N2310-STREAMS]</a>):</p>
@@ -2216,7 +2216,7 @@ provided by these languages and the current proposal. For example:</p>
   <c- p>}</c->
 <c- p>}</c->
 
-<c- b>int</c-> <c- nf>main</c-><c- p>(){</c->
+<c- b>int</c-> <c- nf>main</c-><c- p>()</c-> <c- p>{</c->
   <c- k>auto</c-> <c- n>t1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>jthread</c-><c- p>(</c-><c- n>worker</c-><c- p>);</c->
   <c- k>auto</c-> <c- n>t2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>jthread</c-><c- p>(</c-><c- n>worker</c-><c- p>);</c->
 <c- p>}</c->
@@ -2229,7 +2229,7 @@ provided by these languages and the current proposal. For example:</p>
 <c- kr>thread</c-> <c- mi>140239754491456</c-><c- o>:</c-> <c- n>work2</c-> <c- n>done</c->
 <c- kr>thread</c-> <c- mi>140239746098752</c-><c- o>:</c-> <c- n>work2</c-> <c- n>done</c->
 </pre>
-   <p>Neither <code class="highlight"><c- n>printf</c-></code> not <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> have this issue.</p>
+   <p>Neither <code class="highlight"><c- n>printf</c-></code> nor <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> have this issue.</p>
    <p>One problem with locking a stream is that it may introduce potential for
 deadlocks in case a user-defined formatter is also doing locking internally.
 For example:</p>
@@ -2506,7 +2506,7 @@ denotes a type for all <code class="highlight"><c- n>Arg</c-></code> in <code cl
 <pre class="highlight"><del><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c-></del>
 </pre>
    <p>
-    <ins> Let <code class="highlight"><c- n>out</c-></code> denote the the character representation of formatting arguments
+    <ins> Let <code class="highlight"><c- n>out</c-></code> denote the character representation of formatting arguments
 provided by <code class="highlight"><c- n>args</c-></code> formatted according to specifications given in <code class="highlight"><c- n>fmt</c-></code>.</ins>
    </p>
    <ins>Locks <code class="highlight"><c- n>stream</c-></code>.</ins>
@@ -2537,7 +2537,7 @@ provided by <code class="highlight"><c- n>args</c-></code> formatted according t
    <p>Modify <a href="https://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]
 as indicated:</p>
    <p>...</p>
-   <p>Let <code class="highlight"><c- n>charT</c-></code> be either<code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is
+   <p>Let <code class="highlight"><c- n>charT</c-></code> be either <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is
 either enabled or disabled, as described below. A <em>debug-enabled</em> specialization
 of <code class="highlight"><c- n>formatter</c-></code> additionally provides a public, constexpr, non-static member
 function <code class="highlight"><c- n>set_debug_format</c-><c- p>()</c-></code> which modifies the state of the <code class="highlight"><c- n>formatter</c-></code> to be
