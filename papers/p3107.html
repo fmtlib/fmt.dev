@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6393afb630b3d5d54594e548a70a11140ba13141" name="revision">
+  <meta content="bf6cae7ead7236dfca059549c68d395f63ab4083" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2087,7 +2087,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3107R2<br>Permit an efficient implementation of std::print</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-03-17">2024-03-17</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-03-18">2024-03-18</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2341,12 +2341,11 @@ preventing dynamic allocations for the common case, this paper proposes making
 user-defined formatters opt into the new behavior. All standard formatters are
 nonlocking and will be opted in which means that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> can be used as
 a replacement for all current uses of <code class="highlight"><c- n>printf</c-></code> without concerns that it causes
-unbounded memory allocation. The opt in is done via the <code class="highlight"><c- n>nonlocking</c-></code> nested
-type:</p>
+unbounded memory allocation. The opt in is done via the <code class="highlight"><c- k>static</c-> <c- k>constexpr</c-> <c- b>bool</c-></code> member variable named <code class="highlight"><c- n>locking</c-></code>:</p>
 <pre class="highlight"><c- k>struct</c-> <c- nc>foo</c-> <c- p>{};</c->
 
 <c- k>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>fmt</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- p>{</c->
-  <c- k>using</c-> <c- n>nonlocking</c-> <c- o>=</c-> <c- b>void</c-><c- p>;</c->
+  <c- k>static</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>locking</c-> <c- o>=</c-> false<c- p>;</c->
   <c- c1>// ...</c->
 <c- p>};</c->
 </pre>
@@ -2466,8 +2465,8 @@ adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p><em>Effects</em>:</p>
-   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight">true</code> if <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>>::</c-><c- n>nonlocking</c-></code> is
-valid and denotes a type for all <code class="highlight"><c- n>Arg</c-></code> in <code class="highlight"><c- n>Args</c-></code>, <code class="highlight">false</code> otherwise. </ins>
+   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight">true</code> if <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>>::</c-><c- n>locking</c-></code> is
+valid and evaluates to <code class="highlight">false</code> for all <code class="highlight"><c- n>Arg</c-></code> in <code class="highlight"><c- n>Args</c-></code>, <code class="highlight">false</code> otherwise. </ins>
    <p>If the ordinary literal encoding (<a href="https://eel.is/c++draft/version.syn">[lex.charset</a>]) is UTF-8, equivalent to:</p>
 <pre class="highlight"><del><c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c-></del>
 <ins>
@@ -2554,7 +2553,7 @@ enabled specializations:</p>
    </ul>
    <p>The parse member functions of these formatters interpret the format
 specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>].</p>
-   <ins>These formatters define an unspecified nested type named <code class="highlight"><c- n>nonlocking</c-></code>.</ins>
+   <ins>These formatters define a <code class="highlight"><c- k>static</c-> <c- k>constexpr</c-> <c- b>bool</c-></code> member variable named <code class="highlight"><c- n>locking</c-></code> that evaluates to <code class="highlight">false</code>.</ins>
    <p>[<em>Note 1</em>: Specializations such as <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></code> and <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-></code> that would require implicit multibyte /
 wide string or character conversion are disabled. — end note]</p>
    <p>...</p>

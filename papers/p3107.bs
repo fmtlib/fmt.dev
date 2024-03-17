@@ -8,7 +8,7 @@ Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-03-17
+Date: 2024-03-18
 Markup Shorthands: markdown yes
 </pre>
 
@@ -277,14 +277,14 @@ preventing dynamic allocations for the common case, this paper proposes making
 user-defined formatters opt into the new behavior. All standard formatters are
 nonlocking and will be opted in which means that `std::print` can be used as
 a replacement for all current uses of `printf` without concerns that it causes
-unbounded memory allocation. The opt in is done via the `nonlocking` nested
-type:
+unbounded memory allocation. The opt in is done via the `static constexpr bool`
+member variable named `locking`:
 
 ```
 struct foo {};
 
 template <> struct fmt::formatter<foo> {
-  using nonlocking = void;
+  static constexpr bool locking = false;
   // ...
 };
 ```
@@ -433,8 +433,8 @@ template<class... Args>
 *Effects*:
 
 <ins>
-Let `locksafe` be `true` if `formatter<remove_cvref_t<Arg>>::nonlocking` is
-valid and denotes a type for all `Arg` in `Args`, `false` otherwise.
+Let `locksafe` be `true` if `formatter<remove_cvref_t<Arg>>::locking` is
+valid and evaluates to `false` for all `Arg` in `Args`, `false` otherwise.
 </ins>
 
 If the ordinary literal encoding ([[lex.charset](
@@ -569,7 +569,8 @@ The parse member functions of these formatters interpret the format
 specification as a *std-format-spec* as described in
 [[format.string.std](https://eel.is/c++draft/format.string.std)].
 
-<ins>These formatters define an unspecified nested type named `nonlocking`.</ins>
+<ins>These formatters define a `static constexpr bool` member variable named
+`locking` that evaluates to `false`.</ins>
 
 [*Note 1*: Specializations such as `formatter<wchar_t, char>` and
 `formatter<const char*, wchar_t>` that would require implicit multibyte /
