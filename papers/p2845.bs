@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting of std::filesystem::path
 Shortname: P2845
-Revision: 7
+Revision: 8
 Audience: SG16, LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-03-10
+Date: 2024-03-19
 Markup Shorthands: markdown yes
 </pre>
 
@@ -38,6 +38,18 @@ Introduction {#intro}
 However, SG16 recommended removing it because of quoting and localization
 concerns. The current paper addresses these concerns and proposes adding an
 improved `std::formatter` specialization for `path`.
+
+Changes from R7 {#changes7}
+===============
+
+* Changed `format_parse_context` to `basic_format_parse_context<charT>` in
+    the wording.
+* Replaced "`formatter<filesystem::path, charT>` is *debug-enabled*" with
+    defining the `set_debug_format` function explicitly.
+* Replaced `Char` with `charT` in the wording.
+* Replaced `p.generic()` with `p.generic_string<filesystem::path::value_type>()`
+    in the wording.
+* Added a feature testing macro.
 
 Changes from R6 {#changes6}
 ===============
@@ -358,6 +370,14 @@ prints
 Wording {#wording}
 =======
 
+Add an entry for `__cpp_lib_format_path` to section "Header `<version>`
+synopsis" [[version.syn](https://eel.is/c++draft/version.syn)], in a place that
+respects the table’s current alphabetic order:
+
+<pre>
+<ins>#define __cpp_lib_format_path **placeholder**	// also in &lt;filesystem&gt;</ins>
+</pre>
+
 Add to "Header &lt;filesystem> synopsis" [[fs.filesystem.syn](
 https://eel.is/c++draft/fs.filesystem.syn)]:
 
@@ -371,7 +391,10 @@ Add a new section "Formatting" [fs.path.fmt] under "Class path"
 
 <pre>
 template&lt;class charT> struct formatter&lt;filesystem::path, charT> {
-  constexpr format_parse_context::iterator parse(format_parse_context& ctx);
+  constexpr void set_debug_format();
+
+  constexpr typename basic_format_parse_context&lt;charT>::iterator
+    parse(basic_format_parse_context&lt;charT>& ctx);
 
   template&lt;class FormatContext>
     typename FormatContext::iterator
@@ -379,11 +402,16 @@ template&lt;class charT> struct formatter&lt;filesystem::path, charT> {
 };
 </pre>
 
-`formatter<filesystem::path, charT>` is *debug-enabled*
-([[format.formatter.spec](http://eel.is/c++draft/format.formatter.spec)]).
+```
+constexpr void set_debug_format();
+```
+
+*Effects*: Modifies the state of the `formatter` to be as if the type of the
+*path-format-spec* parsed by the last call to `parse` were `?`.
 
 ```
-constexpr format_parse_context::iterator parse(format_parse_context& ctx);
+constexpr typename basic_format_parse_context<charT>::iterator
+  parse(basic_format_parse_context<charT>& ctx);
 ```
 
 *Effects*: Parses the format specifier as a *path-format-spec* and stores the
@@ -405,15 +433,15 @@ http://eel.is/c++draft/format.string.escaped)]).
       format(const filesystem::path& p, FormatContext& ctx) const;
 </pre>
 
-*Effects*: Let `s` be `p.generic()` if the `g` option is used, otherwise
-`p.native()`. Writes `s` into `ctx.out()`, adjusted according to the
-*path-format-spec*. If `Char` is `char`, `path::value_type` is `wchar_t` and the
-literal encoding is UTF-8 then the escaped path is transcoded from the native
-encoding for wide character strings to UTF-8 with maximal subparts of ill-formed
-subsequences substituted with U+FFFD REPLACEMENT CHARACTER per the Unicode
-Standard, Chapter 3.9 U+FFFD Substitution in Conversion.
-If `Char` and `path::value_type` are the same then no transcoding is performed.
-Otherwise, transcoding is implementation-defined.
+*Effects*: Let `s` be `p.generic_string<filesystem::path::value_type>()` if
+the `g` option is used, otherwise `p.native()`. Writes `s` into `ctx.out()`,
+adjusted according to the *path-format-spec*. If `charT` is `char`,
+`path::value_type` is `wchar_t` and the literal encoding is UTF-8 then the
+escaped path is transcoded from the native encoding for wide character strings
+to UTF-8 with maximal subparts of ill-formed subsequences substituted with
+U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD
+Substitution in Conversion. If `charT` and `path::value_type` are the same then
+no transcoding is performed. Otherwise, transcoding is implementation-defined.
 
 *Returns*: An iterator past the end of the output range.
 
