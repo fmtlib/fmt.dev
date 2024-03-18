@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Permit an efficient implementation of std::print
 Shortname: P3107
-Revision: 2
+Revision: 3
 Audience: LEWG
 Status: P
 Group: WG21
@@ -22,6 +22,12 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in [[LWG4042]]. This paper proposes a solution
 to address this shortcoming.
+
+Changes since R2 {#changes2}
+================
+
+* Change the opt-in mechanism to use a namespace-scoped variable template 
+    instead of a nested member to prevent the inheritance issue.
 
 Changes since R1 {#changes1}
 ================
@@ -277,17 +283,30 @@ preventing dynamic allocations for the common case, this paper proposes making
 user-defined formatters opt into the new behavior. All standard formatters are
 nonlocking and will be opted in which means that `std::print` can be used as
 a replacement for all current uses of `printf` without concerns that it causes
-unbounded memory allocation. The opt in is done via the `static constexpr bool`
-member variable named `locking`:
+unbounded memory allocation.
+
+The opt in is done via the variable template similarly to
+`enable_borrowed_range`:
 
 ```
 struct foo {};
 
+inline constexpr bool std::locking_formatter<foo> = false;
+```
+
+Alternative name: `enable_nonlocking_formatter`.
+
+R2 of the paper used the `static constexpr bool` member variable:
+
+```
 template <> struct fmt::formatter<foo> {
   static constexpr bool locking = false;
   // ...
 };
 ```
+
+The advantage of the variable template is that it doesn't propagate when one
+`formatter` is inherited from another.
 
 Performance {#perf}
 ===========
@@ -421,6 +440,37 @@ Wording {#wording}
 Update the value of the feature-testing macro `__cpp_lib_print` to the date of
 adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
 
+Modify [[format.syn](https://eel.is/c++draft/format.syn)] as
+indicated:
+
+<pre>
+  // [format.formatter], formatter
+  template&lt;class T, class charT = char> struct formatter;
+
+  <ins>template&lt;class T>
+    constexpr bool locking_formatter = true;</ins>
+
+  ...
+</pre>
+
+Add a new clause [format.formatter.locking] to
+[[format.formatter](https://eel.is/c++draft/format.formatter)]:
+
+<pre>
+<ins>
+template&lt;class T>
+  constexpr bool locking_formatter = true;
+</ins>
+</pre>
+
+<ins>
+*Remarks*: Pursuant to [[namespace.std](
+https://eel.is/c++draft/format.formatter)], users may specialize
+`locking_formatter` for cv-unqualified program-defined types. Such
+specializations shall be usable in constant expressions ([[expr.const](
+https://eel.is/c++draft/format.formatter)]) and have type `const bool`.
+</ins>
+
 Modify [[print.fun](https://eel.is/c++draft/print.fun)] as indicated:
 
 ...
@@ -433,8 +483,7 @@ template<class... Args>
 *Effects*:
 
 <ins>
-Let `locksafe` be `true` if `formatter<remove_cvref_t<Arg>>::locking` is
-valid and evaluates to `false` for all `Arg` in `Args`, `false` otherwise.
+Let `locksafe` be `!(locking_formatter<remove_cvref_t<Arg>> || ...)`.
 </ins>
 
 If the ordinary literal encoding ([[lex.charset](
@@ -569,8 +618,8 @@ The parse member functions of these formatters interpret the format
 specification as a *std-format-spec* as described in
 [[format.string.std](https://eel.is/c++draft/format.string.std)].
 
-<ins>These formatters define a `static constexpr bool` member variable named
-`locking` that evaluates to `false`.</ins>
+<ins>For types that have these formatter specializations
+`locking_formatter` is specialized to `false`.</ins>
 
 [*Note 1*: Specializations such as `formatter<wchar_t, char>` and
 `formatter<const char*, wchar_t>` that would require implicit multibyte /
