@@ -295,7 +295,7 @@ template <> struct std::formatter<foo> {
   // ...
 };
 
-template <> constexpr bool std::locking_formatter<foo> = false;
+template <> constexpr bool std::has_locking_formatter<foo> = false;
 ```
 
 R2 of the paper used the `static constexpr bool` member variable:
@@ -450,7 +450,7 @@ indicated:
   template&lt;class T, class charT = char> struct formatter;
 
   <ins>template&lt;class T>
-    constexpr bool locking_formatter = true;</ins>
+    constexpr bool has_locking_formatter = true;</ins>
 
   ...
 </pre>
@@ -461,14 +461,14 @@ Add a new clause [format.formatter.locking] to
 <pre>
 <ins>
 template&lt;class T>
-  constexpr bool locking_formatter = true;
+  constexpr bool has_locking_formatter = true;
 </ins>
 </pre>
 
 <ins>
 *Remarks*: Pursuant to [[namespace.std](
 https://eel.is/c++draft/format.formatter)], users may specialize
-`locking_formatter` for cv-unqualified program-defined types. Such
+`has_locking_formatter` for cv-unqualified program-defined types. Such
 specializations shall be usable in constant expressions ([[expr.const](
 https://eel.is/c++draft/format.formatter)]) and have type `const bool`.
 </ins>
@@ -485,7 +485,7 @@ template<class... Args>
 *Effects*:
 
 <ins>
-Let `locksafe` be `!(locking_formatter<remove_cvref_t<Arg>> || ...)`.
+Let `locksafe` be `!(has_locking_formatter<remove_cvref_t<Arg>> || ...)`.
 </ins>
 
 If the ordinary literal encoding ([[lex.charset](
@@ -620,8 +620,8 @@ The parse member functions of these formatters interpret the format
 specification as a *std-format-spec* as described in
 [[format.string.std](https://eel.is/c++draft/format.string.std)].
 
-<ins>For types that have these formatter `locking_formatter` is specialized to
-`false`.</ins>
+<ins>For types that have these formatter `has_locking_formatter` is specialized
+to `false`.</ins>
 
 [*Note 1*: Specializations such as `formatter<wchar_t, char>` and
 `formatter<const char*, wchar_t>` that would require implicit multibyte /

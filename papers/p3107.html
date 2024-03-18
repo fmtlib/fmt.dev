@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5d9fd8f5a64ee1de3c0886f52490ed5e45b5a46c" name="revision">
+  <meta content="27d24a5207e4c55e341e40c03e96fd67cca13d63" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2356,7 +2356,7 @@ unbounded memory allocation.</p>
   <c- c1>// ...</c->
 <c- p>};</c->
 
-<c- k>template</c-> <c- o>&lt;></c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>std</c-><c- o>::</c-><c- n>locking_formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- o>=</c-> false<c- p>;</c->
+<c- k>template</c-> <c- o>&lt;></c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>std</c-><c- o>::</c-><c- n>has_locking_formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- o>=</c-> false<c- p>;</c->
 </pre>
    <p>R2 of the paper used the <code class="highlight"><c- k>static</c-> <c- k>constexpr</c-> <c- b>bool</c-></code> member variable:</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- p>{</c->
@@ -2481,17 +2481,17 @@ indicated:</p>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-> <c- o>=</c-> <c- b>char</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- p>;</c->
 
 <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
-  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>locking_formatter</c-> <c- o>=</c-> true<c- p>;</c-></ins>
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>has_locking_formatter</c-> <c- o>=</c-> true<c- p>;</c-></ins>
 
 <c- p>...</c->
 </pre>
    <p>Add a new clause [format.formatter.locking] to <a href="https://eel.is/c++draft/format.formatter">[format.formatter</a>]:</p>
 <pre class="highlight"><ins>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
-  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>locking_formatter</c-> <c- o>=</c-> true<c- p>;</c->
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>has_locking_formatter</c-> <c- o>=</c-> true<c- p>;</c->
 </ins>
 </pre>
-   <ins> <em>Remarks</em>: Pursuant to <a href="https://eel.is/c++draft/format.formatter">[namespace.std</a>], users may specialize <code class="highlight"><c- n>locking_formatter</c-></code> for cv-unqualified program-defined types. Such
+   <ins> <em>Remarks</em>: Pursuant to <a href="https://eel.is/c++draft/format.formatter">[namespace.std</a>], users may specialize <code class="highlight"><c- n>has_locking_formatter</c-></code> for cv-unqualified program-defined types. Such
 specializations shall be usable in constant expressions (<a href="https://eel.is/c++draft/format.formatter">[expr.const</a>]) and have type <code class="highlight"><c- k>const</c-> <c- b>bool</c-></code>. </ins>
    <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>] as indicated:</p>
    <p>...</p>
@@ -2499,7 +2499,7 @@ specializations shall be usable in constant expressions (<a href="https://eel.is
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p><em>Effects</em>:</p>
-   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight"><c- o>!</c-><c- p>(</c-><c- n>locking_formatter</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>></c-> <c- o>||</c-> <c- p>...)</c-></code>. </ins>
+   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight"><c- o>!</c-><c- p>(</c-><c- n>has_locking_formatter</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>></c-> <c- o>||</c-> <c- p>...)</c-></code>. </ins>
    <p>If the ordinary literal encoding (<a href="https://eel.is/c++draft/version.syn">[lex.charset</a>]) is UTF-8, equivalent to:</p>
 <pre class="highlight"><del><c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c-></del>
 <ins>
@@ -2586,7 +2586,8 @@ enabled specializations:</p>
    </ul>
    <p>The parse member functions of these formatters interpret the format
 specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>].</p>
-   <ins>For types that have these formatter <code class="highlight"><c- n>locking_formatter</c-></code> is specialized to <code class="highlight">false</code>.</ins>
+   <ins>For types that have these formatter <code class="highlight"><c- n>has_locking_formatter</c-></code> is specialized
+to <code class="highlight">false</code>.</ins>
    <p>[<em>Note 1</em>: Specializations such as <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></code> and <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-></code> that would require implicit multibyte /
 wide string or character conversion are disabled. — end note]</p>
    <p>...</p>
