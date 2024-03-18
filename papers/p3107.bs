@@ -286,20 +286,22 @@ a replacement for all current uses of `printf` without concerns that it causes
 unbounded memory allocation.
 
 The opt in is done via the variable template similarly to
-`enable_borrowed_range`:
+`enable_borrowed_range` and `format_kind`:
 
 ```
 struct foo {};
 
-inline constexpr bool std::locking_formatter<foo> = false;
-```
+template <> struct std::formatter<foo> {
+  // ...
+};
 
-Alternative name: `enable_nonlocking_formatter`.
+template <> constexpr bool std::locking_formatter<foo> = false;
+```
 
 R2 of the paper used the `static constexpr bool` member variable:
 
 ```
-template <> struct fmt::formatter<foo> {
+template <> struct std::formatter<foo> {
   static constexpr bool locking = false;
   // ...
 };
