@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3107R3: Permit an efficient implementation of std::print</title>
+  <title>P3107R4: Permit an efficient implementation of std::print</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="27d24a5207e4c55e341e40c03e96fd67cca13d63" name="revision">
+  <meta content="3f45e6a551dfa895e750539ab52eef862deed16c" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,8 +2086,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3107R3<br>Permit an efficient implementation of std::print</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-03-18">2024-03-18</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3107R4<br>Permit an efficient implementation of std::print</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-03-20">2024-03-20</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2105,15 +2105,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes since R2</span></a>
-    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes since R1</span></a>
-    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#problem"><span class="secno">5</span> <span class="content">Problems</span></a>
-    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposal</span></a>
-    <li><a href="#perf"><span class="secno">7</span> <span class="content">Performance</span></a>
-    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
-    <li><a href="#wording"><span class="secno">9</span> <span class="content">Wording</span></a>
-    <li><a href="#ack"><span class="secno">10</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#changes3"><span class="secno">2</span> <span class="content">Changes since R3</span></a>
+    <li><a href="#changes2"><span class="secno">3</span> <span class="content">Changes since R2</span></a>
+    <li><a href="#changes1"><span class="secno">4</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">5</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#problem"><span class="secno">6</span> <span class="content">Problems</span></a>
+    <li><a href="#proposal"><span class="secno">7</span> <span class="content">Proposal</span></a>
+    <li><a href="#perf"><span class="secno">8</span> <span class="content">Performance</span></a>
+    <li><a href="#impl"><span class="secno">9</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">10</span> <span class="content">Wording</span></a>
+    <li><a href="#ack"><span class="secno">11</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2130,13 +2131,18 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>. This paper proposes a solution
 to address this shortcoming.</p>
-   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes3"><span class="secno">2. </span><span class="content">Changes since R3</span><a class="self-link" href="#changes3"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Change <code class="highlight"><c- n>has_locking_formatter</c-></code> to <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-></code> and reverse the meaning.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes2"><span class="secno">3. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
    <ul>
     <li data-md>
      <p>Change the opt-in mechanism to use a namespace-scoped variable template
 instead of a nested member to prevent the inheritance issue.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <h2 class="heading settled" data-level="4" id="changes1"><span class="secno">4. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Made the new behavior an opt in for user-defined formatters to prevent
@@ -2150,7 +2156,7 @@ potential deadlocks when they perform locking in their <code class="highlight"><
     <li data-md>
      <p>Provided an example illustrating a problem with locking in C++ and Java.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="5" id="changes0"><span class="secno">5. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added preliminary results for libstdc++ provided by Jonathan Wakely.</p>
@@ -2160,7 +2166,7 @@ call <code class="highlight"><c- n>format</c-></code>.</p>
     <li data-md>
      <p>Fixed typos.</p>
    </ul>
-   <h2 class="heading settled" data-level="5" id="problem"><span class="secno">5. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
+   <h2 class="heading settled" data-level="6" id="problem"><span class="secno">6. </span><span class="content">Problems</span><a class="self-link" href="#problem"></a></h2>
    <p>As reported in <a data-link-type="biblio" href="#biblio-lwg4042" title="LWG Issue 4042: `std::print` should permit an efficient implementation">[LWG4042]</a>, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>/<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vprint</c-><c- o>*</c-></code> is currently defined in
 terms of formatting into a temporary <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code>, e.g. <a href="https://eel.is/c++draft/print.fun">[print.fun</a>]:</p>
    <blockquote>
@@ -2182,7 +2188,7 @@ string or buffer.</p>
 allocations, making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> unsuitable for resource-constrained
 applications creating incentives for continued use of unsafe APIs. In the direct
 method, there are usually no memory allocations.</p>
-   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="7" id="proposal"><span class="secno">7. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The current paper proposes expressing the desire to have non-interleaved
 output in a way that permits a more efficient implementation similar
 to <code class="highlight"><c- n>printf</c-></code>’s. It is based on the locking mechanism provided by C streams,
@@ -2345,7 +2351,7 @@ For example:</p>
 deadlocked.</p>
    <p>To prevent deadlocks while still providing major performance improvements and
 preventing dynamic allocations for the common case, this paper proposes making
-user-defined formatters opt into the new behavior. All standard formatters are
+user-defined formatters opt into the new behavior. Standard formatters are
 nonlocking and will be opted in which means that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> can be used as
 a replacement for all current uses of <code class="highlight"><c- n>printf</c-></code> without concerns that it causes
 unbounded memory allocation.</p>
@@ -2356,7 +2362,8 @@ unbounded memory allocation.</p>
   <c- c1>// ...</c->
 <c- p>};</c->
 
-<c- k>template</c-> <c- o>&lt;></c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>std</c-><c- o>::</c-><c- n>has_locking_formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- o>=</c-> false<c- p>;</c->
+<c- k>template</c-> <c- o>&lt;></c->
+<c- k>constexpr</c-> <c- b>bool</c-> <c- n>std</c-><c- o>::</c-><c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- o>=</c-> true<c- p>;</c->
 </pre>
    <p>R2 of the paper used the <code class="highlight"><c- k>static</c-> <c- k>constexpr</c-> <c- b>bool</c-></code> member variable:</p>
 <pre class="highlight"><c- k>template</c-> <c- o>&lt;></c-> <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>foo</c-><c- o>></c-> <c- p>{</c->
@@ -2365,7 +2372,7 @@ unbounded memory allocation.</p>
 <c- p>};</c->
 </pre>
    <p>The advantage of the variable template is that it doesn’t propagate when one <code class="highlight"><c- n>formatter</c-></code> is inherited from another.</p>
-   <h2 class="heading settled" data-level="7" id="perf"><span class="secno">7. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
+   <h2 class="heading settled" data-level="8" id="perf"><span class="secno">8. </span><span class="content">Performance</span><a class="self-link" href="#perf"></a></h2>
    <p>The following benchmark demonstrates the difference in performance between
 different implementation strategies using the reference implementation of <code class="highlight"><c- n>print</c-></code> from <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>. This benchmark is based on the one from <a data-link-type="biblio" href="#biblio-p2093" title="Formatted output">[P2093]</a> but
 modified to avoid the small string optimization effects. It formats a simple
@@ -2469,10 +2476,10 @@ than <code class="highlight"><c- n>print</c-></code> with the stack-allocated bu
 faster than writing to a stack-allocated buffer on this benchmark.</p>
    <p>Preliminary testing in libstc++ showed ~25% improvement compared to the
 existing implementation.</p>
-   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>This proposal has been implemented in the open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>)
 bringing major performance improvements.</p>
-   <h2 class="heading settled" data-level="9" id="wording"><span class="secno">9. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="10" id="wording"><span class="secno">10. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_print</c-></code> to the date of
 adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
    <p>Modify <a href="https://eel.is/c++draft/format.syn">[format.syn</a>] as
@@ -2481,25 +2488,26 @@ indicated:</p>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-> <c- o>=</c-> <c- b>char</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- p>;</c->
 
 <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
-  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>has_locking_formatter</c-> <c- o>=</c-> true<c- p>;</c-></ins>
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-> <c- o>=</c-> false<c- p>;</c-></ins>
 
 <c- p>...</c->
 </pre>
    <p>Add a new clause [format.formatter.locking] to <a href="https://eel.is/c++draft/format.formatter">[format.formatter</a>]:</p>
 <pre class="highlight"><ins>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c->
-  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>has_locking_formatter</c-> <c- o>=</c-> true<c- p>;</c->
+  <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-> <c- o>=</c-> false<c- p>;</c->
 </ins>
 </pre>
-   <ins> <em>Remarks</em>: Pursuant to <a href="https://eel.is/c++draft/format.formatter">[namespace.std</a>], users may specialize <code class="highlight"><c- n>has_locking_formatter</c-></code> for cv-unqualified program-defined types. Such
-specializations shall be usable in constant expressions (<a href="https://eel.is/c++draft/format.formatter">[expr.const</a>]) and have type <code class="highlight"><c- k>const</c-> <c- b>bool</c-></code>. </ins>
+   <ins> <em>Remarks</em>: Pursuant to <a href="https://eel.is/c++draft/format.formatter">[namespace.std</a>], users may specialize <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-></code> for cv-unqualified program-defined
+types. Such specializations shall be usable in constant expressions
+(<a href="https://eel.is/c++draft/format.formatter">[expr.const</a>]) and have type <code class="highlight"><c- k>const</c-> <c- b>bool</c-></code>. </ins>
    <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>] as indicated:</p>
    <p>...</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
   <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
 </pre>
    <p><em>Effects</em>:</p>
-   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight"><c- o>!</c-><c- p>(</c-><c- n>has_locking_formatter</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>></c-> <c- o>||</c-> <c- p>...)</c-></code>. </ins>
+   <ins> Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Arg</c-><c- o>>></c-> <c- o>&amp;&amp;</c-> <c- p>...</c-></code>. </ins>
    <p>If the ordinary literal encoding (<a href="https://eel.is/c++draft/version.syn">[lex.charset</a>]) is UTF-8, equivalent to:</p>
 <pre class="highlight"><del><c- n>vprint_unicode</c-><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c-></del>
 <ins>
@@ -2586,12 +2594,11 @@ enabled specializations:</p>
    </ul>
    <p>The parse member functions of these formatters interpret the format
 specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>].</p>
-   <ins>For types that have these formatter <code class="highlight"><c- n>has_locking_formatter</c-></code> is specialized
-to <code class="highlight">false</code>.</ins>
+   <ins>For types that have these formatter <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-></code> is specialized to <code class="highlight">true</code>.</ins>
    <p>[<em>Note 1</em>: Specializations such as <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-></code> and <code class="highlight"><c- n>formatter</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-></code> that would require implicit multibyte /
 wide string or character conversion are disabled. — end note]</p>
    <p>...</p>
-   <h2 class="heading settled" data-level="10" id="ack"><span class="secno">10. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <h2 class="heading settled" data-level="11" id="ack"><span class="secno">11. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Jonathan Wakely for implementing the proposal in libstdc++,
 providing benchmark results and suggesting various improvements to the paper.</p>
    <p>Thanks to Ben Craig for proposing to make user-defined formatters opt into the

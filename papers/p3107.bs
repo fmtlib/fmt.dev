@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Permit an efficient implementation of std::print
 Shortname: P3107
-Revision: 3
+Revision: 4
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-03-18
+Date: 2024-03-20
 Markup Shorthands: markdown yes
 </pre>
 
@@ -22,6 +22,12 @@ output. Unfortunately, it was discovered that this approach does not allow for a
 more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in [[LWG4042]]. This paper proposes a solution
 to address this shortcoming.
+
+Changes since R3 {#changes3}
+================
+
+* Change  `has_locking_formatter` to `enable_nonlocking_formatter_optimization`
+    and reverse the meaning.
 
 Changes since R2 {#changes2}
 ================
@@ -280,7 +286,7 @@ deadlocked.
 
 To prevent deadlocks while still providing major performance improvements and
 preventing dynamic allocations for the common case, this paper proposes making
-user-defined formatters opt into the new behavior. All standard formatters are
+user-defined formatters opt into the new behavior. Standard formatters are
 nonlocking and will be opted in which means that `std::print` can be used as
 a replacement for all current uses of `printf` without concerns that it causes
 unbounded memory allocation.
@@ -295,7 +301,8 @@ template <> struct std::formatter<foo> {
   // ...
 };
 
-template <> constexpr bool std::has_locking_formatter<foo> = false;
+template <>
+constexpr bool std::enable_nonlocking_formatter_optimization<foo> = true;
 ```
 
 R2 of the paper used the `static constexpr bool` member variable:
@@ -450,7 +457,7 @@ indicated:
   template&lt;class T, class charT = char> struct formatter;
 
   <ins>template&lt;class T>
-    constexpr bool has_locking_formatter = true;</ins>
+    constexpr bool enable_nonlocking_formatter_optimization = false;</ins>
 
   ...
 </pre>
@@ -461,16 +468,17 @@ Add a new clause [format.formatter.locking] to
 <pre>
 <ins>
 template&lt;class T>
-  constexpr bool has_locking_formatter = true;
+  constexpr bool enable_nonlocking_formatter_optimization = false;
 </ins>
 </pre>
 
 <ins>
 *Remarks*: Pursuant to [[namespace.std](
 https://eel.is/c++draft/format.formatter)], users may specialize
-`has_locking_formatter` for cv-unqualified program-defined types. Such
-specializations shall be usable in constant expressions ([[expr.const](
-https://eel.is/c++draft/format.formatter)]) and have type `const bool`.
+`enable_nonlocking_formatter_optimization` for cv-unqualified program-defined
+types. Such specializations shall be usable in constant expressions
+([[expr.const](https://eel.is/c++draft/format.formatter)]) and have type
+`const bool`.
 </ins>
 
 Modify [[print.fun](https://eel.is/c++draft/print.fun)] as indicated:
@@ -485,7 +493,8 @@ template<class... Args>
 *Effects*:
 
 <ins>
-Let `locksafe` be `!(has_locking_formatter<remove_cvref_t<Arg>> || ...)`.
+Let `locksafe` be
+`enable_nonlocking_formatter_optimization<remove_cvref_t<Arg>> && ...`.
 </ins>
 
 If the ordinary literal encoding ([[lex.charset](
@@ -620,8 +629,8 @@ The parse member functions of these formatters interpret the format
 specification as a *std-format-spec* as described in
 [[format.string.std](https://eel.is/c++draft/format.string.std)].
 
-<ins>For types that have these formatter `has_locking_formatter` is specialized
-to `false`.</ins>
+<ins>For types that have these formatter
+`enable_nonlocking_formatter_optimization` is specialized to `true`.</ins>
 
 [*Note 1*: Specializations such as `formatter<wchar_t, char>` and
 `formatter<const char*, wchar_t>` that would require implicit multibyte /
