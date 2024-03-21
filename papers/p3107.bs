@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Permit an efficient implementation of std::print
 Shortname: P3107
-Revision: 4
-Audience: LEWG
+Revision: 5
+Audience: LWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-03-20
+Date: 2024-03-21
 Markup Shorthands: markdown yes
 </pre>
 
@@ -23,12 +23,42 @@ more efficient implementation strategy, such as writing directly to a stream
 buffer under a lock, as reported in [[LWG4042]]. This paper proposes a solution
 to address this shortcoming.
 
+Changes since R4 {#changes4}
+================
+
+* Replaced `Arg` with `Args` in the *Effects* clause of `print`.
+
+* Added missing parentheses around the fold expression in the *Effects* clause
+    of `print`.
+
+* Added a missing call to `make_format_args` in the call to
+    `vprint_unicode_locking` in the *Effects* clause of `vprint_unicode`.
+
+* Added a missing call to `make_format_args` in the call to
+    `vprint_nonunicode_locking` in the *Effects* clause of `vprint_nonunicode`.
+
+* Replaced "Releases the lock" with "Unconditionally unlocks `stream` on
+    function exit" in the *Effects* clause of `vprint_unicode_locking`.
+
+* Fixed formatting of the wording of `vprint_*` functions.
+
+* Changed "Locks `stream`, ... and releases the lock" to "While holding the lock
+    on `stream`, ...".
+
+* Changed "formatter" to "formatters" in [format.formatter.spec].
+
+* Changed "is specialized to `true`" to "is specialized to have the value
+    `true`".
+
+* Changed the wording of how the standard formatters opt in per suggestion from
+    Tomasz Kamiński.
+
 Changes since R3 {#changes3}
 ================
 
 * Changed  `has_locking_formatter` to `enable_nonlocking_formatter_optimization`
     and reverse the meaning per LEWG request.
-* Added LEWG poll results for R3.
+* Added LEWG poll results for R2 and R3.
 
 Changes since R2 {#changes2}
 ================
@@ -82,6 +112,29 @@ SF  F  N  A SA
 ```
 
 **Outcome**: Consensus
+
+LEWG poll results for R2:
+
+**POLL**: We want to see in a follow-up paper of an investigation of removing
+the recommendation (from the standard) or forbidding inheritance in order to
+customize formatters.
+
+```text
+SF  F  N  A SA
+ 4 11  9  7  0
+```
+
+**Outcome**: Consensus in favor
+
+**POLL**: The default should assume the user formatter might be locking, types
+that don’t lock should explicitly state so to achieve performance.
+
+```text
+SF  F  N  A SA
+10 18  5  0  0
+```
+
+**Outcome**: Strong Consensus in Favor
 
 Problems {#problem}
 ========
@@ -523,7 +576,7 @@ template<class... Args>
 
 <ins>
 Let `locksafe` be
-`enable_nonlocking_formatter_optimization<remove_cvref_t<Arg>> && ...`.
+`(enable_nonlocking_formatter_optimization<remove_cvref_t<Args>> && ...)`.
 </ins>
 
 If the ordinary literal encoding ([[lex.charset](
@@ -564,21 +617,22 @@ template<class... Args>
 <ins>print(stream, runtime_format(string(fmt.get()) + '\n'), std::forward&lt;Args>(args)...);</ins>
 </pre>
 
-```
-void vprint_unicode(FILE* stream, string_view fmt, format_args args);
-```
+<pre>
+<ins>void vprint_unicode(FILE* stream, string_view fmt, format_args args);</ins>
+</pre>
 
 <ins>
 *Effects*: Equivalent to:
 </ins>
 
 <pre>
-<ins>vprint_unicode_locking(stream, "{}", vformat(fmt, args));</ins>
+<ins>string out = vformat(fmt, args);
+vprint_unicode_locking(stream, "{}", make_format_args(out));</ins>
 </pre>
 
-<pre><ins>
-void vprint_unicode_locking(FILE* stream, string_view fmt, format_args args);
-</ins></pre>
+<pre>
+void vprint_unicode<ins>_locking</ins>(FILE* stream, string_view fmt, format_args args);
+</pre>
 
 *Preconditions*: `stream` is a valid pointer to an output C stream.
 
@@ -598,33 +652,34 @@ If `stream` refers to a terminal capable of displaying Unicode, writes `out` to
 the terminal using the native Unicode API; if `out` contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes `out` to `stream` unchanged. If the native Unicode API is used,
-the function flushes `stream` before writing `out`. <ins>Releases the lock
-</ins>.
+the function flushes `stream` before writing `out`. <ins>Unconditionally unlocks
+`stream` on function exit.</ins>
 
 ...
 
-```
-void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);
-```
+<pre>
+<ins>void vprint_nonunicode(FILE* stream, string_view fmt, format_args args);</ins>
+</pre>
 
 <ins>
 *Effects*: Equivalent to:
 </ins>
 
 <pre>
-<ins>vprint_nonunicode_locking("{}", vformat(fmt, args));</ins>
+<ins>string out = vformat(fmt, args);
+vprint_nonunicode_locking("{}", make_format_args(out));</ins>
 </pre>
 
-<pre><ins>
-void vprint_nonunicode_locking(FILE* stream, string_view fmt, format_args args);
-</ins></pre>
+<pre>
+void vprint_nonunicode<ins>_locking</ins>(FILE* stream, string_view fmt, format_args args);
+</pre>
 
 *Preconditions*: `stream` is a valid pointer to an output C stream.
 
-*Effects*: <del>Writes the result of `vformat(fmt, args)` to `stream`.</del> <ins>
-Locks `stream`, writes the character representation of formatting arguments
-provided by `args` formatted according to specifications given in `fmt` to
-`stream` and releases the lock.</ins>
+*Effects*: <del>Writes the result of `vformat(fmt, args)` to `stream`.</del>
+<ins>While holding the lock on `stream`, writes the character representation of
+formatting arguments provided by `args` formatted according to specifications
+given in `fmt` to `stream`.</ins>
 
 *Throws*: Any exception thrown by the call to `vformat`
 ([[format.err.report](https://eel.is/c++draft/format.err.report)]).
@@ -658,8 +713,14 @@ The parse member functions of these formatters interpret the format
 specification as a *std-format-spec* as described in
 [[format.string.std](https://eel.is/c++draft/format.string.std)].
 
-<ins>For types that have these formatter
-`enable_nonlocking_formatter_optimization` is specialized to `true`.</ins>
+<ins>
+In addition for each type `T` for which `formatter` specialization is provided,
+each of the headers provides following specialization:</ins>
+
+<pre>
+<ins>template&lt;>
+inline constexpr bool enable_nonlocking_formatter_optimization&lt;T> = true;</ins>
+</pre>
 
 [*Note 1*: Specializations such as `formatter<wchar_t, char>` and
 `formatter<const char*, wchar_t>` that would require implicit multibyte /
