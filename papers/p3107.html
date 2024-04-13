@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="fecbb2e16c71f8ea30198bd9b6fa50b914b3812c" name="revision">
+  <meta content="7586f8adae2fde39413341e28627363ac0b8c331" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2603,17 +2603,22 @@ types. Such specializations shall be usable in constant expressions
    </p>
 <pre class="highlight"><del><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c-></del>
 </pre>
+   <ins>Locks <code class="highlight"><c- n>stream</c-></code>.</ins>
    <p>
-    <ins> Let <code class="highlight"><c- n>out</c-></code> denote the character representation of formatting arguments
+    <ins> SEE ALSO: ISO/IEC 9899:2018, 7.21.2 </ins>
+   </p>
+   <p>
+    <ins>Let <code class="highlight"><c- n>out</c-></code> denote the character representation of formatting arguments
 provided by <code class="highlight"><c- n>args</c-></code> formatted according to specifications given in <code class="highlight"><c- n>fmt</c-></code>.</ins>
    </p>
-   <ins>Locks <code class="highlight"><c- n>stream</c-></code>.</ins>
+   <p>
     If <code class="highlight"><c- n>stream</c-></code> refers to a terminal capable of displaying Unicode, writes <code class="highlight"><c- n>out</c-></code> to
 the terminal using the native Unicode API; if <code class="highlight"><c- n>out</c-></code> contains invalid code units,
 the behavior is undefined and implementations are encouraged to diagnose it.
 Otherwise writes <code class="highlight"><c- n>out</c-></code> to <code class="highlight"><c- n>stream</c-></code> unchanged. If the native Unicode API is used,
 the function flushes <code class="highlight"><c- n>stream</c-></code> before writing <code class="highlight"><c- n>out</c-></code>. 
-   <ins>Unconditionally unlocks <code class="highlight"><c- n>stream</c-></code> on function exit.</ins>
+    <ins>Unconditionally unlocks <code class="highlight"><c- n>stream</c-></code> on function exit.</ins>
+   </p>
    <p>...</p>
 <pre class="highlight"><ins><c- b>void</c-> <c- nf>vprint_nonunicode</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c-></ins>
 </pre>
@@ -2653,8 +2658,8 @@ enabled specializations:</p>
    </ul>
    <p>The parse member functions of these formatters interpret the format
 specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>].</p>
-   <ins> In addition, for each type <code class="highlight"><c- n>T</c-></code> for which <code class="highlight"><c- n>formatter</c-></code> specialization is provided,
-each of the headers provides the following specialization:</ins>
+   <ins> In addition, for each type <code class="highlight"><c- n>T</c-></code> for which a <code class="highlight"><c- n>formatter</c-></code> specialization is
+provided above, each of the headers provides the following specialization:</ins>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;></c->
 <c- kr>inline</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-> <c- o>=</c-> true<c- p>;</c-></ins>
 </pre>
