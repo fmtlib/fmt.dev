@@ -1,0 +1,145 @@
+<pre class='metadata'>
+Title: std::print more types faster with less memory
+Shortname: P3235
+Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2024-04-13
+Markup Shorthands: markdown yes
+</pre>
+
+Introduction {#intro}
+============
+
+P3107 enabled an efficient implementation of `std::print` and applied the
+optimization to fundamental and string types. The current paper applies this
+important optimization to other standard types.
+
+Proposal {#proposal}
+========
+
+Here is a list of standard formatters that are not yet opted into the
+optimization.
+
+Date and time formatters [[time.syn](https://eel.is/c++draft/time.syn)]:
+
+```
+  template<class Rep, class Period, class charT>
+    struct formatter<chrono::duration<Rep, Period>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::sys_time<Duration>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::utc_time<Duration>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::tai_time<Duration>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::gps_time<Duration>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::file_time<Duration>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::local_time<Duration>, charT>;
+  template<class Duration, class charT>
+    struct formatter<chrono::local-time-format-t<Duration>, charT>;
+  template<class charT> struct formatter<chrono::day, charT>;
+  template<class charT> struct formatter<chrono::month, charT>;
+  template<class charT> struct formatter<chrono::year, charT>;
+  template<class charT> struct formatter<chrono::weekday, charT>;
+  template<class charT> struct formatter<chrono::weekday_indexed, charT>;
+  template<class charT> struct formatter<chrono::weekday_last, charT>;
+  template<class charT> struct formatter<chrono::month_day, charT>;
+  template<class charT> struct formatter<chrono::month_day_last, charT>;
+  template<class charT> struct formatter<chrono::month_weekday, charT>;
+  template<class charT> struct formatter<chrono::month_weekday_last, charT>;
+  template<class charT> struct formatter<chrono::year_month, charT>;
+  template<class charT> struct formatter<chrono::year_month_day, charT>;
+  template<class charT> struct formatter<chrono::year_month_day_last, charT>;
+  template<class charT> struct formatter<chrono::year_month_weekday, charT>;
+  template<class charT> struct formatter<chrono::year_month_weekday_last, charT>;
+  template<class Rep, class Period, class charT>
+    struct formatter<chrono::hh_mm_ss<duration<Rep, Period>>, charT>;
+  template<class charT> struct formatter<chrono::sys_info, charT>;
+  template<class charT> struct formatter<chrono::local_info, charT>;
+  template<class Duration, class TimeZonePtr, class charT>
+    struct formatter<chrono::zoned_time<Duration, TimeZonePtr>, charT>;
+```
+
+`thread::id` formatter [[thread.thread.id](
+https://eel.is/c++draft/thread.thread.id)]:
+
+```
+  template<class charT> struct formatter<thread::id, charT>;
+```
+
+Range formatter [[format.syn](https://eel.is/c++draft/format.syn)]:
+
+```
+  // [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings
+  template<ranges::input_range R, class charT>
+    requires (format_kind<R> != range_format::disabled) &&
+             formattable<ranges::range_reference_t<R>, charT>
+  struct formatter<R, charT> : range-default-formatter<format_kind<R>, R, charT> { };
+```
+
+Tuple formatter [[format.tuple](https://eel.is/c++draft/format.tuple)]:
+
+```
+  template<class charT, formattable<charT>... Ts>
+  struct formatter<pair-or-tuple<Ts...>, charT> {
+    ...
+  };
+```
+
+Stacktrace formatters [[stacktrace.syn](
+https://eel.is/c++draft/stacktrace.syn)]:
+
+```
+  // [stacktrace.format], formatting support
+  template<> struct formatter<stacktrace_entry>;
+  template<class Allocator> struct formatter<basic_stacktrace<Allocator>>;
+```
+
+`vector<bool>` formatter [[vector.syn](
+https://eel.is/c++draft/vector.syn)]:
+
+```
+  // [vector.bool.fmt], formatter specialization for vector<bool>
+  template<class T, class charT> requires is-vector-bool-reference<T>
+    struct formatter<T, charT>;
+```
+
+`queue` and `priority_queue` formatters [[queue.syn](
+https://eel.is/c++draft/queue.syn)]:
+
+```
+  // [container.adaptors.format], formatter specialization for queue
+  template<class charT, class T, formattable<charT> Container>
+    struct formatter<queue<T, Container>, charT>;
+
+  ...
+
+  // [container.adaptors.format], formatter specialization for priority_queue
+  template<class charT, class T, formattable<charT> Container, class Compare>
+    struct formatter<priority_queue<T, Container, Compare>, charT>;
+```
+
+`stack` formatter [[stack.syn](
+https://eel.is/c++draft/stack.syn)]:
+
+```
+  // [container.adaptors.format], formatter specialization for stack
+  template<class charT, class T, formattable<charT> Container>
+    struct formatter<stack<T, Container>, charT>;
+```
+
+TODO: path
+
+TODO: motivation?
+
+TODO: most are safe except potentially range (locking iterator) and custom
+chrono Duration/Rep/Period
+
+TODO: mention that this is a follow-up requested in LEWG discussion
