@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="85750f69deb77337f897794d5a3f86d5cad93fa1" name="revision">
+  <meta content="cf4b57887429c4fa6444d1652e70fe7c2aa9d8b1" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2175,8 +2175,13 @@ optimization. The formatter for <code class="highlight"><c- n>zoned_time</c-></c
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>requires</c-> <c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
-   <p><code class="highlight"><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code>, stacktrace and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> formatters don’t invoke any user
-code and can be opted into the optimization.</p>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> formatter added in <a data-link-type="biblio" href="#biblio-p2845" title="Formatting of std::filesystem::path">[P2845]</a> and, as of 14 Apr 2024, in
+the process of being merged into the standard draft:</p>
+<pre class="highlight"><c- c1>// [fs.path.fmt], formatter</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+</pre>
+   <p><code class="highlight"><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code>, stacktrace, <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> formatters
+don’t invoke any user code and can be opted into the optimization.</p>
    <p>Tuple formatter <a href="https://eel.is/c++draft/format.tuple">[format.tuple</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
 <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>pair</c-><c- o>-</c-><c- k>or</c-><c- o>-</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
@@ -2208,7 +2213,6 @@ code and can be opted into the optimization.</p>
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>stack</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>Container</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p>TODO: look into ranges (locking iterator) and custom Container, Compare.</p>
-   <p>TODO: path</p>
    <p>TODO: motivation?</p>
    <p>TODO: mention that this is a follow-up requested in LEWG discussion</p>
   </main>
@@ -2344,6 +2348,8 @@ code and can be opted into the optimization.</p>
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-p2845">[P2845]
+   <dd>Victor Zverovich. <a href="https://wg21.link/p2845"><cite>Formatting of std::filesystem::path</cite></a>. URL: <a href="https://wg21.link/p2845">https://wg21.link/p2845</a>
    <dt id="biblio-p3107">[P3107]
    <dd>Victor Zverovich. <a href="https://wg21.link/p3107"><cite>Permit an efficient implementation of std::print</cite></a>. URL: <a href="https://wg21.link/p3107">https://wg21.link/p3107</a>
   </dl>

@@ -101,8 +101,16 @@ https://eel.is/c++draft/vector.syn)]:
     struct formatter<T, charT>;
 ```
 
-`thread::id`, stacktrace and `vector<bool>` formatters don't invoke any user
-code and can be opted into the optimization.
+`std::filesystem::path` formatter added in [[P2845]] and, as of 14 Apr 2024, in
+the process of being merged into the standard draft:
+
+```
+// [fs.path.fmt], formatter
+template<class charT> struct formatter<filesystem::path, charT>;
+```
+
+`thread::id`, stacktrace, `vector<bool>` and `std::filesystem::path` formatters
+don't invoke any user code and can be opted into the optimization.
 
 Tuple formatter [[format.tuple](https://eel.is/c++draft/format.tuple)]:
 
@@ -150,14 +158,17 @@ https://eel.is/c++draft/queue.syn)]:
 
 TODO: look into ranges (locking iterator) and custom Container, Compare.
 
-TODO: path
-
 TODO: motivation?
 
 TODO: mention that this is a follow-up requested in LEWG discussion
 
 <pre class=biblio>
 {
+  "P2845": {
+    "title": "Formatting of std::filesystem::path",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2845"
+  },
   "P3107": {
     "title": "Permit an efficient implementation of std::print",
     "authors": ["Victor Zverovich"],
