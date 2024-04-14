@@ -15,7 +15,7 @@ Markup Shorthands: markdown yes
 Introduction {#intro}
 ============
 
-P3107 enabled an efficient implementation of `std::print` and applied the
+[[P3107]] enabled an efficient implementation of `std::print` and applied the
 optimization to fundamental and string types. The current paper applies this
 important optimization to other standard types.
 
@@ -23,7 +23,7 @@ Proposal {#proposal}
 ========
 
 Here is a list of standard formatters that are not yet opted into the
-optimization.
+`std::print` optimization.
 
 Date and time formatters [[time.syn](https://eel.is/c++draft/time.syn)]:
 
@@ -67,30 +67,20 @@ Date and time formatters [[time.syn](https://eel.is/c++draft/time.syn)]:
     struct formatter<chrono::zoned_time<Duration, TimeZonePtr>, charT>;
 ```
 
+`Rep` is an arithmetic type, `Period` is `std::ratio<...>`, `Duration` is
+`std::duration<...>` and `charT` is `char` or `wchar_t` so all chrono formatters
+except the one for `zoned_time` can be unconditionally opted into the
+optimization. The formatter for `zoned_time` can be opted in for the default
+`TimeZonePtr` (`const std::chrono::time_zone*`) but not arbitrary user-provided
+`TimeZonePtr` that can be potentially locking.
+
+<!-- https://www.godbolt.org/z/v87aY37GG --> 
+
 `thread::id` formatter [[thread.thread.id](
 https://eel.is/c++draft/thread.thread.id)]:
 
 ```
   template<class charT> struct formatter<thread::id, charT>;
-```
-
-Range formatter [[format.syn](https://eel.is/c++draft/format.syn)]:
-
-```
-  // [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings
-  template<ranges::input_range R, class charT>
-    requires (format_kind<R> != range_format::disabled) &&
-             formattable<ranges::range_reference_t<R>, charT>
-  struct formatter<R, charT> : range-default-formatter<format_kind<R>, R, charT> { };
-```
-
-Tuple formatter [[format.tuple](https://eel.is/c++draft/format.tuple)]:
-
-```
-  template<class charT, formattable<charT>... Ts>
-  struct formatter<pair-or-tuple<Ts...>, charT> {
-    ...
-  };
 ```
 
 Stacktrace formatters [[stacktrace.syn](
@@ -111,6 +101,30 @@ https://eel.is/c++draft/vector.syn)]:
     struct formatter<T, charT>;
 ```
 
+`thread::id`, stacktrace and `vector<bool>` formatters don't invoke any user
+code and can be opted into the optimization.
+
+Tuple formatter [[format.tuple](https://eel.is/c++draft/format.tuple)]:
+
+```
+  template<class charT, formattable<charT>... Ts>
+  struct formatter<pair-or-tuple<Ts...>, charT> {
+    ...
+  };
+```
+
+The tuple formatter can be opted in if all the element formatters are opted in.
+
+Range formatter [[format.syn](https://eel.is/c++draft/format.syn)]:
+
+```
+  // [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings
+  template<ranges::input_range R, class charT>
+    requires (format_kind<R> != range_format::disabled) &&
+             formattable<ranges::range_reference_t<R>, charT>
+  struct formatter<R, charT> : range-default-formatter<format_kind<R>, R, charT> { };
+```
+
 `queue` and `priority_queue` formatters [[queue.syn](
 https://eel.is/c++draft/queue.syn)]:
 
@@ -126,8 +140,7 @@ https://eel.is/c++draft/queue.syn)]:
     struct formatter<priority_queue<T, Container, Compare>, charT>;
 ```
 
-`stack` formatter [[stack.syn](
-https://eel.is/c++draft/stack.syn)]:
+`stack` formatter [[stack.syn](https://eel.is/c++draft/stack.syn)]:
 
 ```
   // [container.adaptors.format], formatter specialization for stack
@@ -135,11 +148,20 @@ https://eel.is/c++draft/stack.syn)]:
     struct formatter<stack<T, Container>, charT>;
 ```
 
+TODO: look into ranges (locking iterator) and custom Container, Compare.
+
 TODO: path
 
 TODO: motivation?
 
-TODO: most are safe except potentially range (locking iterator) and custom
-chrono Duration/Rep/Period
-
 TODO: mention that this is a follow-up requested in LEWG discussion
+
+<pre class=biblio>
+{
+  "P3107": {
+    "title": "Permit an efficient implementation of std::print",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p3107"
+  }
+}
+</pre>

@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e26177053414ef70a3598571b3fb804f77deca67" name="revision">
+  <meta content="85750f69deb77337f897794d5a3f86d5cad93fa1" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2106,16 +2106,20 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#proposal"><span class="secno">2</span> <span class="content">Proposal</span></a>
+    <li>
+     <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
+     <ol class="toc">
+      <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
+     </ol>
    </ol>
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-   <p>P3107 enabled an efficient implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and applied the
+   <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> enabled an efficient implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and applied the
 optimization to fundamental and string types. The current paper applies this
 important optimization to other standard types.</p>
    <h2 class="heading settled" data-level="2" id="proposal"><span class="secno">2. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>Here is a list of standard formatters that are not yet opted into the
-optimization.</p>
+   <p>Here is a list of standard formatters that are not yet opted into the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> optimization.</p>
    <p>Date and time formatters <a href="https://eel.is/c++draft/time.syn">[time.syn</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Rep</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Period</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
@@ -2155,21 +2159,11 @@ optimization.</p>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Duration</c-><c- p>,</c-> <c- k>class</c-> <c- nc>TimeZonePtr</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>chrono</c-><c- o>::</c-><c- n>zoned_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- p>,</c-> <c- n>TimeZonePtr</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
+   <p><code class="highlight"><c- n>Rep</c-></code> is an arithmetic type, <code class="highlight"><c- n>Period</c-></code> is <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ratio</c-><c- o>&lt;</c-><c- p>...</c-><c- o>></c-></code>, <code class="highlight"><c- n>Duration</c-></code> is <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- p>...</c-><c- o>></c-></code> and <code class="highlight"><c- n>charT</c-></code> is <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code> so all chrono formatters
+except the one for <code class="highlight"><c- n>zoned_time</c-></code> can be unconditionally opted into the
+optimization. The formatter for <code class="highlight"><c- n>zoned_time</c-></code> can be opted in for the default <code class="highlight"><c- n>TimeZonePtr</c-></code> (<code class="highlight"><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>time_zone</c-><c- o>*</c-></code>) but not arbitrary user-provided <code class="highlight"><c- n>TimeZonePtr</c-></code> that can be potentially locking.</p>
    <p><code class="highlight"><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code> formatter <a href="https://eel.is/c++draft/thread.thread.id">[thread.thread.id</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- kr>thread</c-><c- o>::</c-><c- n>id</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
-</pre>
-   <p>Range formatter <a href="https://eel.is/c++draft/format.syn">[format.syn</a>]:</p>
-<pre class="highlight"><c- c1>// [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings</c->
-<c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>input_range</c-> <c- n>R</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
-  <c- k>requires</c-> <c- p>(</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-> <c- o>!=</c-> <c- n>range_format</c-><c- o>::</c-><c- n>disabled</c-><c- p>)</c-> <c- o>&amp;&amp;</c->
-           <c- n>formattable</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_reference_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c->
-<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>:</c-> <c- n>range</c-><c- o>-</c-><c- k>default</c-><c- o>-</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c-> <c- p>};</c->
-</pre>
-   <p>Tuple formatter <a href="https://eel.is/c++draft/format.tuple">[format.tuple</a>]:</p>
-<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
-<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>pair</c-><c- o>-</c-><c- k>or</c-><c- o>-</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
-  <c- p>...</c->
-<c- p>};</c->
 </pre>
    <p>Stacktrace formatters <a href="https://eel.is/c++draft/stacktrace.syn">[stacktrace.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [stacktrace.format], formatting support</c->
@@ -2180,6 +2174,22 @@ optimization.</p>
 <pre class="highlight"><c- c1>// [vector.bool.fmt], formatter specialization for vector&lt;bool></c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>requires</c-> <c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+</pre>
+   <p><code class="highlight"><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code>, stacktrace and <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> formatters don’t invoke any user
+code and can be opted into the optimization.</p>
+   <p>Tuple formatter <a href="https://eel.is/c++draft/format.tuple">[format.tuple</a>]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
+<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>pair</c-><c- o>-</c-><c- k>or</c-><c- o>-</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
+  <c- p>...</c->
+<c- p>};</c->
+</pre>
+   <p>The tuple formatter can be opted in if all the element formatters are opted in.</p>
+   <p>Range formatter <a href="https://eel.is/c++draft/format.syn">[format.syn</a>]:</p>
+<pre class="highlight"><c- c1>// [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings</c->
+<c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>input_range</c-> <c- n>R</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
+  <c- k>requires</c-> <c- p>(</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-> <c- o>!=</c-> <c- n>range_format</c-><c- o>::</c-><c- n>disabled</c-><c- p>)</c-> <c- o>&amp;&amp;</c->
+           <c- n>formattable</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_reference_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c->
+<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>:</c-> <c- n>range</c-><c- o>-</c-><c- k>default</c-><c- o>-</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c-> <c- p>};</c->
 </pre>
    <p><code class="highlight"><c- n>queue</c-></code> and <code class="highlight"><c- n>priority_queue</c-></code> formatters <a href="https://eel.is/c++draft/queue.syn">[queue.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [container.adaptors.format], formatter specialization for queue</c->
@@ -2197,10 +2207,9 @@ optimization.</p>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>Container</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>stack</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>Container</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
+   <p>TODO: look into ranges (locking iterator) and custom Container, Compare.</p>
    <p>TODO: path</p>
    <p>TODO: motivation?</p>
-   <p>TODO: most are safe except potentially range (locking iterator) and custom
-chrono Duration/Rep/Period</p>
    <p>TODO: mention that this is a follow-up requested in LEWG discussion</p>
   </main>
 <script>
@@ -2332,3 +2341,9 @@ chrono Duration/Rep/Period</p>
 
 })();
 </script>
+  <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
+  <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
+  <dl>
+   <dt id="biblio-p3107">[P3107]
+   <dd>Victor Zverovich. <a href="https://wg21.link/p3107"><cite>Permit an efficient implementation of std::print</cite></a>. URL: <a href="https://wg21.link/p3107">https://wg21.link/p3107</a>
+  </dl>
