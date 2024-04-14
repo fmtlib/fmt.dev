@@ -12,6 +12,12 @@ Date: 2024-04-13
 Markup Shorthands: markdown yes
 </pre>
 
+<p style="text-align: right">
+"A common mistake that people make when trying to design something completely
+foolproof is to underestimate the ingenuity of complete fools."
+ ― Douglas Adams
+</p>
+
 Introduction {#intro}
 ============
 
@@ -21,6 +27,9 @@ important optimization to other standard types.
 
 Proposal {#proposal}
 ========
+
+<!-- TODO: motivate summarizing the benefits of P3107 and possibly mention that this
+is a follow-up requested in LEWG discussion -->
 
 Here is a list of standard formatters that are not yet opted into the
 `std::print` optimization.
@@ -156,11 +165,11 @@ https://eel.is/c++draft/queue.syn)]:
     struct formatter<stack<T, Container>, charT>;
 ```
 
-TODO: look into ranges (locking iterator) and custom Container, Compare.
+Range and container adaptor formatters are the most interesting case because
+formatting requires iterating and user-defined iterators can potentially be
+locking.
 
-TODO: motivation?
-
-TODO: mention that this is a follow-up requested in LEWG discussion
+TODO: check existing concurrent containers
 
 <pre class=biblio>
 {
