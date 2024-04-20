@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="f4d944279c43baba24123058f6c290cfaa3810a0" name="revision">
+  <meta content="36b6b51283da017ef5047ba63cc725bb8ef30418" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2122,6 +2122,19 @@ foolproof is to underestimate the ingenuity of complete fools."
 optimization to fundamental and string types. The current paper applies this
 important optimization to other standard types.</p>
    <h2 class="heading settled" data-level="2" id="proposal"><span class="secno">2. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> "Permit an efficient implementation of std::print" brought
+significant speedups (more than 20% in some cases) to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and
+eliminated the neeed for dynamic memory allocations in the common case by
+enabling direct writes into the stream buffer. To speed up the adoption of the
+fix, <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> limited the scope to fundamental and string types but it is, of
+course, beneficial to enable this optimization for other standard types that
+have formatters. This was even discussed in LEWG that encouraged writing
+another paper:</p>
+   <blockquote>
+    <p>LEWG requests for an additional paper to fix formatters for ranges</p>
+   </blockquote>
+   <p>The current paper proposes opting in formatters for ranges and other standard
+types into this optimization.</p>
    <p>Here is a list of standard formatters that are not yet opted into the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> optimization.</p>
    <p>Date and time formatters <a href="https://eel.is/c++draft/time.syn">[time.syn</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Rep</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Period</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
@@ -2163,9 +2176,9 @@ important optimization to other standard types.</p>
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>chrono</c-><c- o>::</c-><c- n>zoned_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- p>,</c-> <c- n>TimeZonePtr</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p><code class="highlight"><c- n>Rep</c-></code> is an arithmetic type, <code class="highlight"><c- n>Period</c-></code> is <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>ratio</c-><c- o>&lt;</c-><c- p>...</c-><c- o>></c-></code>, <code class="highlight"><c- n>Duration</c-></code> is <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- p>...</c-><c- o>></c-></code> and <code class="highlight"><c- n>charT</c-></code> is <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code> so all chrono formatters
-except the one for <code class="highlight"><c- n>zoned_time</c-></code> can be unconditionally opted into the
-optimization. The formatter for <code class="highlight"><c- n>zoned_time</c-></code> can be opted in for the default <code class="highlight"><c- n>TimeZonePtr</c-></code> (<code class="highlight"><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>time_zone</c-><c- o>*</c-></code>) but not arbitrary user-provided <code class="highlight"><c- n>TimeZonePtr</c-></code> that can be potentially locking.</p>
-   <p><code class="highlight"><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code> formatter <a href="https://eel.is/c++draft/thread.thread.id">[thread.thread.id</a>]:</p>
+except the one for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>zoned_time</c-></code> can be unconditionally opted into the
+optimization. The formatter for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>zoned_time</c-></code> can be opted in for the default <code class="highlight"><c- n>TimeZonePtr</c-></code> (<code class="highlight"><c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>time_zone</c-><c- o>*</c-></code>) but not arbitrary user-provided <code class="highlight"><c- n>TimeZonePtr</c-></code> that can be potentially locking.</p>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code> formatter <a href="https://eel.is/c++draft/thread.thread.id">[thread.thread.id</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- kr>thread</c-><c- o>::</c-><c- n>id</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p>Stacktrace formatters <a href="https://eel.is/c++draft/stacktrace.syn">[stacktrace.syn</a>]:</p>
@@ -2173,7 +2186,7 @@ optimization. The formatter for <code class="highlight"><c- n>zoned_time</c-></c
 <c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>stacktrace_entry</c-><c- o>></c-><c- p>;</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Allocator</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>basic_stacktrace</c-><c- o>&lt;</c-><c- n>Allocator</c-><c- o>>></c-><c- p>;</c->
 </pre>
-   <p><code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> formatter <a href="https://eel.is/c++draft/vector.syn">[vector.syn</a>]:</p>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> formatter <a href="https://eel.is/c++draft/vector.syn">[vector.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [vector.bool.fmt], formatter specialization for vector&lt;bool></c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>requires</c-> <c- n>is</c-><c- o>-</c-><c- n>vector</c-><c- o>-</c-><c- b>bool</c-><c- o>-</c-><c- n>reference</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
@@ -2183,8 +2196,7 @@ the process of being merged into the standard draft:</p>
 <pre class="highlight"><c- c1>// [fs.path.fmt], formatter</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
-   <p><code class="highlight"><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code>, stacktrace, <code class="highlight"><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> formatters
-don’t invoke any user code and can be opted into the optimization.</p>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- kr>thread</c-><c- o>::</c-><c- n>id</c-></code>, stacktrace, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-><c- b>bool</c-><c- o>></c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> formatters don’t invoke any user code and can be opted into the optimization.</p>
    <p>Tuple formatter <a href="https://eel.is/c++draft/format.tuple">[format.tuple</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
 <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>pair</c-><c- o>-</c-><c- k>or</c-><c- o>-</c-><c- n>tuple</c-><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
@@ -2199,7 +2211,7 @@ don’t invoke any user code and can be opted into the optimization.</p>
            <c- n>formattable</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_reference_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c->
 <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>:</c-> <c- n>range</c-><c- o>-</c-><c- k>default</c-><c- o>-</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c-> <c- p>};</c->
 </pre>
-   <p><code class="highlight"><c- n>queue</c-></code> and <code class="highlight"><c- n>priority_queue</c-></code> formatters <a href="https://eel.is/c++draft/queue.syn">[queue.syn</a>]:</p>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>queue</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>priority_queue</c-></code> formatters <a href="https://eel.is/c++draft/queue.syn">[queue.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [container.adaptors.format], formatter specialization for queue</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>Container</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>queue</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>Container</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
@@ -2210,15 +2222,16 @@ don’t invoke any user code and can be opted into the optimization.</p>
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>Container</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Compare</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>priority_queue</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>Container</c-><c- p>,</c-> <c- n>Compare</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
-   <p><code class="highlight"><c- n>stack</c-></code> formatter <a href="https://eel.is/c++draft/stack.syn">[stack.syn</a>]:</p>
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>stack</c-></code> formatter <a href="https://eel.is/c++draft/stack.syn">[stack.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [container.adaptors.format], formatter specialization for stack</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>Container</c-><c- o>></c->
   <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>stack</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>Container</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
 </pre>
    <p>Range and container adaptor formatters are the most interesting case because
-formatting requires iterating and user-defined iterators can potentially be
-locking.</p>
-   <p>TODO: check existing concurrent containers</p>
+formatting requires iterating and user-defined iterators can be locking, at
+least in principle. None of the standard containers, ranges and container
+adaptors and even common concurrent containers such as <code class="highlight"><c- n>concurrent_vector</c-></code> from <a data-link-type="biblio" href="#biblio-tbb" title="oneAPI Threading Building Blocks (oneTBB)">[TBB]</a> provide locking iterators. For this reason, the current paper proposes
+opting range and adaptor formatters into the optimization by default.</p>
   </main>
 <script>
 (function() {
@@ -2356,4 +2369,6 @@ locking.</p>
    <dd>Victor Zverovich. <a href="https://wg21.link/p2845"><cite>Formatting of std::filesystem::path</cite></a>. URL: <a href="https://wg21.link/p2845">https://wg21.link/p2845</a>
    <dt id="biblio-p3107">[P3107]
    <dd>Victor Zverovich. <a href="https://wg21.link/p3107"><cite>Permit an efficient implementation of std::print</cite></a>. URL: <a href="https://wg21.link/p3107">https://wg21.link/p3107</a>
+   <dt id="biblio-tbb">[TBB]
+   <dd><a href="https://oneapi-src.github.io/oneTBB/"><cite>oneAPI Threading Building Blocks (oneTBB)</cite></a>. URL: <a href="https://oneapi-src.github.io/oneTBB/">https://oneapi-src.github.io/oneTBB/</a>
   </dl>

@@ -28,8 +28,19 @@ important optimization to other standard types.
 Proposal {#proposal}
 ========
 
-<!-- TODO: motivate summarizing the benefits of P3107 and possibly mention that this
-is a follow-up requested in LEWG discussion -->
+[[P3107]] "Permit an efficient implementation of std::print" brought
+significant speedups (more than 20% in some cases) to `std::print` and
+eliminated the neeed for dynamic memory allocations in the common case by
+enabling direct writes into the stream buffer. To speed up the adoption of the
+fix, [[P3107]] limited the scope to fundamental and string types but it is, of
+course, beneficial to enable this optimization for other standard types that
+have formatters. This was even discussed in LEWG that encouraged writing
+another paper:
+
+> LEWG requests for an additional paper to fix formatters for ranges
+
+The current paper proposes opting in formatters for ranges and other standard
+types into this optimization.
 
 Here is a list of standard formatters that are not yet opted into the
 `std::print` optimization.
@@ -78,14 +89,14 @@ Date and time formatters [[time.syn](https://eel.is/c++draft/time.syn)]:
 
 `Rep` is an arithmetic type, `Period` is `std::ratio<...>`, `Duration` is
 `std::duration<...>` and `charT` is `char` or `wchar_t` so all chrono formatters
-except the one for `zoned_time` can be unconditionally opted into the
-optimization. The formatter for `zoned_time` can be opted in for the default
+except the one for `std::zoned_time` can be unconditionally opted into the
+optimization. The formatter for `std::zoned_time` can be opted in for the default
 `TimeZonePtr` (`const std::chrono::time_zone*`) but not arbitrary user-provided
 `TimeZonePtr` that can be potentially locking.
 
 <!-- https://www.godbolt.org/z/v87aY37GG --> 
 
-`thread::id` formatter [[thread.thread.id](
+`std::thread::id` formatter [[thread.thread.id](
 https://eel.is/c++draft/thread.thread.id)]:
 
 ```
@@ -101,7 +112,7 @@ https://eel.is/c++draft/stacktrace.syn)]:
   template<class Allocator> struct formatter<basic_stacktrace<Allocator>>;
 ```
 
-`vector<bool>` formatter [[vector.syn](
+`std::vector<bool>` formatter [[vector.syn](
 https://eel.is/c++draft/vector.syn)]:
 
 ```
@@ -118,8 +129,8 @@ the process of being merged into the standard draft:
 template<class charT> struct formatter<filesystem::path, charT>;
 ```
 
-`thread::id`, stacktrace, `vector<bool>` and `std::filesystem::path` formatters
-don't invoke any user code and can be opted into the optimization.
+`std::thread::id`, stacktrace, `std::vector<bool>` and `std::filesystem::path`
+formatters don't invoke any user code and can be opted into the optimization.
 
 Tuple formatter [[format.tuple](https://eel.is/c++draft/format.tuple)]:
 
@@ -142,7 +153,7 @@ Range formatter [[format.syn](https://eel.is/c++draft/format.syn)]:
   struct formatter<R, charT> : range-default-formatter<format_kind<R>, R, charT> { };
 ```
 
-`queue` and `priority_queue` formatters [[queue.syn](
+`std::queue` and `std::priority_queue` formatters [[queue.syn](
 https://eel.is/c++draft/queue.syn)]:
 
 ```
@@ -157,7 +168,7 @@ https://eel.is/c++draft/queue.syn)]:
     struct formatter<priority_queue<T, Container, Compare>, charT>;
 ```
 
-`stack` formatter [[stack.syn](https://eel.is/c++draft/stack.syn)]:
+`std::stack` formatter [[stack.syn](https://eel.is/c++draft/stack.syn)]:
 
 ```
   // [container.adaptors.format], formatter specialization for stack
@@ -166,10 +177,13 @@ https://eel.is/c++draft/queue.syn)]:
 ```
 
 Range and container adaptor formatters are the most interesting case because
-formatting requires iterating and user-defined iterators can potentially be
-locking.
+formatting requires iterating and user-defined iterators can be locking, at
+least in principle. None of the standard containers, ranges and container
+adaptors and even common concurrent containers such as `concurrent_vector` from
+[[TBB]] provide locking iterators. For this reason, the current paper proposes
+opting range and adaptor formatters into the optimization by default.
 
-TODO: check existing concurrent containers
+<!-- TODO: wording -->
 
 <pre class=biblio>
 {
@@ -182,6 +196,10 @@ TODO: check existing concurrent containers
     "title": "Permit an efficient implementation of std::print",
     "authors": ["Victor Zverovich"],
     "href": "https://wg21.link/p3107"
+  },
+  "TBB": {
+    "title": "oneAPI Threading Building Blocks (oneTBB)",
+    "href": "https://oneapi-src.github.io/oneTBB/"
   }
 }
 </pre>
