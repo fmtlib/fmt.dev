@@ -181,7 +181,87 @@ formatting requires iterating and user-defined iterators can be locking, at
 least in principle. None of the standard containers, ranges and container
 adaptors and even common concurrent containers such as `concurrent_vector` from
 [[TBB]] provide locking iterators. For this reason, the current paper proposes
-opting range and adaptor formatters into the optimization by default.
+opting range and adaptor formatters into the optimization by default. Other
+languages such as Java (see [[P3107]]) and even Rust don't try to prevent
+deadlocks when printing any user-defined types to a C stream and for iterators
+those are very unlikely. As shown in [[P3107]] examples of such deadlock are
+pretty contrived and may indicate other issues (bugs) in the program such as
+incorrect lock scope.
+
+<!--
+use std::fmt;
+use std::thread;
+use std::sync::{Arc, Mutex};
+
+struct Deadlockable {
+  value: i32,
+  mutex: Mutex<i32>
+}
+
+impl Deadlockable {
+  fn new() -> Deadlockable {
+    let value = 0;
+    let mutex = Mutex::new(0);
+    Deadlockable{value, mutex}
+  }
+}
+
+impl fmt::Display for Deadlockable {
+  fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let _lock = self.mutex.lock();
+    let value = self.value;
+    write!(formatter, "{value}")
+  }
+}
+
+fn main() {
+  let d1 = Arc::new(Deadlockable::new());
+  let d2 = Arc::clone(&d1);
+  let t = thread::spawn(move || {
+    print!("start\n");
+    let _lock = d2.mutex.lock();
+    let mut value = 0;
+    for _ in 0..100000 {
+      value += d2.value;
+    }
+    print!("done: {}\n", value);
+  });
+  for _ in 0..100000 {
+    print!("{}", d1);
+  }
+  t.join().unwrap();
+}
+
+* thread #1, name = 'main', queue = 'com.apple.main-thread', stop reason = signal SIGSTOP
+  * frame #0: 0x000000018bf00ea4 libsystem_kernel.dylib`__psynch_mutexwait + 8
+    frame #1: 0x000000018bf3c060 libsystem_pthread.dylib`_pthread_mutex_firstfit_lock_wait + 84
+    frame #2: 0x000000018bf399f0 libsystem_pthread.dylib`_pthread_mutex_firstfit_lock_slow + 248
+    frame #3: 0x0000000100002414 foo`std::sync::mutex::Mutex$LT$T$GT$::lock::he1b5d29253ff35d8 [inlined] std::sys::pal::unix::locks::pthread_mutex::Mutex::lock::h04c034e29eed7ce5 at pthread_mutex.rs:106:17
+    frame #4: 0x00000001000023fc foo`std::sync::mutex::Mutex$LT$T$GT$::lock::he1b5d29253ff35d8(self=0x0000600000e68010) at mutex.rs:273:24
+    frame #5: 0x0000000100006388 foo`_$LT$foo..Deadlockable$u20$as$u20$core..fmt..Display$GT$::fmt::h874b80d270d20f33(self=0x0000600000e68010, formatter=0x000000016fdfed80) at foo.rs:20:17
+    frame #6: 0x000000010000846c foo`_$LT$alloc..sync..Arc$LT$T$C$A$GT$$u20$as$u20$core..fmt..Display$GT$::fmt::h40aba7c48f6103bc(self=0x000000016fdfef48, f=0x000000016fdfed80) at sync.rs:3202:9
+    frame #7: 0x0000000100036330 foo`core::fmt::write::h168dbafcf35bac68 [inlined] core::fmt::rt::Argument::fmt::h0c1f3a7ec00b5b49 at rt.rs:142:9 [opt]
+    frame #8: 0x0000000100036328 foo`core::fmt::write::h168dbafcf35bac68 at mod.rs:1120:17 [opt]
+    frame #9: 0x000000010001e9d0 foo`_$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::hc1620e0a7617cfc2 [inlined] std::io::Write::write_fmt::h4c2dacc6783fd27e at mod.rs:1846:15 [opt]
+    frame #10: 0x000000010001e9b4 foo`_$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::hc1620e0a7617cfc2 at stdio.rs:736:9 [opt]
+    frame #11: 0x000000010001efb4 foo`std::io::stdio::_print::h98bb68c4f6655455 [inlined] _$LT$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::he8d3da088f55fa14 at stdio.rs:710:9 [opt]
+    frame #12: 0x000000010001efa4 foo`std::io::stdio::_print::h98bb68c4f6655455 [inlined] std::io::stdio::print_to::h61627dc059d946a4 at stdio.rs:1029:21 [opt]
+    frame #13: 0x000000010001ef78 foo`std::io::stdio::_print::h98bb68c4f6655455 at stdio.rs:1106:5 [opt]
+    frame #14: 0x00000001000066d0 foo`foo::main::h90b3e86ce32ac4c2 at foo.rs:39:5
+
+* thread #2
+  * frame #0: 0x000000018bf00ea4 libsystem_kernel.dylib`__psynch_mutexwait + 8
+    frame #1: 0x000000018bf3c060 libsystem_pthread.dylib`_pthread_mutex_firstfit_lock_wait + 84
+    frame #2: 0x000000018bf399f0 libsystem_pthread.dylib`_pthread_mutex_firstfit_lock_slow + 248
+    frame #3: 0x000000010001e994 foo`_$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::hc1620e0a7617cfc2 [inlined] std::sys::pal::unix::locks::pthread_mutex::Mutex::lock::hcae826fc403afc16 at pthread_mutex.rs:106:17 [opt]
+    frame #4: 0x000000010001e988 foo`_$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::hc1620e0a7617cfc2 [inlined] std::sync::remutex::ReentrantMutex$LT$T$GT$::lock::h84c9eb20e041c42b at remutex.rs:103:28 [opt]
+    frame #5: 0x000000010001e944 foo`_$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::hc1620e0a7617cfc2 [inlined] std::io::stdio::Stdout::lock::h26bca2a2786e6df7 at stdio.rs:677:29 [opt]
+    frame #6: 0x000000010001e940 foo`_$LT$$RF$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::hc1620e0a7617cfc2 at stdio.rs:736:9 [opt]
+    frame #7: 0x000000010001efb4 foo`std::io::stdio::_print::h98bb68c4f6655455 [inlined] _$LT$std..io..stdio..Stdout$u20$as$u20$std..io..Write$GT$::write_fmt::he8d3da088f55fa14 at stdio.rs:710:9 [opt]
+    frame #8: 0x000000010001efa4 foo`std::io::stdio::_print::h98bb68c4f6655455 [inlined] std::io::stdio::print_to::h61627dc059d946a4 at stdio.rs:1029:21 [opt]
+    frame #9: 0x000000010001ef78 foo`std::io::stdio::_print::h98bb68c4f6655455 at stdio.rs:1106:5 [opt]
+    frame #10: 0x0000000100006884 foo`foo::main::_$u7b$$u7b$closure$u7d$$u7d$::h65e1df2905240c91 at foo.rs:36:5
+-->
 
 <!-- TODO: wording -->
 
