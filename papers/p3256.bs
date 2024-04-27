@@ -1,0 +1,146 @@
+<pre class='metadata'>
+Title: `what` encoding
+Shortname: P3256
+Revision: 0
+Audience: SG16
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2024-04-25
+Markup Shorthands: markdown yes
+</pre>
+
+Introduction {#intro}
+============
+
+TODO
+
+Problem {#problem}
+=======
+
+Consider the following example:
+
+```
+std::uintmax_t size = 0;
+try {
+  size = std::filesystem::file_size("Шчучыншчына");
+} catch (const std::exception& e) {
+  std::print("{}", e.what());
+}
+```
+
+On macOS and most GNU/Linux systems with the ordinary literal encoding of UTF-8,
+which is the default for GCC and Clang, it works as expected. Here is the output
+for GCC and libstdc++:
+
+<!-- https://www.godbolt.org/z/h8qaneooh -->
+
+```
+filesystem error: cannot get file size: No such file or directory [Шчучыншчына]
+```
+
+Notice that the path is a part of the error message and rendered correctly.
+
+Now let's consider a similar example on Windows:
+
+```
+std::uintmax_t size = 0;
+try {
+  size = std::filesystem::file_size(L"Шчучыншчына");
+} catch (const std::exception& e) {
+  std::print("{}", e.what());
+}
+```
+
+The only difference from the one above is the use of a wide string to
+construct a path without undesirable transcoding.
+
+Unfortunately this will likely produce [mojibake](
+https://en.wikipedia.org/wiki/Mojibake) despite the fact that both
+`std::filesystem::path` and `std::print` support Unicode. When compiled with 
+<code highlight="text">/utf-8</code> on Visual C++ ([[MSVC-UTF8]]) and run it
+produces no visible output at all:
+
+```
+C:\test\what
+
+```
+
+This is obviously broken and may give a misleading impression that there was no
+error.
+
+<!--
+"\xd8\xf7\xf3\xf7\xfb\xed\xf8\xf7\xfb\xed\xe0" - CP1251
+
+Output without <code highlight="text">/utf-8</code>:
+file_size: The system cannot find the file specified.: "╨и╤З╤Г╤З╤Л╨╜╤И╤З╤Л╨╜╨░"
+-->
+
+These examples use `std::print` because it is capable of portably printing
+Unicode, including Unicode `std::filesystem::path` on Windows ([[P2845]]), e.g.
+<!-- https://www.godbolt.org/z/a5688enoE -->
+
+```
+std::print("{}", std::filesystem::path(L"Шчучыншчына"));
+```
+
+prints
+
+```
+Шчучыншчына
+```
+
+when compiled with `/utf-8` on Windows regardless of terminal and Active Code
+Page settings.
+
+In general, the situation is worse with other output facilities as demonstrated
+in [[P2093]].
+
+Analysis {#analysis}
+========
+
+Why does printing the filesystem exception message on Windows produce mojibake?
+There are several encodings involved in the process:
+
+* Ordinary literal encoding
+* `std::filesystem::path` encoding
+* Active code page (ACP)
+* Console code page
+
+All of these can be different even for the same localization.
+
+The ordinarly literal encoding is fixed at compile time.
+<!-- TODO: link to Corentin's paper -->
+
+`std::filesystem::path` encoding is a bit more complicated because paths can
+contain arbitrary binary data. On Windows the internal representation of
+`std::filesystem::path` uses wide strings and apart from the rare binary path
+case the encoding is UTF-16.
+
+The ACP and the console code page can vary at runtime and don't generally match
+each other. For example in Belarusian locale on Windows, the ACP is CP1251 while
+the console code page is 437. Both are legacy code pages not supporting full
+Unicode range.
+
+<pre class=biblio>
+{
+  "P2845": {
+    "title": "Formatting of std::filesystem::path",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2845"
+  },
+  "P2093": {
+    "title": "Formatted output",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2093"
+  },
+  "MSVC-UTF8": {
+    "title":
+    "Visual C++ Documentation, /utf-8 (Set Source and Executable character sets to UTF-8)",
+    "href":
+    "https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8"
+  }
+}
+</pre>
