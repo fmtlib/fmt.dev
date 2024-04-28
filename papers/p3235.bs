@@ -23,7 +23,7 @@ Introduction {#intro}
 
 [[P3107]] enabled an efficient implementation of `std::print` and applied the
 optimization to fundamental and string types. The current paper applies this
-important optimization to other standard types.
+important optimization to the remaining standard types.
 
 Proposal {#proposal}
 ========
@@ -34,8 +34,8 @@ eliminated the need for dynamic memory allocations in the common case by
 enabling direct writes into the stream buffer. To speed up the adoption of the
 fix, [[P3107]] limited the scope to fundamental and string types but it is, of
 course, beneficial to enable this optimization for other standard types that
-have formatters. This was even discussed in LEWG that encouraged writing
-another paper:
+have formatters. This was discussed in LEWG that encouraged writing such paper
+(for ranges):
 
 > LEWG requests for an additional paper to fix formatters for ranges
 
@@ -150,7 +150,7 @@ Range formatter [[format.syn](https://eel.is/c++draft/format.syn)]:
   template<ranges::input_range R, class charT>
     requires (format_kind<R> != range_format::disabled) &&
              formattable<ranges::range_reference_t<R>, charT>
-  struct formatter<R, charT> : range-default-formatter<format_kind<R>, R, charT> { };
+  struct formatter<R, charT> : <i>range-default-formatter</i>&lt;format_kind<R>, R, charT> { };
 ```
 
 `std::queue` and `std::priority_queue` formatters [[queue.syn](
@@ -184,7 +184,7 @@ adaptors and even common concurrent containers such as `concurrent_vector` from
 opting range and adaptor formatters into the optimization by default. Other
 languages such as Java (see [[P3107]]) and even Rust don't try to prevent
 deadlocks when printing any user-defined types to a C stream and for iterators
-those are very unlikely. As shown in [[P3107]] examples of such deadlock are
+those are very unlikely. As shown in [[P3107]] examples of such deadlocks are
 pretty contrived and may indicate other issues (bugs) in the program such as
 incorrect lock scope.
 
@@ -263,7 +263,105 @@ fn main() {
     frame #10: 0x0000000100006884 foo`foo::main::_$u7b$$u7b$closure$u7d$$u7d$::h65e1df2905240c91 at foo.rs:36:5
 -->
 
-<!-- TODO: wording -->
+Wording {#wording}
+=======
+
+Modify [[format.formatter.spec](https://eel.is/c++draft/format.formatter.spec)]
+as indicated:
+
+...
+
+The parse member functions of these formatters interpret the format
+specification as a *std-format-spec* as described in [[format.string.std](
+https://eel.is/c++draft/format#string.std)]. <del>In addition, for each type `T`
+for which a `formatter` specialization is provided above, each of the headers
+provides the following specialization:</del>
+
+<ins>
+Unless specified otherwise, for each type `T` for which a `formatter`
+specialization is provided by the library, each of the headers provides the
+following specialization:
+</ins>
+
+```
+template<> inline constexpr bool enable_nonlocking_formatter_optimization<T> = true;
+```
+
+...
+
+Modify [[time.format](https://eel.is/c++draft/time.format)] as indicated:
+
+...
+
+If the *chrono-specs* is omitted, the chrono object is formatted as if by
+streaming it to `basic_ostringstream<charT> os` with the formatting locale
+imbued and copying `os.str()` through the output iterator of the context with
+additional padding and adjustments as specified by the format specifiers.
+
+[*Example 3*: 
+```
+string s = format("{:=>8}", 42ms);      // value of s is "====42ms"
+```
+— *end example*]
+
+<ins>
+For `chrono::zoned_time` the library only provides the following specialization
+of `enable_nonlocking_formatter_optimization`:
+</ins>
+
+<pre><ins>
+template&lt;class Duration>
+  inline constexpr bool enable_nonlocking_formatter_optimization&lt;
+    chrono::zoned_time&lt;Duration, const std::chrono::time_zone*>> = true;
+</ins></pre>
+
+```
+template<class Duration, class charT>
+  struct formatter<chrono::sys_time<Duration>, charT>;
+```
+
+...
+
+Modify [[format.tuple](https://eel.is/c++draft/format.tuple)] as indicated:
+
+For each of `pair` and `tuple`, the library provides the following formatter
+specialization where *pair-or-tuple* is the name of the template:
+
+<pre>
+namespace std {
+  template&lt;class charT, formattable&lt;charT>... Ts>
+  struct formatter&lt;<i>pair-or-tuple</i>&lt;Ts...>, charT> {
+    ...
+  };
+
+  <ins>template&lt;class... Ts>
+    inline constexpr bool enable_nonlocking_formatter_optimization&lt;<i>pair-or-tuple</i>&lt;Ts...>> = 
+      (enable_nonlocking_formatter_optimization&lt;Ts> && ...);</ins>
+}
+</pre>
+
+Modify [[format.syn](https://eel.is/c++draft/format.syn)] as indicated:
+
+<pre>
+  ...
+
+  // [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings
+  template&lt;ranges::input_range R, class charT>
+    requires (format_kind&lt;R> != range_format::disabled) &&
+             formattable&lt;ranges::range_reference_t&lt;R>, charT>
+  struct formatter&lt;R, charT> : <i>range-default-formatter</i>&lt;format_kind&lt;R>, R, charT> { };
+
+  <ins>template&lt;ranges::input_range R>
+      requires (format_kind&lt;R> != range_format::disabled)
+    inline constexpr bool enable_nonlocking_formatter_optimization&lt;R> =
+      enable_nonlocking_formatter_optimization&lt;remove_cvref_t&lt;ranges::range_reference_t&lt;R>>>;</ins>
+
+  // [format.arguments], arguments
+  // [format.arg], class template basic_format_arg
+  template&lt;class Context> class basic_format_arg;
+
+  ...
+</pre>
 
 <pre class=biblio>
 {

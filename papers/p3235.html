@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c870d922ab6cc3c05202b8d71efabc325b1a540f" name="revision">
+  <meta content="24380beea07d63f8a658d973b4e70a142804db36" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2106,6 +2106,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#proposal"><span class="secno">2</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">3</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2120,7 +2121,7 @@ foolproof is to underestimate the ingenuity of complete fools."
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> enabled an efficient implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and applied the
 optimization to fundamental and string types. The current paper applies this
-important optimization to other standard types.</p>
+important optimization to the remaining standard types.</p>
    <h2 class="heading settled" data-level="2" id="proposal"><span class="secno">2. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> "Permit an efficient implementation of std::print" brought
 significant speedups (more than 20% in some cases) to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and
@@ -2128,8 +2129,8 @@ eliminated the need for dynamic memory allocations in the common case by
 enabling direct writes into the stream buffer. To speed up the adoption of the
 fix, <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> limited the scope to fundamental and string types but it is, of
 course, beneficial to enable this optimization for other standard types that
-have formatters. This was even discussed in LEWG that encouraged writing
-another paper:</p>
+have formatters. This was discussed in LEWG that encouraged writing such paper
+(for ranges):</p>
    <blockquote>
     <p>LEWG requests for an additional paper to fix formatters for ranges</p>
    </blockquote>
@@ -2209,7 +2210,7 @@ the process of being merged into the standard draft:</p>
 <c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>input_range</c-> <c- n>R</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
   <c- k>requires</c-> <c- p>(</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-> <c- o>!=</c-> <c- n>range_format</c-><c- o>::</c-><c- n>disabled</c-><c- p>)</c-> <c- o>&amp;&amp;</c->
            <c- n>formattable</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_reference_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c->
-<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>:</c-> <c- n>range</c-><c- o>-</c-><c- k>default</c-><c- o>-</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c-> <c- p>};</c->
+<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>:</c-> <c- o>&lt;</c-><c- n>i</c-><c- o>></c-><c- n>range</c-><c- o>-</c-><c- k>default</c-><c- o>-</c-><c- n>formatter</c-><c- o>&lt;/</c-><c- n>i</c-><c- o>>&amp;</c-><c- n>lt</c-><c- p>;</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c-> <c- p>};</c->
 </pre>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>queue</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>priority_queue</c-></code> formatters <a href="https://eel.is/c++draft/queue.syn">[queue.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [container.adaptors.format], formatter specialization for queue</c->
@@ -2234,9 +2235,78 @@ adaptors and even common concurrent containers such as <code class="highlight"><
 opting range and adaptor formatters into the optimization by default. Other
 languages such as Java (see <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a>) and even Rust don’t try to prevent
 deadlocks when printing any user-defined types to a C stream and for iterators
-those are very unlikely. As shown in <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> examples of such deadlock are
+those are very unlikely. As shown in <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> examples of such deadlocks are
 pretty contrived and may indicate other issues (bugs) in the program such as
 incorrect lock scope.</p>
+   <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Modify <a href="https://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]
+as indicated:</p>
+   <p>...</p>
+   <p>
+    The parse member functions of these formatters interpret the format
+specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format#string.std">[format.string.std</a>]. 
+    <del>In addition, for each type <code class="highlight"><c- n>T</c-></code> for which a <code class="highlight"><c- n>formatter</c-></code> specialization is provided above, each of the headers
+provides the following specialization:</del>
+   </p>
+   <ins> Unless specified otherwise, for each type <code class="highlight"><c- n>T</c-></code> for which a <code class="highlight"><c- n>formatter</c-></code> specialization is provided by the library, each of the headers provides the
+following specialization: </ins>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;></c-> <c- kr>inline</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-> <c- o>=</c-> true<c- p>;</c->
+</pre>
+   <p>...</p>
+   <p>Modify <a href="https://eel.is/c++draft/time.format">[time.format</a>] as indicated:</p>
+   <p>...</p>
+   <p>If the <em>chrono-specs</em> is omitted, the chrono object is formatted as if by
+streaming it to <code class="highlight"><c- n>basic_ostringstream</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-> <c- n>os</c-></code> with the formatting locale
+imbued and copying <code class="highlight"><c- n>os</c-><c- p>.</c-><c- n>str</c-><c- p>()</c-></code> through the output iterator of the context with
+additional padding and adjustments as specified by the format specifiers.</p>
+   <p>[<em>Example 3</em>:</p>
+<pre class="highlight"><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"{:=>8}"</c-><c- p>,</c-> <c- mi>42</c-><c- n>ms</c-><c- p>);</c->      <c- c1>// value of s is "====42ms"</c->
+</pre>
+   <p>— <em>end example</em>]</p>
+   <ins> For <code class="highlight"><c- n>chrono</c-><c- o>::</c-><c- n>zoned_time</c-></code> the library only provides the following specialization
+of <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-></code>: </ins>
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Duration</c-><c- o>></c->
+  <c- kr>inline</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c->
+    <c- n>chrono</c-><c- o>::</c-><c- n>zoned_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- p>,</c-> <c- k>const</c-> <c- n>std</c-><c- o>::</c-><c- n>chrono</c-><c- o>::</c-><c- n>time_zone</c-><c- o>*>></c-> <c- o>=</c-> true<c- p>;</c->
+</ins></pre>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Duration</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
+  <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>chrono</c-><c- o>::</c-><c- n>sys_time</c-><c- o>&lt;</c-><c- n>Duration</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+</pre>
+   <p>...</p>
+   <p>Modify <a href="https://eel.is/c++draft/format.tuple">[format.tuple</a>] as indicated:</p>
+   <p>For each of <code class="highlight"><c- n>pair</c-></code> and <code class="highlight"><c- n>tuple</c-></code>, the library provides the following formatter
+specialization where <em>pair-or-tuple</em> is the name of the template:</p>
+<pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- n>formattable</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>></c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
+  <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><i><c- n>pair</c-><c- o>-</c-><c- k>or</c-><c- o>-</c-><c- n>tuple</c-></i><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
+    <c- p>...</c->
+  <c- p>};</c->
+
+  <ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Ts</c-><c- o>></c->
+    <c- kr>inline</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><i><c- n>pair</c-><c- o>-</c-><c- k>or</c-><c- o>-</c-><c- n>tuple</c-></i><c- o>&lt;</c-><c- n>Ts</c-><c- p>...</c-><c- o>>></c-> <c- o>=</c-> 
+      <c- p>(</c-><c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>Ts</c-><c- o>></c-> <c- o>&amp;&amp;</c-> <c- p>...);</c-></ins>
+<c- p>}</c->
+</pre>
+   <p>Modify <a href="https://eel.is/c++draft/format.syn">[format.syn</a>] as indicated:</p>
+<pre class="highlight"><c- p>...</c->
+
+<c- c1>// [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings</c->
+<c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>input_range</c-> <c- n>R</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
+  <c- k>requires</c-> <c- p>(</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-> <c- o>!=</c-> <c- n>range_format</c-><c- o>::</c-><c- n>disabled</c-><c- p>)</c-> <c- o>&amp;&amp;</c->
+           <c- n>formattable</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_reference_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c->
+<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>:</c-> <i><c- n>range</c-><c- o>-</c-><c- k>default</c-><c- o>-</c-><c- n>formatter</c-></i><c- o>&lt;</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c-> <c- p>};</c->
+
+<ins><c- k>template</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>input_range</c-> <c- n>R</c-><c- o>></c->
+    <c- k>requires</c-> <c- p>(</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-> <c- o>!=</c-> <c- n>range_format</c-><c- o>::</c-><c- n>disabled</c-><c- p>)</c->
+  <c- kr>inline</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>R</c-><c- o>></c-> <c- o>=</c->
+    <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>ranges</c-><c- o>::</c-><c- n>range_reference_t</c-><c- o>&lt;</c-><c- n>R</c-><c- o>>>></c-><c- p>;</c-></ins>
+
+<c- c1>// [format.arguments], arguments</c->
+<c- c1>// [format.arg], class template basic_format_arg</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- o>></c-> <c- k>class</c-> <c- nc>basic_format_arg</c-><c- p>;</c->
+
+<c- p>...</c->
+</pre>
   </main>
 <script>
 (function() {
