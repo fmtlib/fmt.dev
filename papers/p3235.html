@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="367431cdd545265e6488f6f1e8d9b635e459c2f3" name="revision">
+  <meta content="2e2eb52c3f92620719c5798a5ab50d6158f53c57" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2115,14 +2115,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <p style="text-align: right"> "You can’t add safe because that’s unsafe" ― Sean Baxter </p>
+   <p style="text-align: right"> "No work is less work than some work" - Andrei Alexandrescu </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> enabled an efficient implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and applied the
 optimization to fundamental and string types. The current paper applies this
 important optimization to the remaining standard types.</p>
    <h2 class="heading settled" data-level="2" id="proposal"><span class="secno">2. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> "Permit an efficient implementation of std::print" brought
-significant speedups (more than 20% in some cases) to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and
+significant speedups (from 20% in the original benchmarks to 2x in <a data-link-type="biblio" href="#biblio-so-large-data" title="How to use {fmt} with large data">[SO-LARGE-DATA]</a>) to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and
 eliminated the need for dynamic memory allocations in the common case by
 enabling direct writes into the stream buffer. To expedite the adoption of the
 fix, <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> limited the scope to fundamental and string types but it is, of
@@ -2236,6 +2236,11 @@ deadlocks when printing any user-defined types to a C stream and for iterators
 those are very unlikely. As shown in <a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> examples of such deadlocks are
 pretty contrived and may indicate other issues (bugs) in the program such as
 incorrect lock scope.</p>
+   <p>And finally this paper proposes renaming <code class="highlight"><c- n>vprint_</c-><c- p>(</c-><c- n>non</c-><c- p>)</c-><c- n>unicode</c-></code> and <code class="highlight"><c- n>vprint_</c-><c- p>(</c-><c- n>non</c-><c- p>)</c-><c- n>unicode_locking</c-></code> to <code class="highlight"><c- n>vprint_</c-><c- p>(</c-><c- n>non</c-><c- p>)</c-><c- n>unicode_buffered</c-></code> and <code class="highlight"><c- n>vprint_</c-><c- p>(</c-><c- n>non</c-><c- p>)</c-><c- n>unicode</c-></code> respectively. The current naming is misleading because
+all of these functions are locking and "nonlocking" overloads confusingly call
+"locking" ones. In POSIX and other languages the default is locking so the new
+naming is more consistent with standard practice. The new naming reflects the
+fact that the main difference is buffering of all of the output.</p>
    <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify <a href="https://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]
 as indicated:</p>
@@ -2305,6 +2310,40 @@ specialization where <em>pair-or-tuple</em> is the name of the template:</p>
 
 <c- p>...</c->
 </pre>
+   <p>Modify <a href="https://eel.is/c++draft/print.fun">[print.fun</a>] as indicated:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-><c- p>...</c-> <c- n>Args</c-><c- o>></c->
+  <c- b>void</c-> <c- n>print</c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>format_string</c-><c- o>&lt;</c-><c- n>Args</c-><c- p>...</c-><c- o>></c-> <c- n>fmt</c-><c- p>,</c-> <c- n>Args</c-><c- o>&amp;&amp;</c-><c- p>...</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects</em>: Let <code class="highlight"><c- n>locksafe</c-></code> be <code class="highlight"><c- p>(</c-><c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-> <c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- n>Args</c-><c- o>>></c-> <c- o>&amp;&amp;</c-> <c- p>...)</c-></code>. If the ordinary literal encoding ([lex.charset])
+is UTF-8, equivalent to:</p>
+<pre class="highlight"><c- n>locksafe</c->
+  <c- o>?</c-> <c- n>vprint_unicode</c-><del><c- n>_locking</c-></del><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...))</c->
+  <c- o>:</c-> <c- n>vprint_unicode</c-><ins><c- n>_buffered</c-></ins><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+</pre>
+   <p>Otherwise, equivalent to:</p>
+<pre class="highlight"><c- n>locksafe</c->
+  <c- o>?</c-> <c- n>vprint_nonunicode</c-><del><c- n>_locking</c-></del><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...))</c->
+  <c- o>:</c-> <c- n>vprint_nonunicode</c-><ins><c- n>_buffered</c-></ins><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- n>fmt</c-><c- p>.</c-><c- n>str</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>args</c-><c- p>...));</c->
+</pre>
+   <p>...</p>
+<pre class="highlight"><c- b>void</c-> <c- n>vprint_unicode</c-><c- o>&lt;</c-><c- n>ins</c-><c- o>></c-><c- n>_buffered</c-><c- o>&lt;/</c-><c- n>ins</c-><c- o>></c-><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+<c- n>vprint_unicode</c-><del><c- n>_locking</c-></del><c- p>(</c-><c- n>stream</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>out</c-><c- p>));</c->
+</pre>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_unicode</c-><del><c- nf>_locking</c-></del><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>...</p>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_nonunicode</c-><ins><c- nf>_buffered</c-></ins><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p><em>Effects</em>: Equivalent to:</p>
+<pre class="highlight"><c- n>string</c-> <c- n>out</c-> <c- o>=</c-> <c- n>vformat</c-><c- p>(</c-><c- n>fmt</c-><c- p>,</c-> <c- n>args</c-><c- p>);</c->
+<c- n>vprint_nonunicode</c-><del><c- n>_locking</c-></del><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>make_format_args</c-><c- p>(</c-><c- n>out</c-><c- p>));</c->
+</pre>
+<pre class="highlight"><c- b>void</c-> <c- nf>vprint_nonunicode</c-><del><c- nf>_locking</c-></del><c- p>(</c-><c- b>FILE</c-><c- o>*</c-> <c- n>stream</c-><c- p>,</c-> <c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- n>format_args</c-> <c- n>args</c-><c- p>);</c->
+</pre>
+   <p>...</p>
   </main>
 <script>
 (function() {
@@ -2442,6 +2481,8 @@ specialization where <em>pair-or-tuple</em> is the name of the template:</p>
    <dd>Victor Zverovich. <a href="https://wg21.link/p2845"><cite>Formatting of std::filesystem::path</cite></a>. URL: <a href="https://wg21.link/p2845">https://wg21.link/p2845</a>
    <dt id="biblio-p3107">[P3107]
    <dd>Victor Zverovich. <a href="https://wg21.link/p3107"><cite>Permit an efficient implementation of std::print</cite></a>. URL: <a href="https://wg21.link/p3107">https://wg21.link/p3107</a>
+   <dt id="biblio-so-large-data">[SO-LARGE-DATA]
+   <dd>Matthew Busche. <a href="https://stackoverflow.com/a/78457454/471164"><cite>How to use {fmt} with large data</cite></a>. URL: <a href="https://stackoverflow.com/a/78457454/471164">https://stackoverflow.com/a/78457454/471164</a>
    <dt id="biblio-tbb">[TBB]
    <dd><a href="https://oneapi-src.github.io/oneTBB/"><cite>oneAPI Threading Building Blocks (oneTBB)</cite></a>. URL: <a href="https://oneapi-src.github.io/oneTBB/">https://oneapi-src.github.io/oneTBB/</a>
   </dl>

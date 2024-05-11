@@ -13,7 +13,7 @@ Markup Shorthands: markdown yes
 </pre>
 
 <p style="text-align: right">
-"You can't add safe because that's unsafe" ― Sean Baxter
+"No work is less work than some work" - Andrei Alexandrescu
 </p>
 
 <!-- https://www.youtube.com/watch?v=5Q1awoAwBgQ&t=578s -->
@@ -29,7 +29,8 @@ Proposal {#proposal}
 ========
 
 [[P3107]] "Permit an efficient implementation of std::print" brought
-significant speedups (more than 20% in some cases) to `std::print` and
+significant speedups (from 20% in the original benchmarks to 2x in
+[[SO-LARGE-DATA]]) to `std::print` and
 eliminated the need for dynamic memory allocations in the common case by
 enabling direct writes into the stream buffer. To expedite the adoption of the
 fix, [[P3107]] limited the scope to fundamental and string types but it is, of
@@ -187,6 +188,14 @@ deadlocks when printing any user-defined types to a C stream and for iterators
 those are very unlikely. As shown in [[P3107]] examples of such deadlocks are
 pretty contrived and may indicate other issues (bugs) in the program such as
 incorrect lock scope.
+
+And finally this paper proposes renaming `vprint_(non)unicode` and
+`vprint_(non)unicode_locking` to `vprint_(non)unicode_buffered` and
+`vprint_(non)unicode` respectively. The current naming is misleading because
+all of these functions are locking and "nonlocking" overloads confusingly call
+"locking" ones. In POSIX and other languages the default is locking so the new
+naming is more consistent with standard practice. The new naming reflects the
+fact that the main difference is buffering of all of the output.
 
 <!--
 use std::fmt;
@@ -363,6 +372,67 @@ Modify [[format.syn](https://eel.is/c++draft/format.syn)] as indicated:
   ...
 </pre>
 
+Modify [[print.fun](https://eel.is/c++draft/print.fun)] as indicated:
+
+```
+template<class... Args>
+  void print(FILE* stream, format_string<Args...> fmt, Args&&... args);
+```
+
+*Effects*: Let `locksafe` be `(enable_nonlocking_formatter_optimization<
+remove_cvref_t<Args>> && ...)`. If the ordinary literal encoding ([lex.charset])
+is UTF-8, equivalent to:
+
+<pre>
+locksafe
+  ? vprint_unicode<del>_locking</del>(stream, fmt.str, make_format_args(args...))
+  : vprint_unicode<ins>_buffered</ins>(stream, fmt.str, make_format_args(args...));
+</pre>
+
+Otherwise, equivalent to:
+
+<pre>
+locksafe
+  ? vprint_nonunicode<del>_locking</del>(stream, fmt.str, make_format_args(args...))
+  : vprint_nonunicode<ins>_buffered</ins>(stream, fmt.str, make_format_args(args...));
+</pre>
+
+...
+
+```
+void vprint_unicode<ins>_buffered</ins>(FILE* stream, string_view fmt, format_args args);
+```
+
+*Effects*: Equivalent to:
+
+<pre>
+string out = vformat(fmt, args);
+vprint_unicode<del>_locking</del>(stream, "{}", make_format_args(out));
+</pre>
+
+<pre>
+void vprint_unicode<del>_locking</del>(FILE* stream, string_view fmt, format_args args);
+</pre>
+
+...
+
+<pre>
+void vprint_nonunicode<ins>_buffered</ins>(FILE* stream, string_view fmt, format_args args);
+</pre>
+
+*Effects*: Equivalent to:
+
+<pre>
+string out = vformat(fmt, args);
+vprint_nonunicode<del>_locking</del>("{}", make_format_args(out));
+</pre>
+
+<pre>
+void vprint_nonunicode<del>_locking</del>(FILE* stream, string_view fmt, format_args args);
+</pre>
+
+...
+
 <pre class=biblio>
 {
   "P2845": {
@@ -378,6 +448,11 @@ Modify [[format.syn](https://eel.is/c++draft/format.syn)] as indicated:
   "TBB": {
     "title": "oneAPI Threading Building Blocks (oneTBB)",
     "href": "https://oneapi-src.github.io/oneTBB/"
+  },
+  "SO-LARGE-DATA": {
+    "title": "How to use {fmt} with large data",
+    "authors": ["Matthew Busche"],
+    "href": "https://stackoverflow.com/a/78457454/471164"
   }
 }
 </pre>
