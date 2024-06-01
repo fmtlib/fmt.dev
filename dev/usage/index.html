@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Usage - {fmt}</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../css/brands.min.css" rel="stylesheet">
+        <link href="../css/solid.min.css" rel="stylesheet">
+        <link href="../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet">
+        <link href="../css/version-select.css" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">{fmt}</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="./" class="nav-link active" aria-current="page">Usage</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../api/" class="nav-link">API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="../syntax/" class="nav-link">Syntax</a>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                            <li class="nav-item">
+                                <a rel="prev" class="nav-link disabled">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../api/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#usage" class="nav-link">Usage</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#building" class="nav-link">Building the Library</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#installing-the-library" class="nav-link">Installing the Library</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#usage-with-cmake" class="nav-link">Usage with CMake</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#usage-with-build2" class="nav-link">Usage with build2</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#usage-with-meson" class="nav-link">Usage with Meson</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#building-the-documentation" class="nav-link">Building the Documentation</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#conda" class="nav-link">Conda</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#vcpkg" class="nav-link">Vcpkg</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#lhelper" class="nav-link">LHelper</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#android-ndk" class="nav-link">Android NDK</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#homebrew" class="nav-link">Homebrew</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="usage">Usage</h1>
+<p>To use the {fmt} library, add <code>fmt/core.h</code>, <code>fmt/format.h</code>, <code>fmt/format-inl.h</code>,
+<code>src/format.cc</code> and optionally other headers from a <a href="https://github.com/fmtlib/fmt/releases/latest">release archive</a> or the <a href="https://github.com/fmtlib/fmt">git repository</a> to your project. Alternatively, you can
+<a href="#building">build the library with CMake</a>.</p>
+<h2 id="building">Building the Library</h2>
+<p>The included <a href="https://github.com/fmtlib/fmt/blob/master/CMakeLists.txt">CMake build
+script</a> can be
+used to build the fmt library on a wide range of platforms. CMake is
+freely available for download from <a href="https://www.cmake.org/download/">https://www.cmake.org/download/</a>.</p>
+<p>CMake works by generating native makefiles or project files that can be
+used in the compiler environment of your choice. The typical workflow
+starts with:</p>
+<pre><code>mkdir build  # Create a directory to hold the build output.
+cd build
+cmake ..     # Generate native build scripts.
+</code></pre>
+<p>run in the <code>fmt</code> repository.</p>
+<p>If you are on a *nix system, you should now see a Makefile in the
+current directory. Now you can build the library by running
+<code class="interpreted-text" role="command">make</code>.</p>
+<p>Once the library has been built you can invoke
+<code class="interpreted-text" role="command">make test</code> to run the tests.</p>
+<p>You can control generation of the make <code>test</code> target with the <code>FMT_TEST</code>
+CMake option. This can be useful if you include fmt as a subdirectory in
+your project but don\'t want to add fmt\'s tests to your <code>test</code> target.</p>
+<p>If you use Windows and have Visual Studio installed, a
+<code>FMT.sln</code> file and several <code>.vcproj</code> files will be created. You can
+then build them using Visual Studio or msbuild.</p>
+<p>On Mac OS X with Xcode installed, an <code>.xcodeproj</code>{.interpreted-text
+role="file"} file will be generated.</p>
+<p>To build a <a href="https://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries">shared
+library</a>
+set the <code>BUILD_SHARED_LIBS</code> CMake variable to <code>TRUE</code>:</p>
+<pre><code>cmake -DBUILD_SHARED_LIBS=TRUE ..
+</code></pre>
+<p>To build a [static library]{.title-ref} with position independent code
+(required if the main consumer of the fmt library is a shared library
+i.e. a Python extension) set the <code>CMAKE_POSITION_INDEPENDENT_CODE</code> CMake
+variable to <code>TRUE</code>:</p>
+<pre><code>cmake -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..
+</code></pre>
+<h2 id="installing-the-library">Installing the Library</h2>
+<p>After building the library you can install it on a Unix-like system by
+running <code class="interpreted-text" role="command">sudo make install</code>.</p>
+<h2 id="usage-with-cmake">Usage with CMake</h2>
+<p>You can add the <code>fmt</code> library directory into your project and include it
+in your <code>CMakeLists.txt</code> file:</p>
+<pre><code>add_subdirectory(fmt)
+</code></pre>
+<p>or</p>
+<pre><code>add_subdirectory(fmt EXCLUDE_FROM_ALL)
+</code></pre>
+<p>to exclude it from <code>make</code>, <code>make all</code>, or <code>cmake --build .</code>.</p>
+<p>You can detect and use an installed version of {fmt} as follows:</p>
+<pre><code>find_package(fmt)
+target_link_libraries(&lt;your-target&gt; fmt::fmt)
+</code></pre>
+<p>Setting up your target to use a header-only version of <code>fmt</code> is equally
+easy:</p>
+<pre><code>target_link_libraries(&lt;your-target&gt; PRIVATE fmt::fmt-header-only)
+</code></pre>
+<h2 id="usage-with-build2">Usage with build2</h2>
+<p>You can use <a href="https://build2.org">build2</a>, a dependency manager and a
+build-system combined, to use <code>fmt</code>.</p>
+<p>Currently this package is available in these package repositories:</p>
+<ul>
+<li><strong>https://cppget.org/fmt/</strong> for released and published versions.</li>
+<li><a href="https://github.com/build2-packaging/fmt.git">The git repository with the sources of the build2 package of
+  fmt</a> for unreleased or
+  custom revisions of <code>fmt</code>.</li>
+</ul>
+<p><strong>Usage:</strong></p>
+<ul>
+<li><code>build2</code> package name: <code>fmt</code></li>
+<li>Library target name : <code>lib{fmt}</code></li>
+</ul>
+<p>For example, to make your <code>build2</code> project depend on <code>fmt</code>:</p>
+<ul>
+<li>
+<p>Add one of the repositories to your configurations, or in your
+  <code>repositories.manifest</code>, if not already there:</p>
+<p>:
+  role: prerequisite
+  location: https://pkg.cppget.org/1/stable</p>
+</li>
+<li>
+<p>Add this package as a dependency to your <code>./manifest</code> file (example
+  for <code>v7.0.x</code>):</p>
+<p>depends: fmt ~7.0.0</p>
+</li>
+<li>
+<p>Import the target and use it as a prerequisite to your own target
+  using [fmt]{.title-ref} in the appropriate <code>buildfile</code>:</p>
+<p>import fmt = fmt%lib{fmt}
+  lib{mylib} : cxx{**} ... $fmt</p>
+</li>
+</ul>
+<p>Then build your project as usual with [b]{.title-ref} or [bdep
+update]{.title-ref}.</p>
+<p>For <code>build2</code> newcomers or to get more details and use cases, you can
+read the <code>build2</code> <a href="https://build2.org/build2-toolchain/doc/build2-toolchain-intro.xhtml">toolchain
+introduction</a>.</p>
+<h2 id="usage-with-meson">Usage with Meson</h2>
+<p>[Meson\'s WrapDB
+\&lt;https://mesonbuild.com/Wrapdb-projects.html&gt;]{.title-ref} includes a
+<code>fmt</code> package, which repackages fmt to be built by Meson as a
+subproject.</p>
+<p><strong>Usage:</strong></p>
+<ul>
+<li>
+<p>Install the <code>fmt</code> subproject from the WrapDB by running:</p>
+<p>meson wrap install fmt</p>
+</li>
+</ul>
+<p>from the root of your project.</p>
+<ul>
+<li>
+<p>In your project\'s <code>meson.build</code> file, add an entry for the new
+  subproject:</p>
+<p>fmt = subproject('fmt')
+  fmt_dep = fmt.get_variable('fmt_dep')</p>
+</li>
+<li>
+<p>Include the new dependency object to link with fmt:</p>
+<p>my_build_target = executable('name', 'src/main.cc', dependencies: [fmt_dep])</p>
+</li>
+</ul>
+<p><strong>Options:</strong></p>
+<p>If desired, <code>fmt</code> may be built as a static library, or as a header-only
+library.</p>
+<p>For a static build, use the following subproject definition:</p>
+<pre><code>fmt = subproject('fmt', default_options: 'default_library=static')
+fmt_dep = fmt.get_variable('fmt_dep')
+</code></pre>
+<p>For the header-only version, use:</p>
+<pre><code>fmt = subproject('fmt')
+fmt_dep = fmt.get_variable('fmt_header_only_dep')
+</code></pre>
+<h2 id="building-the-documentation">Building the Documentation</h2>
+<p>To build the documentation you need the following software installed on
+your system:</p>
+<ul>
+<li>
+<p><a href="https://www.python.org/">Python</a> with pip and virtualenv</p>
+</li>
+<li>
+<p><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a></p>
+</li>
+<li>
+<p><a href="http://lesscss.org/">Less</a> with <code>less-plugin-clean-css</code>. Ubuntu
+  doesn\'t package the <code>clean-css</code> plugin so you should use <code>npm</code>
+  instead of <code>apt</code> to install both <code>less</code> and the plugin:</p>
+<p>sudo npm install -g less less-plugin-clean-css.</p>
+</li>
+</ul>
+<p>First generate makefiles or project files using CMake as described in
+the previous section. Then compile the <code>doc</code> target/project, for
+example:</p>
+<pre><code>make doc
+</code></pre>
+<p>This will generate the HTML documentation in <code>doc/html</code>.</p>
+<h2 id="conda">Conda</h2>
+<p>fmt can be installed on Linux, macOS and Windows with
+<a href="https://docs.conda.io/en/latest/">Conda</a>, using its
+<a href="https://conda-forge.org">conda-forge</a>
+<a href="https://github.com/conda-forge/fmt-feedstock">package</a>, as follows:</p>
+<pre><code>conda install -c conda-forge fmt
+</code></pre>
+<h2 id="vcpkg">Vcpkg</h2>
+<p>You can download and install fmt using the
+<a href="https://github.com/Microsoft/vcpkg">vcpkg</a> dependency manager:</p>
+<pre><code>git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install fmt
+</code></pre>
+<p>The fmt port in vcpkg is kept up to date by Microsoft team members and
+community contributors. If the version is out of date, please <a href="https://github.com/Microsoft/vcpkg">create an
+issue or pull request</a> on the vcpkg
+repository.</p>
+<h2 id="lhelper">LHelper</h2>
+<p>You can download and install fmt using
+<a href="https://github.com/franko/lhelper">lhelper</a> dependency manager:</p>
+<pre><code>lhelper activate &lt;some-environment&gt;
+lhelper install fmt
+</code></pre>
+<p>All the recipes for lhelper are kept in the <a href="https://github.com/franko/lhelper-recipes">lhelper\'s
+recipe</a> repository.</p>
+<h2 id="android-ndk">Android NDK</h2>
+<p>fmt provides <a href="https://github.com/fmtlib/fmt/blob/master/support/Android.mk">Android.mk
+file</a> that
+can be used to build the library with <a href="https://developer.android.com/tools/sdk/ndk/index.html">Android
+NDK</a>. For an
+example of using fmt with Android NDK, see the
+<a href="https://github.com/fmtlib/android-ndk-example">android-ndk-example</a>
+repository.</p>
+<h2 id="homebrew">Homebrew</h2>
+<p>fmt can be installed on OS X using <a href="https://brew.sh/">Homebrew</a>:</p>
+<pre><code>brew install fmt
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js"></script>
+        <script src="../js/version-select.js"></script>
+
+        <div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
