@@ -45,6 +45,10 @@
     
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    
+      <link rel="stylesheet" href="fmt.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -442,14 +446,14 @@ the literal text, it can be escaped by doubling: <code>{{</code> and <code>}}</c
 <p>The grammar for a replacement field is as follows:</p>
 <p><a id="replacement-field"></a></p>
 <pre>
-replacement_field ::= "{" [arg_id] [":" (<a href="#format-spec">format_spec</a
-  > | <a href="#chrono-format-spec">chrono_format_spec</a>)] "}"
+<code>replacement_field ::= "{" [arg_id] [":" (<a href="#format-spec"
+  >format_spec</a> | <a href="#chrono-format-spec">chrono_format_spec</a>)] "}"
 arg_id            ::= integer | identifier
 integer           ::= digit+
 digit             ::= "0"..."9"
 identifier        ::= id_start id_continue*
 id_start          ::= "a"..."z" | "A"..."Z" | "_"
-id_continue       ::= id_start | digit
+id_continue       ::= id_start | digit</code>
 </pre>
 
 <p>In less formal terms, the replacement field can start with an <em>arg_id</em> that
@@ -464,10 +468,10 @@ they can all be omitted (not just some) and the numbers 0, 1, 2, ... will be
 automatically inserted in that order.</p>
 <p>Named arguments can be referred to by their names or indices.</p>
 <p>Some simple format string examples:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="s">&quot;First, thou shalt count to {0}&quot;</span><span class="w"> </span><span class="c1">// References the first argument</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="s">&quot;Bring me a {}&quot;</span><span class="w">                  </span><span class="c1">// Implicitly references the first argument</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="s">&quot;From {} to {}&quot;</span><span class="w">                  </span><span class="c1">// Same as &quot;From {0} to {1}&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">&quot;First, thou shalt count to {0}&quot; // References the first argument
+&quot;Bring me a {}&quot;                  // Implicitly references the first argument
+&quot;From {} to {}&quot;                  // Same as &quot;From {0} to {1}&quot;
+</code></pre>
 <p>The <em>format_spec</em> field contains a specification of how the value should
 be presented, including such details as field width, alignment, padding,
 decimal precision and so on. Each value type can define its own
@@ -489,7 +493,7 @@ supported by the numeric types.</p>
 <p>The general form of a <em>standard format specifier</em> is:</p>
 <p><a id="format-spec"></a></p>
 <pre>
-format_spec ::= [[fill]align][sign]["#"]["0"][width]["." precision]["L"][type]
+<code>format_spec ::= [[fill]align][sign]["#"]["0"][width]["." precision]["L"][type]
 fill        ::= &lt;a character other than '{' or '}'>
 align       ::= "<" | ">" | "^"
 sign        ::= "+" | "-" | " "
@@ -498,7 +502,7 @@ width       ::= <a href="#replacement-field">integer</a> | "{" [<a
 precision   ::= <a href="#replacement-field">integer</a> | "{" [<a
   href="#replacement-field">arg_id</a>] "}"
 type        ::= "a" | "A" | "b" | "B" | "c" | "d" | "e" | "E" | "f" | "F" |
-                "g" | "G" | "o" | "p" | "s" | "x" | "X" | "?"
+                "g" | "G" | "o" | "p" | "s" | "x" | "X" | "?"</code>
 </pre>
 
 <p>The <em>fill</em> character can be any Unicode code point other than <code>'{'</code> or <code>'}'</code>.
@@ -798,7 +802,7 @@ presentation type is not specified.</p>
 <code>std::tm</code> have the following syntax:</p>
 <p><a id="chrono-format-spec"></a></p>
 <pre>
-chrono_format_spec ::= [[<a href="#format-spec">fill</a>]<a href="#format-spec"
+<code>chrono_format_spec ::= [[<a href="#format-spec">fill</a>]<a href="#format-spec"
   >align</a>][<a href="#format-spec">width</a>]["." <a href="#format-spec"
   >precision</a>][chrono_specs]
 chrono_specs       ::= conversion_spec | <!--
@@ -811,7 +815,7 @@ chrono_type        ::= "a" | "A" | "b" | "B" | "c" | "C" | "d" | "D" | "e" |
                        "F" | "g" | "G" | "h" | "H" | "I" | "j" | "m" | "M" |
                        "n" | "p" | "q" | "Q" | "r" | "R" | "S" | "t" | "T" |
                        "u" | "U" | "V" | "w" | "W" | "x" | "X" | "y" | "Y" |
-                       "z" | "Z" | "%"
+                       "z" | "Z" | "%"</code>
 </pre>
 
 <p>Literal chars are copied unchanged to the output. Precision is valid only
@@ -1125,7 +1129,7 @@ are valid only for <code>std::tm</code> and time points but not durations.</p>
 <h2 id="range-format-specifications">Range Format Specifications</h2>
 <p>Format specifications for range types have the following syntax:</p>
 <pre>
-range_format_spec ::= ["n"][range_type][range_underlying_spec]
+<code>range_format_spec ::= ["n"][range_type][range_underlying_spec]</code>
 </pre>
 
 <p>The <code>'n'</code> option formats the range without the opening and closing brackets.</p>
@@ -1161,23 +1165,23 @@ element type.</p>
 But if any <code>range_underlying_spec</code> is provided (even if it is empty), then the
 characters or strings are printed according to the provided specification.</p>
 <p>Examples:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">});</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1">// Output: [10, 20, 30]</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{::#x}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">});</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">// Output: [0xa, 0x14, 0x1e]</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="sc">&#39;h&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="p">});</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1">// Output: [&#39;h&#39;, &#39;e&#39;, &#39;l&#39;, &#39;l&#39;, &#39;o&#39;]</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{:n}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="sc">&#39;h&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="p">});</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1">// Output: &#39;h&#39;, &#39;e&#39;, &#39;l&#39;, &#39;l&#39;, &#39;o&#39;</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{:s}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="sc">&#39;h&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="p">});</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1">// Output: &quot;hello&quot;</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{:?s}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="sc">&#39;h&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;\n&#39;</span><span class="p">});</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1">// Output: &quot;hello\n&quot;</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{::}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="sc">&#39;h&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="p">});</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1">// Output: [h, e, l, l, o]</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{::d}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="p">{</span><span class="sc">&#39;h&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;e&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;l&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;o&#39;</span><span class="p">});</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1">// Output: [104, 101, 108, 108, 111]</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::print(&quot;{}&quot;, std::vector{10, 20, 30});
+// Output: [10, 20, 30]
+fmt::print(&quot;{::#x}&quot;, std::vector{10, 20, 30});
+// Output: [0xa, 0x14, 0x1e]
+fmt::print(&quot;{}&quot;, std::vector{'h', 'e', 'l', 'l', 'o'});
+// Output: ['h', 'e', 'l', 'l', 'o']
+fmt::print(&quot;{:n}&quot;, std::vector{'h', 'e', 'l', 'l', 'o'});
+// Output: 'h', 'e', 'l', 'l', 'o'
+fmt::print(&quot;{:s}&quot;, std::vector{'h', 'e', 'l', 'l', 'o'});
+// Output: &quot;hello&quot;
+fmt::print(&quot;{:?s}&quot;, std::vector{'h', 'e', 'l', 'l', 'o', '\n'});
+// Output: &quot;hello\n&quot;
+fmt::print(&quot;{::}&quot;, std::vector{'h', 'e', 'l', 'l', 'o'});
+// Output: [h, e, l, l, o]
+fmt::print(&quot;{::d}&quot;, std::vector{'h', 'e', 'l', 'l', 'o'});
+// Output: [104, 101, 108, 108, 111]
+</code></pre>
 <h2 id="format-examples">Format Examples</h2>
 <p>This section contains examples of the format syntax and comparison with
 the printf formatting.</p>
@@ -1187,82 +1191,82 @@ example, <code>"%03.2f"</code> can be translated to <code>"{:03.2f}"</code>.</p>
 <p>The new format syntax also supports new and different options, shown in
 the following examples.</p>
 <p>Accessing arguments by position:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{0}, {1}, {2}&quot;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;a&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;b&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;c&#39;</span><span class="p">);</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">// Result: &quot;a, b, c&quot;</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{}, {}, {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;a&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;b&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;c&#39;</span><span class="p">);</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">// Result: &quot;a, b, c&quot;</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{2}, {1}, {0}&quot;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;a&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;b&#39;</span><span class="p">,</span><span class="w"> </span><span class="sc">&#39;c&#39;</span><span class="p">);</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1">// Result: &quot;c, b, a&quot;</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{0}{1}{0}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;abra&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;cad&quot;</span><span class="p">);</span><span class="w">  </span><span class="c1">// arguments&#39; indices can be repeated</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1">// Result: &quot;abracadabra&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;{0}, {1}, {2}&quot;, 'a', 'b', 'c');
+// Result: &quot;a, b, c&quot;
+fmt::format(&quot;{}, {}, {}&quot;, 'a', 'b', 'c');
+// Result: &quot;a, b, c&quot;
+fmt::format(&quot;{2}, {1}, {0}&quot;, 'a', 'b', 'c');
+// Result: &quot;c, b, a&quot;
+fmt::format(&quot;{0}{1}{0}&quot;, &quot;abra&quot;, &quot;cad&quot;);  // arguments' indices can be repeated
+// Result: &quot;abracadabra&quot;
+</code></pre>
 <p>Aligning the text and specifying a width:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:&lt;30}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;left aligned&quot;</span><span class="p">);</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">// Result: &quot;left aligned                  &quot;</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:&gt;30}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;right aligned&quot;</span><span class="p">);</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">// Result: &quot;                 right aligned&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:^30}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;centered&quot;</span><span class="p">);</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1">// Result: &quot;           centered           &quot;</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:*^30}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;centered&quot;</span><span class="p">);</span><span class="w">  </span><span class="c1">// use &#39;*&#39; as a fill char</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1">// Result: &quot;***********centered***********&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;{:&lt;30}&quot;, &quot;left aligned&quot;);
+// Result: &quot;left aligned                  &quot;
+fmt::format(&quot;{:&gt;30}&quot;, &quot;right aligned&quot;);
+// Result: &quot;                 right aligned&quot;
+fmt::format(&quot;{:^30}&quot;, &quot;centered&quot;);
+// Result: &quot;           centered           &quot;
+fmt::format(&quot;{:*^30}&quot;, &quot;centered&quot;);  // use '*' as a fill char
+// Result: &quot;***********centered***********&quot;
+</code></pre>
 <p>Dynamic width:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:&lt;{}}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;left aligned&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">);</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1">// Result: &quot;left aligned                  &quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;{:&lt;{}}&quot;, &quot;left aligned&quot;, 30);
+// Result: &quot;left aligned                  &quot;
+</code></pre>
 <p>Dynamic precision:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:.{}f}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">3.14</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1">// Result: &quot;3.1&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;{:.{}f}&quot;, 3.14, 1);
+// Result: &quot;3.1&quot;
+</code></pre>
 <p>Replacing <code>%+f</code>, <code>%-f</code>, and <code>% f</code> and specifying a sign:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:+f}; {:+f}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">3.14</span><span class="p">,</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">);</span><span class="w">  </span><span class="c1">// show it always</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1">// Result: &quot;+3.140000; -3.140000&quot;</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{: f}; {: f}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">3.14</span><span class="p">,</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">);</span><span class="w">  </span><span class="c1">// show a space for positive numbers</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">// Result: &quot; 3.140000; -3.140000&quot;</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:-f}; {:-f}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mf">3.14</span><span class="p">,</span><span class="w"> </span><span class="mf">-3.14</span><span class="p">);</span><span class="w">  </span><span class="c1">// show only the minus -- same as &#39;{:f}; {:f}&#39;</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1">// Result: &quot;3.140000; -3.140000&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;{:+f}; {:+f}&quot;, 3.14, -3.14);  // show it always
+// Result: &quot;+3.140000; -3.140000&quot;
+fmt::format(&quot;{: f}; {: f}&quot;, 3.14, -3.14);  // show a space for positive numbers
+// Result: &quot; 3.140000; -3.140000&quot;
+fmt::format(&quot;{:-f}; {:-f}&quot;, 3.14, -3.14);  // show only the minus -- same as '{:f}; {:f}'
+// Result: &quot;3.140000; -3.140000&quot;
+</code></pre>
 <p>Replacing <code>%x</code> and <code>%o</code> and converting the value to different bases:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1">// Result: &quot;int: 42;  hex: 2a;  oct: 52; bin: 101010&quot;</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1">// with 0x or 0 or 0b as prefix:</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;int: {0:d};  hex: {0:#x};  oct: {0:#o};  bin: {0:#b}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1">// Result: &quot;int: 42;  hex: 0x2a;  oct: 052;  bin: 0b101010&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}&quot;, 42);
+// Result: &quot;int: 42;  hex: 2a;  oct: 52; bin: 101010&quot;
+// with 0x or 0 or 0b as prefix:
+fmt::format(&quot;int: {0:d};  hex: {0:#x};  oct: {0:#o};  bin: {0:#b}&quot;, 42);
+// Result: &quot;int: 42;  hex: 0x2a;  oct: 052;  bin: 0b101010&quot;
+</code></pre>
 <p>Padded hex byte with prefix and always prints both hex characters:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;{:#04x}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1">// Result: &quot;0x00&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;{:#04x}&quot;, 0);
+// Result: &quot;0x00&quot;
+</code></pre>
 <p>Box drawing using Unicode fill:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="s">&quot;┌{0:─^{2}}┐</span><span class="se">\n</span><span class="s">&quot;</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="s">&quot;│{1: ^{2}}│</span><span class="se">\n</span><span class="s">&quot;</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="s">&quot;└{0:─^{2}}┘</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Hello, world!&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::print(
+    &quot;┌{0:─^{2}}┐\n&quot;
+    &quot;│{1: ^{2}}│\n&quot;
+    &quot;└{0:─^{2}}┘\n&quot;, &quot;&quot;, &quot;Hello, world!&quot;, 20);
+</code></pre>
 <p>prints:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>┌────────────────────┐
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>│   Hello, world!    │
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>└────────────────────┘
-</span></code></pre></div>
+<pre><code>┌────────────────────┐
+│   Hello, world!    │
+└────────────────────┘
+</code></pre>
 <p>Using type-specific formatting:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/chrono.h&gt;</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="k">auto</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tm</span><span class="p">();</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">t</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2010</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">t</span><span class="p">.</span><span class="n">tm_mon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">t</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="n">t</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">12</span><span class="p">;</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="n">t</span><span class="p">.</span><span class="n">tm_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">15</span><span class="p">;</span>
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="n">t</span><span class="p">.</span><span class="n">tm_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">58</span><span class="p">;</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;{:%Y-%m-%d %H:%M:%S}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="c1">// Prints: 2010-08-04 12:15:58</span>
-</span></code></pre></div>
+<pre><code class="language-c++">#include &lt;fmt/chrono.h&gt;
+
+auto t = tm();
+t.tm_year = 2010 - 1900;
+t.tm_mon = 7;
+t.tm_mday = 4;
+t.tm_hour = 12;
+t.tm_min = 15;
+t.tm_sec = 58;
+fmt::print(&quot;{:%Y-%m-%d %H:%M:%S}&quot;, t);
+// Prints: 2010-08-04 12:15:58
+</code></pre>
 <p>Using the comma as a thousands separator:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">locale</span><span class="p">(</span><span class="s">&quot;en_US.UTF-8&quot;</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;{:L}&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1234567890</span><span class="p">);</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1">// s == &quot;1,234,567,890&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-c++">#include &lt;fmt/format.h&gt;
+
+auto s = fmt::format(std::locale(&quot;en_US.UTF-8&quot;), &quot;{:L}&quot;, 1234567890);
+// s == &quot;1,234,567,890&quot;
+</code></pre>
 
 
 
@@ -1313,6 +1317,10 @@ the following examples.</p>
     
     
       <script src="assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+      
+        <script src="fmt.js"></script>
       
     
   </body>

@@ -43,6 +43,10 @@
     
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    
+      <link rel="stylesheet" href="fmt.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -505,10 +509,9 @@ freely available for download from <a href="https://www.cmake.org/download/">htt
 <p>CMake works by generating native makefiles or project files that can be
 used in the compiler environment of your choice. The typical workflow
 starts with:</p>
-<div class="language-text highlight"><pre><span></span><code>mkdir build  # Create a directory to hold the build output.
+<pre class="highlight"><code>mkdir build  # Create a directory to hold the build output.
 cd build
-cmake ..     # Generate native build scripts.
-</code></pre></div>
+cmake ..     # Generate native build scripts.</code></pre>
 <p>run in the <code>fmt</code> repository.</p>
 <p>If you are on a *nix system, you should now see a Makefile in the
 current directory. Now you can build the library by running
@@ -526,34 +529,28 @@ role="file"} file will be generated.</p>
 <p>To build a <a href="https://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries">shared
 library</a>
 set the <code>BUILD_SHARED_LIBS</code> CMake variable to <code>TRUE</code>:</p>
-<div class="language-text highlight"><pre><span></span><code>cmake -DBUILD_SHARED_LIBS=TRUE ..
-</code></pre></div>
+<pre class="highlight"><code>cmake -DBUILD_SHARED_LIBS=TRUE ..</code></pre>
 <p>To build a [static library]{.title-ref} with position independent code
 (required if the main consumer of the fmt library is a shared library
 i.e. a Python extension) set the <code>CMAKE_POSITION_INDEPENDENT_CODE</code> CMake
 variable to <code>TRUE</code>:</p>
-<div class="language-text highlight"><pre><span></span><code>cmake -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..
-</code></pre></div>
+<pre class="highlight"><code>cmake -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..</code></pre>
 <h2 id="installing-the-library">Installing the Library</h2>
 <p>After building the library you can install it on a Unix-like system by
 running <code>sudo make install</code>{.interpreted-text role="command"}.</p>
 <h2 id="usage-with-cmake">Usage with CMake</h2>
 <p>You can add the <code>fmt</code> library directory into your project and include it
 in your <code>CMakeLists.txt</code> file:</p>
-<div class="language-text highlight"><pre><span></span><code>add_subdirectory(fmt)
-</code></pre></div>
+<pre class="highlight"><code>add_subdirectory(fmt)</code></pre>
 <p>or</p>
-<div class="language-text highlight"><pre><span></span><code>add_subdirectory(fmt EXCLUDE_FROM_ALL)
-</code></pre></div>
+<pre class="highlight"><code>add_subdirectory(fmt EXCLUDE_FROM_ALL)</code></pre>
 <p>to exclude it from <code>make</code>, <code>make all</code>, or <code>cmake --build .</code>.</p>
 <p>You can detect and use an installed version of {fmt} as follows:</p>
-<div class="language-text highlight"><pre><span></span><code>find_package(fmt)
-target_link_libraries(&lt;your-target&gt; fmt::fmt)
-</code></pre></div>
+<pre class="highlight"><code>find_package(fmt)
+target_link_libraries(&lt;your-target&gt; fmt::fmt)</code></pre>
 <p>Setting up your target to use a header-only version of <code>fmt</code> is equally
 easy:</p>
-<div class="language-text highlight"><pre><span></span><code>target_link_libraries(&lt;your-target&gt; PRIVATE fmt::fmt-header-only)
-</code></pre></div>
+<pre class="highlight"><code>target_link_libraries(&lt;your-target&gt; PRIVATE fmt::fmt-header-only)</code></pre>
 <h2 id="usage-with-build2">Usage with build2</h2>
 <p>You can use <a href="https://build2.org">build2</a>, a dependency manager and a
 build-system combined, to use <code>fmt</code>.</p>
@@ -624,13 +621,11 @@ subproject.</p>
 <p>If desired, <code>fmt</code> may be built as a static library, or as a header-only
 library.</p>
 <p>For a static build, use the following subproject definition:</p>
-<div class="language-text highlight"><pre><span></span><code>fmt = subproject(&#39;fmt&#39;, default_options: &#39;default_library=static&#39;)
-fmt_dep = fmt.get_variable(&#39;fmt_dep&#39;)
-</code></pre></div>
+<pre class="highlight"><code>fmt = subproject('fmt', default_options: 'default_library=static')
+fmt_dep = fmt.get_variable('fmt_dep')</code></pre>
 <p>For the header-only version, use:</p>
-<div class="language-text highlight"><pre><span></span><code>fmt = subproject(&#39;fmt&#39;)
-fmt_dep = fmt.get_variable(&#39;fmt_header_only_dep&#39;)
-</code></pre></div>
+<pre class="highlight"><code>fmt = subproject('fmt')
+fmt_dep = fmt.get_variable('fmt_header_only_dep')</code></pre>
 <h2 id="building-the-documentation">Building the Documentation</h2>
 <p>To build the documentation you need the following software installed on
 your system:</p>
@@ -651,25 +646,22 @@ your system:</p>
 <p>First generate makefiles or project files using CMake as described in
 the previous section. Then compile the <code>doc</code> target/project, for
 example:</p>
-<div class="language-text highlight"><pre><span></span><code>make doc
-</code></pre></div>
+<pre class="highlight"><code>make doc</code></pre>
 <p>This will generate the HTML documentation in <code>doc/html</code>.</p>
 <h2 id="conda">Conda</h2>
 <p>fmt can be installed on Linux, macOS and Windows with
 <a href="https://docs.conda.io/en/latest/">Conda</a>, using its
 <a href="https://conda-forge.org">conda-forge</a>
 <a href="https://github.com/conda-forge/fmt-feedstock">package</a>, as follows:</p>
-<div class="language-text highlight"><pre><span></span><code>conda install -c conda-forge fmt
-</code></pre></div>
+<pre class="highlight"><code>conda install -c conda-forge fmt</code></pre>
 <h2 id="vcpkg">Vcpkg</h2>
 <p>You can download and install fmt using the
 <a href="https://github.com/Microsoft/vcpkg">vcpkg</a> dependency manager:</p>
-<div class="language-text highlight"><pre><span></span><code>git clone https://github.com/Microsoft/vcpkg.git
+<pre class="highlight"><code>git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 ./bootstrap-vcpkg.sh
 ./vcpkg integrate install
-./vcpkg install fmt
-</code></pre></div>
+./vcpkg install fmt</code></pre>
 <p>The fmt port in vcpkg is kept up to date by Microsoft team members and
 community contributors. If the version is out of date, please <a href="https://github.com/Microsoft/vcpkg">create an
 issue or pull request</a> on the vcpkg
@@ -677,9 +669,8 @@ repository.</p>
 <h2 id="lhelper">LHelper</h2>
 <p>You can download and install fmt using
 <a href="https://github.com/franko/lhelper">lhelper</a> dependency manager:</p>
-<div class="language-text highlight"><pre><span></span><code>lhelper activate &lt;some-environment&gt;
-lhelper install fmt
-</code></pre></div>
+<pre class="highlight"><code>lhelper activate &lt;some-environment&gt;
+lhelper install fmt</code></pre>
 <p>All the recipes for lhelper are kept in the <a href="https://github.com/franko/lhelper-recipes">lhelper\'s
 recipe</a> repository.</p>
 <h2 id="android-ndk">Android NDK</h2>
@@ -692,8 +683,7 @@ example of using fmt with Android NDK, see the
 repository.</p>
 <h2 id="homebrew">Homebrew</h2>
 <p>fmt can be installed on OS X using <a href="https://brew.sh/">Homebrew</a>:</p>
-<div class="language-text highlight"><pre><span></span><code>brew install fmt
-</code></pre></div>
+<pre class="highlight"><code>brew install fmt</code></pre>
 
 
 
@@ -744,6 +734,10 @@ repository.</p>
     
     
       <script src="assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+      
+        <script src="fmt.js"></script>
       
     
   </body>

@@ -43,6 +43,10 @@
     
       <link rel="stylesheet" href="assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+    
+      <link rel="stylesheet" href="fmt.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -456,54 +460,54 @@ than common standard library implementations.
 The <a href="syntax.html">format string syntax</a> is similar to the one used by
 <a href="https://docs.python.org/3/library/stdtypes.html#str.format">str.format</a>
 in Python:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">std::string s = fmt::format(&quot;The answer is {}.&quot;, 42);
+</code></pre>
 <p>The <code>fmt::format</code> function returns a string \"The answer is 42.\". You
 can use <code>fmt::memory_buffer</code> to avoid constructing <code>std::string</code>:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">auto</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">memory_buffer</span><span class="p">();</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format_to</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">back_inserter</span><span class="p">(</span><span class="n">out</span><span class="p">),</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">          </span><span class="s">&quot;For a moment, {} happened.&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;nothing&quot;</span><span class="p">);</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">auto</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">out</span><span class="p">.</span><span class="n">data</span><span class="p">();</span><span class="w"> </span><span class="c1">// pointer to the formatted data</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">auto</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">out</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="c1">// size of the formatted data</span>
-</span></code></pre></div>
+<pre><code class="language-c++">auto out = fmt::memory_buffer();
+fmt::format_to(std::back_inserter(out),
+          &quot;For a moment, {} happened.&quot;, &quot;nothing&quot;);
+auto data = out.data(); // pointer to the formatted data
+auto size = out.size(); // size of the formatted data
+</code></pre>
 <p>The <code>fmt::print</code> function performs formatting and writes the result to a
 stream:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;System error code = {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">errno</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::print(stderr, &quot;System error code = {}\n&quot;, errno);
+</code></pre>
 <p>If you omit the file argument the function will print to <code>stdout</code>:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Don&#39;t {}</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;panic&quot;</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::print(&quot;Don't {}\n&quot;, &quot;panic&quot;);
+</code></pre>
 <p>The format API also supports positional arguments useful for
 localization:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;I&#39;d rather be {1} than {0}.&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;right&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;happy&quot;</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::print(&quot;I'd rather be {1} than {0}.&quot;, &quot;right&quot;, &quot;happy&quot;);
+</code></pre>
 <p>You can pass named arguments with <code>fmt::arg</code>:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;</span><span class="p">,</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">           </span><span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;World&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">fmt</span><span class="o">::</span><span class="n">arg</span><span class="p">(</span><span class="s">&quot;number&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">));</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::print(&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;,
+           fmt::arg(&quot;name&quot;, &quot;World&quot;), fmt::arg(&quot;number&quot;, 42));
+</code></pre>
 <p>If your compiler supports C++11 user-defined literals, the suffix <code>_a</code>
 offers an alternative, slightly terser syntax for named arguments:</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">fmt</span><span class="o">::</span><span class="nn">literals</span><span class="p">;</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;</span><span class="p">,</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">           </span><span class="s">&quot;name&quot;</span><span class="n">_a</span><span class="o">=</span><span class="s">&quot;World&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;number&quot;</span><span class="n">_a</span><span class="o">=</span><span class="mi">42</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">using namespace fmt::literals;
+fmt::print(&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;,
+           &quot;name&quot;_a=&quot;World&quot;, &quot;number&quot;_a=42);
+</code></pre>
 <h2 id="safety">Safety</h2>
 <p>The library is fully type safe, automatic memory management prevents
 buffer overflow, errors in format strings are reported using exceptions
 or at compile time. For example, the code</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;forty-two&quot;</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;The answer is {:d}&quot;, &quot;forty-two&quot;);
+</code></pre>
 <p>throws the <code>format_error</code> exception because the argument <code>"forty-two"</code>
 is a string while the format code <code>d</code> only applies to integers.</p>
 <p>The code</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">format</span><span class="p">(</span><span class="n">FMT_STRING</span><span class="p">(</span><span class="s">&quot;The answer is {:d}&quot;</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;forty-two&quot;</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">format(FMT_STRING(&quot;The answer is {:d}&quot;), &quot;forty-two&quot;);
+</code></pre>
 <p>reports a compile-time error on compilers that support relaxed <code>constexpr</code>.
 See <a href="api.html#compile-time-format-string-checks">Compile-Time Format String Checks</a>
 for details.</p>
 <p>The following code</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;Cyrillic letter {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">L</span><span class="err">&#39;\</span><span class="n">x42e</span><span class="err">&#39;</span><span class="p">);</span>
-</span></code></pre></div>
+<pre><code class="language-c++">fmt::format(&quot;Cyrillic letter {}&quot;, L'\x42e');
+</code></pre>
 <p>produces a compile-time error because wide character <code>L'\x42e'</code> cannot
 be formatted into a narrow string. For comparison, writing a wide
 character to <code>std::ostream</code> results in its numeric value being written
@@ -512,27 +516,27 @@ to the stream (i.e. 1070 instead of letter 'ю' which is represented by
 <h2 id="compact-binary-code">Compact Binary Code</h2>
 <p>The library produces compact per-call compiled code. For example
 (<a href="https://godbolt.org/g/TZU4KF">godbolt</a>),</p>
-<div class="language-c++ highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/core.h&gt;</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="n">fmt</span><span class="o">::</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;The answer is {}.&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span><span class="p">);</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
-</span></code></pre></div>
+<pre><code class="language-c++">#include &lt;fmt/core.h&gt;
+
+int main() {
+  fmt::print(&quot;The answer is {}.&quot;, 42);
+}
+</code></pre>
 <p>compiles to just</p>
-<div class="language-asm highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nl">main:</span><span class="w"> </span><span class="c1"># @main</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nf">sub</span><span class="w"> </span><span class="no">rsp</span><span class="p">,</span><span class="w"> </span><span class="mi">24</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">qword</span><span class="w"> </span><span class="no">ptr</span><span class="w"> </span><span class="p">[</span><span class="no">rsp</span><span class="p">],</span><span class="w"> </span><span class="mi">42</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">rcx</span><span class="p">,</span><span class="w"> </span><span class="no">rsp</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">edi</span><span class="p">,</span><span class="w"> </span><span class="no">offset</span><span class="w"> </span><span class="no">.L.str</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">esi</span><span class="p">,</span><span class="w"> </span><span class="mi">17</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="nf">mov</span><span class="w"> </span><span class="no">edx</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span><span class="nf">call</span><span class="w"> </span><span class="no">fmt</span><span class="p">::</span><span class="no">v7</span><span class="p">::</span><span class="no">vprint</span><span class="p">(</span><span class="no">fmt</span><span class="p">::</span><span class="no">v7</span><span class="p">::</span><span class="no">basic_string_view</span><span class="err">&lt;</span><span class="no">char</span><span class="err">&gt;</span><span class="p">,</span><span class="w"> </span><span class="no">fmt</span><span class="p">::</span><span class="no">v7</span><span class="p">::</span><span class="no">format_args</span><span class="p">)</span>
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span><span class="nf">xor</span><span class="w"> </span><span class="no">eax</span><span class="p">,</span><span class="w"> </span><span class="no">eax</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="nf">add</span><span class="w"> </span><span class="no">rsp</span><span class="p">,</span><span class="w"> </span><span class="mi">24</span>
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span><span class="nf">ret</span>
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="nl">.L.str:</span>
-</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">  </span><span class="na">.asciz</span><span class="w"> </span><span class="s">&quot;The answer is {}.&quot;</span>
-</span></code></pre></div>
+<pre><code class="language-asm">main: # @main
+  sub rsp, 24
+  mov qword ptr [rsp], 42
+  mov rcx, rsp
+  mov edi, offset .L.str
+  mov esi, 17
+  mov edx, 1
+  call fmt::v7::vprint(fmt::v7::basic_string_view&lt;char&gt;, fmt::v7::format_args)
+  xor eax, eax
+  add rsp, 24
+  ret
+.L.str:
+  .asciz &quot;The answer is {}.&quot;
+</code></pre>
 <h2 id="portability">Portability</h2>
 <p>The library is highly portable and relies only on a small set of C++11
 features:</p>
@@ -551,8 +555,8 @@ recent compiler version. For older compilers use {fmt} <a href="https://github.c
 maintained and only requires C++98.</p>
 <p>The output of all formatting functions is consistent across platforms.
 For example,</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>fmt::print(&quot;{}&quot;, std::numeric_limits&lt;double&gt;::infinity());
-</span></code></pre></div>
+<pre><code>fmt::print(&quot;{}&quot;, std::numeric_limits&lt;double&gt;::infinity());
+</code></pre>
 <p>always prints <code>inf</code> while the output of <code>printf</code> is platform-dependent.</p>
 <h2 id="ease-of-use">Ease of Use</h2>
 <p>{fmt} has a small self-contained code base with the core library
@@ -612,6 +616,10 @@ using the library both in open-source and commercial projects.</p>
     
     
       <script src="assets/javascripts/bundle.081f42fc.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+      
+        <script src="fmt.js"></script>
       
     
   </body>
