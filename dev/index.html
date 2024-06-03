@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#overview" class="md-skip">
+        <a href="#a-modern-formatting-library" class="md-skip">
           Skip to content
         </a>
       
@@ -224,7 +224,9 @@
           
             
               
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -336,17 +338,6 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="." class="md-nav__link md-nav__link--active">
         
   
@@ -356,70 +347,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#format-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Format API
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#safety" class="md-nav__link">
-    <span class="md-ellipsis">
-      Safety
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#compact-binary-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      Compact Binary Code
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#portability" class="md-nav__link">
-    <span class="md-ellipsis">
-      Portability
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ease-of-use" class="md-nav__link">
-    <span class="md-ellipsis">
-      Ease of Use
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -443,129 +370,145 @@
   
 
 
-<h1 id="overview">Overview</h1>
-<p><strong>{fmt}</strong> is an open-source formatting library providing a fast and safe
-alternative to C stdio and C++ iostreams.</p>
-<p>What users say:</p>
-<blockquote>
-<p>Thanks for creating this library. It’s been a hole in C++ for a long time.
-I’ve used both <code>boost::format</code> and <code>loki::SPrintf</code>, and neither felt like the
-right answer. This does.</p>
-</blockquote>
-<h2 id="format-api">Format API</h2>
-<p>The format API is similar in spirit to the C <code>printf</code> family of function
-but is safer, simpler and several times
-<a href="https://vitaut.net/posts/2020/fast-int-to-string-revisited/">faster</a>
-than common standard library implementations.
-The <a href="syntax/">format string syntax</a> is similar to the one used by
-<a href="https://docs.python.org/3/library/stdtypes.html#str.format">str.format</a>
-in Python:</p>
-<pre><code class="language-c++">std::string s = fmt::format(&quot;The answer is {}.&quot;, 42);
-</code></pre>
-<p>The <code>fmt::format</code> function returns a string \"The answer is 42.\". You
-can use <code>fmt::memory_buffer</code> to avoid constructing <code>std::string</code>:</p>
-<pre><code class="language-c++">auto out = fmt::memory_buffer();
-fmt::format_to(std::back_inserter(out),
-          &quot;For a moment, {} happened.&quot;, &quot;nothing&quot;);
-auto data = out.data(); // pointer to the formatted data
-auto size = out.size(); // size of the formatted data
-</code></pre>
-<p>The <code>fmt::print</code> function performs formatting and writes the result to a
-stream:</p>
-<pre><code class="language-c++">fmt::print(stderr, &quot;System error code = {}\n&quot;, errno);
-</code></pre>
-<p>If you omit the file argument the function will print to <code>stdout</code>:</p>
-<pre><code class="language-c++">fmt::print(&quot;Don't {}\n&quot;, &quot;panic&quot;);
-</code></pre>
-<p>The format API also supports positional arguments useful for
-localization:</p>
-<pre><code class="language-c++">fmt::print(&quot;I'd rather be {1} than {0}.&quot;, &quot;right&quot;, &quot;happy&quot;);
-</code></pre>
-<p>You can pass named arguments with <code>fmt::arg</code>:</p>
-<pre><code class="language-c++">fmt::print(&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;,
-           fmt::arg(&quot;name&quot;, &quot;World&quot;), fmt::arg(&quot;number&quot;, 42));
-</code></pre>
-<p>If your compiler supports C++11 user-defined literals, the suffix <code>_a</code>
-offers an alternative, slightly terser syntax for named arguments:</p>
-<pre><code class="language-c++">using namespace fmt::literals;
-fmt::print(&quot;Hello, {name}! The answer is {number}. Goodbye, {name}.&quot;,
-           &quot;name&quot;_a=&quot;World&quot;, &quot;number&quot;_a=42);
-</code></pre>
-<h2 id="safety">Safety</h2>
-<p>The library is fully type safe, automatic memory management prevents
-buffer overflow, errors in format strings are reported using exceptions
-or at compile time. For example, the code</p>
-<pre><code class="language-c++">fmt::format(&quot;The answer is {:d}&quot;, &quot;forty-two&quot;);
-</code></pre>
-<p>throws the <code>format_error</code> exception because the argument <code>"forty-two"</code>
-is a string while the format code <code>d</code> only applies to integers.</p>
-<p>The code</p>
-<pre><code class="language-c++">format(FMT_STRING(&quot;The answer is {:d}&quot;), &quot;forty-two&quot;);
-</code></pre>
-<p>reports a compile-time error on compilers that support relaxed <code>constexpr</code>.
-See <a href="api/#compile-time-format-string-checks">Compile-Time Format String Checks</a>
-for details.</p>
-<p>The following code</p>
-<pre><code class="language-c++">fmt::format(&quot;Cyrillic letter {}&quot;, L'\x42e');
-</code></pre>
-<p>produces a compile-time error because wide character <code>L'\x42e'</code> cannot
-be formatted into a narrow string. For comparison, writing a wide
-character to <code>std::ostream</code> results in its numeric value being written
-to the stream (i.e. 1070 instead of letter 'ю' which is represented by
-<code>L'\x42e'</code> if we use Unicode) which is rarely desirable.</p>
-<h2 id="compact-binary-code">Compact Binary Code</h2>
-<p>The library produces compact per-call compiled code. For example
-(<a href="https://godbolt.org/g/TZU4KF">godbolt</a>),</p>
-<pre><code class="language-c++">#include &lt;fmt/core.h&gt;
+<h1 id="a-modern-formatting-library">A modern formatting library</h1>
+<div class="features-container">
 
-int main() {
-  fmt::print(&quot;The answer is {}.&quot;, 42);
-}
-</code></pre>
-<p>compiles to just</p>
-<pre><code class="language-asm">main: # @main
-  sub rsp, 24
-  mov qword ptr [rsp], 42
-  mov rcx, rsp
-  mov edi, offset .L.str
-  mov esi, 17
-  mov edx, 1
-  call fmt::v7::vprint(fmt::v7::basic_string_view&lt;char&gt;, fmt::v7::format_args)
-  xor eax, eax
-  add rsp, 24
-  ret
-.L.str:
-  .asciz &quot;The answer is {}.&quot;
-</code></pre>
-<h2 id="portability">Portability</h2>
-<p>The library is highly portable and relies only on a small set of C++11
-features:</p>
-<ul>
-<li>variadic templates</li>
-<li>type traits</li>
-<li>rvalue references</li>
-<li>decltype</li>
-<li>trailing return types</li>
-<li>deleted functions</li>
-<li>alias templates</li>
-</ul>
-<p>These are available in GCC 4.8, Clang 3.4, MSVC 19.0 (2015) and more
-recent compiler version. For older compilers use {fmt} <a href="https://github.com/fmtlib/fmt/releases/tag/4.1.0">version
-4.x</a> which is
-maintained and only requires C++98.</p>
-<p>The output of all formatting functions is consistent across platforms.
-For example,</p>
-<pre><code>fmt::print(&quot;{}&quot;, std::numeric_limits&lt;double&gt;::infinity());
-</code></pre>
-<p>always prints <code>inf</code> while the output of <code>printf</code> is platform-dependent.</p>
-<h2 id="ease-of-use">Ease of Use</h2>
-<p>{fmt} has a small self-contained code base with the core library
-consisting of just three header files and no external dependencies. A
-permissive MIT <a href="https://github.com/fmtlib/fmt#license">license</a> allows
-using the library both in open-source and commercial projects.</p>
-<p><a class="btn btn-success" href="https://github.com/fmtlib/fmt">
-  GitHub Repository
-</a></p>
+<div class="feature">
+<h2>Safety</h2>
+<p>
+  Inspired by the Python's formatting facility, {fmt} provides a safe
+  replacement for the <code>printf</code> family of functions. Errors in format
+  strings, which are a common source of vulnerabilities in C, are <b>reported
+  at compile time</b>. For example:
+
+  <pre><code class="language-cpp"
+  >fmt::format("The answer is {:d}", "forty-two");</code></pre>
+
+  will give a compile-time error because <code>d</code> is not a valid
+  format specifier for strings. APIs like <a href="api/#format">
+  <code>fmt::format</code></a> <b>prevent buffer overflow errors</b> via
+  automatic memory management.
+</p>
+<a href="api#compile-time-format-string-checks">→ Learn more</a>
+</div>
+
+<div class="feature">
+<h2>Extensibility</h2>
+<p>
+  Formatting of most <b>standard types</b> including all containers, dates and
+  times is <b>supported out-of-the-box</b>.
+  For example:
+
+  <pre><code class="language-cpp"
+  >fmt::print("{}", std::vector{1, 2, 3});</code></pre>
+
+  prints the vector in a JSON-like format:
+
+  <pre><code>[1, 2, 3]</code></pre>
+
+  You can <b>make your own types formattable</b> and even make compile-time
+  checks work for them.
+</p>
+<a href="api#udt">→ Learn more</a>
+</div>
+
+<div class="feature">
+<h2>Performance</h2>
+<p>
+  {fmt} can be anywhere from <b>tens of percent to 20-30 times faster</b> than
+  iostreams and <code>sprintf</code>, especially on numeric formatting.
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="20 0 550 300" aria-label="A chart." style="overflow: hidden;"><defs id="_ABSTRACT_RENDERER_ID_0"><clipPath id="_ABSTRACT_RENDERER_ID_1"><rect x="120" y="45" width="560" height="210"></rect></clipPath></defs><rect x="0" y="0" width="800" height="300" stroke="none" stroke-width="0" fill="#ffffff"></rect><g><text text-anchor="start" x="120" y="27.05" font-family="Arial" font-size="13" font-weight="bold" stroke="none" stroke-width="0" fill="#000000">double to string</text><rect x="120" y="16" width="560" height="13" stroke="none" stroke-width="0" fill-opacity="0" fill="#ffffff"></rect></g><g><rect x="120" y="45" width="560" height="210" stroke="none" stroke-width="0" fill-opacity="0" fill="#ffffff"></rect><g clip-path="url(#_ABSTRACT_RENDERER_ID_1)"><g><rect x="120" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect><rect x="213" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect><rect x="306" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect><rect x="400" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect><rect x="493" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect><rect x="586" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect><rect x="679" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#cccccc"></rect></g><g><rect x="121" y="53" width="450" height="26" stroke="#ff9900" stroke-width="1" fill="#ff9900"></rect><rect x="121" y="95" width="421" height="26" stroke="#109618" stroke-width="1" fill="#109618"></rect><rect x="121" y="137" width="341" height="26" stroke="#990099" stroke-width="1" fill="#990099"></rect><rect x="121" y="179" width="31" height="26" stroke="#3366cc" stroke-width="1" fill="#3366cc"></rect><rect x="121" y="221" width="15" height="26" stroke="#dc3912" stroke-width="1" fill="#dc3912"></rect></g><g><rect x="120" y="45" width="1" height="210" stroke="none" stroke-width="0" fill="#333333"></rect></g></g><g></g><g><g><text text-anchor="middle" x="120.5" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">0</text></g><g><text text-anchor="middle" x="213.6667" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">250</text></g><g><text text-anchor="middle" x="306.8333" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">500</text></g><g><text text-anchor="middle" x="400" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">750</text></g><g><text text-anchor="middle" x="493.1667" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">1,000</text></g><g><text text-anchor="middle" x="586.3333" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">1,250</text></g><g><text text-anchor="middle" x="679.5" y="272.3833333333333" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#444444">1,500</text></g><g><text text-anchor="end" x="107" y="70.95" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#222222">ostringstream</text></g><g><text text-anchor="end" x="107" y="112.74999999999999" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#222222">ostrstream</text></g><g><text text-anchor="end" x="107" y="154.55" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#222222">sprintf</text></g><g><text text-anchor="end" x="107" y="196.35" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#222222">doubleconv</text></g><g><text text-anchor="end" x="107" y="238.15" font-family="Arial" font-size="13" stroke="none" stroke-width="0" fill="#222222">fmt</text></g></g></g><g><g><text text-anchor="middle" x="300" y="291.71666666666664" font-family="Arial" font-size="13" font-style="italic" stroke="none" stroke-width="0" fill="#222222">Time (ns), smaller is better</text><rect x="120" y="280.66666666666663" width="560" height="13" stroke="none" stroke-width="0" fill-opacity="0" fill="#ffffff"></rect></g></g><g></g></svg>
+
+The library <b>minimizes dynamic memory allocations</b> and allows
+<a href="api#compile-api">format string compilation</a>.
+</p>
+</div>
+
+<div class="feature">
+<h2>Unicode support</h2>
+<p>
+  {fmt} provides <b>portable Unicode support</b> on major operating systems
+  with UTF-8 and normal <code>char</code> strings. For example:
+
+  <pre><code class="language-cpp"
+  >fmt::print("Слава Україні!");</code></pre>
+
+  will be printed correctly on Linux, macOS and even Windows console regardless
+  of the codepages.
+</p>
+<p>
+  The default is <b>locale-independent</b> but you can opt into localized
+  formatting and {fmt} makes it work with Unicode, working around problems in
+  the standard libary.
+</p>
+</div>
+
+<div class="feature">
+<h2>Fast compilation</h2>
+<p>
+  The library makes extensive use of <b>type erasure</b> to achieve fast
+  compilation. <code>fmt/base.h</code> provides a subset
+  of the API with <b>minimal include dependencies</b> and enough functionality
+  to replace all uses of <code>*printf</code>.
+</p>
+<p>
+  Code using {fmt} is usually several times faster to compile than the
+  equivalent iostreams code and while <code>printf</code> is faster still, the
+  gap is narrowing.
+</p>
+<a href="https://github.com/fmtlib/fmt?tab=readme-ov-file#compile-time-and-code-bloat">
+→ Learn more</a>
+</div>
+
+<div class="feature">
+<h2>Small binary footprint</h2>
+<p>
+  Type erasure is also used to prevent template bloat resulting in <b>compact
+  per-call binary code</b>. For example, a call to <code>fmt::print</code> with
+  a single argument is less than <a href="https://godbolt.org/g/TZU4KF">ten
+  x86-64 instructions</a>, comparable to <code>printf</code> despite adding
+  runtime safety and much smaller than the equivalent iostreams code.
+</p>
+<p>
+  The library itself has small binary footprint and some components such as
+  floating-point formatting can be disabled to make it even smaller for
+  resource constrained devices.
+</p>
+</div>
+
+<div class="feature">
+<h2>Portability</h2>
+<p>
+{fmt} has a <b>small self-contained codebase</b> with the core consisting of
+just three header files and no external dependencies.
+</p>
+<p>
+The library is highly portable and requires only on a minimal <b>subset of
+C++11</b> features which are available in GCC 4.8, Clang 3.4, MSVC 19.0 (2015)
+and later. Newer compiler and standard library features are used if available
+and enable additional functionality.
+</p>
+<p>
+Where possible, the output of formatting functions is <b>consistent across
+platforms</b>.
+</p>
+</p>
+</div>
+
+<div class="feature">
+<h2>Open source</h2>
+<p>
+  {fmt} is in top hundred open-source libraries on GitHub and has <b>hundreds of
+  all-time contributors</b>.
+</p>
+<p>
+  Permissive MIT <a href="https://github.com/fmtlib/fmt#license">license</a>
+  allows using the library both in open-source and commercial projects.
+</p>
+</div>
+
+</div>
 
 
 
@@ -573,8 +516,13 @@ using the library both in open-source and commercial projects.</p>
 
 
 
+  
+  
 
 
+
+
+  
 
 
 
