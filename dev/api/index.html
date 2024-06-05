@@ -685,8 +685,8 @@
 <ul>
 <li><a href="#base-api"><code>fmt/base.h</code></a>: the base API providing main formatting functions
   for <code>char</code>/UTF-8 with C++20 compile-time checks and minimal dependencies</li>
-<li><a href="#format-api"><code>fmt/format.h</code></a>: the full format API providing additional
-  formatting functions and locale support</li>
+<li><a href="#format-api"><code>fmt/format.h</code></a>: <code>fmt::format</code> and other formatting functions
+  as well as locale support</li>
 <li><a href="#ranges-api"><code>fmt/ranges.h</code></a>: formatting of ranges and tuples</li>
 <li><a href="#chrono-api"><code>fmt/chrono.h</code></a>: date and time formatting</li>
 <li><a href="#std-api"><code>fmt/std.h</code></a>: formatters for standard library types</li>
@@ -728,8 +728,8 @@ format string wrap it in <a href="#runtime">fmt::runtime</a>.</p>
 specified otherwise.</p>
 <div class="docblock">
 <a id="print">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-void print(format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>void print(format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to <code>stdout</code>.</p>
@@ -739,8 +739,8 @@ void print(format_string&lt;T...> fmt, T&&... args);</code></pre>
 </div>
 <div class="docblock">
 <a id="print">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-void print(FILE* f, format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>void print(FILE* f, format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to the file <code>f</code>.</p>
@@ -750,8 +750,8 @@ void print(FILE* f, format_string&lt;T...> fmt, T&&... args);</code></pre>
 </div>
 <div class="docblock">
 <a id="println">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-void println(format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>void println(format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to <code>stdout</code> followed by a newline. </p>
@@ -759,8 +759,8 @@ void println(format_string&lt;T...> fmt, T&&... args);</code></pre>
 </div>
 <div class="docblock">
 <a id="println">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-void println(FILE* f, format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>void println(FILE* f, format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to the file <code>f</code> followed by a newline. </p>
@@ -768,8 +768,8 @@ void println(FILE* f, format_string&lt;T...> fmt, T&&... args);</code></pre>
 </div>
 <div class="docblock">
 <a id="format_to">
-<pre><code class="language-cpp decl">template &lt;typename OutputIt&nbsp;, typename...&nbsp;T&gt;
-auto format_to(OutputIt&& out, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;remove_cvref_t&lt;OutputIt>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;, typename...&nbsp;T&gt;
+</div><div>auto format_to(OutputIt&& out, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;remove_cvref_t&lt;OutputIt>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code>, writes the result to the output iterator <code>out</code> and returns the iterator past the end of the output range. <code>format_to</code> does not append a terminating null character.</p>
@@ -780,8 +780,8 @@ fmt::format_to(std::back_inserter(out), "{}", 42);
 </div>
 <div class="docblock">
 <a id="format_to_n">
-<pre><code class="language-cpp decl">template &lt;typename OutputIt&nbsp;, typename...&nbsp;T&gt;
-auto format_to_n(OutputIt out, size_t n, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;format_to_n_result&lt;OutputIt>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;, typename...&nbsp;T&gt;
+</div><div>auto format_to_n(OutputIt out, size_t n, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;format_to_n_result&lt;OutputIt>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code>, writes up to <code>n</code> characters of the result to the output iterator <code>out</code> and returns the total (not truncated) output size and the iterator past the end of the output range. <code>format_to_n</code> does not append a terminating null character. </p>
@@ -789,18 +789,18 @@ auto format_to_n(OutputIt out, size_t n, format_string&lt;T...> fmt, T&&... args
 </div>
 <div class="docblock">
 <a id="format_to_n_result">
-<pre><code class="language-cpp decl">template &lt;typename OutputIt&nbsp;&gt;
-struct format_to_n_result;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;&gt;
+</div><div>struct format_to_n_result;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <div class="docblock">
-<pre><code class="language-cpp decl">OutputIt out;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>OutputIt out;</div></code></pre>
 <div class="docblock-desc">
 <p>Iterator past the end of the output range. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">size_t size;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>size_t size;</div></code></pre>
 <div class="docblock-desc">
 <p>Total (not truncated) output size. </p>
         </div>
@@ -809,8 +809,8 @@ struct format_to_n_result;</code></pre>
 </div>
 <div class="docblock">
 <a id="formatted_size">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-auto formatted_size(format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;size_t;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>auto formatted_size(format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;size_t;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns the number of chars in the output of <code>format(fmt, args...)</code>. </p>
@@ -979,37 +979,37 @@ int main() {
 disallowed.</p>
 <div class="docblock">
 <a id="basic_format_parse_context">
-<pre><code class="language-cpp decl">template &lt;typename Char&nbsp;&gt;
-class basic_format_parse_context;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;&gt;
+</div><div>class basic_format_parse_context;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Parsing context consisting of a format string range being parsed and an argument counter for automatic indexing. You can use the <code>format_parse_context</code> type alias for <code>char</code> instead. </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">constexpr auto begin() -&NoBreak;>&nbsp;iterator;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr auto begin() -&NoBreak;>&nbsp;iterator;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns an iterator to the beginning of the format string range being parsed. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">constexpr auto end() -&NoBreak;>&nbsp;iterator;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr auto end() -&NoBreak;>&nbsp;iterator;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns an iterator past the end of the format string range being parsed. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void advance_to(iterator it);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void advance_to(iterator it);</div></code></pre>
 <div class="docblock-desc">
 <p>Advances the begin iterator to <code>it</code>. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">auto next_arg_id() -&NoBreak;>&nbsp;int;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto next_arg_id() -&NoBreak;>&nbsp;int;</div></code></pre>
 <div class="docblock-desc">
 <p>Reports an error if using the manual argument indexing; otherwise returns the next argument index and switches to the automatic indexing. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void check_arg_id(int id);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void check_arg_id(int id);</div></code></pre>
 <div class="docblock-desc">
 <p>Reports an error if using the automatic argument indexing; otherwise switches to the manual indexing. </p>
         </div>
@@ -1018,11 +1018,11 @@ class basic_format_parse_context;</code></pre>
 </div>
 <div class="docblock">
 <a id="context">
-<pre><code class="language-cpp decl">class context;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>class context;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <div class="docblock">
-<pre><code class="language-cpp decl">context(iterator out, basic_format_args&lt;context> ctx_args, detail::locale_ref loc);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>context(iterator out, basic_format_args&lt;context> ctx_args, detail::locale_ref loc);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a <code>basic_format_context</code> object. References to the arguments are stored in the object so make sure they have appropriate lifetimes. </p>
         </div>
@@ -1031,7 +1031,7 @@ class basic_format_parse_context;</code></pre>
 </div>
 <div class="docblock">
 <a id="format_context">
-<pre><code class="language-cpp decl">using format_context = context;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>using format_context = context;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
@@ -1043,8 +1043,8 @@ that support C++20 <code>consteval</code>. On older compilers you can use the
 <p>Unused arguments are allowed as in Python's <code>str.format</code> and ordinary functions.</p>
 <div class="docblock">
 <a id="basic_format_string">
-<pre><code class="language-cpp decl">template &lt;typename Char&nbsp;, typename...&nbsp;Args&gt;
-class basic_format_string;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;, typename...&nbsp;Args&gt;
+</div><div>class basic_format_string;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>A compile-time format string. </p>
@@ -1052,15 +1052,15 @@ class basic_format_string;</code></pre>
 </div>
 <div class="docblock">
 <a id="format_string">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;Args&gt;
-using format_string = basic_format_string&lt;char, type_identity_t&lt;Args>...>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;Args&gt;
+</div><div>using format_string = basic_format_string&lt;char, type_identity_t&lt;Args>...>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
 </div>
 <div class="docblock">
 <a id="runtime">
-<pre><code class="language-cpp decl">auto runtime(string_view s) -&NoBreak;>&nbsp;runtime_format_string&lt;>;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto runtime(string_view s) -&NoBreak;>&nbsp;runtime_format_string&lt;>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Creates a runtime format string.</p>
@@ -1072,8 +1072,8 @@ fmt::print(fmt::runtime("{:d}"), "I am not a number");
 <h3 id="named-arguments">Named Arguments</h3>
 <div class="docblock">
 <a id="arg">
-<pre><code class="language-cpp decl">template &lt;typename Char&nbsp;, typename T&nbsp;&gt;
-auto arg(const Char* name, const T& arg) -&NoBreak;>&nbsp;detail::named_arg&lt;Char, T>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;, typename T&nbsp;&gt;
+</div><div>auto arg(const Char* name, const T& arg) -&NoBreak;>&nbsp;detail::named_arg&lt;Char, T>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns a named argument to be used in a formatting function. It should only be used in a call to a formatting function or <code>dynamic_format_arg_store::push_back</code>.</p>
@@ -1107,8 +1107,8 @@ compile times and reduces binary code size compared to a fully
 parameterized version.</p>
 <div class="docblock">
 <a id="make_format_args">
-<pre><code class="language-cpp decl">template &lt;typename Context&nbsp;, typename...&nbsp;T, size_t&nbsp;NUM_ARGS, size_t&nbsp;NUM_NAMED_ARGS, unsigned long long&nbsp;DESC&gt;
-constexpr auto make_format_args(T&... args) -&NoBreak;>&nbsp;detail::format_arg_store&lt;Context, NUM_ARGS, 0, DESC>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;, typename...&nbsp;T, size_t&nbsp;NUM_ARGS, size_t&nbsp;NUM_NAMED_ARGS, unsigned long long&nbsp;DESC&gt;
+</div><div>constexpr auto make_format_args(T&... args) -&NoBreak;>&nbsp;detail::format_arg_store&lt;Context, NUM_ARGS, 0, DESC>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Constructs an object that stores references to arguments and can be implicitly converted to <code>format_args</code>. <code>Context</code> can be omitted in which case it defaults to <code>format_context</code>. See <code>arg</code> for lifetime considerations. </p>
@@ -1116,33 +1116,33 @@ constexpr auto make_format_args(T&... args) -&NoBreak;>&nbsp;detail::format_arg_
 </div>
 <div class="docblock">
 <a id="basic_format_args">
-<pre><code class="language-cpp decl">template &lt;typename Context&nbsp;&gt;
-class basic_format_args;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;&gt;
+</div><div>class basic_format_args;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>A view of a collection of formatting arguments. To avoid lifetime issues it should only be used as a parameter type in type-erased functions such as <code>vformat</code>: <pre><code class="language-cpp">void vlog(fmt::string_view fmt, fmt::format_args args);  // OK
 fmt::format_args args = fmt::make_format_args();  // Dangling reference
 </code></pre> </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">constexpr basic_format_args(const detail::format_arg_store&lt;Context, NUM_ARGS, NUM_NAMED_ARGS, DESC>& store);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr basic_format_args(const detail::format_arg_store&lt;Context, NUM_ARGS, NUM_NAMED_ARGS, DESC>& store);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a <code>basic_format_args</code> object from <code>format_arg_store</code>. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">constexpr basic_format_args(const dynamic_format_arg_store&lt;Context>& store);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr basic_format_args(const dynamic_format_arg_store&lt;Context>& store);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a <code>basic_format_args</code> object from <code>dynamic_format_arg_store</code>. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">constexpr basic_format_args(const format_arg* args, int count);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr basic_format_args(const format_arg* args, int count);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a <code>basic_format_args</code> object from a dynamic list of arguments. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">auto get(int id) -&NoBreak;>&nbsp;format_arg;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto get(int id) -&NoBreak;>&nbsp;format_arg;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns the argument with the specified id. </p>
         </div>
@@ -1151,7 +1151,7 @@ fmt::format_args args = fmt::make_format_args();  // Dangling reference
 </div>
 <div class="docblock">
 <a id="format_args">
-<pre><code class="language-cpp decl">using format_args = basic_format_args&lt;format_context>;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>using format_args = basic_format_args&lt;format_context>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>An alias for <code>basic_format_args&lt;format_context></code>. </p>
@@ -1159,12 +1159,12 @@ fmt::format_args args = fmt::make_format_args();  // Dangling reference
 </div>
 <div class="docblock">
 <a id="basic_format_arg">
-<pre><code class="language-cpp decl">template &lt;typename Context&nbsp;&gt;
-class basic_format_arg;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;&gt;
+</div><div>class basic_format_arg;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <div class="docblock">
-<pre><code class="language-cpp decl">auto visit(Visitor&& vis) -&NoBreak;>&nbsp;decltype(vis(0));</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto visit(Visitor&& vis) -&NoBreak;>&nbsp;decltype(vis(0));</div></code></pre>
 <div class="docblock-desc">
 <p>Visits an argument dispatching to the appropriate visit method based on the argument type. For example, if the argument type is <code>double</code> then <code>vis(value)</code> will be called with the value of type <code>double</code>. </p>
         </div>
@@ -1174,37 +1174,37 @@ class basic_format_arg;</code></pre>
 <h3 id="compatibility">Compatibility</h3>
 <div class="docblock">
 <a id="basic_string_view">
-<pre><code class="language-cpp decl">template &lt;typename Char&nbsp;&gt;
-class basic_string_view;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;&gt;
+</div><div>class basic_string_view;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>An implementation of <code>std::basic_string_view</code> for pre-C++17. It provides a subset of the API. <code>fmt::basic_string_view</code> is used for format strings even if <code>std::basic_string_view</code> is available to prevent issues when a library is compiled with a different <code>-std</code> option than the client code (which is not recommended). </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">constexpr basic_string_view(const Char* s, size_t count);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr basic_string_view(const Char* s, size_t count);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a string reference object from a C string and a size. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">basic_string_view(const Char* s);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>basic_string_view(const Char* s);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a string reference object from a C string. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">basic_string_view(const S& s);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>basic_string_view(const S& s);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a string reference from a <code>std::basic_string</code> or a <code>std::basic_string_view</code> object. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">constexpr auto data() -&NoBreak;>&nbsp;const Char*;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr auto data() -&NoBreak;>&nbsp;const Char*;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns a pointer to the string data. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">constexpr auto size() -&NoBreak;>&nbsp;size_t;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr auto size() -&NoBreak;>&nbsp;size_t;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns the string size. </p>
         </div>
@@ -1213,7 +1213,7 @@ class basic_string_view;</code></pre>
 </div>
 <div class="docblock">
 <a id="string_view">
-<pre><code class="language-cpp decl">using string_view = basic_string_view&lt;char>;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>using string_view = basic_string_view&lt;char>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
@@ -1225,8 +1225,8 @@ formatting functions and locale support.</p>
 </p>
 <div class="docblock">
 <a id="format">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-auto format(format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::string;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>auto format(format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::string;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and returns the result as a string.</p>
@@ -1237,7 +1237,7 @@ std::string message = fmt::format("The answer is {}.", 42);
 </div>
 <div class="docblock">
 <a id="vformat">
-<pre><code class="language-cpp decl">auto vformat(string_view fmt, format_args args) -&NoBreak;>&nbsp;std::string;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto vformat(string_view fmt, format_args args) -&NoBreak;>&nbsp;std::string;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
@@ -1245,8 +1245,8 @@ std::string message = fmt::format("The answer is {}.", 42);
 <h3 id="utilities">Utilities</h3>
 <div class="docblock">
 <a id="ptr">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto ptr(T p) -&NoBreak;>&nbsp;const void*;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto ptr(T p) -&NoBreak;>&nbsp;const void*;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts <code>p</code> to <code>const void*</code> for pointer formatting.</p>
@@ -1256,8 +1256,8 @@ auto ptr(T p) -&NoBreak;>&nbsp;const void*;</code></pre>
 </div>
 <div class="docblock">
 <a id="underlying">
-<pre><code class="language-cpp decl">template &lt;typename Enum&nbsp;&gt;
-constexpr auto underlying(Enum e) -&NoBreak;>&nbsp;underlying_t&lt;Enum>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Enum&nbsp;&gt;
+</div><div>constexpr auto underlying(Enum e) -&NoBreak;>&nbsp;underlying_t&lt;Enum>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts <code>e</code> to the underlying type.</p>
@@ -1268,8 +1268,8 @@ auto s = fmt::format("{}", fmt::underlying(color::red));
 </div>
 <div class="docblock">
 <a id="to_string">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto to_string(const T& value) -&NoBreak;>&nbsp;std::string;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto to_string(const T& value) -&NoBreak;>&nbsp;std::string;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts <code>value</code> to <code>std::string</code> using the default format for type <code>T</code>.</p>
@@ -1279,8 +1279,8 @@ auto to_string(const T& value) -&NoBreak;>&nbsp;std::string;</code></pre>
 </div>
 <div class="docblock">
 <a id="group_digits">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto group_digits(T value) -&NoBreak;>&nbsp;group_digits_view&lt;T>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto group_digits(T value) -&NoBreak;>&nbsp;group_digits_view&lt;T>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns a view that formats an integer value using ',' as a locale-independent thousands separator.</p>
@@ -1291,37 +1291,37 @@ auto group_digits(T value) -&NoBreak;>&nbsp;group_digits_view&lt;T>;</code></pre
 </div>
 <div class="docblock">
 <a id="detail::buffer">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-class detail::buffer;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>class detail::buffer;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>A contiguous memory buffer with an optional growing ability. It is an internal class and shouldn't be used directly, only via <code>memory_buffer</code>. </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">constexpr auto size() -&NoBreak;>&nbsp;size_t;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr auto size() -&NoBreak;>&nbsp;size_t;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns the size of this buffer. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">constexpr auto capacity() -&NoBreak;>&nbsp;size_t;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>constexpr auto capacity() -&NoBreak;>&nbsp;size_t;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns the capacity of this buffer. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">auto data() -&NoBreak;>&nbsp;T*;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto data() -&NoBreak;>&nbsp;T*;</div></code></pre>
 <div class="docblock-desc">
 <p>Returns a pointer to the buffer data (not null-terminated). </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void clear();</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void clear();</div></code></pre>
 <div class="docblock-desc">
 <p>Clears this buffer. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void append(const U* begin, const U* end);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void append(const U* begin, const U* end);</div></code></pre>
 <div class="docblock-desc">
 <p>Appends data to the end of the buffer. </p>
         </div>
@@ -1330,8 +1330,8 @@ class detail::buffer;</code></pre>
 </div>
 <div class="docblock">
 <a id="basic_memory_buffer">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;, size_t&nbsp;SIZE, typename Allocator&nbsp;&gt;
-class basic_memory_buffer;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;, size_t&nbsp;SIZE, typename Allocator&nbsp;&gt;
+</div><div>class basic_memory_buffer;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>A dynamically growing memory buffer for trivially copyable/constructible types with the first <code>SIZE</code> elements stored in the object itself. Most commonly used via the <code>memory_buffer</code> alias for <code>char</code>.</p>
@@ -1339,25 +1339,25 @@ class basic_memory_buffer;</code></pre>
 fmt::format_to(std::back_inserter(out), "The answer is {}.", 42);
 </code></pre> This will append "The answer is 42." to <code>out</code>. The buffer content can be converted to <code>std::string</code> with <code>to_string(out)</code>. </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">basic_memory_buffer(basic_memory_buffer&& other);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>basic_memory_buffer(basic_memory_buffer&& other);</div></code></pre>
 <div class="docblock-desc">
 <p>Constructs a <code>basic_memory_buffer</code> object moving the content of the other object to it. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">auto operator=(basic_memory_buffer&& other) -&NoBreak;>&nbsp;basic_memory_buffer&;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto operator=(basic_memory_buffer&& other) -&NoBreak;>&nbsp;basic_memory_buffer&;</div></code></pre>
 <div class="docblock-desc">
 <p>Moves the content of the other <code>basic_memory_buffer</code> object to this one. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void resize(size_t count);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void resize(size_t count);</div></code></pre>
 <div class="docblock-desc">
 <p>Resizes the buffer to contain <code>count</code> elements. If T is a POD type new elements may not be initialized. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void reserve(size_t new_capacity);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void reserve(size_t new_capacity);</div></code></pre>
 <div class="docblock-desc">
 <p>Increases the buffer capacity to <code>new_capacity</code>. </p>
         </div>
@@ -1371,8 +1371,8 @@ assumptions about the value of <code>errno</code> being preserved by library
 functions.</p>
 <div class="docblock">
 <a id="system_error">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-auto system_error(int error_code, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::system_error;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>auto system_error(int error_code, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::system_error;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Constructs <code>std::system_error</code> with a message formatted with <code>fmt::format(fmt, args...)</code>. <code>error_code</code> is a system error code as given by <code>errno</code>.</p>
@@ -1388,7 +1388,7 @@ if (!file)
 </div>
 <div class="docblock">
 <a id="format_system_error">
-<pre><code class="language-cpp decl">void format_system_error(detail::buffer&lt;char>& out, int error_code, const char* message);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void format_system_error(detail::buffer&lt;char>& out, int error_code, const char* message);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats an error message for an error returned by an operating system or a language runtime, for example a file opening error, and writes it to <code>out</code>. The format is the same as the one used by <code>std::system_error(ec, message)</code> where <code>ec</code> is <code>std::error_code(error_code, std::generic_category())</code>. It is implementation-defined but normally looks like: <pre><code class="language-cpp">&lt;message>: &lt;system-message>
@@ -1399,8 +1399,8 @@ if (!file)
 <p>The following user-defined literals are defined in <code>fmt/format.h</code>.</p>
 <div class="docblock">
 <a id="operator""_a">
-<pre><code class="language-cpp decl">template &lt;detail_exported::fixed_string&nbsp;Str&gt;
-constexpr auto operator""_a();</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;detail_exported::fixed_string&nbsp;Str&gt;
+</div><div>constexpr auto operator""_a();</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>User-defined literal equivalent of <code>fmt::arg</code>.</p>
@@ -1451,24 +1451,24 @@ that take <code>std::locale</code> as a parameter. The locale type is a template
 parameter to avoid the expensive <code>&lt;locale&gt;</code> include.</p>
 <div class="docblock">
 <a id="format">
-<pre><code class="language-cpp decl">template &lt;typename Locale&nbsp;, typename...&nbsp;T&gt;
-auto format(const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::string;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Locale&nbsp;, typename...&nbsp;T&gt;
+</div><div>auto format(const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::string;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
 </div>
 <div class="docblock">
 <a id="format_to">
-<pre><code class="language-cpp decl">template &lt;typename OutputIt&nbsp;, typename Locale&nbsp;, typename...&nbsp;T&gt;
-auto format_to(OutputIt out, const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;OutputIt;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;, typename Locale&nbsp;, typename...&nbsp;T&gt;
+</div><div>auto format_to(OutputIt out, const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;OutputIt;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
 </div>
 <div class="docblock">
 <a id="formatted_size">
-<pre><code class="language-cpp decl">template &lt;typename Locale&nbsp;, typename...&nbsp;T&gt;
-auto formatted_size(const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;size_t;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Locale&nbsp;, typename...&nbsp;T&gt;
+</div><div>auto formatted_size(const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;size_t;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
@@ -1479,7 +1479,7 @@ auto formatted_size(const Locale& loc, format_string&lt;T...> fmt, T&&... args) 
 C++14 or later and is a no-op in C++11.</p>
 <div class="docblock">
 <a id="FMT_STRING">
-<pre><code class="language-cpp decl">FMT_STRING(s)</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>FMT_STRING(s)</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Constructs a compile-time format string from a string literal <code>s</code>.</p>
@@ -1506,8 +1506,8 @@ fmt::print("{}", fmt::join(t, ", "));
 // Output: 1, a</code></pre>
 <div class="docblock">
 <a id="join">
-<pre><code class="language-cpp decl">template &lt;typename Range&nbsp;&gt;
-auto join(Range&& r, string_view sep) -&NoBreak;>&nbsp;join_view&lt;decltype(detail::range_begin(r)), decltype(detail::range_end(r))>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Range&nbsp;&gt;
+</div><div>auto join(Range&& r, string_view sep) -&NoBreak;>&nbsp;join_view&lt;decltype(detail::range_begin(r)), decltype(detail::range_end(r))>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns a view that formats <code>range</code> with elements separated by <code>sep</code>.</p>
@@ -1521,8 +1521,8 @@ fmt::print("{}", fmt::join(v, ", "));
 </div>
 <div class="docblock">
 <a id="join">
-<pre><code class="language-cpp decl">template &lt;typename It&nbsp;, typename Sentinel&nbsp;&gt;
-auto join(It begin, Sentinel end, string_view sep) -&NoBreak;>&nbsp;join_view&lt;It, Sentinel>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename It&nbsp;, typename Sentinel&nbsp;&gt;
+</div><div>auto join(It begin, Sentinel end, string_view sep) -&NoBreak;>&nbsp;join_view&lt;It, Sentinel>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns a view that formats the iterator range <code>[begin, end)</code> with elements separated by <code>sep</code>. </p>
@@ -1530,8 +1530,8 @@ auto join(It begin, Sentinel end, string_view sep) -&NoBreak;>&nbsp;join_view&lt
 </div>
 <div class="docblock">
 <a id="join">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto join(std::initializer_list&lt;T> list, string_view sep) -&NoBreak;>&nbsp;join_view&lt;const T*, const T*>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto join(std::initializer_list&lt;T> list, string_view sep) -&NoBreak;>&nbsp;join_view&lt;const T*, const T*>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns an object that formats <code>std::initializer_list</code> with elements separated by <code>sep</code>.</p>
@@ -1569,7 +1569,7 @@ int main() {
 }</code></pre>
 <div class="docblock">
 <a id="localtime">
-<pre><code class="language-cpp decl">auto localtime(std::time_t time) -&NoBreak;>&nbsp;std::tm;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto localtime(std::time_t time) -&NoBreak;>&nbsp;std::tm;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts given time since epoch as <code>std::time_t</code> value into calendar time, expressed in local time. Unlike <code>std::localtime</code>, this function is thread-safe on most platforms. </p>
@@ -1577,7 +1577,7 @@ int main() {
 </div>
 <div class="docblock">
 <a id="gmtime">
-<pre><code class="language-cpp decl">auto gmtime(std::time_t time) -&NoBreak;>&nbsp;std::tm;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto gmtime(std::time_t time) -&NoBreak;>&nbsp;std::tm;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts given time since epoch as <code>std::time_t</code> value into calendar time, expressed in Coordinated Universal Time (UTC). Unlike <code>std::gmtime</code>, this function is thread-safe on most platforms. </p>
@@ -1600,16 +1600,16 @@ int main() {
 </ul>
 <div class="docblock">
 <a id="ptr">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;, typename Deleter&nbsp;&gt;
-auto ptr(const std::unique_ptr&lt;T, Deleter>& p) -&NoBreak;>&nbsp;const void*;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;, typename Deleter&nbsp;&gt;
+</div><div>auto ptr(const std::unique_ptr&lt;T, Deleter>& p) -&NoBreak;>&nbsp;const void*;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
 </div>
 <div class="docblock">
 <a id="ptr">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto ptr(const std::shared_ptr&lt;T>& p) -&NoBreak;>&nbsp;const void*;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto ptr(const std::shared_ptr&lt;T>& p) -&NoBreak;>&nbsp;const void*;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
@@ -1646,7 +1646,7 @@ default API and is only recommended in places where formatting is a
 performance bottleneck.</p>
 <div class="docblock">
 <a id="FMT_COMPILE">
-<pre><code class="language-cpp decl">FMT_COMPILE(s)</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>FMT_COMPILE(s)</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts a string literal <code>s</code> into a format string that will be parsed at compile time and converted into efficient formatting code. Requires C++17 <code>constexpr if</code> compiler support.</p>
@@ -1658,8 +1658,8 @@ std::string s = fmt::format(FMT_COMPILE("{}"), 42);
 </div>
 <div class="docblock">
 <a id="operator""_cf">
-<pre><code class="language-cpp decl">template &lt;detail_exported::fixed_string&nbsp;Str&gt;
-constexpr auto operator""_cf();</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;detail_exported::fixed_string&nbsp;Str&gt;
+</div><div>constexpr auto operator""_cf();</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
@@ -1669,8 +1669,8 @@ constexpr auto operator""_cf();</code></pre>
 <p><code>fmt/color.h</code> provides support for terminal color and text style output.</p>
 <div class="docblock">
 <a id="print">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-void print(const text_style& ts, format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>void print(const text_style& ts, format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats a string and prints it to stdout using ANSI escape sequences to specify text formatting.</p>
@@ -1681,7 +1681,7 @@ void print(const text_style& ts, format_string&lt;T...> fmt, T&&... args);</code
 </div>
 <div class="docblock">
 <a id="fg">
-<pre><code class="language-cpp decl">auto fg(detail::color_type foreground) -&NoBreak;>&nbsp;text_style;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto fg(detail::color_type foreground) -&NoBreak;>&nbsp;text_style;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Creates a text style from the foreground (text) color. </p>
@@ -1689,7 +1689,7 @@ void print(const text_style& ts, format_string&lt;T...> fmt, T&&... args);</code
 </div>
 <div class="docblock">
 <a id="bg">
-<pre><code class="language-cpp decl">auto bg(detail::color_type background) -&NoBreak;>&nbsp;text_style;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>auto bg(detail::color_type background) -&NoBreak;>&nbsp;text_style;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Creates a text style from the background color. </p>
@@ -1697,8 +1697,8 @@ void print(const text_style& ts, format_string&lt;T...> fmt, T&&... args);</code
 </div>
 <div class="docblock">
 <a id="styled">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto styled(const T& value, text_style ts) -&NoBreak;>&nbsp;detail::styled_arg&lt;remove_cvref_t&lt;T>>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto styled(const T& value, text_style ts) -&NoBreak;>&nbsp;detail::styled_arg&lt;remove_cvref_t&lt;T>>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns an argument that will be formatted using ANSI escape sequences, to be used in a formatting function.</p>
@@ -1712,12 +1712,12 @@ auto styled(const T& value, text_style ts) -&NoBreak;>&nbsp;detail::styled_arg&l
 <h2 id="system-apis">System APIs</h2>
 <div class="docblock">
 <a id="ostream">
-<pre><code class="language-cpp decl">class ostream;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>class ostream;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>A fast output stream for writing from a single thread. Writing from multiple threads without external synchronization may result in a data race. </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">void print(format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void print(format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to the file. </p>
         </div>
@@ -1726,8 +1726,8 @@ auto styled(const T& value, text_style ts) -&NoBreak;>&nbsp;detail::styled_arg&l
 </div>
 <div class="docblock">
 <a id="windows_error">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;Args&gt;
-std::system_error windows_error(int error_code, string_view message, const Args&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;Args&gt;
+</div><div>std::system_error windows_error(int error_code, string_view message, const Args&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Constructs a <code>std::system_error</code> object with the description of the form <pre><code class="language-cpp">&lt;message>: &lt;system-message>
@@ -1760,8 +1760,8 @@ std::string s = fmt::format("The date is {}", date{2012, 12, 9});
 // s == "The date is 2012-12-9"</code></pre>
 <div class="docblock">
 <a id="streamed">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-constexpr auto streamed(const T& value) -&NoBreak;>&nbsp;detail::streamed_view&lt;T>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>constexpr auto streamed(const T& value) -&NoBreak;>&nbsp;detail::streamed_view&lt;T>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Returns a view that formats <code>value</code> via an ostream <code>operator&lt;&lt;</code>.</p>
@@ -1772,8 +1772,8 @@ constexpr auto streamed(const T& value) -&NoBreak;>&nbsp;detail::streamed_view&l
 </div>
 <div class="docblock">
 <a id="print">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-void print(std::ostream& os, format_string&lt;T...> fmt, T&&... args);</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>void print(std::ostream& os, format_string&lt;T...> fmt, T&&... args);</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Prints formatted data to the stream <code>os</code>.</p>
@@ -1787,14 +1787,14 @@ void print(std::ostream& os, format_string&lt;T...> fmt, T&&... args);</code></p
 that can be used to construct format argument lists dynamically.</p>
 <div class="docblock">
 <a id="dynamic_format_arg_store">
-<pre><code class="language-cpp decl">template &lt;typename Context&nbsp;&gt;
-class dynamic_format_arg_store;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;&gt;
+</div><div>class dynamic_format_arg_store;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>A dynamic list of formatting arguments with storage.</p>
 <p>It can be implicitly converted into <code>fmt::basic_format_args</code> for passing into type-erased formatting functions such as <code>fmt::vformat</code>. </p>
     <div class="docblock">
-<pre><code class="language-cpp decl">void push_back(const T& arg);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void push_back(const T& arg);</div></code></pre>
 <div class="docblock-desc">
 <p>Adds an argument into the dynamic store for later passing to a formatting function.</p>
 <p>Note that custom types and string types (but not string views) are copied into the store dynamically allocating memory if necessary.</p>
@@ -1807,7 +1807,7 @@ std::string result = fmt::vformat("{} and {} and {}", store);
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void push_back(std::reference_wrapper&lt;T> arg);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void push_back(std::reference_wrapper&lt;T> arg);</div></code></pre>
 <div class="docblock-desc">
 <p>Adds a reference to the argument into the dynamic store for later passing to a formatting function.</p>
 <p><b>Example</b>: <pre><code class="language-cpp">fmt::dynamic_format_arg_store&lt;fmt::format_context> store;
@@ -1820,19 +1820,19 @@ std::string result = fmt::vformat("{}", store);
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void push_back(const detail::named_arg&lt;char_type, T>& arg);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void push_back(const detail::named_arg&lt;char_type, T>& arg);</div></code></pre>
 <div class="docblock-desc">
 <p>Adds named argument into the dynamic store for later passing to a formatting function. <code>std::reference_wrapper</code> is supported to avoid copying of the argument. The name is always copied into the store. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void clear();</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void clear();</div></code></pre>
 <div class="docblock-desc">
 <p>Erase all elements from the store. </p>
         </div>
 </div>
 <div class="docblock">
-<pre><code class="language-cpp decl">void reserve(size_t new_cap, size_t new_cap_named);</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>void reserve(size_t new_cap, size_t new_cap_named);</div></code></pre>
 <div class="docblock-desc">
 <p>Reserves space to store at least <code>new_cap</code> arguments including <code>new_cap_named</code> named arguments. </p>
         </div>
@@ -1849,8 +1849,8 @@ counterparts, the <code>fmt</code> functions are type-safe and throw an exceptio
 if an argument type doesn't match its format specification.</p>
 <div class="docblock">
 <a id="printf">
-<pre><code class="language-cpp decl">template &lt;typename...&nbsp;T&gt;
-auto printf(string_view fmt, const T&... args) -&NoBreak;>&nbsp;int;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>auto printf(string_view fmt, const T&... args) -&NoBreak;>&nbsp;int;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to <code>stdout</code>.</p>
@@ -1860,8 +1860,8 @@ auto printf(string_view fmt, const T&... args) -&NoBreak;>&nbsp;int;</code></pre
 </div>
 <div class="docblock">
 <a id="fprintf">
-<pre><code class="language-cpp decl">template &lt;typename S&nbsp;, typename...&nbsp;T, typename Char&nbsp;&gt;
-auto fprintf(std::FILE* f, const S& fmt, const T&... args) -&NoBreak;>&nbsp;int;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename S&nbsp;, typename...&nbsp;T, typename Char&nbsp;&gt;
+</div><div>auto fprintf(std::FILE* f, const S& fmt, const T&... args) -&NoBreak;>&nbsp;int;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and writes the output to <code>f</code>.</p>
@@ -1871,8 +1871,8 @@ auto fprintf(std::FILE* f, const S& fmt, const T&... args) -&NoBreak;>&nbsp;int;
 </div>
 <div class="docblock">
 <a id="sprintf">
-<pre><code class="language-cpp decl">template &lt;typename S&nbsp;, typename...&nbsp;T, typename Char&nbsp;&gt;
-auto sprintf(const S& fmt, const T&... args) -&NoBreak;>&nbsp;std::basic_string&lt;Char>;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename S&nbsp;, typename...&nbsp;T, typename Char&nbsp;&gt;
+</div><div>auto sprintf(const S& fmt, const T&... args) -&NoBreak;>&nbsp;std::basic_string&lt;Char>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Formats <code>args</code> according to specifications in <code>fmt</code> and returns the result as as string.</p>
@@ -1886,8 +1886,8 @@ auto sprintf(const S& fmt, const T&... args) -&NoBreak;>&nbsp;std::basic_string&
 exotic character types.</p>
 <div class="docblock">
 <a id="is_char">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-struct is_char;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>struct is_char;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Specifies if <code>T</code> is a character type. Can be specialized by users. </p>
@@ -1895,22 +1895,22 @@ struct is_char;</code></pre>
 </div>
 <div class="docblock">
 <a id="wstring_view">
-<pre><code class="language-cpp decl">using wstring_view = basic_string_view&lt;wchar_t>;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>using wstring_view = basic_string_view&lt;wchar_t>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
 </div>
 <div class="docblock">
 <a id="wformat_context">
-<pre><code class="language-cpp decl">using wformat_context = buffered_context&lt;wchar_t>;</code></pre>
+<pre><code class="language-cpp decl"><div></div><div>using wformat_context = buffered_context&lt;wchar_t>;</div></code></pre>
 </a>
 <div class="docblock-desc">
 </div>
 </div>
 <div class="docblock">
 <a id="to_wstring">
-<pre><code class="language-cpp decl">template &lt;typename T&nbsp;&gt;
-auto to_wstring(const T& value) -&NoBreak;>&nbsp;std::wstring;</code></pre>
+<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+</div><div>auto to_wstring(const T& value) -&NoBreak;>&nbsp;std::wstring;</div></code></pre>
 </a>
 <div class="docblock-desc">
 <p>Converts <code>value</code> to <code>std::wstring</code> using the default format for type <code>T</code>. </p>
