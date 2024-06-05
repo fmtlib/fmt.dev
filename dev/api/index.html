@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../usage/">
+        <link rel="prev" href="../get-started/">
       
       
         <link rel="next" href="../syntax/">
@@ -204,12 +204,12 @@
   
   
     <li class="md-tabs__item">
-      <a href="../usage/" class="md-tabs__link">
+      <a href="../get-started/" class="md-tabs__link">
         
   
     
   
-  Usage
+  Get Started
 
       </a>
     </li>
@@ -326,11 +326,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage/" class="md-nav__link">
+      <a href="../get-started/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Usage
+    Get Started
   </span>
   
 
@@ -707,11 +707,12 @@ dependencies for better compile times. This header is only beneficial when
 using {fmt} as a library (the default) and not in the header-only mode.
 It also provides <code>formatter</code> specializations for the following types:</p>
 <ul>
-<li><code>int</code>, <code>unsigned</code>, <code>long long</code>, <code>unsigned long long</code></li>
+<li><code>int</code>, <code>long long</code>,</li>
+<li><code>unsigned</code>, <code>unsigned long long</code></li>
 <li><code>float</code>, <code>double</code>, <code>long double</code></li>
 <li><code>bool</code></li>
 <li><code>char</code></li>
-<li><code>const char*</code>, <code>fmt::string_view</code></li>
+<li><code>const char*</code>, <a href="#basic_string_view"><code>fmt::string_view</code></a></li>
 <li><code>const void*</code></li>
 </ul>
 <p>The following functions use <a href="../syntax/">format string syntax</a> similar to that
@@ -722,7 +723,7 @@ surrounded by braces <code>{}</code>. The fields are replaced with formatted arg
 in the resulting string. <a href="#format_string"><code>fmt::format_string</code></a> is a format
 string which can be implicitly constructed from a string literal or a
 <code>constexpr</code> string and is checked at compile time in C++20. To pass a runtime
-format string wrap it in <a href="#runtime">fmt::runtime</a>.</p>
+format string wrap it in <a href="#runtime"><code>fmt::runtime</code></a>.</p>
 <p><em>args</em> is an argument list representing objects to be formatted.</p>
 <p>I/O errors are reported as <a href="https://en.cppreference.com/w/cpp/error/system_error"><code>std::system_error</code></a> exceptions unless
 specified otherwise.</p>
@@ -768,7 +769,7 @@ specified otherwise.</p>
 </div>
 <div class="docblock">
 <a id="format_to">
-<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;, typename...&nbsp;T&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt, typename...&nbsp;T&gt;
 </div><div>auto format_to(OutputIt&& out, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;remove_cvref_t&lt;OutputIt>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -780,7 +781,7 @@ fmt::format_to(std::back_inserter(out), "{}", 42);
 </div>
 <div class="docblock">
 <a id="format_to_n">
-<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;, typename...&nbsp;T&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt, typename...&nbsp;T&gt;
 </div><div>auto format_to_n(OutputIt out, size_t n, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;format_to_n_result&lt;OutputIt>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -789,7 +790,7 @@ fmt::format_to(std::back_inserter(out), "{}", 42);
 </div>
 <div class="docblock">
 <a id="format_to_n_result">
-<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&gt;
 </div><div>struct format_to_n_result;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -979,7 +980,7 @@ int main() {
 disallowed.</p>
 <div class="docblock">
 <a id="basic_format_parse_context">
-<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Char&gt;
 </div><div>class basic_format_parse_context;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1043,7 +1044,7 @@ that support C++20 <code>consteval</code>. On older compilers you can use the
 <p>Unused arguments are allowed as in Python's <code>str.format</code> and ordinary functions.</p>
 <div class="docblock">
 <a id="basic_format_string">
-<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;, typename...&nbsp;Args&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Char, typename...&nbsp;Args&gt;
 </div><div>class basic_format_string;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1072,7 +1073,7 @@ fmt::print(fmt::runtime("{:d}"), "I am not a number");
 <h3 id="named-arguments">Named Arguments</h3>
 <div class="docblock">
 <a id="arg">
-<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;, typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Char, typename T&gt;
 </div><div>auto arg(const Char* name, const T& arg) -&NoBreak;>&nbsp;detail::named_arg&lt;Char, T>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1107,7 +1108,7 @@ compile times and reduces binary code size compared to a fully
 parameterized version.</p>
 <div class="docblock">
 <a id="make_format_args">
-<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;, typename...&nbsp;T, size_t&nbsp;NUM_ARGS, size_t&nbsp;NUM_NAMED_ARGS, unsigned long long&nbsp;DESC&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Context, typename...&nbsp;T, size_t&nbsp;NUM_ARGS, size_t&nbsp;NUM_NAMED_ARGS, unsigned long long&nbsp;DESC&gt;
 </div><div>constexpr auto make_format_args(T&... args) -&NoBreak;>&nbsp;detail::format_arg_store&lt;Context, NUM_ARGS, 0, DESC>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1116,7 +1117,7 @@ parameterized version.</p>
 </div>
 <div class="docblock">
 <a id="basic_format_args">
-<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&gt;
 </div><div>class basic_format_args;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1159,7 +1160,7 @@ fmt::format_args args = fmt::make_format_args();  // Dangling reference
 </div>
 <div class="docblock">
 <a id="basic_format_arg">
-<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&gt;
 </div><div>class basic_format_arg;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1174,7 +1175,7 @@ fmt::format_args args = fmt::make_format_args();  // Dangling reference
 <h3 id="compatibility">Compatibility</h3>
 <div class="docblock">
 <a id="basic_string_view">
-<pre><code class="language-cpp decl"><div>template &lt;typename Char&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Char&gt;
 </div><div>class basic_string_view;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1245,7 +1246,7 @@ std::string message = fmt::format("The answer is {}.", 42);
 <h3 id="utilities">Utilities</h3>
 <div class="docblock">
 <a id="ptr">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto ptr(T p) -&NoBreak;>&nbsp;const void*;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1256,7 +1257,7 @@ std::string message = fmt::format("The answer is {}.", 42);
 </div>
 <div class="docblock">
 <a id="underlying">
-<pre><code class="language-cpp decl"><div>template &lt;typename Enum&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Enum&gt;
 </div><div>constexpr auto underlying(Enum e) -&NoBreak;>&nbsp;underlying_t&lt;Enum>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1268,7 +1269,7 @@ auto s = fmt::format("{}", fmt::underlying(color::red));
 </div>
 <div class="docblock">
 <a id="to_string">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto to_string(const T& value) -&NoBreak;>&nbsp;std::string;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1279,7 +1280,7 @@ auto s = fmt::format("{}", fmt::underlying(color::red));
 </div>
 <div class="docblock">
 <a id="group_digits">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto group_digits(T value) -&NoBreak;>&nbsp;group_digits_view&lt;T>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1291,7 +1292,7 @@ auto s = fmt::format("{}", fmt::underlying(color::red));
 </div>
 <div class="docblock">
 <a id="detail::buffer">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>class detail::buffer;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1330,7 +1331,7 @@ auto s = fmt::format("{}", fmt::underlying(color::red));
 </div>
 <div class="docblock">
 <a id="basic_memory_buffer">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;, size_t&nbsp;SIZE, typename Allocator&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T, size_t&nbsp;SIZE, typename Allocator&gt;
 </div><div>class basic_memory_buffer;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1451,7 +1452,7 @@ that take <code>std::locale</code> as a parameter. The locale type is a template
 parameter to avoid the expensive <code>&lt;locale&gt;</code> include.</p>
 <div class="docblock">
 <a id="format">
-<pre><code class="language-cpp decl"><div>template &lt;typename Locale&nbsp;, typename...&nbsp;T&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Locale, typename...&nbsp;T&gt;
 </div><div>auto format(const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;std::string;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1459,7 +1460,7 @@ parameter to avoid the expensive <code>&lt;locale&gt;</code> include.</p>
 </div>
 <div class="docblock">
 <a id="format_to">
-<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt&nbsp;, typename Locale&nbsp;, typename...&nbsp;T&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename OutputIt, typename Locale, typename...&nbsp;T&gt;
 </div><div>auto format_to(OutputIt out, const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;OutputIt;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1467,7 +1468,7 @@ parameter to avoid the expensive <code>&lt;locale&gt;</code> include.</p>
 </div>
 <div class="docblock">
 <a id="formatted_size">
-<pre><code class="language-cpp decl"><div>template &lt;typename Locale&nbsp;, typename...&nbsp;T&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Locale, typename...&nbsp;T&gt;
 </div><div>auto formatted_size(const Locale& loc, format_string&lt;T...> fmt, T&&... args) -&NoBreak;>&nbsp;size_t;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1506,7 +1507,7 @@ fmt::print("{}", fmt::join(t, ", "));
 // Output: 1, a</code></pre>
 <div class="docblock">
 <a id="join">
-<pre><code class="language-cpp decl"><div>template &lt;typename Range&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Range&gt;
 </div><div>auto join(Range&& r, string_view sep) -&NoBreak;>&nbsp;join_view&lt;decltype(detail::range_begin(r)), decltype(detail::range_end(r))>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1521,7 +1522,7 @@ fmt::print("{}", fmt::join(v, ", "));
 </div>
 <div class="docblock">
 <a id="join">
-<pre><code class="language-cpp decl"><div>template &lt;typename It&nbsp;, typename Sentinel&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename It, typename Sentinel&gt;
 </div><div>auto join(It begin, Sentinel end, string_view sep) -&NoBreak;>&nbsp;join_view&lt;It, Sentinel>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1530,7 +1531,7 @@ fmt::print("{}", fmt::join(v, ", "));
 </div>
 <div class="docblock">
 <a id="join">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto join(std::initializer_list&lt;T> list, string_view sep) -&NoBreak;>&nbsp;join_view&lt;const T*, const T*>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1600,7 +1601,7 @@ int main() {
 </ul>
 <div class="docblock">
 <a id="ptr">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;, typename Deleter&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T, typename Deleter&gt;
 </div><div>auto ptr(const std::unique_ptr&lt;T, Deleter>& p) -&NoBreak;>&nbsp;const void*;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1608,7 +1609,7 @@ int main() {
 </div>
 <div class="docblock">
 <a id="ptr">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto ptr(const std::shared_ptr&lt;T>& p) -&NoBreak;>&nbsp;const void*;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1697,7 +1698,7 @@ std::string s = fmt::format(FMT_COMPILE("{}"), 42);
 </div>
 <div class="docblock">
 <a id="styled">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto styled(const T& value, text_style ts) -&NoBreak;>&nbsp;detail::styled_arg&lt;remove_cvref_t&lt;T>>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1760,7 +1761,7 @@ std::string s = fmt::format("The date is {}", date{2012, 12, 9});
 // s == "The date is 2012-12-9"</code></pre>
 <div class="docblock">
 <a id="streamed">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>constexpr auto streamed(const T& value) -&NoBreak;>&nbsp;detail::streamed_view&lt;T>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1787,7 +1788,7 @@ std::string s = fmt::format("The date is {}", date{2012, 12, 9});
 that can be used to construct format argument lists dynamically.</p>
 <div class="docblock">
 <a id="dynamic_format_arg_store">
-<pre><code class="language-cpp decl"><div>template &lt;typename Context&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename Context&gt;
 </div><div>class dynamic_format_arg_store;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1860,7 +1861,7 @@ if an argument type doesn't match its format specification.</p>
 </div>
 <div class="docblock">
 <a id="fprintf">
-<pre><code class="language-cpp decl"><div>template &lt;typename S&nbsp;, typename...&nbsp;T, typename Char&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename S, typename...&nbsp;T, typename Char&gt;
 </div><div>auto fprintf(std::FILE* f, const S& fmt, const T&... args) -&NoBreak;>&nbsp;int;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1871,7 +1872,7 @@ if an argument type doesn't match its format specification.</p>
 </div>
 <div class="docblock">
 <a id="sprintf">
-<pre><code class="language-cpp decl"><div>template &lt;typename S&nbsp;, typename...&nbsp;T, typename Char&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename S, typename...&nbsp;T, typename Char&gt;
 </div><div>auto sprintf(const S& fmt, const T&... args) -&NoBreak;>&nbsp;std::basic_string&lt;Char>;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1886,7 +1887,7 @@ if an argument type doesn't match its format specification.</p>
 exotic character types.</p>
 <div class="docblock">
 <a id="is_char">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>struct is_char;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1909,7 +1910,7 @@ exotic character types.</p>
 </div>
 <div class="docblock">
 <a id="to_wstring">
-<pre><code class="language-cpp decl"><div>template &lt;typename T&nbsp;&gt;
+<pre><code class="language-cpp decl"><div>template &lt;typename T&gt;
 </div><div>auto to_wstring(const T& value) -&NoBreak;>&nbsp;std::wstring;</div></code></pre>
 </a>
 <div class="docblock-desc">
@@ -1946,6 +1947,12 @@ following differences:</p>
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
       </main>
       
         <footer class="md-footer">
@@ -1972,7 +1979,7 @@ following differences:</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "toc.integrate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.top", "toc.integrate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
       <script src="../assets/javascripts/bundle.081f42fc.min.js"></script>
