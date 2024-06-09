@@ -438,6 +438,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Building from Source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#building-the-docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building the Docs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -488,15 +503,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#building-the-docs" class="md-nav__link">
-    <span class="md-ellipsis">
-      Building the Docs
-    </span>
-  </a>
   
 </li>
       
@@ -569,9 +575,9 @@
 <h1 id="get-started">Get Started</h1>
 <p>You can compile and run {fmt} examples online with <a href="https://godbolt.org/z/P7h6cd6o3">Compiler Explorer</a>.</p>
 <p>{fmt} can be used with any build system. The next section describes usage with
-CMake and <a href="#build-systems">Build Systems</a> covers the rest.</p>
+CMake, and <a href="#build-systems">Build Systems</a> covers the rest.</p>
 <h2 id="cmake">CMake</h2>
-<p>{fmt} provides two CMake targets, <code>fmt::fmt</code> for the compiled library and
+<p>{fmt} provides two CMake targets: <code>fmt::fmt</code> for the compiled library and
 <code>fmt::fmt-header-only</code> for the header-only library. It is recommended to use
 the compiled library for better build times.</p>
 <p>There are three main ways to consume {fmt} from CMake:</p>
@@ -596,7 +602,7 @@ target_link_libraries(&lt;your-target&gt; fmt::fmt)</code></pre>
 target_link_libraries(&lt;your-target&gt; fmt::fmt)</code></pre>
 </li>
 <li>
-<p><strong>Embedded</strong>: You can add the <code>fmt</code> source tree to your project and include it
+<p><strong>Embedded</strong>: You can add the {fmt} source tree to your project and include it
   in your <code>CMakeLists.txt</code> file:</p>
 <pre class="highlight"><code>add_subdirectory(fmt)
 target_link_libraries(&lt;your-target&gt; fmt::fmt)</code></pre>
@@ -604,14 +610,14 @@ target_link_libraries(&lt;your-target&gt; fmt::fmt)</code></pre>
 </ul>
 <h2 id="install">Install</h2>
 <h3 id="debianubuntu">Debian/Ubuntu</h3>
-<p>Use the following command to install {fmt} on Debian, Ubuntu or any other
+<p>Use the following command to install {fmt} on Debian, Ubuntu, or any other
 Debian-based Linux distribution:</p>
 <pre class="highlight"><code>apt install libfmt-dev</code></pre>
 <h3 id="homebrew">Homebrew</h3>
 <p>{fmt} can be installed on macOS using <a href="https://brew.sh/">Homebrew</a>:</p>
 <pre class="highlight"><code>brew install fmt</code></pre>
 <h3 id="conda">Conda</h3>
-<p>{fmt} can be installed on Linux, macOS and Windows with <a href="https://docs.conda.io/en/latest/">Conda</a>, using its <a href="https://github.com/conda-forge/fmt-feedstock">conda-forge package</a>:</p>
+<p>{fmt} can be installed on Linux, macOS, and Windows with <a href="https://docs.conda.io/en/latest/">Conda</a>, using its <a href="https://github.com/conda-forge/fmt-feedstock">conda-forge package</a>:</p>
 <pre class="highlight"><code>conda install -c conda-forge fmt</code></pre>
 <h3 id="vcpkg">Vcpkg</h3>
 <p>You can download and install {fmt} using the <a href="https://github.com/Microsoft/vcpkg">vcpkg</a> package manager:</p>
@@ -641,12 +647,25 @@ CMake option. This can be useful if you include fmt as a subdirectory in
 your project but don't want to add fmt's tests to your <code>test</code> target.</p>
 <p>To build a shared library set the <code>BUILD_SHARED_LIBS</code> CMake variable to <code>TRUE</code>:</p>
 <pre class="highlight"><code>cmake -DBUILD_SHARED_LIBS=TRUE ..</code></pre>
-<p>To build a static library with position-independent code, e.g. for
-linking it into another shared library such as a Python extension, set the
+<p>To build a static library with position-independent code (e.g. for
+linking it into another shared library such as a Python extension), set the
 <code>CMAKE_POSITION_INDEPENDENT_CODE</code> CMake variable to <code>TRUE</code>:</p>
 <pre class="highlight"><code>cmake -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..</code></pre>
 <p>After building the library you can install it on a Unix-like system by
 running <code>sudo make install</code>.</p>
+<h3 id="building-the-docs">Building the Docs</h3>
+<p>To build the documentation you need the following software installed on
+your system:</p>
+<ul>
+<li><a href="https://www.python.org/">Python</a></li>
+<li><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a></li>
+<li><a href="https://www.mkdocs.org/">MkDocs</a> with <code>mike</code>, <code>mkdocstrings</code> and
+  <code>mkdocs-material</code></li>
+</ul>
+<p>First generate makefiles or project files using CMake as described in
+the previous section. Then compile the <code>doc</code> target/project, for example:</p>
+<pre class="highlight"><code>make doc</code></pre>
+<p>This will generate the HTML documentation in <code>doc/html</code>.</p>
 <h2 id="build-systems">Build Systems</h2>
 <h3 id="build2">build2</h3>
 <p>You can use <a href="https://build2.org">build2</a>, a dependency manager and a build
@@ -720,18 +739,6 @@ to build the library with <a href="https://developer.android.com/tools/sdk/ndk/i
 <code>include/fmt/base.h</code>, <code>include/fmt/format.h</code>, <code>include/fmt/format-inl.h</code>,
 <code>src/format.cc</code> and optionally other headers from a <a href="https://github.com/fmtlib/fmt/releases">release archive</a> or the <a href="https://github.com/fmtlib/fmt">git repository</a> to your project, add <code>include</code> to include
 directories and make sure <code>src/format.cc</code> is compiled and linked with your code.</p>
-<h2 id="building-the-docs">Building the Docs</h2>
-<p>To build the documentation you need the following software installed on
-your system:</p>
-<ul>
-<li><a href="https://www.python.org/">Python</a> with pip and virtualenv</li>
-<li><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a></li>
-</ul>
-<p>First generate makefiles or project files using CMake as described in
-the previous section. Then compile the <code>doc</code> target/project, for
-example:</p>
-<pre class="highlight"><code>make doc</code></pre>
-<p>This will generate the HTML documentation in <code>doc/html</code>.</p>
 
 
 
