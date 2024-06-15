@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: std::print more types faster with less memory
 Shortname: P3235
-Revision: 0
+Revision: 1
 Audience: LEWG
-Status: D
+Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-04-13
+Date: 2024-06-15
 Markup Shorthands: markdown yes
 </pre>
 
@@ -24,6 +24,11 @@ Introduction {#intro}
 [[P3107]] enabled an efficient implementation of `std::print` and applied the
 optimization to fundamental and string types. The current paper applies this
 important optimization to the remaining standard types.
+
+Changes since R0 {#changes}
+================
+
+- Fixed a rendering issue in the definition of range formatter.
 
 Proposal {#proposal}
 ========
@@ -146,13 +151,13 @@ The tuple formatter can be opted in if all the element formatters are opted in.
 
 Range formatter [[format.syn](https://eel.is/c++draft/format.syn)]:
 
-```
+<pre>
   // [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr], specializations for maps, sets, and strings
-  template<ranges::input_range R, class charT>
-    requires (format_kind<R> != range_format::disabled) &&
-             formattable<ranges::range_reference_t<R>, charT>
-  struct formatter<R, charT> : <i>range-default-formatter</i>&lt;format_kind<R>, R, charT> { };
-```
+  template&lt;ranges::input_range R, class charT>
+    requires (format_kind&lt;R> != range_format::disabled) &&
+             formattable&lt;ranges::range_reference_t&lt;R>, charT>
+  struct formatter&lt;R, charT> : <i>range-default-formatter</i>&lt;format_kind&lt;R>, R, charT> { };
+</pre>
 
 `std::queue` and `std::priority_queue` formatters [[queue.syn](
 https://eel.is/c++draft/queue.syn)]:
