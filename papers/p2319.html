@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="643f20adb6b474563c8d0af0e69675020ae42013" name="revision">
+  <meta content="637eb85943ba028c905c87b7a6829d76bfb42018" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2116,7 +2116,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    </ol>
   </nav>
   <main>
-   <p>TODO: quote about wrong default</p>
+   <p style="text-align: right"> "We are stuck with technology when what we really want is just stuff that
+works."
+ ― Douglas Adams </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2845" title="Formatting of std::filesystem::path">[P2845]</a> made it possible to format and print <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> with
 correct handling of Unicode. Unfortunately, some common path accessors still
@@ -2162,7 +2164,7 @@ dependent current encoding for pathnames ([fs.class.path]).</p>
 usually lossy which makes it almost never what you want. The string can
 be passed to system-specific APIs that accept paths provided that the system
 codepage hasn’t changed in the meantime. But even this use case is limited
-because the transcoding is lossy and it’s better to use <code class="highlight"><c- n>native</c-><c- p>()</c-></code> instead.</p>
+because the transcoding is lossy and it’s better to use an equivalent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-></code> API or <code class="highlight"><c- n>native</c-><c- p>()</c-></code> instead.</p>
    <p>On Windows the native encoding is effectively the Active Code Page (ACP) which
 is separate from the console code page. This is why paths often cannot be
 correctly displayed.</p>
@@ -2170,9 +2172,9 @@ correctly displayed.</p>
 text in literal and potentially other encodings when constructing an exception
 message.</p>
    <p>Moreover, the result of <code class="highlight"><c- n>string</c-><c- p>()</c-></code> is affected by a runtime setting and may
-work in a test environment but break after deployment. This is similar to one
-of the problems with locales but worse because in this case C++ doesn’t even
-provide a way to set or query the encoding.</p>
+work in a test environment but easily break after deployment. This is similar
+to one of the problems with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-></code> but worse because in this case C++
+doesn’t even provide a way to set or query the encoding.</p>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The main problem is that different use cases require different encodings and
 the native encoding is almost always the wrong choice making it yet another
@@ -2187,11 +2189,12 @@ current <code class="highlight"><c- n>string</c-><c- p>()</c-></code> it is loss
 APIs.</p>
     <li data-md>
      <p><code class="highlight"><c- n>display_string</c-><c- p>()</c-></code> returning <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code> in the literal encoding suitable
-for display, e.g. formatting with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and printing with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>. It is lossless if the literal encoding is UTF-8.</p>
+for display, e.g. formatting with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and printing with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>. It is lossless if the literal encoding is UTF-8 and the path
+is valid Unicode which is almost all paths on Windows.</p>
    </ul>
    <p>We use "system" instead of "native" because the latter is ambiguous: it can
 either refer to encoding or format (path separators, etc.).</p>
-   <p>Similarly <code class="highlight"><c- n>generic_string</c-><c- p>()</c-></code> is replaced with <code class="highlight"><c- n>generic_system_string</c-><c- p>()</c-></code> and <code class="highlight"><c- n>generic_display_string</c-><c- p>()</c-></code>.</p>
+   <p>Similarly, <code class="highlight"><c- n>generic_string</c-><c- p>()</c-></code>, which has the same problems, is split into <code class="highlight"><c- n>generic_system_string</c-><c- p>()</c-></code> and <code class="highlight"><c- n>generic_display_string</c-><c- p>()</c-></code>.</p>
    <p>This will solve common issues with <code class="highlight"><c- n>string</c-><c- p>()</c-></code> by requiring the caller to
 specify which encoding they want. In particular the original example will
 work with <code class="highlight"><c- n>display_string</c-><c- p>()</c-></code>:</p>
@@ -2206,9 +2209,10 @@ explicit:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>p</c-><c- p>(</c->L<c- s>"Выявы"</c-><c- p>);</c->
 <c- n>std</c-><c- o>::</c-><c- n>remove</c-><c- p>(</c-><c- n>p</c-><c- p>.</c-><c- n>system_string</c-><c- p>());</c-> <c- c1>// Legacy API, won't work if ACP is not CP1251.</c->
 </pre>
-   <p>There is almost always a better way to accomplish the same task with non-legacy
+   <p>There is usually a better way to accomplish the same task with non-legacy
 APIs, e.g. using the lossless <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>remove</c-></code> that takes a path object
-instead of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code>.</p>
+instead of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code>. Ideally <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code> should be deprecated but this
+is out of scope of the current paper.</p>
    <h2 class="heading settled" data-level="4" id="wording"><span class="secno">4. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify <a href="https://eel.is/c++draft/fs.class.path.general">[https://eel.is/c++draft/fs.class.path.general</a>]:</p>
 <pre class="highlight"><c- p>...</c->
