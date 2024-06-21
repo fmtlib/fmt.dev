@@ -23,7 +23,7 @@ Introduction {#intro}
 
 [[P2845]] made it possible to format and print `std::filesystem::path` with
 correct handling of Unicode. Unfortunately, some common path accessors still
-exhibit broken behavior which results in mojibake and data loss. This paper
+exhibit broken behavior, which results in mojibake and data loss. This paper
 proposes fixing these issues, making the path API more reliable, user-friendly
 and consistent with other standard facilities.
 
@@ -47,7 +47,7 @@ Windows:
 ┬√ т√
 ```
 
-Unfortunately we cannot change the behavior of iostreams but at least the new
+Unfortunately, we cannot change the behavior of iostreams but at least the new
 facilities such as `std::format` and `std::print` correctly handle Unicode in
 paths. For example:
 
@@ -82,19 +82,19 @@ path into the native encoding
 > The native encoding of an ordinary character string is the operating system
 > dependent current encoding for pathnames ([fs.class.path]).
 
-It is neither the literal encoding nor a locale encoding and transcoding is
-usually lossy which makes it almost never what you want. The string can
+It is neither the literal encoding nor a locale encoding, and transcoding is
+usually lossy, which makes it almost never what you want. The string can
 be passed to system-specific APIs that accept paths provided that the system
-codepage hasn't changed in the meantime. But even this use case is limited
-because the transcoding is lossy and it's better to use an equivalent
+encoding hasn't changed in the meantime. But even this use case is limited
+because the transcoding is lossy, and it's better to use an equivalent
 `std::filesystem` API or `native()` instead.
 
-On Windows the native encoding is effectively the Active Code Page (ACP) which
+On Windows, the native encoding is effectively the Active Code Page (ACP), which
 is separate from the console code page. This is why paths often cannot be
 correctly displayed.
 
 Encoding bugs are even present in standard library implementations, see e.g.
-[[LWG4087]] where a path in the "native" encoding is incorrectly combined with
+[[LWG4087]], where a path in the "native" encoding is incorrectly combined with
 text in literal and potentially other encodings when constructing an exception
 message.
 
@@ -106,8 +106,8 @@ doesn't even provide a way to set or query the encoding.
 Proposal {#proposal}
 ========
 
-The main problem is that different use cases require different encodings and
-the native encoding is almost always the wrong choice making it yet another
+The main problem is that different use cases require different encodings, and
+the native encoding is almost always the wrong choice, making it yet another
 example of a wrong default.
 
 The current paper proposes deprecating the `std::filesystem::path::string()`
@@ -116,7 +116,7 @@ encoding clear:
 
 * `system_string()` returning `std::string` in the operating system dependent
     current encoding for pathnames (native ordinary encoding). Similarly to the
-    current `string()` it is lossy and only useful for passing to legacy system
+    current `string()`, it is lossy and only useful for passing to legacy system
     APIs.
 * `display_string()` returning `std::string` in the literal encoding suitable
     for display, e.g. formatting with `std::format` and printing with
@@ -130,7 +130,7 @@ Similarly, `generic_string()`, which has the same problems, is split into
 `generic_system_string()` and `generic_display_string()`.
 
 This will solve common issues with `string()` by requiring the caller to
-specify which encoding they want. In particular the original example will
+specify which encoding they want. In particular, the original example will
 work with `display_string()`:
 
 ```
@@ -154,7 +154,7 @@ std::remove(p.system_string()); // Legacy API, won't work if ACP is not CP1251.
 
 There is usually a better way to accomplish the same task with non-legacy
 APIs, e.g. using the lossless `std::filesystem::remove` that takes a path object
-instead of `std::remove`. Ideally `std::remove` should be deprecated but this
+instead of `std::remove`. Ideally, `std::remove` should be deprecated but this
 is out of scope of the current paper.
 
 Wording {#wording}
