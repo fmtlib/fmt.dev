@@ -1,0 +1,300 @@
+<pre class='metadata'>
+Title: Fix path to string conversion
+Shortname: P2319
+Revision: 0
+Audience: SG16
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2024-06-20
+Markup Shorthands: markdown yes
+</pre>
+
+TODO: quote about wrong default
+
+Introduction {#intro}
+============
+
+[[P2845]] made it possible to format and print `std::filesystem::path` with
+correct handling of Unicode. Unfortunately, some common path accessors still
+exhibit broken behavior which results in mojibake and data loss. This paper
+proposes fixing these issues, making the path API more reliable, user-friendly
+and consistent with other standard facilities.
+
+Problem {#problem}
+=======
+
+Consider the following example:
+
+```
+std::filesystem::path p(L"Выявы"); // Выявы is Images in Belarusian.
+std::cout << p << std::endl;
+std::cout << p.string() << std::endl;
+```
+
+Even if all code pages and localization settings are set to Belarusian and both
+the source and literal encodings are UTF-8, this still results in mojibake on
+Windows:
+
+```text
+"┬√ т√"
+┬√ т√
+```
+
+Unfortunately we cannot change the behavior of iostreams but at least the new
+facilities such as `std::format` and `std::print` correctly handle Unicode in
+paths. For example:
+
+```
+std::filesystem::path p(L"Выявы");
+std::print("{}\n", p);
+```
+
+prints
+
+```
+Выявы
+```
+
+However, the `string()` accessor still exhibits the broken behavior, e.g.
+
+```
+std::filesystem::path p(L"Выявы");
+std::print("{}\n", p.string());
+```
+
+prints
+
+```
+�����
+```
+
+The reason for this is that `std::filesystem::path::string()` transcodes the
+path into the native encoding
+([[fs.path.type.cvt](https://eel.is/c++draft/fs.path.type.cvt)]) defined as:
+
+> The native encoding of an ordinary character string is the operating system
+> dependent current encoding for pathnames ([fs.class.path]).
+
+It is neither the literal encoding nor a locale encoding and transcoding is
+usually lossy which makes it almost never what you want. The string can
+be passed to system-specific APIs that accept paths provided that the system
+codepage hasn't changed in the meantime. But even this use case is limited
+because the transcoding is lossy and it's better to use `native()` instead.
+
+On Windows the native encoding is effectively the Active Code Page (ACP) which
+is separate from the console code page. This is why paths often cannot be
+correctly displayed.
+
+Encoding bugs are even present in standard library implementations, see e.g.
+[[LWG4087]] where a path in the "native" encoding is incorrectly combined with
+text in literal and potentially other encodings when constructing an exception
+message.
+
+Moreover, the result of `string()` is affected by a runtime setting and may
+work in a test environment but break after deployment. This is similar to one
+of the problems with locales but worse because in this case C++ doesn't even
+provide a way to set or query the encoding.
+
+Proposal {#proposal}
+========
+
+The main problem is that different use cases require different encodings and
+the native encoding is almost always the wrong choice making it yet another
+example of a wrong default.
+
+The current paper proposes deprecating the `std::filesystem::path::string()`
+overload for `char`, replacing it with alternatives that make the target
+encoding clear:
+
+* `system_string()` returning `std::string` in the operating system dependent
+    current encoding for pathnames (native ordinary encoding). Similarly to the
+    current `string()` it is lossy and only useful for passing to legacy system
+    APIs.
+* `display_string()` returning `std::string` in the literal encoding suitable
+    for display, e.g. formatting with `std::format` and printing with
+    `std::print`. It is lossless if the literal encoding is UTF-8.
+
+We use "system" instead of "native" because the latter is ambiguous: it can
+either refer to encoding or format (path separators, etc.).
+
+Similarly `generic_string()` is replaced with `generic_system_string()` and
+`generic_display_string()`.
+
+This will solve common issues with `string()` by requiring the caller to
+specify which encoding they want. In particular the original example will
+work with `display_string()`:
+
+```
+std::filesystem::path p(L"Выявы");
+std::print("{}\n", p.display_string());
+```
+
+prints
+
+```
+Выявы
+```
+
+This also makes conversion to the system encoding for use with legacy APIs more
+explicit:
+
+```
+std::filesystem::path p(L"Выявы");
+std::remove(p.system_string()); // Legacy API, won't work if ACP is not CP1251.
+```
+
+There is almost always a better way to accomplish the same task with non-legacy
+APIs, e.g. using the lossless `std::filesystem::remove` that takes a path object
+instead of `std::remove`.
+
+Wording {#wording}
+=======
+
+Modify [[https://eel.is/c++draft/fs.class.path.general](
+https://eel.is/c++draft/fs.class.path.general)]:
+
+<pre>
+...
+
+// [fs.path.native.obs], native format observers
+const string_type&amp; native() const noexcept;
+const value_type*  c_str() const noexcept;
+operator string_type() const;
+
+template&lt;class EcharT, class traits = char_traits&lt;EcharT>,
+          class Allocator = allocator&lt;EcharT>>
+  basic_string&lt;EcharT, traits, Allocator>
+    string(const Allocator&amp; a = Allocator()) const;
+<del>std::string    string() const;</del>
+<ins>std::string    display_string() const;</ins>
+<ins>std::string    system_string() const;</ins>
+std::wstring   wstring() const;
+std::u8string  u8string() const;
+std::u16string u16string() const;
+std::u32string u32string() const;
+
+// [fs.path.generic.obs], generic format observers
+template&lt;class EcharT, class traits = char_traits&lt;EcharT>,
+          class Allocator = allocator&lt;EcharT>>
+  basic_string&lt;EcharT, traits, Allocator>
+    generic_string(const Allocator&amp; a = Allocator()) const;
+<del>std::string    generic_string() const;</del>
+<ins>std::string    generic_display_string() const;</ins>
+<ins>std::string    generic_system_string() const;</ins>
+std::wstring   generic_wstring() const;
+std::u8string  generic_u8string() const;
+std::u16string generic_u16string() const;
+std::u32string generic_u32string() const;
+
+...
+</pre>
+
+Modify [[fs.path.native.obs](https://eel.is/c++draft/fs.path.native.obs)]:
+
+...
+
+<pre>
+<del>std::string string() const;</del>
+<ins>std::string system_string() const;</ins>
+std::wstring wstring() const;
+std::u8string u8string() const;
+std::u16string u16string() const;
+std::u32string u32string() const;
+</pre>
+
+*Returns*: native().
+
+*Remarks*: Conversion, if any, is performed as specified by [fs.path.cvt].
+
+<pre>
+<ins>std::string display_string() const;</ins>
+</pre>
+
+<ins>
+*Returns*: `format("{}", *this)`.
+</ins>
+
+Modify [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
+
+...
+
+<pre>
+<del>std::string generic_string() const;</del>
+<ins>std::string generic_system_string() const;</ins>
+std::wstring generic_wstring() const;
+std::u8string generic_u8string() const;
+std::u16string generic_u16string() const;
+std::u32string generic_u32string() const;
+</pre>
+
+*Returns*: The pathname in the generic format.
+
+*Remarks*: Conversion, if any, is specified by [fs.path.cvt].
+
+<pre>
+<ins>std::string generic_display_string() const;</ins>
+</pre>
+
+<ins>
+*Returns*: `format("{:g}", *this)`.
+</ins>
+
+Add a new subclause in Annex D:
+
+<ins>
+**Deprecated filesystem path format observers [depr.fs.path.obs]**
+</ins>
+<p>
+
+<ins>
+The following `filesystem::path` member is defined in addition to those
+specified in [[fs.path.native.obs](https://eel.is/c++draft/fs.path.native.obs)]:
+</ins>
+
+<pre>
+<ins>std::string string() const;</ins>
+</pre>
+
+<ins>
+*Returns*: native().
+</ins>
+<p>
+<ins>
+*Remarks*: Conversion, if any, is performed as specified by [fs.path.cvt].
+</ins>
+
+<p>
+
+<ins>
+The following `filesystem::path` member is defined in addition to those
+specified in [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
+</ins>
+
+<pre>
+<ins>std::string generic_string() const;</ins>
+</pre>
+
+<ins>
+*Returns*: The pathname in the generic format.
+</ins>
+<p>
+<ins>
+*Remarks*: Conversion, if any, is specified by [fs.path.cvt].
+</ins>
+
+<pre class=biblio>
+{
+  "P2845": {
+    "title": "Formatting of std::filesystem::path",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p2845"
+  },
+  "LWG4087": {
+    "title": "LWG Issue 4087: Standard exception messages have unspecified encoding",
+    "href": "https://cplusplus.github.io/LWG/issue4087"
+  }
+}
+</pre>
