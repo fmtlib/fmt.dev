@@ -25,7 +25,12 @@ Introduction {#intro}
 optimization to fundamental and string types. The current paper applies this
 important optimization to the remaining standard types.
 
-Changes since R0 {#changes}
+Changes since R1 {#changes1}
+================
+
+- Made ranges not opt into the optimization per LEWG feedback.
+
+Changes since R0 {#changes0}
 ================
 
 - Fixed a rendering issue in the definition of range formatter.
@@ -367,8 +372,7 @@ Modify [[format.syn](https://eel.is/c++draft/format.syn)] as indicated:
 
   <ins>template&lt;ranges::input_range R>
       requires (format_kind&lt;R> != range_format::disabled)
-    inline constexpr bool enable_nonlocking_formatter_optimization&lt;R> =
-      enable_nonlocking_formatter_optimization&lt;remove_cvref_t&lt;ranges::range_reference_t&lt;R>>>;</ins>
+    inline constexpr bool enable_nonlocking_formatter_optimization&lt;R> = false;</ins>
 
   // [format.arguments], arguments
   // [format.arg], class template basic_format_arg
