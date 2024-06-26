@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3235R2: std::print more types faster with less memory</title>
+  <title>P3235R3: std::print more types faster with less memory</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e896774c6d0180b246b9083ef980cd2388ba1dc0" name="revision">
+  <meta content="2a8efc8622e3b08f4b5b6b78908fe10da0b3d4e0" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,7 +2086,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3235R2<br>std::print more types faster with less memory</h1>
+   <h1 class="p-name no-ref" id="title">P3235R3<br>std::print more types faster with less memory</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-06-24">2024-06-24</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2105,10 +2105,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
-    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
+    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2122,19 +2123,24 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> enabled an efficient implementation of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and applied the
 optimization to fundamental and string types. The current paper applies this
 important optimization to the remaining standard types.</p>
-   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes2"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added instructions to update the <code class="highlight"><c- n>__cpp_lib_print</c-></code> feature testing macro.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Made ranges not opt into the optimization per LEWG feedback.</p>
     <li data-md>
      <p>Fixed a markdown issue in wording.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Fixed a rendering issue in the definition of range formatter.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p3107" title="Permit an efficient implementation of std::print">[P3107]</a> "Permit an efficient implementation of std::print" brought
 significant speedups (from 20% in the original benchmarks to 2x in <a data-link-type="biblio" href="#biblio-so-large-data" title="How to use {fmt} with large data">[SO-LARGE-DATA]</a>) to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> and
 eliminated the need for dynamic memory allocations in the common case by
@@ -2255,7 +2261,9 @@ all of these functions are locking and "nonlocking" overloads confusingly call
 "locking" ones. In POSIX and other languages the default is locking so the new
 naming is more consistent with standard practice. The new naming reflects the
 fact that the main difference is buffering of all of the output.</p>
-   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Update the value of the feature-testing macro <code class="highlight"><c- n>__cpp_lib_print</c-></code> to the date of
+adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
    <p>Modify <a href="https://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]
 as indicated:</p>
    <p>...</p>
