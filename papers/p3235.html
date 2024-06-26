@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="fa90be23566fd9535e4871a8759ea3e3456b5e25" name="revision">
+  <meta content="b8116c5a4d030a27785b5a8293a3b646eeb5a0b6" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2127,6 +2127,9 @@ important optimization to the remaining standard types.</p>
    <ul>
     <li data-md>
      <p>Added instructions to update the <code class="highlight"><c- n>__cpp_lib_print</c-></code> feature testing macro.</p>
+    <li data-md>
+     <p>Conditionally opted in durations based on whether their <code class="highlight"><c- n>Rep</c-></code> is opted In
+per LWG feedback since <code class="highlight"><c- n>Rep</c-></code> can be a user-defined arithmetic-like type.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
@@ -2288,6 +2291,13 @@ additional padding and adjustments as specified by the format specifiers.</p>
 <pre class="highlight"><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>format</c-><c- p>(</c-><c- s>"{:=>8}"</c-><c- p>,</c-> <c- mi>42</c-><c- n>ms</c-><c- p>);</c->      <c- c1>// value of s is "====42ms"</c->
 </pre>
    <p>— <em>end example</em>]</p>
+   <ins> For <code class="highlight"><c- n>chrono</c-><c- o>::</c-><c- n>duration</c-></code> the library only provides the following specialization
+of <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-></code>: </ins>
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Rep</c-><c- p>,</c-> <c- k>class</c-> <c- nc>Period</c-><c- o>></c->
+  <c- kr>inline</c-> <c- k>constexpr</c-> <c- b>bool</c-> <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c->
+    <c- n>chrono</c-><c- o>::</c-><c- n>duration</c-><c- o>&lt;</c-><c- n>Rep</c-><c- p>,</c-> <c- n>Period</c-><c- o>>></c-> <c- o>=</c->
+      <c- n>enable_nonlocking_formatter_optimization</c-><c- o>&lt;</c-><c- n>Rep</c-><c- o>></c-><c- p>;</c->
+</ins></pre>
    <ins> For <code class="highlight"><c- n>chrono</c-><c- o>::</c-><c- n>zoned_time</c-></code> the library only provides the following specialization
 of <code class="highlight"><c- n>enable_nonlocking_formatter_optimization</c-></code>: </ins>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Duration</c-><c- o>></c->

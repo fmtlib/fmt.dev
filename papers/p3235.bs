@@ -29,6 +29,8 @@ Changes since R1 {#changes2}
 ================
 
 - Added instructions to update the `__cpp_lib_print` feature testing macro.
+- Conditionally opted in durations based on whether their `Rep` is opted In
+    per LWG feedback since `Rep` can be a user-defined arithmetic-like type.
 
 Changes since R1 {#changes1}
 ================
@@ -331,6 +333,18 @@ additional padding and adjustments as specified by the format specifiers.
 string s = format("{:=>8}", 42ms);      // value of s is "====42ms"
 ```
 — *end example*]
+
+<ins>
+For `chrono::duration` the library only provides the following specialization
+of `enable_nonlocking_formatter_optimization`:
+</ins>
+
+<pre><ins>
+template&lt;class Rep, class Period>
+  inline constexpr bool enable_nonlocking_formatter_optimization&lt;
+    chrono::duration&lt;Rep, Period>> =
+      enable_nonlocking_formatter_optimization&lt;Rep>;
+</ins></pre>
 
 <ins>
 For `chrono::zoned_time` the library only provides the following specialization
