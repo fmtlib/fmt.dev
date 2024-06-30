@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="5bcf3883e96cc702179b0ac32243d152c2a83caa" name="revision">
+  <meta content="b127d3728e693bcf57e01f00cc9a5418de20d7f6" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2162,24 +2162,49 @@ path into the native encoding
 dependent current encoding for pathnames ([fs.class.path]).</p>
    </blockquote>
    <p>It is neither the literal encoding nor a locale encoding, and transcoding is
-usually lossy, which makes it almost never what you want. The string can
-be passed to system-specific APIs that accept paths provided that the system
-encoding hasn’t changed in the meantime. But even this use case is limited
-because the transcoding is lossy, and it’s better to use an equivalent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-></code> API or <code class="highlight"><c- n>native</c-><c- p>()</c-></code> instead.</p>
-   <p>On Windows, the native encoding is effectively the Active Code Page (ACP), which
-is separate from the console code page. This is why paths often cannot be
-correctly displayed.</p>
+usually lossy, which makes it almost never what you want. For example:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>p</c-><c- p>(</c->L<c- s>"Obrázky"</c-><c- p>);</c->
+<c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- n>s</c-> <c- o>=</c-> <c- n>p</c-><c- p>.</c-><c- n>string</c-><c- p>();</c->
+</pre>
+   <p>throws <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_error</c-></code> with the message "unknown error" on the same system
+which is a terrible user experience.</p>
+   <p>The string can be passed to system-specific APIs that accept paths provided that
+the system encoding hasn’t changed in the meantime. But even this use case is
+limited because the transcoding is lossy, and it’s better to use an equivalent <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-></code> API or <code class="highlight"><c- n>native</c-><c- p>()</c-></code> instead.</p>
+   <p>On Windows, the native encoding is effectively the Active Code Page (ACP),
+which is separate from the console code page. This is why paths often cannot be
+correctly displayed. Even Windows documentation (<a data-link-type="biblio" href="#biblio-code-pages" title="Windows App Development / Code Pages">[CODE-PAGES]</a>) cautions
+against using code pages:</p>
+   <blockquote>
+    <p>New Windows applications should use Unicode to avoid the inconsistencies of
+varied code pages and for ease of localization.</p>
+   </blockquote>
    <p>Encoding bugs are even present in standard library implementations, see e.g. <a data-link-type="biblio" href="#biblio-lwg4087" title="LWG Issue 4087: Standard exception messages have unspecified encoding">[LWG4087]</a>, where a path in the "native" encoding is incorrectly combined with
 text in literal and potentially other encodings when constructing an exception
 message.</p>
    <p>Moreover, the result of <code class="highlight"><c- n>string</c-><c- p>()</c-></code> is affected by a runtime setting and may
 work in a test environment but easily break after deployment. This is similar
 to one of the problems with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-></code> but worse because in this case C++
-doesn’t even provide a way to set or query the encoding.</p>
+doesn’t even provide a way to set or query the encoding. It disproportionately
+affects non-English C++ users makign the language not as attractive for
+writing internationalized and localized software.</p>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>The main problem is that different use cases require different encodings, and
-the native encoding is almost always the wrong choice, making it yet another
-example of a wrong default.</p>
+   <p>To summarize, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>::</c-><c- n>string</c-><c- p>()</c-></code> has the following problems:</p>
+   <ul>
+    <li data-md>
+     <p>It uses encoding that is generally incompatible with nearly all standard text
+processing and I/O facilities including iostreams, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>.</p>
+    <li data-md>
+     <p>It is extremely error-prone causing easy to miss transcoding issues
+that may arise after the program is deployed in a different environment
+or after a runtime configuration change.</p>
+    <li data-md>
+     <p>It makes writing portable code hard because the issues may not be obvious
+on POSIX platforms where <code class="highlight"><c- n>string</c-><c- p>()</c-></code> is just an inefficient equivalent of <code class="highlight"><c- n>native</c-><c- p>()</c-></code> with extra memory allocation and copy.</p>
+   </ul>
+   <p>The crux of the matter is that different use cases require different encodings,
+and the "native" encoding is almost always the wrong choice, making it yet
+another example of a wrong default.</p>
    <p>The current paper proposes deprecating the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>::</c-><c- n>string</c-><c- p>()</c-></code> overload for <code class="highlight"><c- b>char</c-></code>, replacing it with alternatives that make the target
 encoding clear:</p>
    <ul>
@@ -2212,8 +2237,11 @@ explicit:</p>
 </pre>
    <p>There is usually a better way to accomplish the same task with non-legacy
 APIs, e.g. using the lossless <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>remove</c-></code> that takes a path object
-instead of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code>. Ideally, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code> should be deprecated but this
-is out of scope of the current paper.</p>
+instead of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code>:</p>
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>remove</c-><c- p>(</c-><c- n>p</c-><c- p>);</c-> <c- c1>// Lossless, portable and more efficient.</c->
+</pre>
+   <p>Ideally, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code> should be deprecated but this is out of scope of the
+current paper.</p>
    <h2 class="heading settled" data-level="4" id="wording"><span class="secno">4. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify <a href="https://eel.is/c++draft/fs.class.path.general">[https://eel.is/c++draft/fs.class.path.general</a>]:</p>
 <pre class="highlight"><c- p>...</c->
@@ -2435,6 +2463,8 @@ specified in <a href="https://eel.is/c++draft/fs.path.generic.obs">[fs.path.gene
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-code-pages">[CODE-PAGES]
+   <dd><a href="https://learn.microsoft.com/en-us/windows/win32/intl/code-pages"><cite>Windows App Development / Code Pages</cite></a>. URL: <a href="https://learn.microsoft.com/en-us/windows/win32/intl/code-pages">https://learn.microsoft.com/en-us/windows/win32/intl/code-pages</a>
    <dt id="biblio-fmt">[FMT]
    <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The fmt library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-lwg4087">[LWG4087]

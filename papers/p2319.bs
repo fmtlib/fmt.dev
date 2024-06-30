@@ -83,15 +83,28 @@ path into the native encoding
 > dependent current encoding for pathnames ([fs.class.path]).
 
 It is neither the literal encoding nor a locale encoding, and transcoding is
-usually lossy, which makes it almost never what you want. The string can
-be passed to system-specific APIs that accept paths provided that the system
-encoding hasn't changed in the meantime. But even this use case is limited
-because the transcoding is lossy, and it's better to use an equivalent
+usually lossy, which makes it almost never what you want. For example:
+
+```
+std::filesystem::path p(L"Obrázky");
+std::string s = p.string();
+```
+
+throws `std::runtime_error` with the message "unknown error" on the same system
+which is a terrible user experience.
+
+The string can be passed to system-specific APIs that accept paths provided that
+the system encoding hasn't changed in the meantime. But even this use case is
+limited because the transcoding is lossy, and it's better to use an equivalent
 `std::filesystem` API or `native()` instead.
 
-On Windows, the native encoding is effectively the Active Code Page (ACP), which
-is separate from the console code page. This is why paths often cannot be
-correctly displayed.
+On Windows, the native encoding is effectively the Active Code Page (ACP),
+which is separate from the console code page. This is why paths often cannot be
+correctly displayed. Even Windows documentation ([[CODE-PAGES]]) cautions
+against using code pages:
+
+> New Windows applications should use Unicode to avoid the inconsistencies of
+> varied code pages and for ease of localization.
 
 Encoding bugs are even present in standard library implementations, see e.g.
 [[LWG4087]], where a path in the "native" encoding is incorrectly combined with
@@ -101,14 +114,28 @@ message.
 Moreover, the result of `string()` is affected by a runtime setting and may
 work in a test environment but easily break after deployment. This is similar
 to one of the problems with `std::locale` but worse because in this case C++
-doesn't even provide a way to set or query the encoding.
+doesn't even provide a way to set or query the encoding. It disproportionately
+affects non-English C++ users makign the language not as attractive for
+writing internationalized and localized software.
 
 Proposal {#proposal}
 ========
 
-The main problem is that different use cases require different encodings, and
-the native encoding is almost always the wrong choice, making it yet another
-example of a wrong default.
+To summarize, `std::filesystem::path::string()` has the following problems:
+
+* It uses encoding that is generally incompatible with nearly all standard text
+    processing and I/O facilities including iostreams, `std::format` and
+    `std::print`.
+* It is extremely error-prone causing easy to miss transcoding issues
+    that may arise after the program is deployed in a different environment
+    or after a runtime configuration change.
+* It makes writing portable code hard because the issues may not be obvious
+    on POSIX platforms where `string()` is just an inefficient equivalent of
+    `native()` with extra memory allocation and copy.
+
+The crux of the matter is that different use cases require different encodings,
+and the "native" encoding is almost always the wrong choice, making it yet
+another example of a wrong default.
 
 The current paper proposes deprecating the `std::filesystem::path::string()`
 overload for `char`, replacing it with alternatives that make the target
@@ -154,8 +181,14 @@ std::remove(p.system_string()); // Legacy API, won't work if ACP is not CP1251.
 
 There is usually a better way to accomplish the same task with non-legacy
 APIs, e.g. using the lossless `std::filesystem::remove` that takes a path object
-instead of `std::remove`. Ideally, `std::remove` should be deprecated but this
-is out of scope of the current paper.
+instead of `std::remove`:
+
+```
+std::filesystem::remove(p); // Lossless, portable and more efficient.
+```
+
+Ideally, `std::remove` should be deprecated but this is out of scope of the
+current paper.
 
 Wording {#wording}
 =======
@@ -313,6 +346,10 @@ The proposed accessors have been implemented in the {fmt} library ([[FMT]]).
     "title": "Formatting of std::filesystem::path",
     "authors": ["Victor Zverovich"],
     "href": "https://wg21.link/p2845"
+  },
+  "CODE-PAGES": {
+    "title": "Windows App Development / Code Pages",
+    "href": "https://learn.microsoft.com/en-us/windows/win32/intl/code-pages"
   }
 }
 </pre>
