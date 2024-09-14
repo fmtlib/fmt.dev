@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Prevent path presentation problems
 Shortname: P2319
-Revision: 0
-Audience: SG16
+Revision: 1
+Audience: SG16, LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-06-20
+Date: 2024-09-14
 Markup Shorthands: markdown yes
 </pre>
 
@@ -24,8 +24,16 @@ Introduction {#intro}
 [[P2845]] made it possible to format and print `std::filesystem::path` with
 correct handling of Unicode. Unfortunately, some common path accessors still
 exhibit broken behavior, which results in mojibake and data loss. This paper
-proposes fixing these issues, making the path API more reliable, user-friendly
-and consistent with other standard facilities.
+proposes deprecating these accessors, making the path API more reliable and
+eliminating a common source of bugs.
+<!-- fixing these issues, making the path API more reliable, user-friendly
+and consistent with other standard facilities. -->
+
+Changes since R0 {#changes0}
+================
+
+- Removed `system_string` and `display_string` per SG16 feedback focusing just
+    on deprecating broken accessors.
 
 Problem {#problem}
 =======
@@ -133,12 +141,13 @@ To summarize, `std::filesystem::path::string()` has the following problems:
     on POSIX platforms where `string()` is just an inefficient equivalent of
     `native()` with extra memory allocation and copy.
 
-The crux of the matter is that different use cases require different encodings,
+<!-- The crux of the matter is that different use cases require different encodings,
 and the "native" encoding is almost always the wrong choice, making it yet
-another example of a wrong default.
+another example of a wrong default. -->
 
 The current paper proposes deprecating the `std::filesystem::path::string()`
-overload for `char`, replacing it with alternatives that make the target
+and `std::filesystem::path::generic_string()`, which has the same problems,
+overloads for `char`. <!--, replacing it with alternatives that make the target
 encoding clear:
 
 * `system_string()` returning `std::string` in the operating system dependent
@@ -151,7 +160,7 @@ encoding clear:
     is valid Unicode which is almost all paths on Windows.
 
 We use "system" instead of "native" because the latter is ambiguous: it can
-either refer to encoding or format (path separators, etc.).
+either refer to encoding or format (path separators, etc.)
 
 Similarly, `generic_string()`, which has the same problems, is split into
 `generic_system_string()` and `generic_display_string()`.
@@ -177,7 +186,7 @@ explicit:
 ```
 std::filesystem::path p(L"Выявы");
 std::remove(p.system_string()); // Legacy API, won't work if ACP is not CP1251.
-```
+``` -->
 
 There is usually a better way to accomplish the same task with non-legacy
 APIs, e.g. using the lossless `std::filesystem::remove` that takes a path object
@@ -189,6 +198,9 @@ std::filesystem::remove(p); // Lossless, portable and more efficient.
 
 Ideally, `std::remove` should be deprecated but this is out of scope of the
 current paper.
+
+And for lossless display, these accessors can be replaced with formatting `path`
+using new facilities such as `std::format` or `std::print`.
 
 Wording {#wording}
 =======
@@ -209,8 +221,8 @@ template&lt;class EcharT, class traits = char_traits&lt;EcharT>,
   basic_string&lt;EcharT, traits, Allocator>
     string(const Allocator&amp; a = Allocator()) const;
 <del>std::string    string() const;</del>
-<ins>std::string    display_string() const;</ins>
-<ins>std::string    system_string() const;</ins>
+<!--ins>std::string    display_string() const;</ins>
+<ins>std::string    system_string() const;</ins-->
 std::wstring   wstring() const;
 std::u8string  u8string() const;
 std::u16string u16string() const;
@@ -222,8 +234,8 @@ template&lt;class EcharT, class traits = char_traits&lt;EcharT>,
   basic_string&lt;EcharT, traits, Allocator>
     generic_string(const Allocator&amp; a = Allocator()) const;
 <del>std::string    generic_string() const;</del>
-<ins>std::string    generic_display_string() const;</ins>
-<ins>std::string    generic_system_string() const;</ins>
+<!--ins>std::string    generic_display_string() const;</ins>
+<ins>std::string    generic_system_string() const;</ins-->
 std::wstring   generic_wstring() const;
 std::u8string  generic_u8string() const;
 std::u16string generic_u16string() const;
@@ -238,7 +250,7 @@ Modify [[fs.path.native.obs](https://eel.is/c++draft/fs.path.native.obs)]:
 
 <pre>
 <del>std::string string() const;</del>
-<ins>std::string system_string() const;</ins>
+<!--ins>std::string system_string() const;</ins-->
 std::wstring wstring() const;
 std::u8string u8string() const;
 std::u16string u16string() const;
@@ -249,7 +261,7 @@ std::u32string u32string() const;
 
 *Remarks*: Conversion, if any, is performed as specified by [fs.path.cvt].
 
-<pre>
+<!--pre>
 <ins>std::string display_string() const;</ins>
 </pre>
 <ins>
@@ -261,7 +273,7 @@ std::u32string u32string() const;
 [<i>Note</i>: The returned string is suitable for use with formatting
 ([[format.functions](https://eel.is/c++draft/format.functions)]) and print
 functions ([[print.fun](https://eel.is/c++draft/print.fun)]). — *end note*]
-</ins>
+</ins-->
 
 Modify [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
 
@@ -269,7 +281,7 @@ Modify [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
 
 <pre>
 <del>std::string generic_string() const;</del>
-<ins>std::string generic_system_string() const;</ins>
+<!--ins>std::string generic_system_string() const;</ins-->
 std::wstring generic_wstring() const;
 std::u8string generic_u8string() const;
 std::u16string generic_u16string() const;
@@ -280,7 +292,7 @@ std::u32string generic_u32string() const;
 
 *Remarks*: Conversion, if any, is specified by [fs.path.cvt].
 
-<pre>
+<!--pre>
 <ins>std::string generic_display_string() const;</ins>
 </pre>
 
@@ -292,7 +304,7 @@ std::u32string generic_u32string() const;
 [<i>Note</i>: The returned string is suitable for use with formatting
 ([[format.functions](https://eel.is/c++draft/format.functions)]) and print
 functions ([[print.fun](https://eel.is/c++draft/print.fun)]). — *end note*]
-</ins>
+</ins-->
 
 Add a new subclause in Annex D:
 
@@ -337,19 +349,13 @@ specified in [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)
 *Remarks*: Conversion, if any, is specified by [fs.path.cvt].
 </ins>
 
-Implementation {#impl}
+<!--Implementation {#impl}
 ==============
 
-The proposed accessors have been implemented in the {fmt} library ([[FMT]]).
+The proposed accessors have been implemented in the {fmt} library ([[FMT]]). -->
 
 <pre class=biblio>
 {
-  "FMT": {
-    "title": "The fmt library",
-    "authors": ["Victor Zverovich"],
-    "etAl": true,
-    "href": "https://github.com/fmtlib/fmt"
-  },
   "LWG4087": {
     "title": "LWG Issue 4087: Standard exception messages have unspecified encoding",
     "href": "https://cplusplus.github.io/LWG/issue4087"

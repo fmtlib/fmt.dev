@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P2319R0: Prevent path presentation problems</title>
+  <title>P2319R1: Prevent path presentation problems</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ca144ce96bec72d09b7e41b72ca9f7e838d5e52e" name="revision">
+  <meta content="2c443d34feca003850b27944206135eb11c9f82f" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,14 +2086,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P2319R0<br>Prevent path presentation problems</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-06-20">2024-06-20</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P2319R1<br>Prevent path presentation problems</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-09-14">2024-09-14</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
-     <dd>SG16
+     <dd>SG16, LEWG
      <dt>Project:
      <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
     </dl>
@@ -2105,10 +2105,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#problem"><span class="secno">2</span> <span class="content">Problem</span></a>
-    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
-    <li><a href="#wording"><span class="secno">4</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#problem"><span class="secno">3</span> <span class="content">Problem</span></a>
+    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">5</span> <span class="content">Wording</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2124,9 +2124,15 @@ works."
    <p><a data-link-type="biblio" href="#biblio-p2845" title="Formatting of std::filesystem::path">[P2845]</a> made it possible to format and print <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> with
 correct handling of Unicode. Unfortunately, some common path accessors still
 exhibit broken behavior, which results in mojibake and data loss. This paper
-proposes fixing these issues, making the path API more reliable, user-friendly
-and consistent with other standard facilities.</p>
-   <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
+proposes deprecating these accessors, making the path API more reliable and
+eliminating a common source of bugs.</p>
+   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Removed <code class="highlight"><c- n>system_string</c-></code> and <code class="highlight"><c- n>display_string</c-></code> per SG16 feedback focusing just
+on deprecating broken accessors.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="problem"><span class="secno">3. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
    <p>Consider the following example:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>p</c-><c- p>(</c->L<c- s>"Выявы"</c-><c- p>);</c-> <c- c1>// Выявы is Images in Belarusian.</c->
 <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>p</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>endl</c-><c- p>;</c->
@@ -2188,7 +2194,7 @@ to one of the problems with <code class="highlight"><c- n>std</c-><c- o>::</c-><
 doesn’t even provide a way to set or query the encoding. It disproportionately
 affects non-English C++ users making the language not as attractive for
 writing internationalized and localized software.</p>
-   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>To summarize, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>::</c-><c- n>string</c-><c- p>()</c-></code> has the following problems:</p>
    <ul>
     <li data-md>
@@ -2202,39 +2208,8 @@ or after a runtime configuration change.</p>
      <p>It makes writing portable code hard because the issues may not be obvious
 on POSIX platforms where <code class="highlight"><c- n>string</c-><c- p>()</c-></code> is just an inefficient equivalent of <code class="highlight"><c- n>native</c-><c- p>()</c-></code> with extra memory allocation and copy.</p>
    </ul>
-   <p>The crux of the matter is that different use cases require different encodings,
-and the "native" encoding is almost always the wrong choice, making it yet
-another example of a wrong default.</p>
-   <p>The current paper proposes deprecating the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>::</c-><c- n>string</c-><c- p>()</c-></code> overload for <code class="highlight"><c- b>char</c-></code>, replacing it with alternatives that make the target
-encoding clear:</p>
-   <ul>
-    <li data-md>
-     <p><code class="highlight"><c- n>system_string</c-><c- p>()</c-></code> returning <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code> in the operating system dependent
-current encoding for pathnames (native ordinary encoding). Similarly to the
-current <code class="highlight"><c- n>string</c-><c- p>()</c-></code>, it is lossy and only useful for passing to legacy system
-APIs.</p>
-    <li data-md>
-     <p><code class="highlight"><c- n>display_string</c-><c- p>()</c-></code> returning <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>string</c-></code> in the literal encoding suitable
-for display, e.g. formatting with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> and printing with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>. It is lossless if the literal encoding is UTF-8 and the path
-is valid Unicode which is almost all paths on Windows.</p>
-   </ul>
-   <p>We use "system" instead of "native" because the latter is ambiguous: it can
-either refer to encoding or format (path separators, etc.).</p>
-   <p>Similarly, <code class="highlight"><c- n>generic_string</c-><c- p>()</c-></code>, which has the same problems, is split into <code class="highlight"><c- n>generic_system_string</c-><c- p>()</c-></code> and <code class="highlight"><c- n>generic_display_string</c-><c- p>()</c-></code>.</p>
-   <p>This will solve common issues with <code class="highlight"><c- n>string</c-><c- p>()</c-></code> by requiring the caller to
-specify which encoding they want. In particular, the original example will
-work with <code class="highlight"><c- n>display_string</c-><c- p>()</c-></code>:</p>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>p</c-><c- p>(</c->L<c- s>"Выявы"</c-><c- p>);</c->
-<c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>.</c-><c- n>display_string</c-><c- p>());</c->
-</pre>
-   <p>prints</p>
-<pre class="highlight"><c- n>Выявы</c->
-</pre>
-   <p>This also makes conversion to the system encoding for use with legacy APIs more
-explicit:</p>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-> <c- n>p</c-><c- p>(</c->L<c- s>"Выявы"</c-><c- p>);</c->
-<c- n>std</c-><c- o>::</c-><c- n>remove</c-><c- p>(</c-><c- n>p</c-><c- p>.</c-><c- n>system_string</c-><c- p>());</c-> <c- c1>// Legacy API, won't work if ACP is not CP1251.</c->
-</pre>
+   <p>The current paper proposes deprecating the <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>::</c-><c- n>string</c-><c- p>()</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- o>::</c-><c- n>generic_string</c-><c- p>()</c-></code>, which has the same problems,
+overloads for <code class="highlight"><c- b>char</c-></code>. </p>
    <p>There is usually a better way to accomplish the same task with non-legacy
 APIs, e.g. using the lossless <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>remove</c-></code> that takes a path object
 instead of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code>:</p>
@@ -2242,7 +2217,8 @@ instead of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-><
 </pre>
    <p>Ideally, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>remove</c-></code> should be deprecated but this is out of scope of the
 current paper.</p>
-   <h2 class="heading settled" data-level="4" id="wording"><span class="secno">4. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>And for lossless display, these accessors can be replaced with formatting <code class="highlight"><c- n>path</c-></code> using new facilities such as <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> or <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code>.</p>
+   <h2 class="heading settled" data-level="5" id="wording"><span class="secno">5. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Modify <a href="https://eel.is/c++draft/fs.class.path.general">[https://eel.is/c++draft/fs.class.path.general</a>]:</p>
 <pre class="highlight"><c- p>...</c->
 
@@ -2256,8 +2232,6 @@ current paper.</p>
   <c- n>basic_string</c-><c- o>&lt;</c-><c- n>EcharT</c-><c- p>,</c-> <c- n>traits</c-><c- p>,</c-> <c- n>Allocator</c-><c- o>></c->
     <c- n>string</c-><c- p>(</c-><c- k>const</c-> <c- n>Allocator</c-><c- o>&amp;</c-> <c- n>a</c-> <c- o>=</c-> <c- n>Allocator</c-><c- p>())</c-> <c- k>const</c-><c- p>;</c->
 <del><c- n>std</c-><c- o>::</c-><c- n>string</c->    <c- nf>string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
-<ins><c- n>std</c-><c- o>::</c-><c- n>string</c->    <c- nf>display_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-<ins><c- n>std</c-><c- o>::</c-><c- n>string</c->    <c- nf>system_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 <c- n>std</c-><c- o>::</c-><c- n>wstring</c->   <c- nf>wstring</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u8string</c->  <c- nf>u8string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u16string</c-> <c- nf>u16string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
@@ -2269,8 +2243,6 @@ current paper.</p>
   <c- n>basic_string</c-><c- o>&lt;</c-><c- n>EcharT</c-><c- p>,</c-> <c- n>traits</c-><c- p>,</c-> <c- n>Allocator</c-><c- o>></c->
     <c- n>generic_string</c-><c- p>(</c-><c- k>const</c-> <c- n>Allocator</c-><c- o>&amp;</c-> <c- n>a</c-> <c- o>=</c-> <c- n>Allocator</c-><c- p>())</c-> <c- k>const</c-><c- p>;</c->
 <del><c- n>std</c-><c- o>::</c-><c- n>string</c->    <c- nf>generic_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
-<ins><c- n>std</c-><c- o>::</c-><c- n>string</c->    <c- nf>generic_display_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-<ins><c- n>std</c-><c- o>::</c-><c- n>string</c->    <c- nf>generic_system_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 <c- n>std</c-><c- o>::</c-><c- n>wstring</c->   <c- nf>generic_wstring</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u8string</c->  <c- nf>generic_u8string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u16string</c-> <c- nf>generic_u16string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
@@ -2281,7 +2253,6 @@ current paper.</p>
    <p>Modify <a href="https://eel.is/c++draft/fs.path.native.obs">[fs.path.native.obs</a>]:</p>
    <p>...</p>
 <pre class="highlight"><del><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
-<ins><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>system_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 <c- n>std</c-><c- o>::</c-><c- n>wstring</c-> <c- nf>wstring</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- nf>u8string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u16string</c-> <c- nf>u16string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
@@ -2289,18 +2260,9 @@ current paper.</p>
 </pre>
    <p><em>Returns</em>: native().</p>
    <p><em>Remarks</em>: Conversion, if any, is performed as specified by [fs.path.cvt].</p>
-<pre class="highlight"><ins><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>display_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-</pre>
-   <ins> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- o>*</c-><c- k>this</c-><c- p>)</c-></code>. </ins>
-   <p>
-    <ins> [<i>Note</i>: The returned string is suitable for use with formatting
-(<a href="https://eel.is/c++draft/format.functions">[format.functions</a>]) and print
-functions (<a href="https://eel.is/c++draft/print.fun">[print.fun</a>]). — <em>end note</em>] </ins>
-   </p>
    <p>Modify <a href="https://eel.is/c++draft/fs.path.generic.obs">[fs.path.generic.obs</a>]:</p>
    <p>...</p>
 <pre class="highlight"><del><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>generic_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></del>
-<ins><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>generic_system_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
 <c- n>std</c-><c- o>::</c-><c- n>wstring</c-> <c- nf>generic_wstring</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u8string</c-> <c- nf>generic_u8string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- n>std</c-><c- o>::</c-><c- n>u16string</c-> <c- nf>generic_u16string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
@@ -2308,14 +2270,6 @@ functions (<a href="https://eel.is/c++draft/print.fun">[print.fun</a>]). — <em
 </pre>
    <p><em>Returns</em>: The pathname in the generic format.</p>
    <p><em>Remarks</em>: Conversion, if any, is specified by [fs.path.cvt].</p>
-<pre class="highlight"><ins><c- n>std</c-><c- o>::</c-><c- n>string</c-> <c- nf>generic_display_string</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c-></ins>
-</pre>
-   <ins> <em>Returns</em>: <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{:g}"</c-><c- p>,</c-> <c- o>*</c-><c- k>this</c-><c- p>)</c-></code>. </ins>
-   <p>
-    <ins> [<i>Note</i>: The returned string is suitable for use with formatting
-(<a href="https://eel.is/c++draft/format.functions">[format.functions</a>]) and print
-functions (<a href="https://eel.is/c++draft/print.fun">[print.fun</a>]). — <em>end note</em>] </ins>
-   </p>
    <p>Add a new subclause in Annex D:</p>
    <ins> <strong>Deprecated filesystem path format observers [depr.fs.path.obs]</strong> </ins>
    <p>
@@ -2338,8 +2292,6 @@ specified in <a href="https://eel.is/c++draft/fs.path.generic.obs">[fs.path.gene
    <p>
     <ins> <em>Remarks</em>: Conversion, if any, is specified by [fs.path.cvt]. </ins>
    </p>
-   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
-   <p>The proposed accessors have been implemented in the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The fmt library">[FMT]</a>).</p>
   </main>
 <script>
 (function() {
@@ -2475,8 +2427,6 @@ specified in <a href="https://eel.is/c++draft/fs.path.generic.obs">[fs.path.gene
   <dl>
    <dt id="biblio-code-pages">[CODE-PAGES]
    <dd><a href="https://learn.microsoft.com/en-us/windows/win32/intl/code-pages"><cite>Windows App Development / Code Pages</cite></a>. URL: <a href="https://learn.microsoft.com/en-us/windows/win32/intl/code-pages">https://learn.microsoft.com/en-us/windows/win32/intl/code-pages</a>
-   <dt id="biblio-fmt">[FMT]
-   <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The fmt library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-lwg4087">[LWG4087]
    <dd><a href="https://cplusplus.github.io/LWG/issue4087"><cite>LWG Issue 4087: Standard exception messages have unspecified encoding</cite></a>. URL: <a href="https://cplusplus.github.io/LWG/issue4087">https://cplusplus.github.io/LWG/issue4087</a>
    <dt id="biblio-p2845">[P2845]
