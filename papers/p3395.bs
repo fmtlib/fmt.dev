@@ -1,0 +1,117 @@
+<pre class='metadata'>
+Title: Formatting of std::error_code
+Shortname: P395
+Revision: 0
+Audience: SG16
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2024-09-21
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+  ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+    text-align: right;
+    width: 20%;
+  }
+</style>
+
+Introduction {#intro}
+============
+
+This paper proposes making `std::error_code` formattable with the formatting
+facility added in C++20 (`std::format`).
+
+Motivation {#motivation}
+==========
+
+`std::error_code` has a rudimentary `ostream` inserter. For example:
+
+```
+std::error_code ec;
+auto size = std::filesystem::file_size("nonexistent", ec);
+std::cout << ec;
+```
+
+works and prints `generic:2`.
+
+However, the following code doesn't compile:
+
+```
+std::print("{}\n", ec);
+```
+
+The existing inserter has obvious issues such as I/O manipulators applying only
+to the category name and not to the whole error code leading to confusing
+output:
+
+```
+std::cout << std::left << std::setw(12) << ec; // prints "generic     :2"
+```
+
+It also doesn't allow formatting the error message.
+
+Proposal {#proposal}
+========
+
+The current paper proposes adding a `formatter` specialization for `error_code`
+that addresses the problems discussed in the previous section.
+
+The default format will give the same output as the `ostream` inserter:
+
+```
+std::print("{}\n", ec);
+```
+
+Output:
+
+```
+generic:2
+```
+
+It will correctly handle width and alignment:
+
+```
+std::print("{:>12}\n", ec);
+```
+
+Output:
+
+```
+   generic:2
+```
+
+It will also allow formatting the error message:
+
+```
+std::print("{:s}\n", ec);
+```
+
+Output:
+
+```
+No such file or directory
+```
+
+(The actual message depends on the platform.)
+
+The main challenge is that the standard doesn't specify the encodings of
+strings returned by `std::error_category::name()` and
+`std::error_code::message()`.
+
+```
+ template<class charT, class traits>
+    basic_ostream<charT, traits>&
+      operator<<(basic_ostream<charT, traits>& os, const error_code& ec);
+```
+
+TODO: what implementations do
