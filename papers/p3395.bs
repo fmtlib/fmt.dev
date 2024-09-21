@@ -34,7 +34,7 @@ facility added in C++20 (`std::format`).
 Motivation {#motivation}
 ==========
 
-`std::error_code` has a rudimentary `ostream` inserter. For example:
+`error_code` has a rudimentary `ostream` inserter. For example:
 
 ```
 std::error_code ec;
@@ -50,15 +50,22 @@ However, the following code doesn't compile:
 std::print("{}\n", ec);
 ```
 
-The existing inserter has obvious issues such as I/O manipulators applying only
-to the category name and not to the whole error code leading to confusing
-output:
+Unfortunately, the existing inserter has obvious issues such as I/O manipulators
+applying only to the category name and not to the whole error code leading to
+confusing output:
 
 ```
-std::cout << std::left << std::setw(12) << ec; // prints "generic     :2"
+std::cout << std::left << std::setw(12) << ec;
 ```
 
-It also doesn't allow formatting the error message.
+prints
+
+```
+generic     :2
+```
+
+It also doesn't allow formatting the error message and has potential encoding
+issues because the encoding of category name is unspecified.
 
 Proposal {#proposal}
 ========
@@ -105,13 +112,82 @@ No such file or directory
 (The actual message depends on the platform.)
 
 The main challenge is that the standard doesn't specify the encodings of
-strings returned by `std::error_category::name()` and
-`std::error_code::message()`.
+strings returned by `error_category::name` and `error_code::message` / 
+`error_category::message` ([syserr.errcat.virtuals](
+https://eel.is/c++draft/syserr.errcat.virtuals)):
 
 ```
- template<class charT, class traits>
-    basic_ostream<charT, traits>&
-      operator<<(basic_ostream<charT, traits>& os, const error_code& ec);
+virtual const char* name() const noexcept = 0;
 ```
 
-TODO: what implementations do
+*Returns*: A string naming the error category.
+
+```
+virtual string message(int ev) const = 0;
+```
+
+*Returns*: A string that describes the error condition denoted by `ev`.
+
+In practice implementations define category names as string literals and
+therefore they are in ordinary literal encoding.
+
+<!-- https://github.com/llvm/llvm-project/blob/8f31ee996ae21ee77db29abb02a3aef4750e6d35/libcxx/src/system_error.cpp#L161 -->
+<!-- https://github.com/gcc-mirror/gcc/blob/20486ec75734f3e641a3ade4297f6ba64881bca8/libstdc%2B%2B-v3/src/c%2B%2B11/system_error.cc#L589 -->
+<!-- https://github.com/gcc-mirror/gcc/blob/20486ec75734f3e641a3ade4297f6ba64881bca8/libstdc%2B%2B-v3/src/c%2B%2B11/system_error.cc#L589 -->
+
+There is implementation divergence in the encoding for messages. libc++ and
+libstdc++ use `strerror[_r]` for the generic category which is in the C
+(not "C") locale encoding but disagree on encodings for the system category:
+libstdc++ uses the Active Code Page (ACP) while libc++ again uses `strerror`
+/ C locale on Windows. Microsoft STL uses a table of string literals in the
+ordinary literal encoding for the generic category and ACP for the system
+category. The following table summarizes this:
+
+<table>
+<tr>
+  <td>
+  <td>libstdc++
+  <td>libc++
+  <td>Microsoft STL
+</tr>
+<tr>
+  <td>POSIX
+  <td>`strerror`
+  <td>`strerror`
+  <td>N/A
+</tr>
+<tr>
+  <td>Windows
+  <td>`strerror` / ACP
+  <td>`strerror`
+  <td>ordinary literals / ACP
+</tr>
+</table>
+
+Obviously none of this is usable in a portable way through the generic
+`error_category` API because encodings can be and often are different.
+What is worse, is that it is impossible to reliably get the information about
+the message encoding because both the C locale and ACP can be changed at
+runtime, possibly from another thread.
+
+<!-- This particularly embarassing considering
+that most system have APIs for this available for over a decade - strerror_l -->
+
+TODO: table
+
+Implementation {#impl}
+==============
+
+The proposed `formatter` for `std::error_code` has been implemented in the
+open-source {fmt} library ([[FMT]]).
+
+<pre class=biblio>
+{
+  "FMT": {
+    "title": "The {fmt} library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  }
+}
+</pre>
