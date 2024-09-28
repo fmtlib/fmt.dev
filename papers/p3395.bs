@@ -175,6 +175,21 @@ that most system have APIs for this available for over a decade - strerror_l -->
 
 TODO: solution for this mess
 
+// TODO: check if locale can be changed from another thread
+
+#include <locale.h>
+#include <string.h>
+#include <iostream>
+
+int main() {
+  std::cout << setlocale(LC_ALL, nullptr) << std::endl;
+  // By default locale is not affected by LC_ALL.
+  setlocale(LC_ALL, "uk_UA.koi8-u");
+  std::cout << strerror(2) << std::endl;
+}
+
+<!-- ABI: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1196r0.html -->
+
 Implementation {#impl}
 ==============
 
