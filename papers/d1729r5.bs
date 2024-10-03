@@ -1,0 +1,3737 @@
+<pre class='metadata'>
+Title: Text Parsing
+Shortname: D1729
+Revision: 5
+Audience: LEWG, SG16
+Status: D
+Group: WG21
+URL: http://wg21.link/D1729R5
+Editor: Elias Kosunen, isocpp@eliaskosunen.com
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+Abstract:
+  This paper discusses a new text parsing facility to complement the text
+  formatting functionality of <code>std::format</code>, proposed in [[P0645]].
+Date: 2024-09-30
+Markup Shorthands: markdown yes
+Max ToC Depth: 2
+</pre>
+
+<style>
+
+caption {
+  font-style: normal;
+  padding-bottom: .5em;
+}
+
+th {
+  border: 1px solid var(--datacell-border);
+  padding: .5em .75em;
+}
+
+td {
+  border: 1px solid var(--datacell-border);
+  padding: .5em .75em;
+}
+
+.itemdescr {
+  margin-left: 3em;
+}
+
+.grammar {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.grammar-key {
+  padding-left: 2em;
+}
+
+.grammar-value {
+  padding-left: 4em;
+}
+
+</style>
+
+Revision history {#history}
+================
+
+Changes since R4 {#history-since-r4}
+----------------
+
+ * Include preliminary wording
+ * Revamp argument handling and erasure machinery to better elide copies and moves
+    * Redefine `make_scan_result`, `make_scan_args`, and <i>`scan-arg-store`</i>, add `fill_scan_result`.
+ * Add discussion on the name `scan`
+ * Make fill+align logic more lenient and easy to understand
+ * Add precision-specifier to specify maximum field width
+    * Modify width-specifier to specify minimum field width
+ * Split `scan_error::value_out_of_range` into a four separate enumerators,
+    for positive and negative overflow and underflow
+ * Revise error handling in `scanner::parse`
+    * `scanner::parse` now returns `iterator`, instead of `expected<iterator, scan_error>`
+    * Add `scan_format_string_error`
+ * Rename `scan_error::end_of_range` -> `scan_error::end_of_input`
+ * Add parsing of pointers (`void*`)
+ * Remove requirement for localized numbers to have "correct" digit grouping
+    as specified by `numpunct::grouping`
+ * Remove design discussion on a dedicated flag for thousands separators (`'`),
+    separate from locale
+ * Remove detailed design discussion on error handling alternatives
+ * Update example on user-defined type scanning
+ * Clarify meaning of "whitespace" further in [[#format-strings]]
+ * Fix example claiming `std::expected::operator->` throws on an expected containing an error
+ * SG9: Make `borrowed_tail_subrange_t` exposition-only (<i>`borrowed-tail-subrange-t`</i>)
+ * Make concept `scannable_range` exposition-only (<i>`scannable-range`</i>)
+    * SG9: Add requirement to <i>`scannable-range`</i> for the `value_type` to either be `char` or `wchar_t`.
+ * Formatting and styling fixes.
+
+Changes since R3 {#history-since-r3}
+----------------
+
+* Replace `scan_args_for` with `scan_args` and `wscan_args` for consistency with `std::format`.
+* Rename `borrowed_ssubrange_t` to `borrowed_tail_subrange_t` partly based on the naming from ranges-v3 (`tail_view`).
+* Replace `format_string` with `scan_format_string`, with a `Range` template parameter.
+    * Enables compile-time checking for compatibility of the source range, and arguments to scan
+* Make `[v]scan_result_type` (the return types of `std::scan` and `std::vscan`) exposition only.
+* Remove `visit_scan_arg`: follow [[P2637]] and use `std::variant::visit`, instead.
+* Add discussion on `stdin` support, guided by SG9 polls.
+* Make encoding errors be errors for strings, instead of garbage-in-garbage-out.
+* Add further discussion on field widths.
+* Add example as rationale for mandating `forward_range`.
+
+Changes since R2 {#history-since-r2}
+----------------
+
+ * Return a `subrange` from `scan`, instead of just an iterator: discussion in [[#argument-passing]].
+ * Default `CharT` to `char` in `scanner` for consistency with `formatter` (previously no default for `CharT`).
+ * Add design discussion about thousands separators.
+ * Add design discussion about additional error information.
+ * Add clarification about field width calculation in [[#fmt-width-precision]].
+ * Add note about scope at the end of [[#introduction]].
+ * Fix/clarify error handling in example [[#example-alt-error]].
+ * Address SG16 feedback:
+    * Add definition of "whitespace", and clarify matching of non-whitespace literal characters, in [[#format-strings]].
+    * Add section about text encoding [[#encoding]], and an example about handing reading code units [[#fmt-type-char]].
+    * Add example about using locales in [[#locales]].
+    * Add potential future extension: [[#scan-code-point]]
+
+Changes since R1 {#history-since-r1}
+----------------
+
+ * Thoroughly describe the design
+ * Add examples
+ * Add specification (synopses only)
+ * Design changes:
+    * Return an `expected` containing a `tuple` from `std::scan`, instead of using output parameters
+    * Make `std::scan` take a range instead of a `string_view`
+    * Remove support for partial successes
+
+Introduction {#introduction}
+============
+
+With the introduction of `std::format` [[P0645]],
+standard C++ has a convenient, safe, performant, extensible,
+and elegant facility for text formatting,
+over `std::ostream` and the `printf`-family of functions.
+The story is different for simple text parsing: the standard only
+provides `std::istream` and the `scanf` family, both of which have issues.
+This asymmetry is also arguably an inconsistency in the standard library.
+
+According to [[CODESEARCH]], a C and C++ codesearch engine based on the ACTCD19
+dataset, there are 389,848 calls to `sprintf` and 87,815 calls to `sscanf` at
+the time of writing. So although formatted input functions are less popular than
+their output counterparts, they are still widely used.
+
+The lack of a general-purpose parsing facility based on format strings has been
+raised in [[P1361]] in the context of formatting and parsing of dates and times.
+
+This paper proposes adding a symmetric parsing facility, `std::scan`, to
+complement `std::format`. This facility is based on the same design principles
+and shares many features with `std::format`.
+
+This facility is not a parser per se, as it is probably not sufficient
+for parsing something more complicated, e.g. JSON.
+This is not a parser combinator library.
+This is intended to be an almost-drop-in replacement for `sscanf`,
+capable of being a building block for a more complicated parser.
+
+Examples {#examples}
+========
+
+Basic example {#example-basic}
+-------------
+
+```c++
+if (auto result = std::scan<std::string, int>("answer = 42", "{} = {}")) {
+  //                        ~~~~~~~~~~~~~~~~   ~~~~~~~~~~~    ~~~~~~~
+  //                          output types        input        format
+  //                                                           string
+
+  const auto& [key, value] = result->values();
+  //           ~~~~~~~~~~
+  //            scanned
+  //            values
+
+  // result is a std::expected<std::scan_result<...>>.
+  // result->range() gives an empty range.
+  // result->begin() == result->end()
+  // key == "answer"
+  // value == 42
+} else {
+  // We would end up here if we had an error.
+  std::scan_error error = result.error();
+}
+```
+
+Reading multiple values at once {#example-multiple}
+-------------------------------
+
+```c++
+auto input = "25 54.32E-1 Thompson 56789 0123";
+
+auto result = std::scan<int, float, string_view, int, float, int>(
+  input, "{:d}{:f}{:9}{:2i}{:g}{:o}");
+
+// result is a std::expected, value() will throw if it doesn't contain a value
+auto [i, x, str, j, y, k] = result.value().values();
+
+// i == 25
+// x == 54.32e-1
+// str == "Thompson"
+// j == 56
+// y == 789.0
+// k == 0123
+```
+
+Reading from a range {#example-range}
+--------------------
+
+```c++
+std::string input{"123 456"};
+if (auto result = std::scan<int>(std::views::reverse(input), "{}")) {
+  // If only a single value is returned, it can be accessed with result->value()
+  // result->value() == 654
+}
+```
+
+Reading multiple values in a loop {#example-loop}
+---------------------------------
+
+```c++
+std::vector<int> read_values;
+std::ranges::forward_range auto range = ...;
+
+auto input = std::ranges::subrange{range};
+
+while (auto result = std::scan<int>(input, "{}")) {
+  read_values.push_back(result->value());
+  input = result->range();
+}
+```
+
+Alternative error handling {#example-alt-error}
+--------------------------
+
+<pre highlight=cpp>
+// Since std::scan returns a std::expected,
+// its monadic interface can be used
+
+auto result = std::scan&lt;int&gt;(..., "{}")
+  .transform([](auto result) {
+    return result.value();
+  });
+if (!result) {
+  // handle error
+}
+int num = *result;
+
+// With [<a data-link-type=biblio data-biblio-type=informative>P2561</a>]:
+int num = std::scan&lt;int&gt;(..., "{}").try?.value();
+</pre>
+
+Scanning a user-defined type {#example-userdef}
+----------------------------
+
+```c++
+struct mytype {
+  int a{}, b{};
+};
+
+// Specialize std::scanner to add support for user-defined types.
+template <>
+struct std::scanner<mytype> {
+  // Parse format string: only accept empty format strings
+  template <typename ParseContext>
+  constexpr auto parse(ParseContext& pctx)
+      -> typename ParseContext::iterator {
+    return pctx.begin();
+  }
+
+  // Scan the value from `ctx`:
+  // delegate to `std::scan`
+  template <typename Context>
+  auto scan(mytype& val, Context& ctx) const
+      -> std::expected<typename Context::iterator, std::scan_error> {
+    return std::scan<int, int>(ctx.range(), "[{}, {}]")
+      .transform([&val](const auto& result) {
+        std::tie(val.a, val.b) = result.values();
+        return result.begin();
+      });
+  }
+};
+
+auto result = std::scan<mytype>("[123, 456]", "{}");
+// result->value().a == 123
+// result->value().b == 456
+```
+
+Design {#design}
+======
+
+The new parsing facility is intended to complement the existing C++ I/O streams
+library, integrate well with the chrono library, and provide an API similar to
+`std::format`. This section discusses the major features of its design.
+
+Overview {#overview}
+--------
+
+The main user-facing part of the library described in this paper,
+is the function template `std::scan`, the input counterpart of `std::format`.
+The signature of `std::scan` is as follows:
+
+<pre highlight=cpp>
+template &lt;class... Args, <i>scannable-range</i>&lt;char&gt; Range&gt;
+auto scan(Range&& range, scan_format_string&lt;Range, Args...&gt; fmt)
+  -&gt; expected&lt;scan_result&lt;<i>borrowed-tail-subrange-t</i>&lt;Range&gt;, Args...&gt;, scan_error&gt;;
+
+template &lt;class... Args, <i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+auto scan(Range&& range, wscan_format_string&lt;Range, Args...&gt; fmt)
+  -&gt; expected&lt;scan_result&lt;<i>borrowed-tail-subrange-t</i>&lt;Range&gt;, Args...&gt;, scan_error&gt;;
+</pre>
+
+`std::scan` reads values of type `Args...` from the `range` it's given,
+according to the instructions given to it in the format string, `fmt`.
+`std::scan` returns a `std::expected`, containing either a `scan_result`, or a `scan_error`.
+The `scan_result` object contains a `subrange` pointing to the unparsed input,
+and a `tuple` of `Args...`, containing the scanned values.
+
+<h4 id="scan-naming">Naming of the function `scan`</h4>
+
+The proposed name for the function `std::scan` has caused some dissent, namely in the FP and HPC circles.
+They argue, that `scan` is the name of an algorithm, which is also already in the standard library,
+in the form of `std::inclusive_scan` and `std::exclusive_scan`:
+[Wikipedia: Prefix sum](https://en.wikipedia.org/wiki/Prefix_sum)
+[cppreference.com: std::inclusive_scan](https://en.cppreference.com/w/cpp/algorithm/inclusive_scan).
+
+However, the aforementioned algorithm doesn't have exclusive ownership of the name `scan`.
+`scan` is an extremely common name for the operation proposed in this paper,
+and has very long-standing precendent in the C and C++ standard libraries
+in the form of the `scanf` family of functions.
+
+An alternative often thrown around is the name `parse`. There are two problems with that name:
+
+ * `parse` is a larger land-grab than `scan`, and is potentially misleading.
+    The facility proposed in this paper is NOT a parser combinator library,
+    but something closer to a `scanf` replacement, with a more limited scope.
+
+ * `parse` is already a term used in this paper, and in `std::format`:
+    it's used to describe the action of format string parsing.
+    It's found in the member function `std::formatter::parse` / `std::scanner::parse`,
+    and in the class templates `std::basic_format_parse_context` / `std::basic_scan_parse_context`.
+    The member functions doing the actual formatting in `formatter` and `scanner`
+    are called the same as the public interface functions: `format` and `scan`, respectively.
+    Were `std::scan` be called `std::parse`, it's unclear what `std::scanner`,
+    `std::scanner::parse`, `std::scanner::scan`, and `std::basic_scan_parse_context`
+    should be called.
+
+
+
+Format strings {#format-strings}
+--------------
+
+As with `printf`, the `scanf` syntax has the advantage of being familiar to many
+programmers. However, it has similar limitations:
+
+  * Many format specifiers like `hh`, `h`, `l`, `j`, etc. are used only to
+    convey type information. They are redundant in type-safe parsing and would
+    unnecessarily complicate specification and parsing.
+
+  * There is no standard way to extend the syntax for user-defined types.
+
+  * Using `'%'` in a custom format specifier poses difficulties, e.g. for
+    `get_time`-like time parsing.
+
+Therefore, we propose a syntax based on `std::format` and [[PARSE]]. This syntax
+employs `'{'` and `'}'` as replacement field delimiters instead of `'%'`. It
+will provide the following advantages:
+
+  * An easy-to-parse mini-language focused on the data format rather than
+    conveying the type information
+  * Extensibility for user-defined types
+  * Positional arguments
+  * Support for both locale-specific and locale-independent parsing (see
+    [[#locales]])
+  * Consistency with `std::format`.
+
+At the same time, most of the specifiers will remain quite similar to the ones
+in `scanf`, which can simplify a, possibly automated, migration.
+
+Maintaining similarity with `scanf`, for any literal non-whitespace character in
+the format string, an identical character is consumed from the input range.
+For whitespace characters, all available whitespace characters are consumed.
+
+In this proposal, "whitespace" is defined to be the Unicode code points
+with the Pattern_White_Space property, as defined by UAX #31 (UAX31-R3a).
+Those code points are:
+
+ * ASCII whitespace characters:
+    * U+0009 (HORIZONTAL TABULATION `'\t'`)
+    * U+000A (LINE FEED `'\n'`)
+    * U+000B (VERTICAL TABULATION `'\v'`)
+    * U+000C (FORM FEED `'\f'`)
+    * U+000D (CARRIAGE RETURN `'\r'`)
+    * U+0020 (SPACE `' '`)
+ * U+0085 (NEXT LINE)
+ * U+200E (LEFT-TO-RIGHT MARK)
+ * U+200F (RIGHT-TO-LEFT MARK)
+ * U+2028 (LINE SEPARATOR)
+ * U+2029 (PARAGRAPH SEPARATOR)
+
+Unicode defines a lot of different things
+in the realm of whitespace, all for different kinds of use cases.
+The Pattern_White_Space-property is chosen for its stability (it's guaranteed to not change),
+and because its intended use is for classifying things that should be treated as
+whitespace in machine-readable syntaxes.
+`std::isspace` is insufficient for usage in a Unicode world,
+because it only accepts a single code unit as input.
+
+<div class=example>
+```c++
+auto r0 = std::scan<char>("abcd", "ab{}d"); // r0->value() == 'c'
+
+auto r1 = std::scan<string, string>("abc \n def", "{} {}");
+const auto& [s1, s2] = r1->values(); // s1 == "abc", s2 == "def"
+```
+</div>
+
+As mentioned above, the format string syntax consists of replacement fields
+delimited by curly brackets (`{` and `}`).
+Each of these replacement fields corresponds to a value to be scanned from the input range.
+The replacement field syntax is quite similar to `std::format`, as can be seen below.
+Elements that are in one but not the other are highlighted.
+Note how the `scan` syntax is mostly a subset of the `format` syntax,
+except for the two added entries under <i>type</i>.
+
+<b>`scan` replacement field syntax</b>
+<blockquote>
+<div class=grammar>
+
+<div class=grammar-key><i>std-format-spec</i>:</div>
+<div class=grammar-value>
+<i>fill-and-align<sub>opt</sub> width<sub>opt</sub> precision<sub>opt</sub></i> `L`<sub>opt</sub> <i>type<sub>opt</sub></i>
+</div>
+
+<div class=grammar-key><i>fill-and-align</i>:</div>
+<div class=grammar-value>
+<i>fill<sub>opt</sub> align</i>
+</div>
+
+<div class=grammar-key><i>fill</i>:</div>
+<div class=grammar-value>
+any character other than `{` or `}`
+</div>
+
+<div class=grammar-key><i>align</i>: one of</div>
+<div class=grammar-value>
+`<` `>` `^`
+</div>
+
+<div class=grammar-key><!-- sign -->&nbsp;</div>
+<div class=grammar-value>
+&nbsp;
+</div>
+
+<div class=grammar-key><i>width</i>:</div>
+<div class=grammar-value>
+<i>positive-integer</i><br>
+&nbsp;
+</div>
+
+<div class=grammar-key><i>precision</i>:</div>
+<div class=grammar-value>
+`.` <i>nonnegative-integer</i><br>
+&nbsp;
+</div>
+
+<div class=grammar-key><i>type</i>: one of</div>
+<div class=grammar-value>
+`a` `A` `b` `B` `c` `d` `e` `E` `f` `F` `g` `G` <ins>`i`</ins> `o` `p` `P` `s` <ins>`u`</ins> `x` `X` `?`
+</div>
+<!--
+scnlib also has types:
+ * 'rnn', 'Rnn' for arbitrary base (r = radix)
+ * 'U' for Unicode code point
+ * '[...]' for scanf-like set of characters
+ * '/.../' for regex
+-->
+
+</div>
+</blockquote>
+
+<b>`format` replacement field syntax</b>
+<blockquote>
+<div class=grammar>
+
+<div class=grammar-key><i>std-format-spec</i>:</div>
+<div class=grammar-value>
+<i>fill-and-align<sub>opt</sub> <ins>sign<sub>opt</sub></ins> <ins>#<sub>opt</sub></ins></i> <ins>`0`<sub>opt</sub></ins>
+<i>width<sub>opt</sub> precision<sub>opt</sub></i> `L`<sub>opt</sub> <i>type<sub>opt</sub></i>
+</div>
+
+<div class=grammar-key><i>fill-and-align</i>:</div>
+<div class=grammar-value>
+<i>fill<sub>opt</sub> align</i>
+</div>
+
+<div class=grammar-key><i>fill</i>:</div>
+<div class=grammar-value>
+any character other than `{` or `}`
+</div>
+
+<div class=grammar-key><i>align</i>: one of</div>
+<div class=grammar-value>
+`<` `>` `^`
+</div>
+
+<div class=grammar-key><ins><i>sign</i>: one of</ins></div>
+<div class=grammar-value>
+<ins>`+` `-` space</ins>
+</div>
+
+<div class=grammar-key><i>width</i>:</div>
+<div class=grammar-value>
+<i>positive-integer</i><br>
+<ins>`{` <i>arg-id<sub>opt</sub></i> `}`</ins>
+</div>
+
+<div class=grammar-key><i>precision</i>:</div>
+<div class=grammar-value>
+`.` <i>nonnegative-integer</i><br>
+<ins>`.` `{` <i>arg-id<sub>opt</sub></i> `}`</ins>
+</div>
+
+<div class=grammar-key><i>type</i>: one of</div>
+<div class=grammar-value>
+`a` `A` `b` `B` `c` `d` `e` `E` `f` `F` `g` `G` `o` `p` `P` `s` `x` `X` `?`
+</div>
+
+</div>
+</blockquote>
+
+<div class=note>
+<span class=marker>Note:</span>
+In addition to the list of presentation types above, [[SCNLIB]] also supports:
+ * `rNN`, `RNN` for arbitrary-base integers (r/R stands for radix, as b/B is already taken)
+ * `U` for an Unicode code point
+ * `[...]` for scanf-like set of characters
+ * `/.../` for regex
+
+These are currently not proposed. Some of these are mentioned in [[#future]].
+</div>
+
+Format string specifiers {#format-string-specifiers}
+------------------------
+
+Below is a somewhat detailed description of each of the specifiers
+in a `std::scan` replacement field.
+This design attempts to maintain decent compatibility with `std::format`
+whenever practical, while also bringing in some ideas from `scanf`.
+
+<h4 id="fmt-arg-id">Manual indexing</h4>
+
+Like `std::format`, `std::scan` supports manual indexing of
+arguments in format strings. If manual indexing is used,
+all of the argument indices have to be spelled out.
+Different from `std::format`, the same index can only be used once.
+
+<div class=example>
+```c++
+auto r = std::scan<int, int, int>("0 1 2", "{1} {0} {2}");
+auto [i0, i1, i2] = r->values();
+// i0 == 1, i1 == 0, i2 == 2
+```
+</div>
+
+<h4 id="fmt-fill-and-align">Fill and align</h4>
+
+<blockquote>
+<div class=grammar>
+<div class=grammar-key><i>fill-and-align</i>:</div>
+<div class=grammar-value>
+<i>fill<sub>opt</sub> align</i>
+</div>
+
+<div class=grammar-key><i>fill</i>:</div>
+<div class=grammar-value>
+any character other than `{` or `}`
+</div>
+
+<div class=grammar-key><i>align</i>: one of</div>
+<div class=grammar-value>
+`<` `>` `^`
+</div>
+</div>
+</blockquote>
+
+The fill and align options are valid for all argument types.
+The fill character is denoted by the `fill`-option, or if it is absent,
+the space character `' '`.
+The fill character can be any single Unicode scalar value.
+The field width is determined the same way as it is for `std::format`.
+
+If an alignment is specified, the value to be parsed is assumed to be properly
+aligned with the specified fill character.
+
+If a field width is specified, it will taken to be the minimum number of characters
+to be consumed from the input range.
+If a field precision is specified, it will taken to be the maximum number of characters
+to be consumed from the input range.
+If either field width or precision is specified, but no alignment is,
+the default alignment for the type is considered (see `std::format`).
+
+For the `'^'` alignment, fill characters both before and after the value
+will be considered. The number of fill characters doesn't have to be equal:
+input will be parsed until either a non-fill character is encountered,
+or the (maximum) field precision is exhausted, after which checking is done for the
+(minimum) field width.
+
+This spec is compatible with `std::format`,
+i.e., the same format string (wrt. fill and align)
+can be used with both `std::format` and `std::scan`,
+with round-trip semantics.
+
+Note: For format type specifiers other than `'c'`
+(default for `char` and `wchar_t`, can be specified for `basic_string` and `basic_string_view`),
+leading whitespace is skipped regardless of alignment specifiers.
+
+<div class=example>
+```c++
+auto r0 = std::scan<int>("   42", "{}"); // r0->value() == 42, r0->range() == ""
+auto r1 = std::scan<char>("   x", "{}"); // r1->value() == ' ', r1->range() == "  x"
+auto r2 = std::scan<char>("x   ", "{}"); // r2->value() == 'x', r2->range() == "   "
+
+auto r3 = std::scan<int>("    42", "{:6}");  // r3->value() == 42, r3->range() == ""
+auto r4 = std::scan<char>("x     ", "{:6}"); // r4->value() == 'x', r4->range() == ""
+
+auto r5 = std::scan<int>("***42", "{:*>}");    // r5->value() == 42, r5->range() == ""
+auto r6 = std::scan<int>("***42", "{:*>5}");   // r6->value() == 42, r6->range() == ""
+auto r7 = std::scan<int>("***42", "{:*>4}");   // r7->value() == 42, r7->range() == ""
+auto r8 = std::scan<int>("***42", "{:*>.4}");  // r8->value() == 4, r8->range() == "2"
+auto r9 = std::scan<int>("***42", "{:*>4.4}"); // r9->value() == 4, r9->range() == "2"
+
+auto r10 = std::scan<int>("42", "{:*>}");    // r10->value() == 42, r10->range() == ""
+auto r11 = std::scan<int>("42", "{:*>5}");   // ERROR (field too short)
+auto r12 = std::scan<int>("42", "{:*>.5}");  // r12->value() == 42, r12->range() == ""
+auto r13 = std::scan<int>("42", "{:*>5.5}"); // ERROR (field too short)
+
+auto r14 = std::scan<int>("42***", "{:*<}");    // r14->value() == 42, r14->range() == ""
+auto r15 = std::scan<int>("42***", "{:*<5}");   // r15->value() == 42, r15->range() == ""
+auto r16 = std::scan<int>("42***", "{:*<4}");   // r16->value() == 42, r16->range() == "*"
+auto r17 = std::scan<int>("42***", "{:*<.4}");  // r17->value() == 42, r17->range() == "*"
+auto r18 = std::scan<int>("42***", "{:*<4.4}"); // r18->value() == 42, r18->range() == "*"
+
+auto r19 = std::scan<int>("42", "{:*<}");    // r19->value() == 42, r19->range() == ""
+auto r20 = std::scan<int>("42", "{:*<5}");   // ERROR (field too short)
+auto r21 = std::scan<int>("42", "{:*<.5}");  // r21->value() == 42, r19->range() == ""
+auto r22 = std::scan<int>("42", "{:*<5.5}"); // ERROR (field too short)
+
+auto r23 = std::scan<int>("42", "{:*^}");    // r23->value() == 42, r23->range() == ""
+auto r24 = std::scan<int>("*42*", "{:*^}");  // r24->value() == 42, r24->range() == ""
+auto r25 = std::scan<int>("*42**", "{:*^}"); // r25->value() == 42, r25->range() == ""
+auto r26 = std::scan<int>("**42*", "{:*^}"); // r26->value() == 42, r26->range() == ""
+
+auto r27 = std::scan<int>("**42**", "{:*^6}");  // r27->value() == 42, r27->range() == ""
+auto r28 = std::scan<int>("*42**", "{:*^5}");   // r28->value() == 42, r28->range() == ""
+auto r29 = std::scan<int>("**42*", "{:*^5}");   // r29->value() == 42, r29->range() == ""
+auto r30 = std::scan<int>("**42*", "{:*^6}");   // ERROR (field too short)
+auto r31 = std::scan<int>("**42*", "{:*^.6}");  // r31->value() == 42, r31->range() == ""
+auto r32 = std::scan<int>("**42*", "{:*^6.6}"); // ERROR (field too short)
+```
+</div>
+
+<h4 id="fmt-sign-hash-0">Sign, `#`, and `0`</h4>
+
+<blockquote>
+<div class=grammar>
+<div class=grammar-key><i>std-format-spec</i>:</div>
+<div class=grammar-value>
+... <del>sign<sub>opt</sub></del> <del>#<sub>opt</sub></del></i> <del>`0`<sub>opt</sub></del> ...
+</div>
+
+<div class=grammar-key><del><i>sign</i>: one of</del></div>
+<div class=grammar-value>
+<del>`+` `-` space</del>
+</div>
+</div>
+</blockquote>
+
+These flags would have no effect in `std::scan`, so they are disabled.
+Signs (both `+` and `-`), base prefixes, trailing decimal points, and leading zeroes
+are always allowed for arithmetic values.
+Disabling them would be a bad default for a higher-level facility
+like `std::scan`, so flags explicitly enabling them are not needed.
+Allowing them would just be misleading and lead to confusion about their behavior.
+
+Note: This is incompatible with `std::format` format strings.
+
+<h4 id="fmt-width-precision">Width and precision</h4>
+
+<blockquote>
+<div class=grammar>
+<div class=grammar-key><i>width</i>:</div>
+<div class=grammar-value>
+<i>positive-integer</i><br>
+<del>`{` <i>arg-id<sub>opt</sub></i> `}`</del>
+</div>
+
+<div class=grammar-key><i>precision</i>:</div>
+<div class=grammar-value>
+`.` <i>nonnegative-integer</i><br>
+<del>`.` `{` <i>arg-id<sub>opt</sub></i> `}`</del>
+</div>
+</div>
+</blockquote>
+
+The width and precision specifiers are valid for all argument types.
+Their meaning is virtually the same as with `std::format`:
+the width specifies the minimum field width,
+whereas the precision specifies the maximum.
+The scanned value itself, and any fill characters are counted as a part
+of said field width.
+
+Either one of these can be specified to set either a minimum or a maximum,
+or both to provide a range of valid field widths.
+
+Having a value shorter than the minimum field width is an error.
+Having a value longer than the maximum field width is not possible:
+reading will be cut short once the maximum field width is reached.
+If the value parsed up to that point is not a valid value,
+an error is provided.
+
+<div class=example>
+```c++
+// Minimum width of 2
+auto r0 = std::scan<int>("123", "{:2}");
+// r0->value() == 123, r0->range() == ""
+
+// Maximum width of 2
+auto r1 = std::scan<int>("123", "{:.2}");
+// r1->value() == 12, r1->range() == "3"
+```
+</div>
+
+For compatibility with `std::format`,
+the width and precision specifiers are in <i>field width units</i>,
+which is specified to be 1 per Unicode (extended) grapheme cluster,
+except some grapheme clusters are 2 ([format.string.std] &para; 13):
+
+> For a sequence of characters in UTF-8, UTF-16, or UTF-32,
+> an implementation should use as its field width the sum of the field widths
+> of the first code point of each extended grapheme cluster.
+> Extended grapheme clusters are defined by UAX #29 of the Unicode Standard.
+> The following code points have a field width of 2:
+>
+> * any code point with the East_Asian_Width="W" or East_Asian_Width="F"
+>     Derived Extracted Property as described by UAX #44 of the Unicode Standard
+> * U+4dc0 – U+4dff (Yijing Hexagram Symbols)
+> * U+1f300 – U+1f5ff (Miscellaneous Symbols and Pictographs)
+> * U+1f900 – U+1f9ff (Supplemental Symbols and Pictographs)
+>
+> The field width of all other code points is 1.
+>
+> For a sequence of characters in neither UTF-8, UTF-16, nor UTF-32, the field width is unspecified.
+
+This essentially maps 1 field width unit = 1 user perceived character.
+It should be noted, that with this definition, grapheme clusters like emoji have a field width of 2.
+This behavior is present in `std::format` today, but can potentially be surprising to users.
+
+This meaning for both the width and precision specifiers are different from `scanf`,
+where the width means the number of code units to read.
+This is because the purpose of that specifier in `scanf` is to prevent buffer overflow.
+Because the current interface of the proposed `std::scan`
+doesn't allow reading into an user-defined buffer, this isn't a concern.
+
+Specifying the width with another argument, like in `std::format`, is disallowed.
+
+<h4 id="fmt-localized">Localized (`L`)</h4>
+
+<blockquote>
+<div class=grammar>
+<div class=grammar-key><i>std-format-spec</i>:</div>
+<div class=grammar-value>
+... `L`<sub>opt</sub> ...
+</div>
+</div>
+</blockquote>
+
+Enables scanning of values in locale-specific forms.
+
+ * For integer types, allows for digit group separator characters,
+    equivalent to `numpunct::thousands_sep` of the used locale.
+    If digit group seaprator characters are used, their grouping
+    doesnt' have to match `numpunct::grouping`.
+
+ * For floating-point types, the same as above.
+    In addition, the locale-specific radix separator character is used,
+    from `numpunct::decimal_point`.
+
+ * For `bool`, the textual representation uses the appropriate strings
+    from `numpunct::truename` and `numpunct::falsename`.
+
+<h4 id="fmt-type-string">Type specifiers: strings</h4>
+
+<table>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+
+<tr>
+<td>none,&nbsp;`s`
+<td>Copies from the input until a whitespace character is encountered.
+</tr>
+
+<tr>
+<td>`?`
+<td>Copies an escaped string from the input.
+</tr>
+
+<tr>
+<td>`c`
+<td>Copies from the input until the field width is exhausted.
+Does not skip preceding whitespace.
+Errors, if no field width is provided.
+</tr>
+</table>
+
+<div class=note>
+<span class=marker>Note:</span>
+The `s` specifier is consistent with `std::istream` and `std::string`:
+```c++
+std::string word;
+std::istringstream{"Hello world"} >> word;
+// word == "Hello"
+
+auto r = std::scan<string>("Hello world", "{:s}");
+// r->value() == "Hello"
+```
+</div>
+
+Note: The `c` specifier is consistent with `scanf`,
+but is not supported for strings by `std::format`.
+
+<h4 id="fmt-type-int">Type specifiers: integers</h4>
+
+Integer values are scanned as if by using `std::from_chars`, except:
+
+ * A positive `+` sign and a base prefix are always allowed to be present.
+ * Preceding whitespace is skipped.
+
+<table>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+
+<tr>
+<td>`b`, `B`
+<td>`from_chars` with base 2. The base prefix is `0b` or `0B`.
+</tr>
+
+<tr>
+<td>`o`
+<td>`from_chars` with base 8. For non-zero values, the base prefix is `0`.
+</tr>
+
+<tr>
+<td>`x`, `X`
+<td>`from_chars` with base 16. The base prefix is `0x` or `0X`.
+</tr>
+
+<tr>
+<td>`d`
+<td>`from_chars` with base 10. No base prefix.
+</tr>
+
+<tr>
+<td>`u`
+<td>`from_chars` with base 10. No base prefix. No `-` sign allowed.
+</tr>
+
+<tr>
+<td>`i`
+<td>Detect base from a possible prefix, default to decimal.
+</tr>
+
+<tr>
+<td>`c`
+<td>Copies a character from the input.
+</tr>
+
+<tr>
+<td>none
+<td>Same as `d`
+</tr>
+</table>
+
+Note: The flags `u` and `i` are not supported by `std::format`.
+These flags are consistent with `scanf`.
+
+Note: [[SCNLIB]] also supports the flag `O` for octal numbers,
+and `0o` and `0O` as possible octal number prefixes.
+These are currently not proposed.
+
+<h4 id="fmt-type-char">Type specifiers: `CharT`</h4>
+
+<table>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+
+<tr>
+<td>none, `c`
+<td>Copies a character from the input.
+</tr>
+
+<tr>
+<td>`b`, `B`, `d`, `i`, `o`, `u`, `x`, `X`
+<td>Same as for integers.
+</tr>
+
+<tr>
+<td>`?`
+<td>Copies an escaped character from the input.
+</tr>
+</table>
+
+<div class=example>
+This is not encoding or Unicode-aware.
+Reading a `CharT` with the `c` type specifier
+will just read a single code unit of type `CharT`.
+This can lead to invalid encoding in the scanned values.
+
+```c++
+// As proposed:
+// U+12345 is 0xF0 0x92 0x8D 0x85 in UTF-8
+auto r = std::scan<char, std::string>("\u{12345}", "{}{}");
+auto& [ch, str] = r->values();
+// ch == '\xF0'
+// str == "\x92\x8d\x85" (invalid utf-8)
+
+// This is the same behavior as with iostreams today
+```
+</div>
+
+<h4 id="fmt-type-bool">Type specifiers: `bool`</h4>
+
+<table>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+
+<tr>
+<td>`s`
+<td>Allows for textual representation, i.e. `true` or `false`
+</tr>
+
+<tr>
+<td>`b`, `B`, `d`, `i`, `o`, `u`, `x`, `X`
+<td>Allows for integral representation, i.e. `0` or `1`
+</tr>
+
+<tr>
+<td>none
+<td>Allows for both textual and integral representation: i.e. `true`, `1`, `false`, or `0`.
+</tr>
+</table>
+
+<h4 id="fmt-type-float">Type specifiers: floating-point types</h4>
+
+Similar to integer types,
+floating-point values are scanned as if by using `std::from_chars`, except:
+
+ * A positive `+` sign is always allowed to be present.
+ * Preceding whitespace is skipped.
+
+<table>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+
+<tr>
+<td>`a`, `A`
+<td>`from_chars` with `chars_format::hex`, with `0x`/`0X`-prefix allowed.
+</tr>
+
+<tr>
+<td>`e`, `E`
+<td>`from_chars` with `chars_format::scientific`.
+</tr>
+
+<tr>
+<td>`f`, `F`
+<td>`from_chars` with `chars_format::fixed`.
+</tr>
+
+<tr>
+<td>`g`, `G`
+<td>`from_chars` with `chars_format::general`.
+</tr>
+
+<tr>
+<td>none
+<td>`from_chars` with `chars_format::general | chars_format::hex`, with `0x`/`0X`-prefix allowed.
+</tr>
+</table>
+
+<h4 id="fmt-type-pointer">Type specifiers: pointers</h4>
+
+`std::format` supports formatting pointers of type `void*` and `const void*`.
+For consistency's sake, `std::scan` also supports reading a `void*` or `const void*`.
+Unlike `std::format`, `std::nullptr_t` is not supported.
+
+<table>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+
+<tr>
+<td>none, `p`, `P`
+<td>as if by reading a value of type `uintptr_t` with the `x` type specifier
+</tr>
+</table>
+
+Ranges {#ranges}
+------
+
+We propose, that `std::scan` would take a range as its input.
+This range should satisfy the requirements of `std::ranges::forward_range` to
+enable look-ahead, which is necessary for parsing.
+
+<pre highlight=cpp>
+template &lt;class Range, class CharT&gt;
+concept <i>scannable-range</i> =
+  ranges::forward_range&lt;Range&gt; &&
+  same_as&lt;ranges::range_value_t&lt;Range&gt;, CharT&gt; &&
+  (same_as&lt;CharT, char&gt; || same_as&lt;CharT, wchar_t&gt;);
+</pre>
+
+For a range to be a <i>`scannable-range`</i>, its character type (range `value_type`, code unit type)
+needs to also be correct, i.e. it needs to match the character type of the format string.
+Mixing and matching character types between the input range and the format string is not supported.
+
+<div class=example>
+```c++
+scan<int>("42", "{}");   // OK
+scan<int>(L"42", L"{}"); // OK
+scan<int>(L"42", "{}");  // Error: wchar_t\[N] is not a scannable-range<char>
+```
+</div>
+
+It should be noted, that standard range facilities related to iostreams, namely
+`std::istreambuf_iterator`, model `input_iterator`.
+Thus, they can't be used with `std::scan`, and therefore, for example,
+`stdin`, can't be read directly using `std::scan`.
+The reference implementation deals with this by providing a range type, that wraps a
+`std::basic_istreambuf`, and provides a `forward_range`-compatible interface to it.
+At this point, this is deemed out of scope for this proposal.
+
+As mentioned above, `forward_range`s are needed to support proper lookahead and rollback.
+For example, when reading an `int` with the `i` format specifier (detect base from prefix),
+whether a character is part of the `int` can't be determined before reading past it.
+
+<div class=example>
+```c++
+// Hex value "0xf"
+auto r1 = std::scan<int>("0xf", "{:i}");
+// r1->value() == 0xf
+// r1->range().empty() == true
+
+// (Octal) value "0", with "xg" left over
+auto r2 = std::scan<int>("0xg", "{:i}");
+// r2->value() == 0
+// r2->range() == "xg"
+
+// Compare with sscanf:
+
+int val{}, n{};
+int r = std::sscanf("0xf", "%i%n", &val, &n);
+// val == 0xf
+// n == 3 -> remainder == ""
+// r == 1 -> SUCCESS
+
+r = std::sscanf("0xg", "%i%n", &val, &n);
+// val == 0
+// n == 2 -> remainder == "g"
+// r == 1 -> SUCCESS
+```
+</div>
+
+The same behavior can be observed with floating-point values, when using exponents:
+whether `1e+X` is parsed as a number, or as `1` with the rest left over,
+depends on whether `X` is a valid exponent.
+For user-defined types, arbitrarily-long lookback or rollback can be required.
+
+Argument passing, and return type of `scan` {#argument-passing}
+-------------------------------------------
+
+`std::scan` is proposed to return the values it scans, wrapped in a `std::expected`.
+
+```c++
+auto result = std::scan<int>(input, "{}");
+auto [i] = result->values();
+// or (only a single scanned value):
+auto i = result->value();
+```
+
+The rationale for this is as follows:
+
+ - With output parameters, it would be easy to accidentally use uninitialized values.
+    With return values, the values can only be accessed when the operation is successful.
+
+ - Modern C++ API design principles favor return values over output parameters.
+
+It should be noted, that not using output parameters removes a channel for user customization.
+For example, [[FMT]] uses `fmt::arg` to specify named arguments,
+and `fmt::format_as` for easy formatting of enumerators.
+The same isn't directly possible here, without customizing the type to be scanned itself.
+
+The return type of `scan`, `scan_result`, contains a `subrange` over the unparsed input.
+This can be accessed with the member function `range()`.
+This is done with an exposition-only type alias, <i>`borrowed-tail-subrange-t`</i>, that is defined as follows:
+
+<pre highlight=cpp>
+template &lt;typename R&gt;
+using <i>borrowed-tail-subrange-t</i> = std::conditional_t&lt;
+  ranges::borrowed_range&lt;R&gt;,
+  ranges::subrange&lt;ranges::iterator_t&lt;R&gt;, ranges::sentinel_t&lt;R&gt;&gt;,
+  ranges::dangling&gt;;
+</pre>
+
+Compare this with `borrowed_subrange_t`, which is defined as
+<code>ranges::subrange&lt;ranges::iterator_t&lt;R&gt;, ranges::iterator_t&lt;R&gt;&gt;</code>,
+when the range models `borrowed_range`.
+This kind of subrange is returned to avoid having to advance to the of the range
+in order to return an iterator pointing to it: we can just return the sentinel we're given, instead.
+
+In addition to a subrange, as pointed out above, the success side of the returned expected
+also contains a `tuple` of the scanned values.
+This tuple can be retrieved with the `values()` member function,
+or if there's only a single scanned value, also with `value()`.
+
+<h4 id="return-type-alternatives">Design alternatives</h4>
+
+As proposed, `std::scan` returns an `expected`, containing either an iterator and a tuple, or a `scan_error`.
+
+An alternative could be returning a `tuple`, with a result object as its first (0th) element, and the parsed values occupying the rest.
+This would enable neat usage of structured bindings:
+
+```c++
+// NOT PROPOSED, design alternative
+auto [r, i] = std::scan<int>("42", "{}");
+```
+
+However, there are two possible issues with this design:
+
+ 1. It's easy to accidentally skip checking whether the operation succeeded, and access the scanned values regardless.
+    This could be a potential security issue (even though the values would always be at least value-initialized, not default-initialized).
+    Returning an expected forces checking for success.
+
+ 2. The numbering of the elements in the returned tuple would be off-by-one compared to the indexing used in format strings:
+    ```c++
+    auto r = std::scan<int>("42", "{0}");
+    // std::get<0>(r) refers to the result object
+    // std::get<1>(r) refers to {0}
+    ```
+
+For the same reason as enumerated in 2. above, the `scan_result` type as proposed doesn't follow the tuple protocol, so that structured bindings can't be used with it:
+
+```c++
+// NOT PROPOSED
+auto result = std::scan<int>("42", "{0}");
+// std::get<0>(*result) would refer to the iterator
+// std::get<1>(*result) would refer to {0}
+```
+
+Error handling {#error-handling}
+--------------
+
+Contrasting with `std::format`, this proposed library communicates errors with return values,
+instead of throwing exceptions. This is because error conditions are expected to be much
+more frequent when parsing user input, as opposed to text formatting.
+With the introduction of `std::expected`, error handling using return values is also more ergonomic than before,
+and it provides a vocabulary type we can use here, instead of designing something novel.
+
+`std::scan_error` holds an enumerated error code value, and a message string.
+The message is used in the same way as the message in `std::exception`:
+it gives more details about the error, but its contents are unspecified.
+
+```c++
+// Not a specification, just exposition
+class scan_error {
+public:
+  enum code_type {
+    good,
+
+    // EOF:
+    // tried to read from an empty range,
+    // or the input ended unexpectedly.
+    end_of_input,
+
+    // The format string was invalid:
+    // This will often be caught at compile time,
+    // except when using `std::runtime_format`.
+    invalid_format_string,
+
+    // A generic error, for when the input
+    // did not contain a valid representation
+    // for the type to be scanned.
+    invalid_scanned_value,
+
+    // Value too large (higher than the maximum value)
+    value_positive_overflow,
+
+    // Value too small (lower than the minimum value)
+    value_negative_overflow,
+
+    // Value magnitude too small, sign +
+    // (between 0 and the smallest subnormal)
+    value_positive_underflow,
+
+    // Value magnitude too small, sign -
+    // (between 0 and the smallest subnormal)
+    value_negative_underflow
+  };
+
+  constexpr scan_error() = default;
+  constexpr scan_error(code_type, const char*);
+
+  static constexpr scan_error success() noexcept;
+
+  constexpr explicit operator bool() const noexcept;
+
+  constexpr code_type code() const noexcept;
+  constexpr const char* msg() const;
+};
+```
+
+Note: [[SCNLIB]] has an additional error code enumerator, `invalid_source_state`.
+It's currently used when the input is not a range, but something like a file or an `istream`.
+As these kinds of input are currently not supported with this proposal, this is not proposed.
+
+The reason why we propose adding the type `std::scan_error` instead of just using `std::errc` is,
+that we want to avoid losing information. The enumerators of `std::errc` are insufficient for
+this use, as evident by the table below: there are no clear one-to-one mappings between `scan_error::code_type`
+and `std::errc`, but `std::errc::invalid_argument` would need to cover a lot of cases.
+
+The `const char*` in `scan_error` is extremely useful for user code, for use in logging and debugging.
+Even with the `scan_error::code_type` enumerators, more information is often needed, to isolate any possible problem.
+
+Possible mappings from `scan_error::code_type` to `std::errc` could be:
+
+<table>
+<thead>
+<tr>
+<th>`scan_error::code_type`
+<th>`errc`
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>`scan_error::good`
+<td>`std::errc{}`
+</tr>
+
+<tr style="border-top:2px solid;">
+<td>`scan_error::end_of_input`
+<td rowspan="3" style="vertical-align: middle">`std::errc::invalid_argument`
+</tr>
+
+<tr>
+<td>`scan_error::invalid_format_string`
+</tr>
+
+<tr>
+<td>`scan_error::invalid_scanned_value`
+</tr>
+
+<tr style="border-top:2px solid;">
+<td>`scan_error::value_positive_overflow`
+<td rowspan="4" style="vertical-align: middle">`std::errc::result_out_of_range`
+</tr>
+
+<tr>
+<td>`scan_error::value_negative_overflow`
+</tr>
+
+<tr>
+<td>`scan_error::value_positive_underflow`
+</tr>
+
+<tr>
+<td>`scan_error::value_negative_underflow`
+</tr>
+
+</tbody>
+</table>
+
+Note: [[SCNLIB]] provides a member function, `scan_error::to_errc()`,
+that performs this mapping.
+
+Currently, as proposed, the message contained in a `scan_error` is of type `const char*`.
+Additionally, the validity of this message is only guaranteed up until the next call to a scanning function.
+This allows for performant use of string literals, but also leaves the opportunity for the implementation
+to do interesting things, for example by using thread-local storage to construct a custom error message,
+without allocating or using a `std::string`. Using `std::string` here would needlessly bloat up the type,
+both in terms of its size and its performance.
+
+[[SCNLIB]] currently only uses string literals for its error messages,
+except when a user-defined `scanner::parse` throws a `scan_format_string_error`,
+for which TLS is utilized. See [[#extensibility]] below for more details.
+
+Binary footprint and type erasure {#binary-footprint}
+---------------------------------
+
+We propose using a type erasure technique to reduce the per-call binary code size.
+The scanning function that uses variadic templates can be implemented as a
+small inline wrapper around its non-variadic counterpart:
+
+<pre highlight=cpp>
+template&lt;<i>scannable-range</i>&lt;char&gt; Range&gt;
+auto vscan(Range&& range, string_view fmt, scan_args args)
+  -> expected&lt;ranges::<i>borrowed-tail-subrange-t</i>&lt;Range&gt;, scan_error&gt;;
+
+template &lt;typename... Args, <i>scannable-range</i>&lt;char&gt; SourceRange&gt;
+auto scan(SourceRange&& source, scan_format_string&lt;Range, Args...&gt; format)
+    -> expected&lt;
+         scan_result&lt;ranges::<i>borrowed-tail-subrange-t</i>&lt;SourceRange&gt;, Args...&gt;,
+         scan_error&gt; {
+  auto result = make_scan_result&lt;Source, Args...&gt;();
+  fill_scan_result(result, vscan(std::forward&lt;SourceRange&gt;(range), format,
+                                 make_scan_args(result->values())));
+  return result;
+}
+</pre>
+
+As shown in [[P0645]] this dramatically reduces binary code size, which will make
+`scan` comparable to `scanf` on this metric.
+
+`make_scan_args` type erases the arguments that are to be scanned.
+This is similar to `std::make_format_args`, used with `std::format`.
+
+`make_scan_result` returns a default-constructed `expected`,
+containing an empty subrange and a tuple of value-initialized arguments.
+This is the value that will be returned from `scan`.
+The values will be populated by `vscan`, which will be given a reference to these values
+through the type-erased `scan_args`.
+The subrange will be set by `fill_scan_result`, which is described below.
+
+`fill_scan_result` takes the return value of `vscan`,
+and either writes the leftover range indicated by it into `result`, or writes an error.
+It's essentially one-liner sugar for this:
+
+<pre highlight=cpp>
+void fill_scan_result(auto& result, auto&& vscan_result) {
+  // skipping type checking
+  if (vscan_result) {
+    result-&gt;<i>set-range</i>(*vscan_result);
+  } else {
+    result = unexpected(vscan_result.error());
+  }
+}
+</pre>
+
+Note: This implementation of `std::scan` is more complicated
+compared to `std::format`, which can be described as a one-liner calling `std::vformat`.
+This is because the arguments that are written to by `vscan` need to outlive the call to `vscan`,
+so that they can be safely returned from `scan`.
+
+Safety {#safety}
+------
+
+`scanf` is arguably more unsafe than `printf` because
+`__attribute__((format(scanf, ...)))` ([[ATTR]]) implemented by GCC and Clang
+doesn't catch the whole class of buffer overflow bugs, e.g.
+
+```c++
+char s[10];
+std::sscanf(input, "%s", s); // s may overflow.
+```
+
+Specifying the maximum length in the format string above solves the issue but is
+error-prone, especially since one has to account for the terminating null.
+
+Unlike `scanf`, the proposed facility relies on variadic templates instead of
+the mechanism provided by `<cstdarg>`. The type information is captured
+automatically and passed to scanners, guaranteeing type safety and making many of
+the `scanf` specifiers redundant (see [[#format-strings]]). Memory management is
+automatic to prevent buffer overflow errors.
+
+Extensibility {#extensibility}
+-------------
+
+We propose an extension API for user-defined types similar to `std::formatter`,
+used with `std::format`. It separates format string processing and parsing, enabling
+compile-time format string checks, and allows extending the format specification
+language for user types. It enables scanning of user-defined types.
+
+```c++
+auto r = scan<tm>(input, "Date: {0:%Y-%m-%d}");
+```
+
+This is done by providing a specialization of `scanner` for `tm`:
+
+```c++
+template <>
+struct scanner<tm> {
+  template <class ParseContext>
+  constexpr auto parse(ParseContext& ctx)
+    -> typename ParseContext::iterator;
+
+  template <class ScanContext>
+  auto scan(tm& t, ScanContext& ctx) const
+    -> expected<typename ScanContext::iterator, scan_error>;
+};
+```
+
+The `scanner<tm>::parse` function parses the `format-spec` portion of the format
+string corresponding to the current argument, and `scanner<tm>::scan` parses the
+input range `ctx.range()` and stores the result in `t`.
+
+An implementation of `scanner<T>::scan` can potentially use the istream extraction
+`operator>>` for user-defined type `T`, if available.
+
+Error handling in `scanner::parse` differs from the other parts of this proposal.
+To facilitate better compile time error checking, `parse` doesn't return an `expected`.
+Instead, to report errors, it can throw an exception of type `std::scan_format_string_error`,
+which is an exception type derived from `std::runtime_error`.
+
+Then, if `parse` is being executed at compile time, and it throws,
+it makes the program ill-formed (`throw` is not constant expression).
+This also makes the compiler error message easy to read, as it'll point right where
+the `throw` expression is, with the error description.
+If `parse` is executed at run time, the exception is caught in the library,
+and eventually returned from `std::scan` inside a `scan_error`, with the error code of
+`invalid_format_string`.
+
+A previous revision of this paper proposed returning
+`expected<typename ParseContext::iterator, scan_error>` from `parse`.
+While consistent with `scan`, it had the issue of diminished quality of compiler error messages.
+Returning an `unexpected` value from `parse` was not a compile-time error onto itself,
+so the compile-time error only manifested from inside the library, where it no longer
+had access to the original context and error message.
+By `throw`ing, the compiler can point literally to the very line of code that reported the error.
+
+Note: [[SCNLIB]] supports an additional means of error reporting from `parse`.
+`basic_scan_parse_context` has a member function, `on_error(const char*)`, that's not `constexpr`.
+This is useful for customers who aren't using exceptions, but it's not proposed in this paper.
+
+Locales {#locales}
+-------
+
+As pointed out in [[N4412]]:
+
+> There are a number of communications protocol frameworks in use that employ
+> text-based representations of data, for example XML and JSON. The text is
+> machine-generated and machine-read and should not depend on or consider the
+> locales at either end.
+
+To address this, `std::format` provided control over the use of locales. We propose
+doing the same for the current facility by performing locale-independent parsing
+by default and designating separate format specifiers for locale-specific ones.
+In particular, locale-specific behavior can be opted into by using the `L`
+format specifier, and supplying a `std::locale` object.
+
+<div class=example>
+```c++
+std::locale::global(std::locale::classic());
+
+// {} uses no locale
+// {:L} uses the global locale
+auto r0 = std::scan<double, double>("1.23 4.56", "{} {:L}");
+// r0->values(): (1.23, 4.56)
+
+// {} uses no locale
+// {:L} uses the supplied locale
+auto r1 = std::scan<double, double>(std::locale{"fi_FI"}, "1.23 4,56", "{} {:L}");
+// r1->values(): (1.23, 4.56)
+```
+</div>
+
+Encoding {#encoding}
+--------
+
+In a similar manner as with `std::format`, input given to `std::scan` is assumed
+to be in the (ordinary/wide) literal encoding.
+
+If an error in encoding is encountered while reading a value of a string type
+(`basic_string`, `basic_string_view`), an `invalid_scanned_value` error is returned.
+For other types, the reading is stopped, as the parser can't parse a numeric value from
+something that isn't digits.
+
+<div class=example>
+```c++
+// Invalid UTF-8
+auto r = std::scan<std::string>("a\xc3 ", "{}");
+// r == false
+// r->error() == std::scan_error::invalid_scanner_value
+
+auto r2 = std::scan<int>("1\xc3 ", "{}");
+// r2 == true
+// r2->value() == 1
+// r2->range() == "\xc3 "
+```
+</div>
+
+Reading raw bytes (not in the literal encoding) into a `string` isn't directly supported.
+This can be achieved either with simpler range algorithms already in the standard,
+or by using a custom type or scanner.
+
+Performance {#performance}
+-----------
+
+The API allows efficient implementation that minimizes virtual function calls
+and dynamic memory allocations, and avoids unnecessary copies. In particular,
+since it doesn't need to guarantee the lifetime of the input across multiple
+function calls, `scan` can take `string_view` avoiding an extra string copy
+compared to `std::istringstream`. Since, in the default case, it also doesn't
+deal with locales, it can internally use something like `std::from_chars`.
+
+We can also avoid unnecessary copies required by `scanf` when parsing strings,
+e.g.
+
+```c++
+auto r = std::scan<std::string_view, int>("answer = 42", "{} = {}");
+```
+
+Because the format strings are checked at compile time, while being aware
+of the exact types to scan, and the source range type, it's possible to check
+at compile time, whether scanning a `string_view` would dangle, or if it'S
+possible at all (reading from a non-`contiguous_range`).
+
+Integration with chrono {#chrono}
+-----------------------
+
+The proposed facility can be integrated with `std::chrono::parse` ([[P0355]])
+via the extension mechanism, similarly to the integration between chrono and text
+formatting proposed in [[P1361]]. This will improve consistency between parsing
+and formatting, make parsing multiple objects easier, and allow avoiding dynamic
+memory allocations without resolving to the deprecated `strstream`.
+
+Before:
+```
+std::istringstream is("start = 10:30");
+std::string key;
+char sep;
+std::chrono::seconds time;
+is >> key >> sep >> std::chrono::parse("%H:%M", time);
+```
+
+After:
+```
+auto result = std::scan<std::string, std::chrono::seconds>("start = 10:30", "{0} = {1:%H:%M}");
+const auto& [key, time] = result->values();
+```
+
+Note that the `scan` version additionally validates the separator.
+
+Scanning of time points, clock values, and calendar values is implemented in [[SCNLIB]].
+
+Impact on existing code {#deep-impact}
+-----------------------
+
+The proposed API is defined in a new header and should have no impact on
+existing code.
+
+Existing work {#existing-work}
+=============
+
+[[SCNLIB]] is a C++ library that serves as the reference implementation of this proposal.
+Its interface and behavior follows the design described in this paper.
+
+[[FMT]] has a prototype implementation of an earlier version of the proposal.
+
+Future extensions {#future}
+=================
+
+To keep the scope of this paper somewhat manageable,
+we've chosen to only include functionality we consider fundamental.
+This leaves the design space open for future extensions and other proposals.
+However, we are not categorically against exploring this design space,
+if it is deemed critical for v1.
+
+All of the possible future extensions described below are implemented in [[SCNLIB]].
+
+Integration with `stdio` {#stdio-integration}
+------------------------
+
+In the SG9 meeting in Kona (11/2023), it was polled, that:
+
+<blockquote>
+SG9 feels that it essential for std::scan to be useable with stdin and cin
+(and the paper would be incomplete without this feature).
+
+<table>
+<tr>
+<th>SF</th>
+<th>F</th>
+<th>N</th>
+<th>A</th>
+<th>SA</th>
+</tr>
+
+<tr>
+<td>0</td>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+<td>0</td>
+</tr>
+</table>
+</blockquote>
+
+We've decided to follow the route of `std::format` + `std::print`,
+i.e. to not complicate and bloat this paper further by involving I/O.
+This is still an important avenue of future expansion,
+and the library proposed in this paper is designed and specified in such a way
+as to easily allow that expansion.
+
+[[SCNLIB]] implements this by providing a function, `scn::input`,
+for interfacing with `stdin`, and by allowing passing in `FILE*`s as input
+to `scn::scan`, in addition to <i>`scannable-range`</i>s.
+
+`scanf`-like `[character set]` matching {#char-set-match}
+---------------------------------------
+
+`scanf` supports the `[` format specifier, which allows for matching for a set of accepted
+characters. Unfortunately, because some of the syntax for specifying that set is
+implementation-defined, the utility of this functionality is hampered.
+Properly specified, this could be useful.
+
+<div class=example>
+<pre highlight=cpp>
+auto r = scan&lt;string&gt;("abc123", "{:[a-zA-Z]}"); // r->value() == "abc", r->range() == "123"
+// Compare with:
+char buf&#91;N&#93;;
+sscanf("abc123", "%[a-zA-Z]", buf);
+
+// ...
+
+auto _ = scan&lt;string&gt;(..., "{:[^\n]}"); // match until newline
+</pre>
+</div>
+
+It should be noted, that while the syntax is quite similar, this is not a regular expression.
+This syntax is intentionally way more limited, as is meant for simple character matching.
+
+This syntax is actually very useful when doing a little more complicated parsing,
+but it's still left out for the interest of scope.
+
+[[SCNLIB]] implements this syntax, providing support for matching single characters/code points
+(`{:[abc]}`) and code point ranges (`{:[a-z]}`).
+Full regex matching is also supported with `{:/.../}`.
+
+Reading code points (or even grapheme clusters?) {#scan-code-point}
+------------------------------------------------
+
+`char32_t` in nowadays the type denoting a Unicode code point.
+Reading individual code points, or even Unicode grapheme clusters, could be a useful feature.
+Currently, this proposal only supports reading of individual code units (`char` or `wchar_t`).
+
+[[SCNLIB]] supports reading Unicode code points with `char32_t`.
+
+Reading strings and chars of different width {#scan-transcode}
+--------------------------------------------
+
+In C++, we have character types other than `char` and `wchar_t`, too:
+namely `char8_t`, `char16_t`, and `char32_t`.
+Currently, this proposal only supports reading strings with the same
+character type as the input range, and reading `wchar_t` characters from
+narrow `char`-oriented input ranges, as does `std::format`.
+`scanf` somewhat supports this with the `l`-flag (and the absence of one in `wscanf`).
+Providing support for reading differently-encoded strings could be useful.
+
+<div class=example>
+```c++
+// Currently supported:
+auto r0 = scan<wchar_t>("abc", "{}");
+
+// Not supported:
+auto r1 = scan<char>(L"abc", L"{}");
+auto r2 =
+  scan<string, wstring, u8string, u16string, u32string>("abc def ghi jkl mno", "{} {} {} {} {}");
+auto r3 =
+  scan<string, wstring, u8string, u16string, u32string>(L"abc def ghi jkl mno", L"{} {} {} {} {}");
+```
+</div>
+
+Scanning of ranges {#range-scanning}
+------------------
+
+Introduced in [[P2286]] for `std::format`, enabling the user to use `std::scan`
+to scan ranges, could be useful.
+
+Default values for scanned values {#default-values}
+---------------------------------
+
+Currently, the values returned by `std::scan` are value-constructed,
+and assigned over if a value is read successfully.
+It may be useful to be able to provide an initial value different from a value-constructed
+one, for example, for preallocating a `string`, and possibly reusing it:
+
+<div class=example>
+```c++
+string str;
+str.reserve(n);
+auto r0 = scan<string>(..., "{}", {std::move(str)});
+// ...
+r0->value().clear();
+auto r1 = scan<string>(..., "{}", {std::move(r0->value())});
+```
+</div>
+
+This same facility could be also used for additional user customization,
+as pointed out in [[#argument-passing]].
+
+Assignment suppression / discarding values {#discard}
+------------------------------------------
+
+`scanf` supports discarding scanned values with the `*` specifier in the format string.
+[[SCNLIB]] provides similar functionality through a special type, `scn::discard`:
+
+<div class=example>
+```c++
+int i;
+scanf("%*d", &i);
+
+auto r = scn::scan<scn::discard<int>>(..., "{}");
+auto [_] = r->values();
+```
+</div>
+
+Specification {#spec}
+=============
+
+This wording is still quite preliminary, and will require more work.
+Note the similarity and referencing to [format] in some parts.
+
+This wording is done relative to [[N4988]].
+
+General {#spec-general}
+-------
+
+Add the header `<scan>` to the appropriate place in the "C++ library headers" table in [headers],
+respecting alphabetical order.
+
+Add an entry for `__cpp_lib_scan` to the appropriate place in [version.syn],
+respecting alphabetical order. Set the value of the macro to the date of adoption of the paper.
+
+```c++
+#define __cpp_lib_scan 20XXXXL // also in <scan>
+```
+
+Scanning [scan] {#spec-scan}
+---------------
+
+<div class=note>
+<span class=marker>Drafting note:</span>
+This section ("Scanning" [scan]), is to be added to "General utilities library" [utilities].
+The numbering of headings here is done relative to the rest of this document:
+they aren't intended to be section numbers in the standard.
+As of [[N4988]], the correct section number for "Scanning" [scan] would be 22.17.
+</div>
+
+<h4 id=spec-scan.syn>Header `<scan>` synopsis [scan.syn]</h4>
+
+<pre highlight=cpp>
+namespace std {
+  // [scan.fmt.string], class template `basic_scan_format_string`
+  template&lt;class charT, class Range, class... Args&gt;
+    struct basic_scan_format_string;
+
+  template&lt;class Range, class... Args&gt;
+    using scan_format_string =
+      basic_scan_format_string&lt;char,
+                               type_identity_t&lt;Range&gt;,
+                               type_identity_t&lt;Args&gt;...&gt;;
+  template&lt;class Range, class... Args&gt;
+    using wscan_format_string =
+      basic_scan_format_string&lt;wchar_t,
+                               type_identity_t&lt;Range&gt;,
+                               type_identity_t&lt;Args&gt;...&gt;;
+
+  // [scan.error], class `scan_error`
+  class scan_error;
+
+  // [scan.format.error], class `scan_format_string_error`
+  class scan_format_string_error;
+
+  // [scan.result.result], class template `san_result`
+  template&lt;class Range, class... Args&gt;
+    class scan_result;
+
+  template&lt;ranges::range R&gt;
+    using <i>borrowed-tail-subrange-t</i> =
+      conditional_t&lt;
+        ranges::borrowed_range&lt;R&gt;,
+        ranges::subrange&lt;ranges::iterator_t&lt;R&gt;, ranges::sentinel_t&lt;R&gt;&gt;,
+        ranges::dangling&gt;;                                // exposition only
+
+  template&lt;class Range, class... Args&gt;
+    using <i>scan-result-type</i> = expected&lt;
+      scan_result&lt;<i>borrowed-tail-subrange-t</i>&lt;Range&gt;, Args...&gt;,
+      scan_error&gt;;                                        // exposition only
+
+  // [scan.result], result types
+  template&lt;class Source, class... Args&gt;
+    constexpr <i>scan-result-type</i>&lt;Range, Args...&gt;
+      make_scan_result();
+
+  template&lt;class Result, class Range&gt;
+    constexpr void fill_scan_result(expected&lt;Result, scan_error&gt;& out,
+                                    expected&lt;Range, scan_error&gt;&& in);
+
+  template&lt;class Range, class charT&gt;
+    concept <i>scannable-range</i> =
+      ranges::forward_range&lt;Range&gt; &&
+      same_as&lt;ranges::range_value_t&lt;Range&gt;, charT&gt; &&
+      (same_as&lt;charT, char&gt; || same_as&lt;charT, wchar_t&gt;);  // exposition only
+
+  // [scan.functions], scanning functions
+  template&lt;class... Args, <i>scannable-range</i>&lt;char&gt; Range&gt;
+    <i>scan-result-type</i>&lt;Range, Args...&gt; scan(Range&& range,
+                                          scan_format_string&lt;Range, Args...&gt; fmt);
+
+  template&lt;class... Args, <i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+    <i>scan-result-type</i>&lt;Range, Args...&gt; scan(Range&& range,
+                                          wscan_format_string&lt;Range, Args...&gt; fmt);
+
+  template&lt;class... Args, <i>scannable-range</i>&lt;char&gt; Range&gt;
+    <i>scan-result-type</i>&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
+                                          scan_format_string&lt;Range, Args...&gt; fmt);
+
+  template &lt;class... Args, <i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+    <i>scan-result-type</i>&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
+                                          wscan_format_string&lt;Range, Args...&gt; fmt);
+
+  template&lt;class Range&gt;
+    using <i>vscan-result-type</i> = expected&lt;
+      <i>borrowed-tail-subrange-t</i>&lt;Range&gt;,
+      scan_error&gt;;                                       // exposition only
+
+  template&lt;<i>scannable-range</i>&lt;char&gt; Range&gt;
+    <i>vscan-result-type</i>&lt;Range&gt; vscan(Range&& range, string_view fmt, scan_args args);
+
+  template&lt;<i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+    <i>vscan-result-type</i>&lt;Range&gt; vscan(Range&& range, wstring_view fmt, wscan_args args);
+
+  template&lt;<i>scannable-range</i>&lt;char&gt; Range&gt;
+    <i>vscan-result-type</i>&lt;Range&gt; vscan(const locale& loc,
+                                   Range&& range,
+                                   string_view fmt,
+                                   scan_args args);
+
+  template&lt;<i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+    <i>vscan-result-type</i>&lt;Range&gt; vscan(const locale& loc,
+                                   Range&& range,
+                                   wstring_view fmt,
+                                   wscan_args args);
+
+  // [scan.context], class template `basic_scan_context`
+  template&lt;class Range, class charT&gt; class basic_scan_context;
+  using scan_context = basic_scan_context&lt;<i>unspecified</i>, char&gt;;
+  using wscan_context = basic_scan_context&lt;<i>unspecified</i>, wchar_t&gt;;
+
+  // [scan.scanner], class template `scanner`
+  template&lt;class T, class charT = char&gt;
+    struct scanner;
+
+  // [scan.scannable], concept `scannable`
+  template&lt;class T, class charT&gt;
+    concept scannable = <i>see below</i>;
+
+  // [scan.parse.ctx], class template `basic_scan_parse_context`
+  template&lt;class charT&gt;
+    class basic_scan_parse_context;
+
+  using scan_parse_context = basic_scan_parse_context&lt;char&gt;;
+  using wscan_parse_context = basic_scan_parse_context&lt;wchar_t&gt;;
+
+  // [scan.args], class template `basic_scan_args`
+  template&lt;class Context&gt; class basic_scan_args;
+  using scan_args = basic_scan_args&lt;scan_context&gt;;
+  using wscan_args = basic_scan_args&lt;wscan_context&gt;;
+
+  // [scan.arg], class template `basic_scan_arg`
+  template&lt;class Context&gt;
+    class basic_scan_arg;
+
+  // [scan.arg.store], class template <i>`scan-arg-store`</i>
+  template&lt;class Context, class... Args&gt;
+    class <i>scan-arg-store</i>;                              // exposition only
+
+  template&lt;class Context = scan_context, class... Args&gt;
+    constexpr <i>scan-arg-store</i>&lt;Context, Args...&gt;
+      make_scan_args(std::tuple&lt;Args...&gt;& args);
+
+  template&lt;class... Args&gt;
+    constexpr <i>scan-arg-store</i>&lt;wscan_context, Args...&gt;
+      make_wscan_args(std::tuple&lt;Args...&gt;& args);
+}
+</pre>
+
+<h4 id="spec-scan.string">Format string [scan.string]</h4>
+
+<h5 id="spec-scan.string.general">General [scan.string.general]</h5>
+
+A <i>format string</i> for arguments `args` is a (possibly empty) sequence of
+<i>replacement fields</i>, <i>escape sequences</i>, <i>whitespace characters</i>,
+and characters other than `{` and `}`. Each character that is not
+part of a replacement field or an escape sequence,
+and is not whitespace character, is matched with a character in the input.
+An escape sequence is one of `{{` or `}}`.
+It is matched with `{` or `}`, respectively, in the input.
+For a sequence of characters in UTF-8, UTF-16, or UTF-32,
+any code point with the `Pattern_White_Space` property as described by
+UAX #31 of the Unicode standard is considered to be a whitespace character.
+For a sequence of characters in neither UTF-8, UTF-16, or UTF-32,
+the set of characters considered to be whitespace characters is unspecified.
+The syntax of replacement fields is as follows:
+
+<div class=grammar>
+
+<div class=grammar-key>
+<i>scan-replacement-field</i>:
+</div>
+<div class=grammar-value>
+`{` <i>arg-id<sub>opt</sub> scan-format-specifier<sub>opt</sub></i> `}`
+</div>
+
+<div class=grammar-key>
+<i>arg-id</i>:
+</div>
+<div class=grammar-value>
+`0`<br>
+<i>positive-integer</i>
+</div>
+
+<div class=grammar-key>
+<i>positive-integer</i>:
+</div>
+<div class=grammar-value>
+<i>nonzero-digit</i><br>
+<i>positive-integer digit</i>
+</div>
+
+<div class=grammar-key>
+<i>nonnegative-integer</i>:
+</div>
+<div class=grammar-value>
+<i>digit</i><br>
+<i>nonnegative-integer digit</i>
+</div>
+
+<div class=grammar-key>
+<i>nonzero-digit</i>: one of
+</div>
+<div class=grammar-value>
+`1` `2` `3` `4` `5` `6` `7` `8` `9`
+</div>
+
+<div class=grammar-key>
+<i>digit</i>: one of
+</div>
+<div class=grammar-value>
+`0` `1` `2` `3` `4` `5` `6` `7` `8` `9`
+</div>
+
+<div class=grammar-key>
+<i>scan-format-specifier</i>:
+</div>
+<div class=grammar-value>
+`:` <i>scan-format-spec</i>
+</div>
+
+<div class=grammar-key>
+<i>scan-format-spec</i>:
+</div>
+<div class=grammar-value>
+as specified by the `scanner` specialization for the argument type; cannot start with `}`
+</div>
+
+</div>
+
+<div class=note>
+<span class=marker>Wording note:</span>
+[format.string.general] defines <i>replacement-field</i>, <i>arg-id</i>, <i>positive-integer</i>,
+<i>nonnegative-integer</i>, <i>nonzero-digit</i>, <i>digit</i>, <i>format-specifier</i>, and <i>format-spec</i>
+in the syntax for replacement fields.
+Our definitions are identical to these, except we define <i>scan-replacement-field</i>,
+<i>scan-format-specifier</i>, and <i>scan-format-spec</i> instead,
+and in <i>scan-format-spec</i>, we refer to `scanner` specializations instead of `formatter` specializations.
+</div>
+
+The <i>arg-id</i> field specifies the index of the argument in `args` whose value is to be scanned from the input
+instead of the replacement field. If there is no argument with the index <i>arg-id</i> in `args`,
+the string is not a format string for `args`. The optional <i>scan-format-specifier</i> field explicitly specifies
+a format for the scanned value.
+
+[<i>Example 1</i>:<br>
+<code>auto r = scan&lt;int&gt;("8-{", "{0}-{{");  // value of `r->value()` is 8</code><br>
+&mdash; <i>end example</i>]
+
+If all <i>arg-id</i>s in a format string are omitted, argument indices 0, 1, 2, ... will automatically be used in that order.
+If some <i>arg-id</i>s are omitted and some are present, the string is not a format string.
+If there is any argument in <i>args</i> that doesn't have a corresponding replacement field,
+or if there are multiple replacement fields corresponding to an argument in <i>args</i>,
+the string is not a format string for args.
+
+[<i>Note 1</i>:
+A format string cannot contain a mixture of automatic and manual indexing.
+Every argument to be scanned must have one and exactly one corresponding replacement field in the format string.
+&mdash; <i>end note</i>]
+
+<div class=note>
+<span class=marker>Wording note:</span>
+This is stricter than what's required in [format.string.general].
+We have the additional requirements of having to mention every argument in the format string,
+and not allowing duplication of arguments in the format string.
+</div>
+
+The <i>scan-format-spec</i> field contains <i>format specifications</i> that define how the value should be scanned.
+Each type can define its own interpretation of the <i>scan-format-spec</i> field.
+If <i>scan-format-spec</i> does not conform to the format specifications for the argument type referred to by <i>arg-id</i>,
+the string is not a format string for `args`.
+
+[<i>Example 2</i>:<br>
+<ul>
+<li>For arithmetic, pointer, and string types the <i>scan-format-spec</i> is interpreted as a <i>std-scan-format-spec</i> as described in [scan.string.std].
+<li>For user defined `scanner` specializations, the behavior of the `parse` member function determines how the <i>scan-format-spec</i> is interpreted.
+</ul>
+&mdash; <i>end example</i>]
+
+<h5 id="spec-scan.string.std">Standard format specifiers [scan.string.std]</h5>
+
+Each `scanner` specialization described in [scan.scanner.spec] for fundamental and string types interprets <i>scan-format-spec</i> and a <i>std-scan-format-spec</i>.
+
+[<i>Note 1</i>: The format specification can be used to specify such details as minimum field width, alignment, and padding.
+Some of the formatting options are only supported for arithmetic types. &mdash; <i>end note</i>]
+
+The syntax of format specifications is as follows:
+
+<div class=grammar>
+
+<div class=grammar-key><i>std-scan-format-spec</i>:</div>
+<div class=grammar-value>
+<i>fill-and-align<sub>opt</sub> scan-width<sub>opt</sub> scan-precision<sub>opt</sub></i> `L`<sub>opt</sub> <i>scan-type<sub>opt</sub></i>
+</div>
+
+<div class=grammar-key><i>fill-and-align</i>:</div>
+<div class=grammar-value>
+<i>fill<sub>opt</sub> align</i>
+</div>
+
+<div class=grammar-key><i>fill</i>:</div>
+<div class=grammar-value>
+any character other than `{` or `}`
+</div>
+
+<div class=grammar-key><i>align</i>: one of</div>
+<div class=grammar-value>
+`<` `>` `^`
+</div>
+
+<div class=grammar-key><i>scan-width</i>:</div>
+<div class=grammar-value>
+<i>positive-integer</i><br>
+</div>
+
+<div class=grammar-key><i>scan-precision</i>:</div>
+<div class=grammar-value>
+`.` <i>nonnegative-integer</i><br>
+</div>
+
+<div class=grammar-key><i>scan-type</i>: one of</div>
+<div class=grammar-value>
+`a` `A` `b` `B` `c` `d` `e` `E` `f` `F` `g` `G` `i` `o` `p` `P` `s` `u` `x` `X` `?`
+</div>
+
+</div>
+
+Field widths are specified in <i>field width units</i> (see [format.string.std]).
+TODO: width
+
+The <i>fill character</i> is the character denoted by the <i>fill</i> option or, if the <i>fill</i> option is absent,
+the space character. For a format specification in UTF-8, UTF-16, or UTF-32, the fill character corresponds to a single Unicode scalar value.
+
+[<i>Note 2</i>: The presence of a <i>fill</i> option is signaled by the character following it, which must be one of the alignment options.
+If the second character of <i>std-scan-format-spec</i> is not a valid alignment option,
+then it is assumed that the <i>fill</i> and <i>align</i> options are both absent.
+&mdash; <i>end note</i>]
+
+The <i>align</i> option applies to all argument types.
+The meaning of the various alignment options is as specified in [tab:scan.align].
+
+<table>
+
+<caption>Meaning of <i>align</i> options [tab:scan.align]</caption>
+
+<thead>
+<tr>
+<th>Option
+<th>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>`<`
+<td>TODO Lorem ipsum dolor sit amet.
+</tr>
+
+<tr>
+<td>`>`
+<td>TODO Lorem ipsum dolor sit amet.
+</tr>
+
+<tr>
+<td>`^`
+<td>TODO Lorem ipsum dolor sit amet.
+</tr>
+</tbody>
+
+</table>
+
+The <i>scan-width</i> option specifies the minimum field width. If the <i>scan-width</i> option is absent, the minimum field width is `0`.
+Otherwise, the value of the <i>positive-integer</i> is interpreted as a decimal integer and used as the value of the option.
+
+For the purposes of width computation, a string is assumed to be in a locale-independent, implementation-defined encoding.
+
+<div class=note>
+<span class=marker>Wording note:</span>
+In [format.string.std], we additionally say
+
+> Implementations should use either UTF-8, UTF-16, or UTF-32, on platforms capable of displaying Unicode text in a terminal.
+
+It's unclear if we can and/or should place a similar kind of normative recommendation here.
+</div>
+
+For a sequence of characters in UTF-8, UTF-16, or UTF-32, the algorithm for calculating field width is described in [format.string.std].
+For a sequence of characters in neither UTF-8, UTF-16, or UTF-32, the field width is unspecified.
+
+The <i>scan-precision</i> option specifies the maximum field width. TODO: elaborate
+
+When the `L` option is used, the form used for scanning is called the <i>locale-specific form</i>.
+The `L` option is only valid for arithmetic types, and its effect depends upon the type.
+
+ * For integral types, the locale-specific form causes digit group separator characters to be accepted.
+    These digit group separator characters are ignored in parsing, and their form is determined by the context's locale.
+
+ * For floating-point types, the locale-specific form causes the radix separator character and digit group separator characters to be accepted,
+    as determined by the context's locale.
+
+ * For the textual representation of `bool`, the locale-specific form causes the accepted values to be determined
+    as if by `numpunct::truename` and `numpunct::falsename` of the context's locale.
+
+The <i>scan-type</i> determines how the data should be scanned.
+Unless otherwise specified, before scanning a value, all whitespace characters are read and discarded from the input,
+until encountering a character that is not a whitespace character.
+
+If the value to be scanned is of type `basic_string_view<charT>`,
+and `ranges::contiguous_range<R> && ranges::borrowed_range<R>` is `false` for a source range of type `R`,
+the string is not a format string for `args`, when using `R` as the type of the source range.
+
+The available string presentation types are specified in [tab:scan.type.string].
+
+<table>
+
+<caption>Meaning of <i>scan-type</i> options for strings [tab:scan.type.string]
+
+<thead>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>none,&nbsp;`s`
+<td>Copies characters from the input until a whitespace character is encountered.
+</tr>
+
+<tr>
+<td>`c`
+<td>Copies characters from the input until the maximum field width is reached.
+Preceding whitespace is not skipped.
+If no value is given for the <i>scan-precision</i> option, the string is not a format string for `args`.
+</tr>
+
+<tr>
+<td>`?`
+<td>Copies the escped string ([format.string.escaped]) from the input.
+</tr>
+</tbody>
+
+</table>
+
+The meaning of some non-string presentation types is defined in terms of a call to `from_chars`.
+In such cases, let `[first, last)` be a contiguous range of characters sourced from the input
+and `value` be the scanning argument value.
+Scanning is done as if by first copying characters from the input into `[first, last)`
+until the first character invalid for the presentation type is found,
+after which `from_chars` is called.
+If `[first, last)` is an empty range, an error with the code `invalid_scanned_value` is returned.
+
+[<i>Note 3</i>: Additional padding and adjustments are performed prior to calling `from_chars`
+as specified by the format specifiers. &mdash; <i>end note</i>]
+
+Integral types other than `bool` and `charT` are scanned as if by using an infinite precision integral type.
+If its value cannot be represented in the integral type to be scanned,
+an error with either the code `value_positive_overflow` is returned if the value was positive,
+and `value_negative_overflow` if the value was negative.
+If the presentation type allows it, integral types other than `bool` and `charT` can have a
+<i>base prefix</i>. This is not copied into range `[first, last)`.
+
+The available integer presentation types for integral types other than `bool` and `charT`
+are specified in [tab:scan.type.int].
+
+[<i>Example 1</i>:
+```cpp
+auto r0 = scan<int>("42", "{}"); // Value of `r0->value()` is `42`
+
+auto r1 = scan<int, int, int>("42 42 42", "{:d} {:o} {:x}");
+// Values of `r1->values()` are `42`, `042`, and `0x42`
+
+auto r2 = scan<int>("1,234", "{:L}");
+// Value of `r2->value()` can be `1234` (depending on the locale)
+```
+&mdash; <i>end example</i>]
+
+<table>
+
+<caption>Meaning of <i>scan-type</i> options for integer types [tab:scan.type.int]</caption>
+
+<thead>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>`b`,&nbsp;`B`
+<td>`from_chars(first, last, value, 2)`; the allowed base prefixes are `0b` and `0B`.
+</tr>
+
+<tr>
+<td>`c`
+<td>Copies a value of type `charT` from the input. Preceding whitespace is not skipped.
+</tr>
+
+<tr>
+<td>`d`
+<td>`from_chars(first, last, value, 10)`.
+</tr>
+
+<tr>
+<td>`i`
+<td>`from_chars(first, last, value, base)`;
+the value of `base` is determined by the base prefix:
+ * if the base prefix is `0b` or `0B`, the value of `base` is `2`,
+ * if the base prefix is `0x` or `0X`, the value of `base` is `16`,
+ * if the base prefix is `0`, the value of `base` is `8`,
+ * otherwise, the value of `base` is `10`.
+
+</tr>
+
+<tr>
+<td>`o`
+<td>`from_chars(first, last, value, 8)`; the allowed base prefix is `0`.
+</tr>
+
+<tr>
+<td>`u`
+<td>The same as `i`, except if the scanned value would be negative, an error with the code `invalid_scanned_value` is returned.
+</tr>
+
+<tr>
+<td>`x`,&nbsp;`X`
+<td>`from_chars(first, last, value, 16)`; the allowed base prefixes are `0x` and `0X`.
+</tr>
+
+<tr>
+<td>none
+<td>The same as `d`.
+</tr>
+</tbody>
+
+</table>
+
+The available `charT` presentation types are specified in [tab:scan.type.char].
+
+<table>
+
+<caption>Meaning of <i>scan-type</i> options for `charT` [tab:scan.type.char]</caption>
+
+<thead>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>none,&nbsp;`c`
+<td>Copies a value of type `charT` from the input. Preceding whitespace is not skipped.
+</tr>
+
+<tr>
+<td>`b`,&nbsp;`B`,&nbsp;`d`,&nbsp;`i`,&nbsp;`o`,&nbsp;`u`,&nbsp;`x`,&nbsp;`X`
+<td>As if by scanning an integer as specified in [tab:scan.type.int].
+If the scanned value is negative, an error with the code `value_negative_underflow` is returned.
+If the scanned value cannot be repsented in `charT`, an error with the code `value_positive_underflow` is returned.
+</tr>
+
+<tr>
+<td>`?`
+<td>Copies the escped character ([format.string.escaped]) from the input.
+Preceding whitespace is not skipped.
+</tr>
+</tbody>
+
+</table>
+
+The available `bool` presentation types are specified in [tab:scan.type.book].
+
+<table>
+
+<caption>Meaning of <i>scan-type</i> optioins for `bool` [tab:scan.type.bool]</caption>
+
+<thead>
+<tr>
+<td>Type
+<td>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>`s`
+<td>Copies the textual representation, either `true` or `false`, from the input.
+</tr>
+
+<tr>
+<td>`b`,&nbsp;`B`,&nbsp;`d`,&nbsp;`i`,&nbsp;`o`,&nbsp;`u`,&nbsp;`x`,&nbsp;`X`
+<td>Copies the integral representation, either `0` or `1`, from the input.
+</tr>
+
+<tr>
+<td>none
+<td>Copies one of `true`, `false`, `0`, or `1` from the input.
+</tr>
+</tbody>
+
+</table>
+
+Values of a floating-point type `F` are scanned as if by copying characters from the input into a contiguous range
+represented by `[first, last)`. Let <i>`sign-value`</i> represent the sign of the value.
+
+ * If the first non-whitespace character is `+`, <i>`sign-value`</i> is `+1.0`, and this character is discarded,
+ * if the first non-whitespace character is `-`, <i>`sign-value`</i> is `-1.0`, and this character is discarded,
+ * otherwise, <i>`sign-value`</i> is `+1.0`.
+
+If the characters following the sign are `"inf"` or `"infinite"` (case insensitive), the scanning is stopped,
+and <code>copysign(numeric_limits&lt;F&gt;::infinity(), static_cast&lt;F&gt;(<i>sign-value</i>))</code> is scanned.
+If the characters following the sign are `"nan"` or <code>"nan(<i>pattern</i>)"</code>,
+where <i>`pattern`</i> is a sequence of alphanumeric characters and underscores (case insensitive), the scanning is stopped,
+and <code>copysign(numeric_limits&lt;F&gt;::quiet_nan(), static_cast&lt;F&gt;(<i>sign-value</i>))</code> is scanned.
+Otherwise, scanning is done as specified by the floating-point presentation type.
+
+If the absolute value of the scanned value is larger than what can be represented by `F`,
+a `scan_error` with the following code is returned:
+ * `scan_error::value_positive_overflow` if <code>signbit(<i>sign-value</i>)</code> is `false`,
+ * otherwise `scan_error::value_negative_overflow`.
+
+If the absolute value of the scanned value is between zero and the smallest denormal value of `F`,
+a `scan_error` with the following code is returned:
+ * `scan_error::value_positive_underflow` if <code>signbit(<i>sign-value</i>)</code> is `false`,
+ * otherwise `scan_error::value_negative_underflow`.
+
+[<i>Note 4:</i> NaN payload is discarded. Scanning a literal `"infinity"` is not an overflow error. &mdash; <i>end note</i>]
+
+The available floating-point presentation types and their meanings are specified in [tab:scan.type.float].
+
+<div class=note>
+<span class=marker>Wording note:</span>
+This wording needs some serious work.
+</div>
+
+<table>
+
+<caption>Meaning of <i>scan-type</i> options for floating-point types [tab:scan.type.float]</caption>
+
+<thead>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>`a`,&nbsp;`A`
+<td>`from_chars(first, last, value, chars_format::hex)` followed by <code>copysign(value, static_cast&lt;F&gt;(<i>sign-value</i>))</code>,
+except a prefix `"0x"` or `"0X"` is allowed and discarded.
+</tr>
+
+<tr>
+<td>`e`,&nbsp;`E`
+<td>`from_chars(first, last, value, chars_format::scientific)` followed by <code>copysign(value, static_cast&lt;F&gt;(<i>sign-value</i>))</code>.
+</tr>
+
+<tr>
+<td>`f`,&nbsp;`F`
+<td>`from_chars(first, last, value, chars_format::fixed)` followed by <code>copysign(value, static_cast&lt;F&gt;(<i>sign-value</i>))</code>.
+</tr>
+
+<tr>
+<td>`g`,&nbsp;`G`
+<td>`from_chars(first, last, value, chars_format::general)` followed by <code>copysign(value, static_cast&lt;F&gt;(<i>sign-value</i>))</code>.
+</tr>
+
+<tr>
+<td>none
+<td>
+ * If `[first, last)` starts with `"0x"` or `"0X"`, equivalent to `a`,
+ * otherwise, equivalent to `g`.
+
+</tr>
+</tbody>
+
+</table>
+
+The available pointer presentation types are specified in [tab:scan.type.ptr].
+
+<table>
+
+<caption>Meaning of <i>scan-type</i> options for pointer types [tab:scan.type.ptr]</caption>
+
+<thead>
+<tr>
+<th>Type
+<th>Meaning
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>none,&nbsp;`p`,&nbsp;`P`
+<td>If `uintptr_t` is defined, equivalent to scanning a value of type `uintptr_t` with the `x` <i>scan-type</i>,
+followed by a `reinterpret_cast` to `void*` or `const void*`;
+otherwise, implementation-defined.
+
+[<i>Note 5</i>: No special null-value, apart from `0` and `0x0` is supported &mdash; <i>end note</i>]
+</tr>
+</tbody>
+
+</table>
+
+<h4 id="spec-scan.err">Error reporting [scan.err]</h4>
+
+Scanning functions report errors using `expected<T, scan_error>` ([expected]).
+
+Exceptions of a type publicly derived from `scan_format_string_error`
+thrown from the `parse` member function of a user defined specialization of `scanner`
+are caught by the library, and returned from a scanning function as a `scan_error`
+with a code of `scan_error::invalid_format_string`, and an unspecified message.
+
+<i>Recommended practice</i>: Implementations should capture the message of the thrown exception,
+and preserve it in the returned `scan_error`.
+
+[<i>Note 1</i>: `scan_error` contains a message of type `const char*`,
+and exceptions contain a message of type `std::string`, so propagating the message in a lifetime- and thread-safe
+manner is not possible without using thread-local storage or a side-channel.
+Use of TLS is possible because of the validity guarantees of `scan_error`. &mdash; <i>end note</i>]
+
+All other exceptions thrown by iterators and user defined specializations of `scanner` are propagated.
+Failure to allocate storage is reported by throwing an exception as described in [res.on.exception.handling].
+
+<h5 id="spec-scan.error">Class `scan_error` [scan.error]</h5>
+
+```
+namespace std {
+  class scan_error {
+    code_type code_;      // exposition only
+    const char* message_; // exposition only
+
+  public:
+    enum code_type {
+      good,
+      end_of_input,
+      invalid_format_string,
+      invalid_scanned_value,
+      value_positive_overflow,
+      value_negative_overflow,
+      value_positive_underflow,
+      value_negative_underflow
+    };
+
+    constexpr scan_error() noexcept;
+    constexpr scan_error(code_type error_code, const char* message);
+
+    static constexpr scan_error success() noexcept { return scan_error{}; }
+
+    constexpr explicit operator bool() const noexcept { return code_ == good; }
+
+    constexpr code_type code() const noexcept { return code_; }
+    constexpr const char* msg() const;
+  };
+}
+```
+
+The class `scan_error` defines the type of objects used to represent errors returned from the scanning library.
+It stores an error code, and a human-readable descriptive message.
+
+```
+constexpr scan_error() noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Postconditions</i>: `code() == good && msg() == nullptr`
+
+</div>
+
+```
+constexpr scan_error(code_type error_code, const char* message);
+```
+
+<div class=itemdescr>
+
+<i>Preconditions</i>: `message` is either a null pointer, or points to a NTCTS ([defns.ntcts]).
+
+<i>Postconditions</i>: `code() == error_code && strcmp(message, msg()) == 0`.
+
+</div>
+
+```
+constexpr const char* msg() const;
+```
+
+<div class=itemdescr>
+
+<i>Preconditions</i>: No other scanning function has been called since the one that returned `*this`.
+
+<i>Returns</i>: `message_`.
+
+</div>
+
+<h5 id="spec-scan.format.error">Class `scan_format_string_error` [scan.format.error]</h5>
+
+```
+namespace std {
+  class scan_format_string_error : public runtime_error {
+  public:
+    explicit scan_format_string_error(const string& what_arg);
+    explicit scan_format_string_error(const char* what_arg);
+  };
+}
+```
+
+The class `scan_format_string_error` defines the type of objects thrown as exceptions
+to report errors in parsing format strings in the scanning library.
+
+```
+scan_format_string_error(const string& what_arg);
+```
+
+<div class=itemdescr>
+
+<i>Postconditions</i>: `strcmp(what(), what_arg.c_str()) == 0`.
+
+</div>
+
+```
+scan_format_string_error(const char* what_arg);
+```
+
+<div class=itemdescr>
+
+<i>Postconditions</i>: `strcmp(what(), what_arg) == 0`.
+
+</div>
+
+<h4 id="spec-scan.result">Result types [scan.result]</h4>
+
+<pre highlight=cpp>
+template&lt;class Source, class... Args&gt;
+  constexpr <i>scan-result-type</i>&lt;Range, Args...&gt; make_scan_result();
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: <code>return <i>scan-result-type</i>&lt;Range, Args...&gt;();</code>
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class Source, class... Args&gt;
+  constexpr void fill_scan_result(expected&lt;Result, scan_error&gt;& out,
+                                  expected&lt;Range, scan_error&gt;&& in);
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `Result` is a specialization of `scan_result`, and
+ * `std::is_same_v<typename Result::range_type, Range>` is `true`.
+
+<i>Effects</i>:
+
+ * If `in.has_value()` is `false`, assigns `unexpected(std::move(in.error()))` to `out`,
+ * if `std::is_same_v<typename Result::range_type, ranges::dangling>` is `false`, assigns `std::move(*in)` to `out.range_`,
+ * otherwise, does nothing.
+
+</div>
+
+<h5 id="spec-scan.result.result">Class template `scan_result` [scan.result.result]</h5>
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class Range, class... Args&gt;
+  class scan_result {
+    using tuple_type = tuple&lt;Args...&gt;
+    range_type range_;                     // exposition only
+    tuple&lt;Args...&gt; values_;                // exposition only
+
+    inline constexpr bool <i>is-dangling</i> =
+      is_same_v&lt;Range, ranges::dangling&gt;;  // exposition only
+
+  public:
+    using range_type = Range;
+    using iterator = <i>see below</i>;
+    using sentinel = <i>see below</i>;
+
+    constexpr scan_result();
+
+    constexpr scan_result(const scan_result&) = default;
+    constexpr scan_result(scan_result&&) = default;
+
+    constexpr scan_result(Range r, tuple&lt;Args...&gt;&& values);
+
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr explicit(<i>see below</i>) scan_result(OtherR&& r, tuple<OtherArgs...>&& values);
+
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr explicit(<i>see below</i>) scan_result(const scan_result&lt;OtherR, OtherArgs...&gt;& other);
+
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr explicit(<i>see below</i>) scan_result(scan_result&lt;OtherR, OtherArgs...&gt;&& other);
+
+    constexpr scan_result& operator=(const scan_result&) = default;
+    constexpr scan_result& operator=(scan_result&&) noexcept(<i>see below</i>) = default;
+
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr scan_result& operator=(const scan_result&lt;OtherR, OtherArgs...&gt;& other);
+
+    template&lt;class OtherR, class... OtherArgs&gt;
+      constexpr scan_result& operator=(scan_result&lt;OtherR, OtherArgs...&gt;&& other);
+
+    constexpr range_type range() const { return range_; }
+
+    constexpr iterator begin() const;
+    constexpr sentinel end() const;
+
+    template&lt;class Self&gt;
+      constexpr auto&& values(this Self&&);
+
+    template&lt;class Self&gt;
+      constexpr auto&& value(this Self&&);
+  };
+}
+</pre>
+
+An instance of `scan_result` holds the scanned values and the remainder of the source range not used for scanning.
+
+If a program declares an explicit or partial specialization of `scan_result`, the program is ill-formed, no diagnostic required.
+
+`Range` shall either be a specialization of `ranges::subrange`, or `ranges::dangling`.
+`conjunction_v<is_default_constructible<Args>...>` shall be `true`.
+`conjunction_v<is_destructible<Args>...>` shall be `true`.
+
+If `conjunction_v<is_trivially_destructible<Range>, is_trivially_destructible<Args>...>` is `true`
+then the destructor of `scan_result` is trivial.
+
+<pre highlight=cpp>
+using iterator = <i>see below</i>;
+using sentinel = <i>see below</i>;
+</pre>
+
+<div class=itemdescr>
+
+The type `iterator` is:
+
+ * If <i>`is-dangling`</i> is `false`, `ranges::iterator_t<Range>`,
+ * otherwise, `ranges::dangling`;
+
+The type `sentinel` is:
+
+ * If <i>`is-dangling`</i> is `false`, `ranges::sentinel_t<Range>`,
+ * otherwise, `ranges::dangling`;
+
+</div>
+
+```
+constexpr scan_result();
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Value-initializes `range_` and `values_`.
+
+</div>
+
+```
+constexpr scan_result(const scan_result& rhs) = default;
+```
+
+<div class=itemdescr>
+
+<i>Mandates</i>:
+
+ * `is_copy_constructible_v<Range>` is `true`, and
+ * `is_copy_constructible_v<tuple_type>` is `true`.
+
+<i>Effects</i>: Direct-non-list-initializes `range_` with `rhs.range_`, and `values_` with `rhs.values_`.
+
+</div>
+
+```
+constexpr scan_result(scan_result&& rhs) = default;
+```
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `is_move_constructible_v<Range>` is `true`, and
+ * `is_move_constructible_v<tuple_type>` is `true`.
+
+<i>Effects</i>: Direct-non-list-initializes `range_` with `std::move(rhs.range_)`, and `values_` with `std::move(rhs.values_)`.
+
+</div>
+
+```
+constexpr scan_result(Range r, tuple<Args...>&& values);
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Direct-non-list-initializes `range_` with `r`, and `values_` with `std::move(values)`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class OtherR, class... OtherArgs&gt;
+  constexpr explicit(<i>see below</i>) scan_result(OtherR&& r, tuple<OtherArgs...>&& values);
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `is_constructible_v<Range, OtherR>` is `true`, and
+ * `is_constructible_v<tuple<Args...>, tuple<OtherArgs...>>` is `true`.
+
+<i>Effects</i>: Direct-non-list-initializes `range_` with `std::forward<OtherR>(r)`, and `values_` with `std::move(values)`.
+
+<i>Remarks</i>: The expression inside `explicit` is equivalent to:
+`is_convertible_v<OtherR, Range> && is_convertible_v<tuple<OtherArgs>, tuple<Args>>`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class OtherR, class... OtherArgs&gt;
+  constexpr explicit(<i>see below</i>) scan_result(const scan_result&lt;OtherR, OtherArgs...&gt;& other);
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `is_constructible_v<Range, const OtherR&>` is `true`, and
+ * `is_constructible_v<tuple<Args...>, const tuple<OtherArgs...>&>` is `true`.
+
+<i>Effects</i>: Direct-non-list-initializes `range_` with `other.range_`, and `values_` with `other.values_`. 
+
+<i>Remarks</i>: The expression inside `explicit` is equivalent to:
+`is_convertible_v<const OtherR&, Range> && is_convertible_v<const tuple<OtherArgs>&, tuple<Args>>`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class OtherR, class... OtherArgs&gt;
+  constexpr explicit(<i>see below</i>) scan_result(scan_result&lt;OtherR, OtherArgs...&gt;&& other);
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `is_constructible_v<Range, OtherR>` is `true`, and
+ * `is_constructible_v<tuple<Args...>, tuple<OtherArgs...>>` is `true`.
+
+<i>Effects</i>: Direct-non-list-initializes `range_` with `std::move(other.range_)`, and `values_` with `std::move(other.values_)`. 
+
+<i>Remarks</i>: The expression inside `explicit` is equivalent to:
+`is_convertible_v<OtherR, Range> && is_convertible_v<tuple<OtherArgs>, tuple<Args>>`.
+
+</div>
+
+```
+constexpr scan_result& operator=(const scan_result& rhs) = default;
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Assigns `rhs.range_` to `range_`, and `rhs.values_` to `values_`.
+
+<i>Returns</i>: `*this`.
+
+<i>Remarks</i>: This operator is defined as deleted unless `is_copy_assignable_v<tuple<Args...>>` is `true`.
+
+</div>
+
+<pre highlight=cpp>
+constexpr scan_result& operator=(scan_result&& rhs) noexcept(<i>see below</i>) = default;
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>: `is_move_assignable_v<tuple<Args...>>` is `true`.
+
+<i>Effects</i>: Assigns `std::move(rhs.range_)` to `range_`, and `std::move(rhs.values_)` to `values_`.
+
+<i>Returns</i>: `*this`.
+
+<i>Remarks</i>: The exception specification is equivalent to `is_nothrow_move_assignable_v<tuple<Args..>>`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class OtherR, class... OtherArgs&gt;
+  constexpr scan_result& operator=(const scan_result&lt;OtherR, OtherArgs...&gt;& rhs);
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `is_assignable_v<Range&, const OtherR&>` is `true`, and
+ * `is_assignable_v<tuple<Args...>&, const tuple<OtherArgs...>&>` is `true`
+
+<i>Effects</i>: Assigns `rhs.range_` to `range_`, and `rhs.values_` to `values_`.
+
+<i>Returns</i>: `*this`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class OtherR, class... OtherArgs&gt;
+  constexpr scan_result& operator=(scan_result&lt;OtherR, OtherArgs...&gt;&& rhs);
+</pre>
+
+<div class=itemdescr>
+
+<i>Constraints</i>:
+
+ * `is_assignable_v<Range&, OtherR>` is `true`, and
+ * `is_assignable_v<tuple<Args...>&, tuple<OtherArgs...>>` is `true`
+
+<i>Effects</i>: Assigns `std::move(rhs.range_)` to `range_`, and `std::move(rhs.values_)` to `values_`.
+
+<i>Returns</i>: `*this`.
+
+</div>
+
+```
+constexpr iterator begin() const;
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>:
+
+ * If <i>`is-dangling`</i> is `false`, `ranges::begin(range_)`,
+ * otherwise, a value-initialized object of type `ranges::dangling`.
+
+</div>
+
+```
+constexpr sentinel end() const;
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>:
+
+ * If <i>`is-dangling`</i> is `false`, `ranges::end(range_)`,
+ * otherwise, a value-initialized object of type `ranges::dangling`.
+
+</div>
+
+```
+template<class Self>
+  constexpr auto&& values(this Self&& self);
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>: `std::forward<Self>(self).values_`.
+
+</div>
+
+```
+template<class Self>
+  constexpr auto&& value(this Self&& self);
+```
+
+<div class=itemdescr>
+
+<i>Constraints</i>: `sizeof...(Args)` is `1`.
+
+<i>Returns</i>: `get<0>(std::forward<Self>(self).values_)`.
+
+</div>
+
+<h4 id="spec-scan.fmt.string">Class template `basic_scan_format_string` [scan.fmt.string]</h4>
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class charT, class Range, class... Args&gt;
+  struct basic_scan_format_string {
+  private:
+    basic_string_view&lt;charT&gt; <i>str</i>;  // exposition only
+
+  public:
+    template&lt;class T&gt; consteval basic_scan_format_string(const T& s);
+    basic_scan_format_string(<i>runtime-format-string</i>&lt;charT&gt; s) noexcept : str(s.<i>str</i>) {}
+
+    constexpr basic_string_view&lt;charT&gt; get() const noexcept { return <i>str</i>; }
+  };
+}
+</pre>
+
+`template<class T> consteval basic_scan_format_string(const T& s);`
+
+<div class=itemdescr>
+
+<i>Constraints</i>: `const T&` models `convertible_to<basic_string_view<charT>>`.
+
+<i>Effects</i>: Direct-non-list-initializes <i>`str`</i> with `s`.
+
+<i>Remarks</i>: A call to this function is not a core constant expression ([expr.const])
+unless there exist `args` of types `Args` such that <i>`str`</i> is a format string for `args`.
+
+</div>
+
+<h4 id="spec-scan.functions">Scanning functions [scan.functions]</h4>
+
+<pre highlight=cpp>
+template&lt;class... Args, <i>scannable-range</i>&lt;char&gt; Range&gt;
+  <i>scan-result-type</i>&lt;Range, Args...&gt; scan(Range&& range,
+                                        scan_format_string&lt;Range, Args...&gt; fmt);
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Let `result` be a value-initialized object of type <code><i>scan-result-type</i>&lt;Range, Args...&gt;</code>.
+Creates an object `r` and initializes it with <code>vscan(std::forward&lt;Range&gt;(range), fmt.<i>str</i>, make_scan_args(result->values()))</code>.
+
+ * If `r.has_value()` is `true`, sets `result.range_` to `*r`,
+ * otherwise, assigns `unexpected(r.error())` to `result`.
+
+<i>Returns</i>: `result`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class... Args, <i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+  <i>scan-result-type</i>&lt;Range, Args...&gt; scan(Range&& range,
+                                        wscan_format_string&lt;Range, Args...&gt; fmt);
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Let `result` be a value-initialized object of type <code><i>scan-result-type</i>&lt;Range, Args...&gt;</code>.
+Creates an object `r` and initializes it with <code>vscan(std::forward&lt;Range&gt;(range), fmt.<i>str</i>, make_wscan_args(result->values()))</code>.
+
+ * If `r.has_value()` is `true`, sets `result.range_` to `*r`,
+ * otherwise, assigns `unexpected(r.error())` to `result`.
+
+<i>Returns</i>: `result`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class... Args, <i>scannable-range</i>&lt;char&gt; Range&gt;
+  <i>scan-result-type</i>&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
+                                        scan_format_string&lt;Range, Args...&gt; fmt);
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Let `result` be a value-initialized object of type <code><i>scan-result-type</i>&lt;Range, Args...&gt;</code>.
+Creates an object `r` and initializes it with <code>vscan(loc, std::forward&lt;Range&gt;(range), fmt.<i>str</i>, make_scan_args(result->values()))</code>.
+
+ * If `r.has_value()` is `true`, sets `result.range_` to `*r`,
+ * otherwise, assigns `unexpected(r.error())` to `result`.
+
+<i>Returns</i>: `result`.
+
+</div>
+
+<pre highlight=cpp>
+template &lt;class... Args, <i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+  <i>scan-result-type</i>&lt;Range, Args...&gt; scan(const locale& loc, Range&& range,
+                                        wscan_format_string&lt;Range, Args...&gt; fmt);
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Let `result` be a value-initialized object of type <code><i>scan-result-type</i>&lt;Range, Args...&gt;</code>.
+Creates an object `r` and initializes it with <code>vscan(loc, std::forward&lt;Range&gt;(range), fmt.<i>str</i>, make_wscan_args(result->values()))</code>.
+
+ * If `r.has_value()` is `true`, sets `result.range_` to `*r`,
+ * otherwise, assigns `unexpected(r.error())` to `result`.
+
+<i>Returns</i>: `result`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;<i>scannable-range</i>&lt;char&gt; Range&gt;
+  <i>vscan-result-type</i>&lt;Range&gt; vscan(Range&& range, string_view fmt, scan_args args);
+template&lt;<i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+  <i>vscan-result-type</i>&lt;Range&gt; vscan(Range&& range, wstring_view fmt, wscan_args args);
+template&lt;<i>scannable-range</i>&lt;char&gt; Range&gt;
+  <i>vscan-result-type</i>&lt;Range&gt; vscan(const locale& loc,
+                                 Range&& range,
+                                 string_view fmt,
+                                 scan_args args);
+template&lt;<i>scannable-range</i>&lt;wchar_t&gt; Range&gt;
+  <i>vscan-result-type</i>&lt;Range&gt; vscan(const locale& loc,
+                                 Range&& range,
+                                 wstring_view fmt,
+                                 wscan_args args);
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Scans `range` for the character representations of scanning arguments provided by `args`
+scanned according to specifications given in `fmt`.
+If present, `loc` is used for locale-specific formatting.
+If successful, returns a <i>`borrowed-tail-subrange-t`</i> constructed from `it` and `ranges::end(range)`,
+where `it` is an iterator pointing to the first character that was not scanned in `range`.
+Otherwise, returns a `scan_error` describing the error.
+
+<i>Throws</i>: As specified in [scan.err].
+
+<i>Remarks</i>: If `Range` is a reference to an array of `ranges::range_value_t<Range>`,
+`range` is treated as a NTCTS ([defns.ntcts]).
+
+</div>
+
+<h4 id="spec-scan.scanner">Scanner [scan.scanner]</h4>
+
+<h5 id="spec-scan.scanner.requirements">Scanner requirements [scan.scanner.requirements]</h5>
+
+A type `S` meets the <i>Scanner</i> requirements if it meets the
+
+ * <i>Cpp17DefaultConstructible</i>,
+ * <i>Cpp17CopyConstructible</i>,
+ * <i>Cpp17CopyAssignable</i>,
+ * <i>Cpp17Swappable</i>, and
+ * <i>Cpp17Destructible</i>,
+
+requirements, and the expressions shown in [tab:scan.scanner] are valid and have the indicated semantics.
+
+Given character type `charT`, source range type `Range`, and scanning argument type `T`,
+in [tab:scan.scanner]:
+
+ * `s` is a value of type (possibly const) `S`,
+ * `ls` is an lvalue of type `S`,
+ * `t` is an lvalue of type `T`,
+ * `PC` is `basic_scan_parse_context<charT>`,
+ * `SC` is `basic_scan_context<Range, charT>`,
+ * `pc` is an lvalue of type `PC`, and
+ * `sc` is an lvalue of type `FC`.
+
+`pc.begin()` points to the beginning of the <i>scan-format-spec</i> ([scan.string]) of the replacement field
+being scanned in the format string. If <i>scan-format-spec</i> is not present or empty then either `pc.begin() == pc.end()`
+or `*pc.begin() == '}'`.
+
+<table>
+
+<caption><i>Scanner</i> requirements [tab:scan.scanner]</caption>
+
+<thead>
+<tr>
+<th>Expression
+<th>Return type
+<th>Requirement
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>`ls.parse(pc)`
+<td>`PC::iterator`
+<td>Parses <i>scan-format-spec</i> ([scan.string]) for type `T` in the range `[pc.begin(), pc.end())`
+until the first unmatched charactter. Throws `scan_format_string_error` unless the whole range is parsed or the unmatched character is `}`.
+Stores the parsed format specifiers in `*this` and returns an iterator past the end of the parsed range.
+</tr>
+
+<tr>
+<td>`s.scan(t, sc)`
+<td>`expected<SC::iterator, scan_error>`
+<td>Scans `t` from `sc` according to the specifiers stored in `*this`.
+Reads the input from `sc.range()` or `sc.begin()`, and writes the result in `t`.
+On success, returns an iterator past the end of the last scanned character from `sc`,
+otherwise returns an object of type `scan_error`.
+The value of `t` after calling shall only depend on `sc.range()`, `sc.locale()`,
+and the range `[pc.begin(), pc.end())` from the last call to `s.parse(pc)`.
+</tr>
+</tbody>
+
+</table>
+
+<h5 id="spec-scan.scannable">Concept `scannable` [scan.scannable]</h5>
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class T, class Context,
+           class Scanner = typename Context::template scanner_type&lt;T&gt;&gt;
+    concept <i>scannable-with</i> =            // exposition only
+      semiregular&lt;Scanner&gt; &&
+      requires(Scanner& s, const Scanner& cs, T& t, Context& ctx,
+               basic_scan_parse_context&lt;typename Context::char_type&gt;& pctx)
+      {
+        { s.parse(pctx) } -> same_as&lt;typename decltype(pctx)::iterator&gt;;
+        { cs.scan(t, ctx) } -> same_as&lt;expected&lt;typename Context::iterator, scan_error&gt;&gt;;
+      };
+
+  template&lt;class T, class charT&gt;
+    concept scannable =
+      <i>scannable-with</i>&lt;T, basic_scan_context&lt;<i>unspecified</i>, charT&gt;&gt;;
+}
+</pre>
+
+A type `T` and a character type `charT` model `scannable` if `scanner<T, charT>`
+meets the <i>Scanner</i> requirements ([scan.scanner.requirements]).
+
+[<i>Note 1</i>: `scannable<string_view, char>` is `true`, even though a `string_view` can only be
+scanned from a contiguous borrowed range. &mdash; <i>end note</i>]
+
+<h5 id="spec-scan.scanner.spec">Scanner specializations</h5>
+
+The functions defined in [scan.functions] use specializations of the class template `scanner`
+to scan individual arguments.
+
+Let `charT` be either `char` or `wchar_t`.
+Each specialization of `scanner` is either enabled or disabled, as described below.
+A <i>debug-enabled</i> specialization of `scanner` additionally provides a public, constexpr,
+non-static member function `set_debug_format()` which modifies the state of the `scanner` to be
+as if the type of the <i>std-scan-format-spec</i> parsed by the last call to `parse` were `?`.
+Each header that declares the template `scanner` provides the following enabled specializations:
+
+ * The debug-enabled specializations
+
+<div class=itemdescr>
+```
+template<> struct scanner<char, char>;
+template<> struct scanner<wchar_t, wchar_t>;
+```
+</div>
+
+ * For each `charT`, the debug-enabled string type specializations
+
+<div class=itemdescr>
+```
+template<class Allocator>
+  struct scanner<basic_string<charT, char_traits<charT>, Allocator>, charT>;
+template<> struct scanner<basic_string_view<charT>, charT>;
+```
+</div>
+
+ * For each `charT`, for each arithmetic type `ArithmeticT` other than
+    `char`, `wchar_t`, `char8_t`, `char16_t`, or `char32_t`, a specialization
+
+<div class=itemdescr>
+```
+template<> struct scanner<ArithmeticT, charT>;
+```
+</div>
+
+ * For each `charT`, the pointer type specializations
+
+<div class=itemdescr>
+```
+template<> struct scanner<void*, charT>;
+template<> struct scanner<const void*, charT>;
+```
+</div>
+
+The `parse` member functions of these scanners interpret the format specification as a <i>std-scan-format-spec</i>
+as described in [scan.string.std].
+
+For any types `T` and `charT` for which neither the library nor the user provides an explicit or partial specialization
+of the class template `scanner`, `scanner<T, charT>` is disabled.
+
+If the library provides an explicit or partial specialization of `scanner<T, charT>`,
+that specialization is enabled and meets the <i>Scanner</i> requirements except as noted otherwise.
+
+If `S` is a disabled specialization of `scanner`, these values are `false`:
+
+ * `is_default_constructible_v<S>`,
+ * `is_copy_constructible_v<S>`,
+ * `is_move_constructible_v<S>`,
+ * `is_copy_assignable_v<S>`, and
+ * `is_move_assignable_v<S>`.
+
+An enabled specialization of `scanner<T, charT>` meets the <i>Scanner</i> requirements ([scan.scanner.requirements]).
+
+<h5 id="spec-scan.parse.ctx">Class template `basic_scan_parse_context` [scan.parse.ctx]</h5>
+
+```
+namespace std {
+  template<class charT>;
+  class basic_scan_parse_context {
+  public:
+    using char_type = charT;
+    using const_iterator = typename basic_string_view<charT>::const_iterator;
+    using iterator = const_iterator;
+
+  private:
+    iterator begin_;                              // exposition only
+    iterator end_;                                // exposition only
+    enum indexing { unknown, manual, automatic }; // exposition only
+    indexing indexing_;                           // exposition only
+    size_t next_arg_id_;                          // exposition only
+    size_t num_args_;                             // exposition only
+
+  public:
+    constexpr explicit basic_scan_parse_context(basic_string_view<charT> fmt) noexcept;
+    basic_scan_parse_context(const basic_scan_parse_context&) = delete;
+    basic_scan_parse_context& operator=(const basic_scan_parse_context&) = delete;
+
+    constexpr const_iterator begin() const noexcept { return begin_; }
+    constexpr const_iterator end() const noexcept { return end_; }
+    constexpr void advance_to(const_iterator it);
+
+    constexpr size_t next_arg_id();
+    constexpr void check_arg_id(size_t id);
+  };
+}
+```
+
+An instance of `basic_scan_parse_context` holds the format string parsing state,
+consisting of the format string range being parsed and the argument counter for automatic indexing.
+
+If a program declares an explicit or partial specialization of `basic_scan_parse_context`,
+the program is ill-formed, no diagnostic required.
+
+```
+constexpr explicit basic_scan_parse_context(basic_string_view<charT> fmt) noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Initializes `begin_` with `fmt.begin()`, `end_` with `fmt.end()`,
+`indexing_` with `unknown`, `next_arg_id_` with `0`, and `num_args_` with `0`.
+
+[<i>Note 1</i>: Any call to `next_arg_id` or `check_arg_id` on an instance of `basic_scan_parse_context`
+initialized using this constructor is not a core constant expression. &mdash; <i>end note</i>]
+
+</div>
+
+```
+constexpr void advance_to(const_iterator it);
+```
+
+<div class=itemdescr>
+
+<i>Preconditions</i>: `end()` is reachable from `it`.
+
+<i>Effects</i>: Equivalent to: `begin_ = std::move(it)`.
+
+</div>
+
+```
+constexpr size_t next_arg_id();
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: If `indexing != manual` is `true`, equivalent to:
+
+```
+if (indexing_ == unknown)
+  indexing_ = automatic;
+return next_arg_id_++;
+```
+
+Otherwise, the string is not a format string for `args`.
+
+<i>Remarks</i>: Let <i>`cur-arg-id`</i> be the value of `next_arg_id_` prior to this call.
+Call expressions where <code><i>cur-arg-id</i> >= num_args_</code> is `false` are not core constant expressions ([expr.const]).
+
+</div>
+
+```
+constexpr void check_arg_id(size_t id);
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: If `indexing != automatic` is `true`, equivalent to:
+
+```
+if (indexing_ == unknown)
+  indexing_ = manual;
+```
+
+Otherwise, the string is not a format string for `args`.
+
+<i>Remarks</i>: A call to this function is a core constant expression ([expr.const]) only if `id < num_args_` is `true`.
+
+</div>
+
+<h4 id="spec-scan.context">Class template `basic_scan_context` [scan.context]</h4>
+
+```
+namespace std {
+  template<class Range, class charT>
+  class basic_scan_context {
+    iterator current_;                         // exposition only
+    sentinel end_;                             // exposition only
+    basic_scan_args<basic_scan_context> args_; // exposition only
+
+  public:
+    using char_type = charT;
+    using range_type = Range;
+    using iterator = ranges::iterator_t<range_type>;
+    using sentinel = ranges::sentinel_t<range_type>;
+    template<class T> using scanner_type = scanner<T, char_type>;
+
+    basic_scan_arg<basic_scan_context> arg(size_t id) const noexcept;
+    std::locale locale();
+
+    iterator begin() const { return begin_; }
+    sentinel end() const { return end_; }
+    ranges::subrange<iterator, sentinel> range() const;
+    void advance_to(iterator it);
+  };
+}
+```
+
+An instance of `basic_scan_context` holds scanning state consisting of the scanning arguments
+and the source range.
+
+If a program declares an explicit or partial specialization of `basic_scan_context`,
+the program is ill-formed, no diagnostic required.
+
+`Range` shall model `forward_range`, and its value type shall be `charT`.
+The iterator and sentinel types of `Range` shall model `copyable`.
+
+`scan_context` is an alias for a specialization of `basic_scan_context` with a range type
+that can contain a reference to any other forward range with a value type of `char`.
+Similarly, `wscan_context` is an alias for a specialization of `basic_scan_context`
+with a range type that can contain a reference to any other forward range with a value type of `wchar_t`.
+
+<i>Recommended practice:</i> For a given type <i>charT</i>,
+implementations should provide a single instantiation for reading from
+`basic_string<charT>`, `vector<charT>`, or any other container with contiguous storage
+by wrapping those in temporary objects with a uniform interface, such as a `span<charT>`.
+
+```
+basic_scan_arg<basic_scan_context> arg(size_t id) const noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>: `args_.get(id)`.
+
+</div>
+
+```
+std::locale locale();
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>: The locale passed to the scanning function if the latter takes one, and `std::locale()` otherwise.
+
+</div>
+
+```
+ranges::subrange<iterator, sentinel> range() const;
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: `return ranges::subrange(begin_, end_);`
+
+</div>
+
+```
+void advance_to(iterator it) const;
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: `begin_ = std::move(it);`
+
+</div>
+
+<h4 id="spec-scan.arguments">Arguments [scan.arguments]</h4>
+
+<h5 id="spec-scan.arg">Class template `basic_scan_arg` [scan.arg]</h5>
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class Context&gt;
+  class basic_scan_arg {
+  public:
+    class handle;
+
+  private:
+    using <i>char-type</i> = typename Context::char_type;            // exposition only
+
+    variant&lt;
+      monostate,
+      signed char*, short*, int*, long*, long long*,
+      unsigned char*, unsigned short*, unsigned int*, unsigned long*, unsigned long long*,
+      bool*, <i>char-type</i>*, void**, const void**,
+      float*, double*, long double*,
+      basic_string&lt;<i>char-type</i>&gt;*, basic_string_view&lt;<i>char-type</i>&gt;*,
+      handle&gt; value;                                          // exposition only
+
+    template&lt;class T&gt; explicit basic_scan_arg(T& v) noexcept; // exposition only
+
+  public:
+    basic_scan_arg() noexcept;
+
+    explicit operator bool() const noexcept;
+
+    template&lt;class Visitor&gt;
+      decltype(auto) visit(this basic_scan_arg arg, Visitor&& vis);
+    template&lt;class R, class Visitor&gt;
+      R visit(this basic_scan_arg arg, Visitor&& vis);
+  };
+}
+</pre>
+
+An instance of `basic_scan_arg` provides access to a scanning argument for user-defined scanners.
+
+The behavior of a program that adds specializations of `basic_scan_arg` is undefined.
+
+```
+basic_scan_arg() noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Postconditions</i>: `!(*this)`.
+
+</div>
+
+```
+template<class T> explicit basic_scan_arg(T& v) noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Constraints</i>: `T` satisfies <code><i>formattable-with</i>&lt;Context&gt;</code>.
+
+<i>Effects</i>: Let `TD` be `remove_const_t<T>`.
+
+ * If `TD` is a standard signed integer type ([basic.fundamental]), a standard unsigned integer type,
+    `bool`, <i>`char-type`</i>, `void*`, a standard floating-point type,
+    <code>basic_string&lt;<i>char-type</i>&gt;</code>, or <code>basic_string_view&lt;<i>char-type</i>&gt;</code>,
+    initializes `value` with `addressof(v)`;
+
+ * otherwise, initializes `value` with `handle(v)`.
+
+</div>
+
+```
+explicit operator bool() const noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>: `!holds_alternative<monostate>(value)`.
+
+</div>
+
+```
+template<class Visitor>
+  decltype(auto) visit(this basic_scan_arg arg, Visitor&& vis);
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: `return arg.value.visit(std::forward<Visitor>(vis));`
+
+</div>
+
+```
+template<class R, class Visitor>
+  R visit(this basic_scan_arg arg, Visitor&& vis);
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: `return arg.value.visit(std::forward<Visitor>(vis));`
+
+</div>
+
+The class `handle` allows scanning an object of a user-defined type.
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class Context&gt;
+  class basic_scan_arg&lt;Context&gt;::handle {
+    void* ptr_;                                               // exposition only
+    scan_error (*scan_)(basic_scan_parse_context&lt;char_type&gt;,
+                        Context&, void*);                     // exposition only
+
+    template&lt;class T&gt; explicit handle(T& val) noexcept;       // exposition only
+
+    friend class basic_scan_arg&lt;Context&gt;;                     // exposition only
+
+  public:
+    scan_error scan(basic_scan_parse_context&lt;char_type&gt;& parse_ctx, Context& ctx) const;
+  };
+}
+</pre>
+
+```
+template<class T> explicit handle(T& val) noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Mandates</i>: `T` satisfies <code><i>scannable-with</i>&lt;Context&gt;</code>.
+
+<i>Effects</i>: Initializes `ptr_` with `addressof(val)` and `scan_` with
+
+<pre highlight=cpp>
+[](basic_scan_parse_context&lt;char_type&gt;& parse_ctx, Context& scan_ctx, void* ptr) -> scan_error {
+  typename Context::template scanner_type&lt;T&gt; s;
+  auto p = <i>do-parse</i>(s, parse_ctx);
+  if (!p) return p.error();
+  parse_ctx.advance_to(*p);
+  auto r = s.scan(*static_cast&lt;T*&gt;(ptr), scan_ctx);
+  if (!r) return r.error();
+  scan_ctx.advance_to(*r);
+  return scan_error::success();
+}
+</pre>
+
+where <code><i>do-parse</i>(s, pc)</code>:
+
+ * has a return type of <code>expected&lt;basic_scan_parse_context&lt;char_type&gt;::iterator, scan_error&gt;</code>,
+ * calls `s.parse(pc)`,
+ * catches exceptions derived from `scan_format_string_error` thrown by `s.parse`.
+    In such case, returns a `scan_error` with a code of `invalid_format_string`.
+ * Otherwise, returns the iterator returned by `s.parse`.
+
+</div>
+
+```
+scan_error scan(basic_scan_parse_context<char_type>& parse_ctx, Context& scan_ctx) const;
+```
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: `return scan_(parse_ctx, scan_ctx, ptr_);`
+
+</div>
+
+<h5 id="spec-scan.arg.store">Class template <code><i>scan-arg-store</i></code> [scan.arg.store]</h5>
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class Context, class... Args&gt;
+  class <i>scan-arg-store</i> {                                  // exposition only
+    array&lt;basic_scan_arg&lt;Context&gt;, sizeof...(Args)&gt; <i>args</i>; // exposition only
+  };
+}
+</pre>
+
+An instance of <i>`format-arg-store`</i> stores scanning arguments.
+
+<pre highlight=cpp>
+template&lt;class Context = scan_context, class... Args&gt;
+  constexpr <i>scan-arg-store</i>&lt;Context, Args...&gt;
+    make_scan_args(std::tuple<Args...>& values);
+</pre>
+
+<div class=itemdescr>
+
+<i>Preconditions</i>: The type <code>typename Context::template scanner_type&lt;T<sub><i>i</i></sub>&gt;</code>
+meets the <i>Scanner</i> requirements ([scan.scanner.requirements]) for each <code>T<sub><i>i</i></sub></code> in `Args`.
+
+<i>Returns</i>: An object of type <code><i>scan-arg-store</i>&lt;Context, Args...&gt;</code>.
+All elements of the <i>`data`</i> member of the returned object are initialized with
+<code>basic_scan_arg&lt;Context&gt;(get&lt;<i>i</i>&gt;(values))</code>,
+where <i>`i`</i> is an index in the range of `[0, sizeof...(Args))`.
+
+</div>
+
+<pre highlight=cpp>
+template&lt;class... Args&gt;
+  constexpr <i>scan-arg-store</i>&lt;wscan_context, Args...&gt;
+    make_wscan_args(std::tuple<Args...>& values);
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>: Equivalent to: `return make_scan_args<wscan_context>(values)`.
+
+</div>
+
+<h5 id="spec-scan.args">Class template `basic_scan_args` [scan.args]</h5>
+
+<pre highlight=cpp>
+namespace std {
+  template&lt;class Context&gt;
+  class basic_scan_args {
+    size_t size_;                         // exposition only
+    const basic_scan_arg&lt;Context&gt;* data_; // exposition only
+
+  public:
+    basic_scan_args() noexcept;
+
+    template&lt;class... Args&gt;
+      basic_scan_args(const <i>scan-arg-store</i>&lt;Context, Args...&gt;& store) noexcept;
+
+    basic_scan_arg&lt;Context&gt; get(size_t i) noexcept;
+  };
+
+  template&lt;class Context, class... Args&gt;
+    basic_scan_args(<i>scan-arg-store</i>&lt;Context, Args...&gt;) -> basic_scan_args&lt;Context&gt;;
+}
+</pre>
+
+An instance of `basic_scan_args` provides access to scanning arguments.
+Implementations should optimize the representation of `basic_scan_args` for a small number of scanning arguments.
+
+[<i>Note 1</i>: For example, by storing indices of type alternatives separately from values and packing the former.
+&mdash; <i>end note</i>]
+
+<pre highlight=cpp>
+template&lt;class... Args&gt;
+  basic_scan_args(const <i>scan-arg-store</i>&lt;Context, Args...&gt;& store) noexcept;
+</pre>
+
+<div class=itemdescr>
+
+<i>Effects</i>:Initializes `size_` with `sizeof...(Args)` and `data_` with <code>store.<i>args</i>.data()</code>;
+
+</div>
+
+```
+basic_scan_arg<Context> get(size_t i) noexcept;
+```
+
+<div class=itemdescr>
+
+<i>Returns</i>: `i < size_ ? data_[i] : basic_scan_arg<Context>()`.
+
+</div>
+
+<pre class=biblio>
+{
+  "P0645": {
+    "title": "Text Formatting",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p0645"
+  },
+  "CODESEARCH": {
+    "title": "Code search engine website",
+    "authors": ["Andrew Tomazos"],
+    "href": "https://codesearch.isocpp.org"
+  },
+  "P1361": {
+    "title": "Integration of chrono with text formatting",
+    "authors": ["Victor Zverovich", "Daniela Engert", "Howard E. Hinnant"],
+    "href": "https://wg21.link/p1361"
+  },
+  "PARSE": {
+    "title": "Python `parse` package",
+    "href": "https://pypi.org/project/parse/"
+  },
+  "ATTR": {
+    "title": "Common Function Attributes",
+    "href": "https://gcc.gnu.org/onlinedocs/gcc-8.2.0/gcc/Common-Function-Attributes.html"
+  },
+  "SCNLIB": {
+    "title": "scnlib: scanf for modern C++",
+    "authors": ["Elias Kosunen"],
+    "href": "https://github.com/eliaskosunen/scnlib"
+  },
+  "FMT": {
+    "title": "The fmt library",
+    "authors": ["Victor Zverovich et al"],
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "N4412": {
+    "title": "N4412: Shortcomings of iostreams",
+    "authors": ["Jens Maurer"],
+    "href": "http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4412.html"
+  },
+  "P0355": {
+    "title": "Extending <chrono> to Calendars and Time Zones",
+    "authors": ["Howard E. Hinnant", "Tomasz Kamiński"],
+    "href": "https://wg21.link/p0355"
+  },
+  "P2286": {
+    "title": "Formatting Ranges",
+    "authors": ["Barry Revzin"],
+    "href": "https://wg21.link/p2286"
+  },
+  "P2561": {
+    "title": "A control flow operator",
+    "authors": ["Barry Revzin"],
+    "href": "https://wg21.link/p2561"
+  },
+  "P2637": {
+    "title": "Member `visit`",
+    "authors": ["Barry Revzin"],
+    "href": "https://wg21.link/p2637"
+  }
+}
+</pre>
