@@ -1366,18 +1366,17 @@ allocator:</p>
 <pre class="highlight"><code>using custom_string =
   std::basic_string&lt;char, std::char_traits&lt;char&gt;, custom_allocator&gt;;
 
-custom_string vformat(custom_allocator alloc, fmt::string_view format_str,
-                      fmt::format_args args) {
+auto vformat(custom_allocator alloc, fmt::string_view fmt,
+             fmt::format_args args) -&gt; custom_string {
   auto buf = custom_memory_buffer(alloc);
-  fmt::vformat_to(std::back_inserter(buf), format_str, args);
+  fmt::vformat_to(std::back_inserter(buf), fmt, args);
   return custom_string(buf.data(), buf.size(), alloc);
 }
 
 template &lt;typename ...Args&gt;
-inline custom_string format(custom_allocator alloc,
-                            fmt::string_view format_str,
-                            const Args&amp; ... args) {
-  return vformat(alloc, format_str, fmt::make_format_args(args...));
+auto format(custom_allocator alloc, fmt::string_view fmt,
+            const Args&amp; ... args) -&gt; custom_string {
+  return vformat(alloc, fmt, fmt::make_format_args(args...));
 }</code></pre>
 <p>The allocator will be used for the output container only. Formatting
 functions normally don't do any allocations for built-in and string
