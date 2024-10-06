@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P395R0: Formatting of std::error_code</title>
+  <title>P3395R0: Formatting of std::error_code</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d1f01b021b28090043a9225cd608251a9ccabb53" name="revision">
+  <meta content="6ac93cf206345cb7b18eeed96b8754bcce73ebb2" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2098,7 +2098,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P395R0<br>Formatting of std::error_code</h1>
+   <h1 class="p-name no-ref" id="title">P3395R0<br>Formatting of std::error_code</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-09-21">2024-09-21</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2119,7 +2119,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
     <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
     <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
-    <li><a href="#impl"><span class="secno">4</span> <span class="content">Implementation</span></a>
+    <li><a href="#wording"><span class="secno">4</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2150,7 +2151,7 @@ confusing output:</p>
 <pre class="highlight"><c- nl>generic</c->     <c- p>:</c-><c- mi>2</c->
 </pre>
    <p>It also doesn’t allow formatting the error message and has potential encoding
-issues because the encoding of category name is unspecified.</p>
+issues because the encoding of the category name is unspecified.</p>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The current paper proposes adding a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>error_code</c-></code> that addresses the problems discussed in the previous section.</p>
    <p>The default format will give the same output as the <code class="highlight"><c- n>ostream</c-></code> inserter:</p>
@@ -2184,7 +2185,7 @@ strings returned by <code class="highlight"><c- n>error_category</c-><c- o>::</c
 therefore they are in ordinary literal encoding.</p>
    <p>There is implementation divergence in the encoding for messages. libc++ and
 libstdc++ use <code class="highlight"><c- n>strerror</c-><c- p>[</c-><c- n>_r</c-><c- p>]</c-></code> for the generic category which is in the C
-(not "C") locale encoding but disagree on encodings for the system category:
+(not "C") locale encoding but disagree on the encoding for the system category:
 libstdc++ uses the Active Code Page (ACP) while libc++ again uses <code class="highlight"><c- n>strerror</c-></code> / C locale on Windows. Microsoft STL uses a table of string literals in the
 ordinary literal encoding for the generic category and ACP for the system
 category. The following table summarizes this:</p>
@@ -2206,12 +2207,26 @@ category. The following table summarizes this:</p>
       <td><code class="highlight"><c- n>strerror</c-></code> 
       <td>ordinary literals / ACP 
    </table>
-   <p>Obviously none of this is usable in a portable way through the generic <code class="highlight"><c- n>error_category</c-></code> API because encodings can be and often are different.
-What is worse, is that it is impossible to reliably get the information about
-the message encoding because both the C locale and ACP can be changed at
-runtime, possibly from another thread.</p>
-   <p>TODO: table</p>
-   <h2 class="heading settled" data-level="4" id="impl"><span class="secno">4. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <p>Obviously none of this is usable in a portable way through the generic <code class="highlight"><c- n>error_category</c-></code> API because encodings can be and often are different.</p>
+   <p>The current paper proposes using the C locale encoding (execution character
+set) since it is already used in most cases and consistent with the underlying
+system API. Microsoft STL’s implementation has a number of bugs in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>system_category</c-><c- o>::</c-><c- n>what</c-></code> (<a data-link-type="biblio" href="#biblio-msstl-3254" title="Visual Studio 2022 std::system_category returns &quot;unknown error&quot; if system locale is not en-US">[MSSTL-3254]</a>, <a data-link-type="biblio" href="#biblio-msstl-4711" title="Should `std::error_code::message` respect the locale set by the user?">[MSSTL-4711]</a>) and will likely
+to change anyway. This also resolves <a data-link-type="biblio" href="#biblio-lwg4156" title="`error_category` messages have unspecified encoding">[LWG4156]</a>.</p>
+   <p>One alternative to this is to communicate the encoding from <code class="highlight"><c- n>error_category</c-></code>.
+This approach is challenging because of ABI and would complicate usage compared
+to a single encoding.</p>
+   <h2 class="heading settled" data-level="4" id="wording"><span class="secno">4. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Modify <a href="https://eel.is/c++draft/syserr.errcat.virtuals">[syserr.errcat.virtuals</a>]:</p>
+   <p>...</p>
+<pre class="highlight"><c- k>virtual</c-> <c- n>string</c-> <c- nf>message</c-><c- p>(</c-><c- b>int</c-> <c- n>ev</c-><c- p>)</c-> <c- k>const</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
+</pre>
+   <p>
+    <em>Returns</em>: A string 
+    <ins>of multibyte characters in the executon character
+set</ins>
+     that describes the error condition denoted by <code class="highlight"><c- n>ev</c-></code>.
+   </p>
+   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>formatter</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> has been implemented in the
 open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>).</p>
   </main>
@@ -2349,4 +2364,10 @@ open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="
   <dl>
    <dt id="biblio-fmt">[FMT]
    <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The {fmt} library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dt id="biblio-lwg4156">[LWG4156]
+   <dd>Victor Zverovich. <a href="https://cplusplus.github.io/LWG/issue4156"><cite>`error_category` messages have unspecified encoding</cite></a>. URL: <a href="https://cplusplus.github.io/LWG/issue4156">https://cplusplus.github.io/LWG/issue4156</a>
+   <dt id="biblio-msstl-3254">[MSSTL-3254]
+   <dd><a href="https://github.com/microsoft/STL/issues/3254"><cite>Visual Studio 2022 std::system_category returns "unknown error" if system locale is not en-US</cite></a>. URL: <a href="https://github.com/microsoft/STL/issues/3254">https://github.com/microsoft/STL/issues/3254</a>
+   <dt id="biblio-msstl-4711">[MSSTL-4711]
+   <dd>Sung Po-Han. <a href="https://github.com/microsoft/STL/issues/4711"><cite>Should `std::error_code::message` respect the locale set by the user?</cite></a>. URL: <a href="https://github.com/microsoft/STL/issues/4711">https://github.com/microsoft/STL/issues/4711</a>
   </dl>

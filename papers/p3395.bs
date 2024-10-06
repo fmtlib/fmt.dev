@@ -1,6 +1,6 @@
 <pre class='metadata'>
 Title: Formatting of std::error_code
-Shortname: P395
+Shortname: P3395
 Revision: 0
 Audience: SG16
 Status: P
@@ -65,7 +65,7 @@ generic     :2
 ```
 
 It also doesn't allow formatting the error message and has potential encoding
-issues because the encoding of category name is unspecified.
+issues because the encoding of the category name is unspecified.
 
 Proposal {#proposal}
 ========
@@ -137,7 +137,7 @@ therefore they are in ordinary literal encoding.
 
 There is implementation divergence in the encoding for messages. libc++ and
 libstdc++ use `strerror[_r]` for the generic category which is in the C
-(not "C") locale encoding but disagree on encodings for the system category:
+(not "C") locale encoding but disagree on the encoding for the system category:
 libstdc++ uses the Active Code Page (ACP) while libc++ again uses `strerror`
 / C locale on Windows. Microsoft STL uses a table of string literals in the
 ordinary literal encoding for the generic category and ACP for the system
@@ -166,29 +166,60 @@ category. The following table summarizes this:
 
 Obviously none of this is usable in a portable way through the generic
 `error_category` API because encodings can be and often are different.
-What is worse, is that it is impossible to reliably get the information about
-the message encoding because both the C locale and ACP can be changed at
-runtime, possibly from another thread.
 
-<!-- This particularly embarassing considering
-that most system have APIs for this available for over a decade - strerror_l -->
+<!--What is worse, it is impossible to reliably get the information about the
+message encoding because both the C locale and ACP can be changed at runtime,
+possibly from another thread.
 
-TODO: solution for this mess
-
-// TODO: check if locale can be changed from another thread
-
+```c++
 #include <locale.h>
 #include <string.h>
 #include <iostream>
+#include <thread>
 
 int main() {
+  // Initial locale is "C".
   std::cout << setlocale(LC_ALL, nullptr) << std::endl;
-  // By default locale is not affected by LC_ALL.
-  setlocale(LC_ALL, "uk_UA.koi8-u");
+
+  std::thread t([]() {
+    setlocale(LC_ALL, "uk_UA.koi8-u");
+  });
+
+  t.join();
   std::cout << strerror(2) << std::endl;
+
+  // ./a.out | iconv -f KOI8-U -t UTF-8
+  // C
+  // Немає такого файла або каталогу
 }
+```
+-->
+
+The current paper proposes using the C locale encoding (execution character
+set) since it is already used in most cases and consistent with the underlying
+system API. Microsoft STL's implementation has a number of bugs in
+`std::system_category::what` ([[MSSTL-3254]], [[MSSTL-4711]]) and will likely
+to change anyway. This also resolves [[LWG4156]].
+
+One alternative to this is to communicate the encoding from `error_category`.
+This approach is challenging because of ABI and would complicate usage compared
+to a single encoding.
 
 <!-- ABI: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1196r0.html -->
+
+Wording {#wording}
+=======
+
+Modify [[syserr.errcat.virtuals](https://eel.is/c++draft/syserr.errcat.virtuals)]:
+
+...
+
+```
+virtual string message(int ev) const = 0;
+```
+
+*Returns*: A string <ins>of multibyte characters in the executon character
+set</ins> that describes the error condition denoted by `ev`.
 
 Implementation {#impl}
 ==============
@@ -203,6 +234,20 @@ open-source {fmt} library ([[FMT]]).
     "authors": ["Victor Zverovich"],
     "etAl": true,
     "href": "https://github.com/fmtlib/fmt"
+  },
+  "LWG4156": {
+    "title": "`error_category` messages have unspecified encoding",
+    "authors": ["Victor Zverovich"],
+    "href": "https://cplusplus.github.io/LWG/issue4156"
+  },
+  "MSSTL-3254": {
+    "title": "Visual Studio 2022 std::system_category returns \"unknown error\" if system locale is not en-US",
+    "href": "https://github.com/microsoft/STL/issues/3254"
+  },
+  "MSSTL-4711": {
+    "title": "Should `std::error_code::message` respect the locale set by the user?",
+    "authors": ["Sung Po-Han"],
+    "href": "https://github.com/microsoft/STL/issues/4711"
   }
 }
 </pre>
