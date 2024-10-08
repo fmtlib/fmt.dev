@@ -11,7 +11,7 @@ Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
   This paper discusses a new text parsing facility to complement the text
   formatting functionality of <code>std::format</code>, proposed in [[P0645]].
-Date: 2024-09-30
+Date: 2024-10-08
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
@@ -61,27 +61,27 @@ Changes since R4 {#history-since-r4}
  * Include preliminary wording
  * Revamp argument handling and erasure machinery to better elide copies and moves
     * Redefine `make_scan_result`, `make_scan_args`, and <i>`scan-arg-store`</i>, add `fill_scan_result`.
- * Add discussion on the name `scan`
- * Make fill+align logic more lenient and easy to understand
- * Add precision-specifier to specify maximum field width
-    * Modify width-specifier to specify minimum field width
+ * Add discussion on the name `scan`.
+ * Make fill+align logic more lenient and easy to understand.
+ * Add precision-specifier to specify maximum field width.
+    * Modify width-specifier to specify minimum field width.
  * Split `scan_error::value_out_of_range` into a four separate enumerators,
-    for positive and negative overflow and underflow
- * Revise error handling in `scanner::parse`
-    * `scanner::parse` now returns `iterator`, instead of `expected<iterator, scan_error>`
-    * Add `scan_format_string_error`
- * Rename `scan_error::end_of_range` -> `scan_error::end_of_input`
- * Add parsing of pointers (`void*`)
+    for positive and negative overflow and underflow.
+ * Revise error handling in `scanner::parse`.
+    * `scanner::parse` now returns `iterator`, instead of `expected<iterator, scan_error>`.
+    * Add `scan_format_string_error`.
+ * Rename `scan_error::end_of_range` -> `scan_error::end_of_input`.
+ * Add parsing of pointers (`void*` and `const void*`).
  * Remove requirement for localized numbers to have "correct" digit grouping
-    as specified by `numpunct::grouping`
+    as specified by `numpunct::grouping`.
  * Remove design discussion on a dedicated flag for thousands separators (`'`),
-    separate from locale
- * Remove detailed design discussion on error handling alternatives
- * Update example on user-defined type scanning
- * Clarify meaning of "whitespace" further in [[#format-strings]]
- * Fix example claiming `std::expected::operator->` throws on an expected containing an error
- * SG9: Make `borrowed_tail_subrange_t` exposition-only (<i>`borrowed-tail-subrange-t`</i>)
- * Make concept `scannable_range` exposition-only (<i>`scannable-range`</i>)
+    separate from locale.
+ * Remove detailed design discussion on error handling alternatives.
+ * Update example on user-defined type scanning.
+ * Clarify meaning of "whitespace" further in [[#format-strings]].
+ * Fix example claiming `std::expected::operator->` throws on an expected containing an error.
+ * SG9: Make `borrowed_tail_subrange_t` exposition-only (<i>`borrowed-tail-subrange-t`</i>).
+ * Make concept `scannable_range` exposition-only (<i>`scannable-range`</i>).
     * SG9: Add requirement to <i>`scannable-range`</i> for the `value_type` to either be `char` or `wchar_t`.
  * Formatting and styling fixes.
 
@@ -1341,6 +1341,8 @@ This is the value that will be returned from `scan`.
 The values will be populated by `vscan`, which will be given a reference to these values
 through the type-erased `scan_args`.
 The subrange will be set by `fill_scan_result`, which is described below.
+This approach allows us to take advantage of NRVO,
+which will eliminate copies and moves of the scan argument tuple out of `scan` into the caller's scope.
 
 `fill_scan_result` takes the return value of `vscan`,
 and either writes the leftover range indicated by it into `result`, or writes an error.
@@ -1361,6 +1363,16 @@ Note: This implementation of `std::scan` is more complicated
 compared to `std::format`, which can be described as a one-liner calling `std::vformat`.
 This is because the arguments that are written to by `vscan` need to outlive the call to `vscan`,
 so that they can be safely returned from `scan`.
+
+A previous revision of this proposal used a different approach to type erasure and
+the implementation of `scan`. In that approach, <i>`scan-arg-store`</i> would store both a `tuple` of scanning arguments,
+and an array of `basic_scan_arg`s, that erased these arguments. Then, after calling `vscan`,
+the return object would be constructed by moving the `tuple` into it.
+
+This had comparatively very bad codegen and performance for non-trivially copyable
+types, as copying or moving them on return couldn't be elided.
+Compare this to the current approach, where we don't have an intermediary tuple,
+but construct the return object straight away, and write directly to it.
 
 Safety {#safety}
 ------
@@ -1522,7 +1534,7 @@ auto r = std::scan<std::string_view, int>("answer = 42", "{} = {}");
 
 Because the format strings are checked at compile time, while being aware
 of the exact types to scan, and the source range type, it's possible to check
-at compile time, whether scanning a `string_view` would dangle, or if it'S
+at compile time, whether scanning a `string_view` would dangle, or if it's
 possible at all (reading from a non-`contiguous_range`).
 
 Integration with chrono {#chrono}
@@ -1761,7 +1773,7 @@ As of [[N4988]], the correct section number for "Scanning" [scan] would be 22.17
 
 <pre highlight=cpp>
 namespace std {
-  // [scan.fmt.string], class template `basic_scan_format_string`
+  // [scan.fmt.string], class template basic_scan_format_string
   template&lt;class charT, class Range, class... Args&gt;
     struct basic_scan_format_string;
 
@@ -1776,13 +1788,13 @@ namespace std {
                                type_identity_t&lt;Range&gt;,
                                type_identity_t&lt;Args&gt;...&gt;;
 
-  // [scan.error], class `scan_error`
+  // [scan.error], class scan_error
   class scan_error;
 
-  // [scan.format.error], class `scan_format_string_error`
+  // [scan.format.error], class scan_format_string_error
   class scan_format_string_error;
 
-  // [scan.result.result], class template `san_result`
+  // [scan.result.result], class template scan_result
   template&lt;class Range, class... Args&gt;
     class scan_result;
 
@@ -1853,36 +1865,36 @@ namespace std {
                                    wstring_view fmt,
                                    wscan_args args);
 
-  // [scan.context], class template `basic_scan_context`
+  // [scan.context], class template basic_scan_context
   template&lt;class Range, class charT&gt; class basic_scan_context;
   using scan_context = basic_scan_context&lt;<i>unspecified</i>, char&gt;;
   using wscan_context = basic_scan_context&lt;<i>unspecified</i>, wchar_t&gt;;
 
-  // [scan.scanner], class template `scanner`
+  // [scan.scanner], class template scanner
   template&lt;class T, class charT = char&gt;
     struct scanner;
 
-  // [scan.scannable], concept `scannable`
+  // [scan.scannable], concept scannable
   template&lt;class T, class charT&gt;
     concept scannable = <i>see below</i>;
 
-  // [scan.parse.ctx], class template `basic_scan_parse_context`
+  // [scan.parse.ctx], class template basic_scan_parse_context
   template&lt;class charT&gt;
     class basic_scan_parse_context;
 
   using scan_parse_context = basic_scan_parse_context&lt;char&gt;;
   using wscan_parse_context = basic_scan_parse_context&lt;wchar_t&gt;;
 
-  // [scan.args], class template `basic_scan_args`
+  // [scan.args], class template basic_scan_args
   template&lt;class Context&gt; class basic_scan_args;
   using scan_args = basic_scan_args&lt;scan_context&gt;;
   using wscan_args = basic_scan_args&lt;wscan_context&gt;;
 
-  // [scan.arg], class template `basic_scan_arg`
+  // [scan.arg], class template basic_scan_arg
   template&lt;class Context&gt;
     class basic_scan_arg;
 
-  // [scan.arg.store], class template <i>`scan-arg-store`</i>
+  // [scan.arg.store], class template <i>scan-arg-store</i>
   template&lt;class Context, class... Args&gt;
     class <i>scan-arg-store</i>;                              // exposition only
 
@@ -2074,11 +2086,11 @@ any character other than `{` or `}`
 
 </div>
 
-Field widths are specified in <i>field width units</i> (see [format.string.std]).
-TODO: width
+Field widths are specified in field width units (see [format.string.std]).
 
 The <i>fill character</i> is the character denoted by the <i>fill</i> option or, if the <i>fill</i> option is absent,
 the space character. For a format specification in UTF-8, UTF-16, or UTF-32, the fill character corresponds to a single Unicode scalar value.
+Fill characters are always assumed to have a field width of one.
 
 [<i>Note 2</i>: The presence of a <i>fill</i> option is signaled by the character following it, which must be one of the alignment options.
 If the second character of <i>std-scan-format-spec</i> is not a valid alignment option,
@@ -2102,17 +2114,25 @@ The meaning of the various alignment options is as specified in [tab:scan.align]
 <tbody>
 <tr>
 <td>`<`
-<td>TODO Lorem ipsum dolor sit amet.
+<td>Skips fill characters after the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
+If no <i>align</i> option is specified, but a <i>scan-width</i> or <i>scan-precision</i> is, this is the option used
+for non-arithmetic non-pointer types, `charT`, and `bool`, unless an integer presentation type is specified.
 </tr>
 
 <tr>
 <td>`>`
-<td>TODO Lorem ipsum dolor sit amet.
+<td>Skips fill characters before the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
+If the maximum field width is reached by only reading fill characters, an error with the code `scan_error::invalid_scanned_value` is returned;
+If no <i>align</i> option is specified, but a <i>scan-width</i> or <i>scan-precision</i> is, this is the option used
+for arithmetic types other than `charT` and `bool`, pointer types, or when any integer presentation type is specified.
 </tr>
 
 <tr>
 <td>`^`
-<td>TODO Lorem ipsum dolor sit amet.
+<td>Skips fill characters both before and after the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
+If the maximum field width is reached by only reading fill characters, an error with the code `scan_error::invalid_scanned_value` is returned;
+
+[<i>Note 3</i>: The number of fill characters doesn't have to be equal both before and after the value. &mdash; <i>end note</i>]
 </tr>
 </tbody>
 
@@ -2120,6 +2140,8 @@ The meaning of the various alignment options is as specified in [tab:scan.align]
 
 The <i>scan-width</i> option specifies the minimum field width. If the <i>scan-width</i> option is absent, the minimum field width is `0`.
 Otherwise, the value of the <i>positive-integer</i> is interpreted as a decimal integer and used as the value of the option.
+If the number of characters consumed for scanning a value, including the value itself and fill characters used for alignment,
+but excluding possibly skipped preceding whitespace is less than the minimum field width, an error with the code `scan_error::invalid_scanned_value` is returned.
 
 For the purposes of width computation, a string is assumed to be in a locale-independent, implementation-defined encoding.
 
@@ -2135,7 +2157,10 @@ It's unclear if we can and/or should place a similar kind of normative recommend
 For a sequence of characters in UTF-8, UTF-16, or UTF-32, the algorithm for calculating field width is described in [format.string.std].
 For a sequence of characters in neither UTF-8, UTF-16, or UTF-32, the field width is unspecified.
 
-The <i>scan-precision</i> option specifies the maximum field width. TODO: elaborate
+The <i>scan-precision</i> option specifies the maximum field width.
+If a maximum field width is specified, it's the maximum number of characters read from the source range for any given scanning argument,
+including the value itself and any fill characters used for alignment, but excluding any possibly discarded preceding whitespace.
+Reaching the maximum field width is not an error.
 
 When the `L` option is used, the form used for scanning is called the <i>locale-specific form</i>.
 The `L` option is only valid for arithmetic types, and its effect depends upon the type.
@@ -2199,7 +2224,7 @@ until the first character invalid for the presentation type is found,
 after which `from_chars` is called.
 If `[first, last)` is an empty range, an error with the code `invalid_scanned_value` is returned.
 
-[<i>Note 3</i>: Additional padding and adjustments are performed prior to calling `from_chars`
+[<i>Note 4</i>: Additional padding and adjustments are performed prior to calling `from_chars`
 as specified by the format specifiers. &mdash; <i>end note</i>]
 
 Integral types other than `bool` and `charT` are scanned as if by using an infinite precision integral type.
@@ -2376,7 +2401,7 @@ a `scan_error` with the following code is returned:
  * `scan_error::value_positive_underflow` if <code>signbit(<i>sign-value</i>)</code> is `false`,
  * otherwise `scan_error::value_negative_underflow`.
 
-[<i>Note 4:</i> NaN payload is discarded. Scanning a literal `"infinity"` is not an overflow error. &mdash; <i>end note</i>]
+[<i>Note 5:</i> NaN payload is discarded. Scanning a literal `"infinity"` is not an overflow error. &mdash; <i>end note</i>]
 
 The available floating-point presentation types and their meanings are specified in [tab:scan.type.float].
 
@@ -2449,7 +2474,7 @@ The available pointer presentation types are specified in [tab:scan.type.ptr].
 followed by a `reinterpret_cast` to `void*` or `const void*`;
 otherwise, implementation-defined.
 
-[<i>Note 5</i>: No special null-value, apart from `0` and `0x0` is supported &mdash; <i>end note</i>]
+[<i>Note 6</i>: No special null-value, apart from `0` and `0x0` is supported &mdash; <i>end note</i>]
 </tr>
 </tbody>
 
