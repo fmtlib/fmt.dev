@@ -65,6 +65,7 @@ Changes since R4 {#history-since-r4}
  * Make fill+align logic more lenient and easy to understand.
  * Add precision-specifier to specify maximum field width.
     * Modify width-specifier to specify minimum field width.
+ * Remove `scan_error` success state, replace with `expected<void, scan_error>`.
  * Split `scan_error::value_out_of_range` into a four separate enumerators,
     for positive and negative overflow and underflow.
  * Revise error handling in `scanner::parse`.
@@ -1184,11 +1185,8 @@ it gives more details about the error, but its contents are unspecified.
 // Not a specification, just exposition
 class scan_error {
 public:
-  enum code_type {
-    good,
-
-    // EOF:
-    // tried to read from an empty range,
+  enum code {
+    // Tried to read from an empty range,
     // or the input ended unexpectedly.
     end_of_input,
 
@@ -1217,14 +1215,9 @@ public:
     value_negative_underflow
   };
 
-  constexpr scan_error() = default;
-  constexpr scan_error(code_type, const char*);
+  constexpr scan_error(enum code, const char*);
 
-  static constexpr scan_error success() noexcept;
-
-  constexpr explicit operator bool() const noexcept;
-
-  constexpr code_type code() const noexcept;
+  constexpr auto code() const noexcept -> enum code;
   constexpr const char* msg() const;
 };
 ```
@@ -1235,28 +1228,24 @@ As these kinds of input are currently not supported with this proposal, this is 
 
 The reason why we propose adding the type `std::scan_error` instead of just using `std::errc` is,
 that we want to avoid losing information. The enumerators of `std::errc` are insufficient for
-this use, as evident by the table below: there are no clear one-to-one mappings between `scan_error::code_type`
+this use, as evident by the table below: there are no clear one-to-one mappings between `enum scan_error::code`
 and `std::errc`, but `std::errc::invalid_argument` would need to cover a lot of cases.
+Also, `std::errc` has a lot of unnecessary error codes, and a 
 
 The `const char*` in `scan_error` is extremely useful for user code, for use in logging and debugging.
-Even with the `scan_error::code_type` enumerators, more information is often needed, to isolate any possible problem.
+Even with the `enum scan_error::code` enumerators, more information is often needed, to isolate any possible problem.
 
-Possible mappings from `scan_error::code_type` to `std::errc` could be:
+Possible mappings from `enum scan_error::code` to `std::errc` could be:
 
 <table>
 <thead>
 <tr>
-<th>`scan_error::code_type`
+<th>`enum scan_error::code`
 <th>`errc`
 </tr>
 </thead>
 
 <tbody>
-
-<tr>
-<td>`scan_error::good`
-<td>`std::errc{}`
-</tr>
 
 <tr style="border-top:2px solid;">
 <td>`scan_error::end_of_input`
@@ -2505,12 +2494,11 @@ Failure to allocate storage is reported by throwing an exception as described in
 ```
 namespace std {
   class scan_error {
-    code_type code_;      // exposition only
+    enum code code_;      // exposition only
     const char* message_; // exposition only
 
   public:
-    enum code_type {
-      good,
+    enum code {
       end_of_input,
       invalid_format_string,
       invalid_scanned_value,
@@ -2521,13 +2509,9 @@ namespace std {
     };
 
     constexpr scan_error() noexcept;
-    constexpr scan_error(code_type error_code, const char* message);
+    constexpr scan_error(enum code error_code, const char* message);
 
-    static constexpr scan_error success() noexcept { return scan_error{}; }
-
-    constexpr explicit operator bool() const noexcept { return code_ == good; }
-
-    constexpr code_type code() const noexcept { return code_; }
+    constexpr auto code() const noexcept -> enum code { return code_; }
     constexpr const char* msg() const;
   };
 }
@@ -2535,16 +2519,6 @@ namespace std {
 
 The class `scan_error` defines the type of objects used to represent errors returned from the scanning library.
 It stores an error code, and a human-readable descriptive message.
-
-```
-constexpr scan_error() noexcept;
-```
-
-<div class=itemdescr>
-
-<i>Postconditions</i>: `code() == good && msg() == nullptr`
-
-</div>
 
 ```
 constexpr scan_error(code_type error_code, const char* message);
@@ -3549,15 +3523,16 @@ namespace std {
   template&lt;class Context&gt;
   class basic_scan_arg&lt;Context&gt;::handle {
     void* ptr_;                                               // exposition only
-    scan_error (*scan_)(basic_scan_parse_context&lt;char_type&gt;,
-                        Context&, void*);                     // exposition only
+    expected&lt;void, scan_error&gt; (*scan_)
+      (basic_scan_parse_context&lt;char_type&gt;, Context&, void*); // exposition only
 
     template&lt;class T&gt; explicit handle(T& val) noexcept;       // exposition only
 
     friend class basic_scan_arg&lt;Context&gt;;                     // exposition only
 
   public:
-    scan_error scan(basic_scan_parse_context&lt;char_type&gt;& parse_ctx, Context& ctx) const;
+    expected&lt;void, scan_error&gt;
+      scan(basic_scan_parse_context&lt;char_type&gt;& parse_ctx, Context& ctx) const;
   };
 }
 </pre>
@@ -3573,15 +3548,16 @@ template<class T> explicit handle(T& val) noexcept;
 <i>Effects</i>: Initializes `ptr_` with `addressof(val)` and `scan_` with
 
 <pre highlight=cpp>
-[](basic_scan_parse_context&lt;char_type&gt;& parse_ctx, Context& scan_ctx, void* ptr) -> scan_error {
+[](basic_scan_parse_context&lt;char_type&gt;& parse_ctx, Context& scan_ctx, void* ptr)
+    -> expected&lt;void, scan_error&gt; {
   typename Context::template scanner_type&lt;T&gt; s;
   auto p = <i>do-parse</i>(s, parse_ctx);
-  if (!p) return p.error();
+  if (!p) return unexpected(p.error());
   parse_ctx.advance_to(*p);
   auto r = s.scan(*static_cast&lt;T*&gt;(ptr), scan_ctx);
-  if (!r) return r.error();
+  if (!r) return unexpected(r.error());
   scan_ctx.advance_to(*r);
-  return scan_error::success();
+  return {};
 }
 </pre>
 
@@ -3590,13 +3566,13 @@ where <code><i>do-parse</i>(s, pc)</code>:
  * has a return type of <code>expected&lt;basic_scan_parse_context&lt;char_type&gt;::iterator, scan_error&gt;</code>,
  * calls `s.parse(pc)`,
  * catches exceptions derived from `scan_format_string_error` thrown by `s.parse`.
-    In such case, returns a `scan_error` with a code of `invalid_format_string`.
+    If such an exception is caught, returns a `scan_error` with a code of `invalid_format_string`.
  * Otherwise, returns the iterator returned by `s.parse`.
 
 </div>
 
 ```
-scan_error scan(basic_scan_parse_context<char_type>& parse_ctx, Context& scan_ctx) const;
+expected<void, scan_error> scan(basic_scan_parse_context<char_type>& parse_ctx, Context& scan_ctx) const;
 ```
 
 <div class=itemdescr>

@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/D1729R5" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="a45672c3e0db22dece95ed6912b7b064562e6a10" name="revision">
+  <meta content="34b07f95baa8b2115e866c75200f11adb20dbbf9" name="revision">
 <style>
 
 caption {
@@ -2232,6 +2232,8 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
       <li data-md>
        <p>Modify width-specifier to specify minimum field width.</p>
      </ul>
+    <li data-md>
+     <p>Remove <code class="highlight"><c- n>scan_error</c-></code> success state, replace with <code class="highlight"><c- n>expected</c-><c- o>&lt;</c-><c- b>void</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-></code>.</p>
     <li data-md>
      <p>Split <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>value_out_of_range</c-></code> into a four separate enumerators,
 for positive and negative overflow and underflow.</p>
@@ -3181,11 +3183,8 @@ it gives more details about the error, but its contents are unspecified.</p>
 <pre class="language-c++ highlight"><c- c1>// Not a specification, just exposition</c->
 <c- n>class</c-> <c- n>scan_error</c-> <c- p>{</c->
 <c- n>public</c-><c- o>:</c->
-  <c- k>enum</c-> <c- n>code_type</c-> <c- p>{</c->
-    <c- n>good</c-><c- p>,</c->
-
-    <c- c1>// EOF:</c->
-    <c- c1>// tried to read from an empty range,</c->
+  <c- k>enum</c-> <c- n>code</c-> <c- p>{</c->
+    <c- c1>// Tried to read from an empty range,</c->
     <c- c1>// or the input ended unexpectedly.</c->
     <c- n>end_of_input</c-><c- p>,</c->
 
@@ -3214,14 +3213,9 @@ it gives more details about the error, but its contents are unspecified.</p>
     <c- n>value_negative_underflow</c->
   <c- p>};</c->
 
-  <c- n>constexpr</c-> <c- nf>scan_error</c-><c- p>()</c-> <c- o>=</c-> <c- k>default</c-><c- p>;</c->
-  <c- n>constexpr</c-> <c- nf>scan_error</c-><c- p>(</c-><c- n>code_type</c-><c- p>,</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>);</c->
+  <c- n>constexpr</c-> <c- nf>scan_error</c-><c- p>(</c-><c- k>enum</c-> <c- n>code</c-><c- p>,</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-><c- p>);</c->
 
-  <c- k>static</c-> <c- n>constexpr</c-> <c- n>scan_error</c-> <c- n>success</c-><c- p>()</c-> <c- n>noexcept</c-><c- p>;</c->
-
-  <c- n>constexpr</c-> <c- n>explicit</c-> <c- n>operator</c-> <c- b>bool</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
-
-  <c- n>constexpr</c-> <c- n>code_type</c-> <c- n>code</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
+  <c- n>constexpr</c-> <c- k>auto</c-> <c- n>code</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-> <c- o>-></c-> <c- k>enum</c-> <c- n>code</c-><c- p>;</c->
   <c- n>constexpr</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>msg</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
 <c- p>};</c->
 </pre>
@@ -3230,19 +3224,17 @@ It’s currently used when the input is not a range, but something like a file o
 As these kinds of input are currently not supported with this proposal, this is not proposed.</p>
    <p>The reason why we propose adding the type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan_error</c-></code> instead of just using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> is,
 that we want to avoid losing information. The enumerators of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> are insufficient for
-this use, as evident by the table below: there are no clear one-to-one mappings between <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>code_type</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code>, but <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> would need to cover a lot of cases.</p>
+this use, as evident by the table below: there are no clear one-to-one mappings between <code class="highlight"><c- k>enum</c-> <c- nc>scan_error</c-><c- o>::</c-><c- n>code</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code>, but <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> would need to cover a lot of cases.
+Also, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> has a lot of unnecessary error codes, and a</p>
    <p>The <code class="highlight"><c- k>const</c-> <c- b>char</c-><c- o>*</c-></code> in <code class="highlight"><c- n>scan_error</c-></code> is extremely useful for user code, for use in logging and debugging.
-Even with the <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>code_type</c-></code> enumerators, more information is often needed, to isolate any possible problem.</p>
-   <p>Possible mappings from <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>code_type</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> could be:</p>
+Even with the <code class="highlight"><c- k>enum</c-> <c- nc>scan_error</c-><c- o>::</c-><c- n>code</c-></code> enumerators, more information is often needed, to isolate any possible problem.</p>
+   <p>Possible mappings from <code class="highlight"><c- k>enum</c-> <c- nc>scan_error</c-><c- o>::</c-><c- n>code</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> could be:</p>
    <table>
     <thead>
      <tr>
-      <th><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>code_type</c-></code> 
+      <th><code class="highlight"><c- k>enum</c-> <c- nc>scan_error</c-><c- o>::</c-><c- n>code</c-></code> 
       <th><code class="highlight"><c- n>errc</c-></code> 
     <tbody>
-     <tr>
-      <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>good</c-></code> 
-      <td><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- p>{}</c-></code> 
      <tr style="border-top:2px solid;">
       <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>end_of_input</c-></code> 
       <td rowspan="3" style="vertical-align: middle"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> 
@@ -4113,12 +4105,11 @@ Failure to allocate storage is reported by throwing an exception as described in
    <h5 class="heading settled" data-level="7.2.3.1" id="spec-scan.error"><span class="secno">7.2.3.1. </span><span class="content">Class <code class="highlight"><c- n>scan_error</c-></code> [scan.error]</span><a class="self-link" href="#spec-scan.error"></a></h5>
 <pre class="highlight"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
   <c- k>class</c-> <c- nc>scan_error</c-> <c- p>{</c->
-    <c- n>code_type</c-> <c- n>code_</c-><c- p>;</c->      <c- c1>// exposition only</c->
+    <c- k>enum</c-> <c- nc>code</c-> <c- n>code_</c-><c- p>;</c->      <c- c1>// exposition only</c->
     <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message_</c-><c- p>;</c-> <c- c1>// exposition only</c->
 
   <c- k>public</c-><c- o>:</c->
-    <c- k>enum</c-> <c- nc>code_type</c-> <c- p>{</c->
-      <c- n>good</c-><c- p>,</c->
+    <c- k>enum</c-> <c- nc>code</c-> <c- p>{</c->
       <c- n>end_of_input</c-><c- p>,</c->
       <c- n>invalid_format_string</c-><c- p>,</c->
       <c- n>invalid_scanned_value</c-><c- p>,</c->
@@ -4129,24 +4120,15 @@ Failure to allocate storage is reported by throwing an exception as described in
     <c- p>};</c->
 
     <c- k>constexpr</c-> <c- n>scan_error</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
-    <c- k>constexpr</c-> <c- n>scan_error</c-><c- p>(</c-><c- n>code_type</c-> <c- n>error_code</c-><c- p>,</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message</c-><c- p>);</c->
+    <c- k>constexpr</c-> <c- n>scan_error</c-><c- p>(</c-><c- k>enum</c-> <c- nc>code</c-> <c- n>error_code</c-><c- p>,</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message</c-><c- p>);</c->
 
-    <c- k>static</c-> <c- k>constexpr</c-> <c- n>scan_error</c-> <c- nf>success</c-><c- p>()</c-> <c- k>noexcept</c-> <c- p>{</c-> <c- k>return</c-> <c- n>scan_error</c-><c- p>{};</c-> <c- p>}</c->
-
-    <c- k>constexpr</c-> <c- k>explicit</c-> <c- k>operator</c-> <c- b>bool</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- p>{</c-> <c- k>return</c-> <c- n>code_</c-> <c- o>==</c-> <c- n>good</c-><c- p>;</c-> <c- p>}</c->
-
-    <c- k>constexpr</c-> <c- n>code_type</c-> <c- n>code</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- p>{</c-> <c- k>return</c-> <c- n>code_</c-><c- p>;</c-> <c- p>}</c->
+    <c- k>constexpr</c-> <c- k>auto</c-> <c- n>code</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- o>-></c-> <c- k>enum</c-> <c- nc>code</c-> <c- p>{</c-> <c- k>return</c-> <c- n>code_</c-><c- p>;</c-> <c- p>}</c->
     <c- k>constexpr</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>msg</c-><c- p>()</c-> <c- k>const</c-><c- p>;</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
    <p>The class <code class="highlight"><c- n>scan_error</c-></code> defines the type of objects used to represent errors returned from the scanning library.
 It stores an error code, and a human-readable descriptive message.</p>
-<pre class="highlight"><c- k>constexpr</c-> <c- n>scan_error</c-><c- p>()</c-> <c- k>noexcept</c-><c- p>;</c->
-</pre>
-   <div class="itemdescr">
-    <p><i>Postconditions</i>: <code class="highlight"><c- n>code</c-><c- p>()</c-> <c- o>==</c-> <c- n>good</c-> <c- o>&amp;&amp;</c-> <c- n>msg</c-><c- p>()</c-> <c- o>==</c-> <c- k>nullptr</c-></code></p>
-   </div>
 <pre class="highlight"><c- k>constexpr</c-> <c- n>scan_error</c-><c- p>(</c-><c- n>code_type</c-> <c- n>error_code</c-><c- p>,</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- n>message</c-><c- p>);</c->
 </pre>
    <div class="itemdescr">
@@ -4892,15 +4874,16 @@ initializes <code class="highlight"><c- n>value</c-></code> with <code class="hi
   <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>Context</c-><c- o>></c->
   <c- k>class</c-> <c- nc>basic_scan_arg</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>>::</c-><c- n>handle</c-> <c- p>{</c->
     <c- b>void</c-><c- o>*</c-> <c- n>ptr_</c-><c- p>;</c->                                               <c- c1>// exposition only</c->
-    <c- n>scan_error</c-> <c- p>(</c-><c- o>*</c-><c- n>scan_</c-><c- p>)(</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>></c-><c- p>,</c->
-                        <c- n>Context</c-><c- o>&amp;</c-><c- p>,</c-> <c- b>void</c-><c- o>*</c-><c- p>);</c->                     <c- c1>// exposition only</c->
+    <c- n>expected</c-><c- o>&lt;</c-><c- b>void</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-> <c- p>(</c-><c- o>*</c-><c- n>scan_</c-><c- p>)</c->
+      <c- p>(</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>></c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-><c- p>,</c-> <c- b>void</c-><c- o>*</c-><c- p>);</c-> <c- c1>// exposition only</c->
 
     <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>explicit</c-> <c- n>handle</c-><c- p>(</c-><c- n>T</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->       <c- c1>// exposition only</c->
 
     <c- k>friend</c-> <c- k>class</c-> <c- nc>basic_scan_arg</c-><c- o>&lt;</c-><c- n>Context</c-><c- o>></c-><c- p>;</c->                     <c- c1>// exposition only</c->
 
   <c- k>public</c-><c- o>:</c->
-    <c- n>scan_error</c-> <c- n>scan</c-><c- p>(</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+    <c- n>expected</c-><c- o>&lt;</c-><c- b>void</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c->
+      <c- n>scan</c-><c- p>(</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
   <c- p>};</c->
 <c- p>}</c->
 </pre>
@@ -4909,15 +4892,16 @@ initializes <code class="highlight"><c- n>value</c-></code> with <code class="hi
    <div class="itemdescr">
     <p><i>Mandates</i>: <code class="highlight"><c- n>T</c-></code> satisfies <code class="highlight"><i><c- n>scannable</c-><c- o>-</c-><c- n>with</c-></i><c- o>&lt;</c-><c- n>Context</c-><c- o>></c-></code>.</p>
     <p><i>Effects</i>: Initializes <code class="highlight"><c- n>ptr_</c-></code> with <code class="highlight"><c- n>addressof</c-><c- p>(</c-><c- n>val</c-><c- p>)</c-></code> and <code class="highlight"><c- n>scan_</c-></code> with</p>
-<pre class="highlight"><c- p>[](</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>scan_ctx</c-><c- p>,</c-> <c- b>void</c-><c- o>*</c-> <c- n>ptr</c-><c- p>)</c-> <c- o>-></c-> <c- n>scan_error</c-> <c- p>{</c->
+<pre class="highlight"><c- p>[](</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>scan_ctx</c-><c- p>,</c-> <c- b>void</c-><c- o>*</c-> <c- n>ptr</c-><c- p>)</c->
+    <c- o>-></c-> <c- n>expected</c-><c- o>&lt;</c-><c- b>void</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-> <c- p>{</c->
   <c- k>typename</c-> <c- nc>Context</c-><c- o>::</c-><c- k>template</c-> <c- n>scanner_type</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-> <c- n>s</c-><c- p>;</c->
   <c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <i><c- k>do</c-><c- o>-</c-><c- n>parse</c-></i><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- n>parse_ctx</c-><c- p>);</c->
-  <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>p</c-><c- p>)</c-> <c- k>return</c-> <c- n>p</c-><c- p>.</c-><c- n>error</c-><c- p>();</c->
+  <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>p</c-><c- p>)</c-> <c- k>return</c-> <c- n>unexpected</c-><c- p>(</c-><c- n>p</c-><c- p>.</c-><c- n>error</c-><c- p>());</c->
   <c- n>parse_ctx</c-><c- p>.</c-><c- n>advance_to</c-><c- p>(</c-><c- o>*</c-><c- n>p</c-><c- p>);</c->
   <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>s</c-><c- p>.</c-><c- n>scan</c-><c- p>(</c-><c- o>*</c-><c- k>static_cast</c-><c- o>&lt;</c-><c- n>T</c-><c- o>*></c-><c- p>(</c-><c- n>ptr</c-><c- p>),</c-> <c- n>scan_ctx</c-><c- p>);</c->
-  <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>r</c-><c- p>)</c-> <c- k>return</c-> <c- n>r</c-><c- p>.</c-><c- n>error</c-><c- p>();</c->
+  <c- k>if</c-> <c- p>(</c-><c- o>!</c-><c- n>r</c-><c- p>)</c-> <c- k>return</c-> <c- n>unexpected</c-><c- p>(</c-><c- n>r</c-><c- p>.</c-><c- n>error</c-><c- p>());</c->
   <c- n>scan_ctx</c-><c- p>.</c-><c- n>advance_to</c-><c- p>(</c-><c- o>*</c-><c- n>r</c-><c- p>);</c->
-  <c- k>return</c-> <c- n>scan_error</c-><c- o>::</c-><c- n>success</c-><c- p>();</c->
+  <c- k>return</c-> <c- p>{};</c->
 <c- p>}</c->
 </pre>
     <p>where <code class="highlight"><i><c- k>do</c-><c- o>-</c-><c- n>parse</c-></i><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- n>pc</c-><c- p>)</c-></code>:</p>
@@ -4928,12 +4912,12 @@ initializes <code class="highlight"><c- n>value</c-></code> with <code class="hi
       <p>calls <code class="highlight"><c- n>s</c-><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>pc</c-><c- p>)</c-></code>,</p>
      <li data-md>
       <p>catches exceptions derived from <code class="highlight"><c- n>scan_format_string_error</c-></code> thrown by <code class="highlight"><c- n>s</c-><c- p>.</c-><c- n>parse</c-></code>.
-In such case, returns a <code class="highlight"><c- n>scan_error</c-></code> with a code of <code class="highlight"><c- n>invalid_format_string</c-></code>.</p>
+If such an exception is caught, returns a <code class="highlight"><c- n>scan_error</c-></code> with a code of <code class="highlight"><c- n>invalid_format_string</c-></code>.</p>
      <li data-md>
       <p>Otherwise, returns the iterator returned by <code class="highlight"><c- n>s</c-><c- p>.</c-><c- n>parse</c-></code>.</p>
     </ul>
    </div>
-<pre class="highlight"><c- n>scan_error</c-> <c- nf>scan</c-><c- p>(</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>scan_ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+<pre class="highlight"><c- n>expected</c-><c- o>&lt;</c-><c- b>void</c-><c- p>,</c-> <c- n>scan_error</c-><c- o>></c-> <c- n>scan</c-><c- p>(</c-><c- n>basic_scan_parse_context</c-><c- o>&lt;</c-><c- n>char_type</c-><c- o>>&amp;</c-> <c- n>parse_ctx</c-><c- p>,</c-> <c- n>Context</c-><c- o>&amp;</c-> <c- n>scan_ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
 </pre>
    <div class="itemdescr">
     <p><i>Effects</i>: Equivalent to: <code class="highlight"><c- k>return</c-> <c- n>scan_</c-><c- p>(</c-><c- n>parse_ctx</c-><c- p>,</c-> <c- n>scan_ctx</c-><c- p>,</c-> <c- n>ptr_</c-><c- p>);</c-></code></p>
