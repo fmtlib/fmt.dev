@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3070R0: Formatting enums</title>
+  <title>P3070R1: Formatting enums</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1561,9 +1561,9 @@ Possible extra rowspan handling
     blockquote c-[vi] { color: inherit; } /* Name.Variable.Instance */
     blockquote c-[il] { color: inherit; } /* Literal.Number.Integer.Long */
   </style>
-  <meta content="Bikeshed version 82ce88815, updated Thu Sep 7 16:33:55 2023 -0700" name="generator">
+  <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="7b511ff6cc39a94435fc827f178dff51d9a98b56" name="document-revision">
+  <meta content="a05840ce3a8aa1e4efab03ccb71e887a3224ef78" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -1647,7 +1647,6 @@ pre .property::before, pre .property::after {
 }
 </style>
 <style>/* Boilerplate: style-colors */
-
 /* Any --*-text not paired with a --*-bg is assumed to have a transparent bg */
 :root {
     color-scheme: light dark;
@@ -1917,7 +1916,6 @@ a[href].issue-return {
 }
 </style>
 <style>/* Boilerplate: style-selflinks */
-
 :root {
     --selflink-text: white;
     --selflink-bg: gray;
@@ -1977,7 +1975,6 @@ a.self-link::before            { content: "¶"; }
 dfn > a.self-link::before      { content: "#"; }
 </style>
 <style>/* Boilerplate: style-syntax-highlighting */
-
 code.highlight { padding: .1em; border-radius: .3em; }
 pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
 
@@ -2034,7 +2031,6 @@ c-[vc] { color: #0077aa } /* Name.Variable.Class */
 c-[vg] { color: #0077aa } /* Name.Variable.Global */
 c-[vi] { color: #0077aa } /* Name.Variable.Instance */
 c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
-
 
 @media (prefers-color-scheme: dark) {
     .highlight:not(.idl) { background: rgba(255, 255, 255, .05); }
@@ -2102,14 +2098,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3070R0<br>Formatting enums</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2023-12-14">2023-12-14</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3070R1<br>Formatting enums</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-10-13">2024-10-13</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
-     <dd>SG16
+     <dd>LEWG
      <dt>Project:
      <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
     </dl>
@@ -2120,12 +2116,14 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <nav data-fill-with="table-of-contents" id="toc">
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
-    <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivation-and-scope"><span class="secno">2</span> <span class="content">Motivation and Scope</span></a>
-    <li><a href="#proposed-change"><span class="secno">3</span> <span class="content">Proposed Change</span></a>
-    <li><a href="#impact-on-the-standard"><span class="secno">4</span> <span class="content">Impact on the Standard</span></a>
-    <li><a href="#implementation"><span class="secno">5</span> <span class="content">Implementation</span></a>
-    <li><a href="#appendix-a-benchmark"><span class="secno"></span> <span class="content">Appendix A: Benchmark</span></a>
+    <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
+    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">3</span> <span class="content">SG16 Poll</span></a>
+    <li><a href="#motivation"><span class="secno">4</span> <span class="content">Motivation and Scope</span></a>
+    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposed Change</span></a>
+    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on the Standard</span></a>
+    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation</span></a>
+    <li><a href="#appendix"><span class="secno"></span> <span class="content">Appendix A: Benchmark</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2136,14 +2134,22 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <main>
    <p style="text-align: right"> "It is a mistake to think you can solve any major problems just with potatoes."
  ― Douglas Adams </p>
-   <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
+   <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, as introduced in C++20, has significantly improved string
 formatting in C++. However, custom formatting for enumeration types currently
 requires creating somewhat verbose formatter specializations. This proposal
 aims to introduce a more intuitive and simpler method to define custom formats
 for enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers it is also more
 efficient than a formatter specialization.</p>
-   <h2 class="heading settled" data-level="2" id="motivation-and-scope"><span class="secno">2. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation-and-scope"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added the SG16 poll results.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">SG16 Poll</span><a class="self-link" href="#polls"></a></h2>
+   <p><strong>Poll 3: Forward P3070R0 to LEWG.</strong></p>
+   <p>No objection to unanimous consent.</p>
+   <h2 class="heading settled" data-level="4" id="motivation"><span class="secno">4. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation"></a></h2>
    <p>Enums are fundamental in C++ for representing sets of named constants. There
 is often a need to convert these enums to string representations, especially
 for logging, debugging, or interfacing with users. The current methods for
@@ -2183,19 +2189,13 @@ namespace.</p>
 </pre>
    <p>The drawback of the second option is that the conversion has to be done at every
 call site.</p>
-   <h2 class="heading settled" data-level="3" id="proposed-change"><span class="secno">3. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposed-change"></a></h2>
+   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposal"></a></h2>
    <p>We propose adding a <code class="highlight"><c- n>format_as</c-></code> extension point to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. <code class="highlight"><c- n>format_as</c-></code> is a function discovered by the argument-dependent lookup (ADL) that takes an
 enum to be formatted as the argument and converts it to an object of another
 formattable type, normally an integer or a string.</p>
    <p>This significantly improves user experience by eliminating almost all
 boilerplate:</p>
-   <table>
-    <tbody>
-     <tr>
-      <th>Before 
-      <th>After 
-     <tr>
-      <td>
+   <p><strong>Before:</strong></p>
 <pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
 <c- k>enum</c-> <c- n>class</c-> <c- n>film</c-> <c- p>{...};</c->
 <c- p>}</c->
@@ -2206,13 +2206,12 @@ boilerplate:</p>
   <c- p>}</c->
 <c- p>};</c->
 </pre>
-      <td>
+   <p><strong>After:</strong></p>
 <pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
 <c- k>enum</c-> <c- n>class</c-> <c- n>film</c-> <c- p>{...};</c->
 <c- k>auto</c-> <c- n>format_as</c-><c- p>(</c-><c- n>film</c-> <c- n>f</c-><c- p>)</c-> <c- p>{</c-> <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>);</c-> <c- p>}</c->
 <c- p>}</c->
 </pre>
-   </table>
    <p>The semantics of <code class="highlight"><c- n>format_as</c-></code> is the same as the corresponding "forwarding" <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
    <p><code class="highlight"><c- n>format_as</c-></code> can be used to format enums as strings as well:</p>
 <pre class="language-c++ highlight"><c- k>enum</c-> <c- n>class</c-> <c- n>color</c-> <c- p>{</c-><c- n>red</c-><c- p>,</c-> <c- n>green</c-><c- p>,</c-> <c- n>blue</c-><c- p>};</c->
@@ -2235,24 +2234,26 @@ And conversion from an enum to its underlying type is effectively a noop so
 there is no effect on the binary size.</p>
    <p>The difference can be seen on the following benchmark results for an enum
 similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code>:</p>
-<pre class="highlight"><c- o>-------------------------------------------------------------------</c->—   <wbr><c- n>Benchmark</c->                           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
-<c- o>-------------------------------------------------------------------</c->—   <wbr><c- n>BM_Formatter</c->                     <c- mf>17.7</c-> <c- n>ns</c->         <c- mf>17.7</c-> <c- n>ns</c->     <c- mi>38037070</c->
+<pre class="highlight"><c- o>---------------------------------------------------------------------</c->
+<c- n>Benchmark</c->                           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
+<c- o>---------------------------------------------------------------------</c->
+<c- n>BM_Formatter</c->                     <c- mf>17.7</c-> <c- n>ns</c->         <c- mf>17.7</c-> <c- n>ns</c->     <c- mi>38037070</c->
 <c- n>BM_FormatAs</c->                      <c- mf>8.90</c-> <c- n>ns</c->         <c- mf>8.88</c-> <c- n>ns</c->     <c- mi>79036210</c->
 </pre>
    <p>Considering that <code class="highlight"><c- n>format_as</c-></code> has almost 2x better performance, this paper also
 proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable using the new facility.</p>
-   <h2 class="heading settled" data-level="4" id="impact-on-the-standard"><span class="secno">4. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact-on-the-standard"></a></h2>
+   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
 component and does not necessitate alterations to current language features or
 core library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
-   <h2 class="heading settled" data-level="5" id="implementation"><span class="secno">5. </span><span class="content">Implementation</span><a class="self-link" href="#implementation"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
 (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of December 2023 has been shipping for two major versions.
 It has been recently extended to all user-defined types and not just enums but
 this is not proposed in the current paper since usage experience is still
 limited.</p>
-   <h2 class="heading settled" id="appendix-a-benchmark"><span class="content">Appendix A: Benchmark</span><a class="self-link" href="#appendix-a-benchmark"></a></h2>
+   <h2 class="heading settled" id="appendix"><span class="content">Appendix A: Benchmark</span><a class="self-link" href="#appendix"></a></h2>
    <p>This appendix gives the source code of the benchmark used for comparing
 performance of <code class="highlight"><c- n>format_as</c-></code> with a <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;benchmark/benchmark.h>
@@ -2314,7 +2315,7 @@ performance of <code class="highlight"><c- n>format_as</c-></code> with a <code 
       on = !document.body.classList.contains('toc-sidebar');
     }
 
-    /* Don’t scroll to compensate for the ToC if we’re above it already. */
+    /* Don't scroll to compensate for the ToC if we're above it already. */
     var headY = 0;
     var head = document.querySelector('.head');
     if (head) {
@@ -2345,16 +2346,16 @@ performance of <code class="highlight"><c- n>format_as</c-></code> with a <code 
       }
       if (toggle.matches(':hover')) {
         /* Unfocus button when not using keyboard navigation,
-           because I don’t know where else to send the focus. */
+           because I don't know where else to send the focus. */
         toggle.blur();
       }
     }
   }
 
   function createSidebarToggle() {
-    /* Create the sidebar toggle in JS; it shouldn’t exist when JS is off. */
+    /* Create the sidebar toggle in JS; it shouldn't exist when JS is off. */
     var toggle = document.createElement('a');
-      /* This should probably be a button, but appearance isn’t standards-track.*/
+      /* This should probably be a button, but appearance isn't standards-track.*/
     toggle.id = 'toc-toggle';
     toggle.class = 'toc-toggle';
     toggle.href = '#toc';
@@ -2370,7 +2371,7 @@ performance of <code class="highlight"><c- n>format_as</c-></code> with a <code 
     toggle.addEventListener('click', toggler, false);
 
 
-    /* Get <nav id=toc-nav>, or make it if we don’t have one. */
+    /* Get <nav id=toc-nav>, or make it if we don't have one. */
     var tocNav = document.getElementById('toc-nav');
     if (!tocNav) {
       tocNav = document.createElement('p');
@@ -2378,7 +2379,7 @@ performance of <code class="highlight"><c- n>format_as</c-></code> with a <code 
       /* Prepend for better keyboard navigation */
       document.body.insertBefore(tocNav, document.body.firstChild);
     }
-    /* While we’re at it, make sure we have a Jump to Toc link. */
+    /* While we're at it, make sure we have a Jump to Toc link. */
     var tocJump = document.getElementById('toc-jump');
     if (!tocJump) {
       tocJump = document.createElement('a');
@@ -2406,7 +2407,7 @@ performance of <code class="highlight"><c- n>format_as</c-></code> with a <code 
     }, false);
   }
   else {
-    console.warn("Can’t find Table of Contents. Please use <nav id='toc'> around the ToC.");
+    console.warn("Can't find Table of Contents. Please use <nav id='toc'> around the ToC.");
   }
 
   /* Wrap tables in case they overflow */

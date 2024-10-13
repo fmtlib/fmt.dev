@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting enums
 Shortname: P3070
-Revision: 0
-Audience: SG16
+Revision: 1
+Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2023-12-14
+Date: 2024-10-13
 Markup Shorthands: markdown yes
 </pre>
 
@@ -30,7 +30,7 @@ Markup Shorthands: markdown yes
  ― Douglas Adams
 </p>
 
-# Introduction
+# Introduction # {#intro}
 
 `std::format`, as introduced in C++20, has significantly improved string
 formatting in C++. However, custom formatting for enumeration types currently
@@ -39,7 +39,17 @@ aims to introduce a more intuitive and simpler method to define custom formats
 for enums using `format_as`. When formatting enums as integers it is also more
 efficient than a formatter specialization.
 
-# Motivation and Scope
+# Changes since R0 # {#changes0}
+
+- Added the SG16 poll results.
+
+# SG16 Poll # {#polls}
+
+**Poll 3: Forward P3070R0 to LEWG.**
+
+No objection to unanimous consent.
+
+# Motivation and Scope # {#motivation}
 
 Enums are fundamental in C++ for representing sets of named constants. There
 is often a need to convert these enums to string representations, especially
@@ -89,7 +99,7 @@ auto s = std::format("{}", std::to_underlying(f));
 The drawback of the second option is that the conversion has to be done at every
 call site.
 
-# Proposed Change
+# Proposed Change # {#proposal}
 
 We propose adding a `format_as` extension point to `std::format`. `format_as`
 is a function discovered by the argument-dependent lookup (ADL) that takes an
@@ -99,13 +109,8 @@ formattable type, normally an integer or a string.
 This significantly improves user experience by eliminating almost all
 boilerplate:
 
-<table>
-<tr>
-  <th>Before
-  <th>After
-</tr>
-<tr>
-<td>
+**Before:**
+
 ```c++
 namespace kevin_namespacy {
 enum class film {...};
@@ -117,15 +122,15 @@ struct std::formatter<kevin_namespacy::film> : formatter<int> {
   }
 };
 ```
-<td>
+
+**After:**
+
 ```c++
 namespace kevin_namespacy {
 enum class film {...};
 auto format_as(film f) { return std::to_underlying(f); }
 }
 ```
-</tr>
-</table>
 
 The semantics of `format_as` is the same as the corresponding "forwarding"
 `formatter` specialization.
@@ -167,7 +172,7 @@ BM_FormatAs                      8.90 ns         8.88 ns     79036210
 Considering that `format_as` has almost 2x better performance, this paper also
 proposes making `std::byte` formattable using the new facility.
 
-# Impact on the Standard
+# Impact on the Standard # {#impact}
 
 This proposal is an additive change to the existing `<format>` standard library
 component and does not necessitate alterations to current language features or
@@ -176,7 +181,7 @@ a common use case in `std::format`.
 
 <!-- TOOD: Wording -->
 
-# Implementation
+# Implementation # {#impl}
 
 The proposed extension API has been implemented in the open-source {fmt} library
 ([[FMT]]) and as of December 2023 has been shipping for two major versions.
@@ -184,7 +189,7 @@ It has been recently extended to all user-defined types and not just enums but
 this is not proposed in the current paper since usage experience is still
 limited.
 
-# Appendix A: Benchmark
+# Appendix A: Benchmark # {#appendix}
 
 This appendix gives the source code of the benchmark used for comparing
 performance of `format_as` with a `formatter` specialization.
