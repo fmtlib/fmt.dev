@@ -11,7 +11,7 @@ Editor: Victor Zverovich, victor.zverovich@gmail.com
 Abstract:
   This paper discusses a new text parsing facility to complement the text
   formatting functionality of <code>std::format</code>, proposed in [[P0645]].
-Date: 2024-10-10
+Date: 2024-10-15
 Markup Shorthands: markdown yes
 Max ToC Depth: 2
 </pre>
@@ -68,6 +68,8 @@ Changes since R4 {#history-since-r4}
  * Remove `scan_error` success state, replace with `expected<void, scan_error>`.
  * Split `scan_error::value_out_of_range` into a four separate enumerators,
     for positive and negative overflow and underflow.
+ * Add `scan_error::invalid_literal`, `scan_error::invalid_fill`, and `scan_error::length_too_short`,
+    all of which were previously covered by `scan_error::invalid_scanned_value`.
  * Revise error handling in `scanner::parse`.
     * `scanner::parse` now returns `iterator`, instead of `expected<iterator, scan_error>`.
     * Add `scan_format_string_error`.
@@ -631,9 +633,9 @@ auto r8 = std::scan<int>("***42", "{:*>.4}");  // r8->value() == 4, r8->range() 
 auto r9 = std::scan<int>("***42", "{:*>4.4}"); // r9->value() == 4, r9->range() == "2"
 
 auto r10 = std::scan<int>("42", "{:*>}");    // r10->value() == 42, r10->range() == ""
-auto r11 = std::scan<int>("42", "{:*>5}");   // ERROR (field too short)
+auto r11 = std::scan<int>("42", "{:*>5}");   // ERROR (length_too_short)
 auto r12 = std::scan<int>("42", "{:*>.5}");  // r12->value() == 42, r12->range() == ""
-auto r13 = std::scan<int>("42", "{:*>5.5}"); // ERROR (field too short)
+auto r13 = std::scan<int>("42", "{:*>5.5}"); // ERROR (length_too_short)
 
 auto r14 = std::scan<int>("42***", "{:*<}");    // r14->value() == 42, r14->range() == ""
 auto r15 = std::scan<int>("42***", "{:*<5}");   // r15->value() == 42, r15->range() == ""
@@ -642,9 +644,9 @@ auto r17 = std::scan<int>("42***", "{:*<.4}");  // r17->value() == 42, r17->rang
 auto r18 = std::scan<int>("42***", "{:*<4.4}"); // r18->value() == 42, r18->range() == "*"
 
 auto r19 = std::scan<int>("42", "{:*<}");    // r19->value() == 42, r19->range() == ""
-auto r20 = std::scan<int>("42", "{:*<5}");   // ERROR (field too short)
+auto r20 = std::scan<int>("42", "{:*<5}");   // ERROR (length_too_short)
 auto r21 = std::scan<int>("42", "{:*<.5}");  // r21->value() == 42, r19->range() == ""
-auto r22 = std::scan<int>("42", "{:*<5.5}"); // ERROR (field too short)
+auto r22 = std::scan<int>("42", "{:*<5.5}"); // ERROR (length_too_short)
 
 auto r23 = std::scan<int>("42", "{:*^}");    // r23->value() == 42, r23->range() == ""
 auto r24 = std::scan<int>("*42*", "{:*^}");  // r24->value() == 42, r24->range() == ""
@@ -654,9 +656,16 @@ auto r26 = std::scan<int>("**42*", "{:*^}"); // r26->value() == 42, r26->range()
 auto r27 = std::scan<int>("**42**", "{:*^6}");  // r27->value() == 42, r27->range() == ""
 auto r28 = std::scan<int>("*42**", "{:*^5}");   // r28->value() == 42, r28->range() == ""
 auto r29 = std::scan<int>("**42*", "{:*^5}");   // r29->value() == 42, r29->range() == ""
-auto r30 = std::scan<int>("**42*", "{:*^6}");   // ERROR (field too short)
+auto r30 = std::scan<int>("**42*", "{:*^6}");   // ERROR (length_too_short)
 auto r31 = std::scan<int>("**42*", "{:*^.6}");  // r31->value() == 42, r31->range() == ""
-auto r32 = std::scan<int>("**42*", "{:*^6.6}"); // ERROR (field too short)
+auto r32 = std::scan<int>("**42*", "{:*^6.6}"); // ERROR (length_too_short)
+
+auto r33 = std::scan<int>("#*42*", "{:*^}");   // ERROR (invalid_scanned_value)
+auto r34 = std::scan<int>("#*42*", "#{:*^}");  // r34->value() == 42, r34->range() == ""
+auto r35 = std::scan<int>("#*42*", "#{:#^}");  // ERROR (invalid_scanned_value)
+
+auto r36 = std::scan<int>("***42*", "{:*^3}");   // r36->value() == 42, r36->range() == ""
+auto r37 = std::scan<int>("***42*", "{:*^.3}");  // ERROR (invalid_fill)
 ```
 </div>
 
@@ -1200,6 +1209,18 @@ public:
     // for the type to be scanned.
     invalid_scanned_value,
 
+    // Literal character specified in the format string
+    // was not found in the source.
+    invalid_literal,
+
+    // Too many fill characters scanned,
+    // field precision (maximum field width) exceeded.
+    invalid_fill,
+
+    // Scanned field width was shorter than
+    // what was specified as the minimum field width.
+    length_too_short,
+
     // Value too large (higher than the maximum value)
     value_positive_overflow,
 
@@ -1226,6 +1247,11 @@ Note: [[SCNLIB]] has an additional error code enumerator, `invalid_source_state`
 It's currently used when the input is not a range, but something like a file or an `istream`.
 As these kinds of input are currently not supported with this proposal, this is not proposed.
 
+Note: A previous revision of this proposal had fewer enumerators,
+with the overflow/underflow enumerators being one `value_out_of_range`,
+and `invalid_literal`, `invalid_fill`, and `length_too_short` being folded into `invalid_scanned_value`.
+The added granularity provided in this revision was found to be useful.
+
 The reason why we propose adding the type `std::scan_error` instead of just using `std::errc` is,
 that we want to avoid losing information. The enumerators of `std::errc` are insufficient for
 this use, as evident by the table below: there are no clear one-to-one mappings between `enum scan_error::code`
@@ -1249,7 +1275,7 @@ Possible mappings from `enum scan_error::code` to `std::errc` could be:
 
 <tr style="border-top:2px solid;">
 <td>`scan_error::end_of_input`
-<td rowspan="3" style="vertical-align: middle">`std::errc::invalid_argument`
+<td rowspan="6" style="vertical-align: middle">`std::errc::invalid_argument`
 </tr>
 
 <tr>
@@ -1258,6 +1284,18 @@ Possible mappings from `enum scan_error::code` to `std::errc` could be:
 
 <tr>
 <td>`scan_error::invalid_scanned_value`
+</tr>
+
+<tr>
+<td>`scan_error::invalid_literal`
+</tr>
+
+<tr>
+<td>`scan_error::invalid_fill`
+</tr>
+
+<tr>
+<td>`scan_error::length_too_short`
 </tr>
 
 <tr style="border-top:2px solid;">
@@ -1484,14 +1522,14 @@ to be in the (ordinary/wide) literal encoding.
 If an error in encoding is encountered while reading a value of a string type
 (`basic_string`, `basic_string_view`), an `invalid_scanned_value` error is returned.
 For other types, the reading is stopped, as the parser can't parse a numeric value from
-something that isn't digits.
+something that isn't digits, indirectly causing an error.
 
 <div class=example>
 ```c++
 // Invalid UTF-8
 auto r = std::scan<std::string>("a\xc3 ", "{}");
 // r == false
-// r->error() == std::scan_error::invalid_scanner_value
+// r->error() == std::scan_error::invalid_scanned_value
 
 auto r2 = std::scan<int>("1\xc3 ", "{}");
 // r2 == true
@@ -2111,7 +2149,7 @@ for non-arithmetic non-pointer types, `charT`, and `bool`, unless an integer pre
 <tr>
 <td>`>`
 <td>Skips fill characters before the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
-If the maximum field width is reached by only reading fill characters, an error with the code `scan_error::invalid_scanned_value` is returned;
+If the maximum field width is reached by only reading fill characters, an error with the code `scan_error::invalid_fill` is returned;
 If no <i>align</i> option is specified, but a <i>scan-width</i> or <i>scan-precision</i> is, this is the option used
 for arithmetic types other than `charT` and `bool`, pointer types, or when any integer presentation type is specified.
 </tr>
@@ -2119,7 +2157,7 @@ for arithmetic types other than `charT` and `bool`, pointer types, or when any i
 <tr>
 <td>`^`
 <td>Skips fill characters both before and after the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
-If the maximum field width is reached by only reading fill characters, an error with the code `scan_error::invalid_scanned_value` is returned;
+If the maximum field width is reached by only reading fill characters, an error with the code `scan_error::invalid_fill` is returned;
 
 [<i>Note 3</i>: The number of fill characters doesn't have to be equal both before and after the value. &mdash; <i>end note</i>]
 </tr>
@@ -2130,7 +2168,7 @@ If the maximum field width is reached by only reading fill characters, an error 
 The <i>scan-width</i> option specifies the minimum field width. If the <i>scan-width</i> option is absent, the minimum field width is `0`.
 Otherwise, the value of the <i>positive-integer</i> is interpreted as a decimal integer and used as the value of the option.
 If the number of characters consumed for scanning a value, including the value itself and fill characters used for alignment,
-but excluding possibly skipped preceding whitespace is less than the minimum field width, an error with the code `scan_error::invalid_scanned_value` is returned.
+but excluding possibly skipped preceding whitespace is less than the minimum field width, an error with the code `scan_error::length_too_short` is returned.
 
 For the purposes of width computation, a string is assumed to be in a locale-independent, implementation-defined encoding.
 
@@ -2502,6 +2540,9 @@ namespace std {
       end_of_input,
       invalid_format_string,
       invalid_scanned_value,
+      invalid_literal,
+      invalid_fill,
+      length_too_short,
       value_positive_overflow,
       value_negative_overflow,
       value_positive_underflow,

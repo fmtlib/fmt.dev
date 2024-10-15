@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/P1729R5" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="0422594f57d98c2be6d51e42b6e12b0f6f2605da" name="revision">
+  <meta content="87f199463af2370279bf862025f09421d885e9ac" name="revision">
 <style>
 
 caption {
@@ -2123,7 +2123,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P1729R5<br>Text Parsing</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-10-10">2024-10-10</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-10-15">2024-10-15</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2237,6 +2237,9 @@ formatting functionality of <code class="highlight"><c- n>std</c-><c- o>::</c-><
     <li data-md>
      <p>Split <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>value_out_of_range</c-></code> into a four separate enumerators,
 for positive and negative overflow and underflow.</p>
+    <li data-md>
+     <p>Add <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_literal</c-></code>, <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_fill</c-></code>, and <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>length_too_short</c-></code>,
+all of which were previously covered by <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_scanned_value</c-></code>.</p>
     <li data-md>
      <p>Revise error handling in <code class="highlight"><c- n>scanner</c-><c- o>::</c-><c- n>parse</c-></code>.</p>
      <ul>
@@ -2726,8 +2729,8 @@ can be used with both <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>f
 with round-trip semantics.</p>
    <p class="note" role="note"><span class="marker">Note:</span> For format type specifiers other than <code class="highlight"><c- sc>'c'</c-></code> (default for <code class="highlight"><c- b>char</c-></code> and <code class="highlight"><c- b>wchar_t</c-></code>, can be specified for <code class="highlight"><c- n>basic_string</c-></code> and <code class="highlight"><c- n>basic_string_view</c-></code>),
 leading whitespace is skipped regardless of alignment specifiers.</p>
-   <div class="example" id="example-c402625b">
-    <a class="self-link" href="#example-c402625b"></a> 
+   <div class="example" id="example-7669ff74">
+    <a class="self-link" href="#example-7669ff74"></a> 
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>r0</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"   42"</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c-> <c- c1>// r0->value() == 42, r0->range() == ""</c->
 <c- k>auto</c-> <c- n>r1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"   x"</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c-> <c- c1>// r1->value() == ' ', r1->range() == "  x"</c->
 <c- k>auto</c-> <c- n>r2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- s>"x   "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c-> <c- c1>// r2->value() == 'x', r2->range() == "   "</c->
@@ -2742,9 +2745,9 @@ leading whitespace is skipped regardless of alignment specifiers.</p>
 <c- k>auto</c-> <c- n>r9</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"***42"</c-><c- p>,</c-> <c- s>"{:*>4.4}"</c-><c- p>);</c-> <c- c1>// r9->value() == 4, r9->range() == "2"</c->
 
 <c- k>auto</c-> <c- n>r10</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*>}"</c-><c- p>);</c->    <c- c1>// r10->value() == 42, r10->range() == ""</c->
-<c- k>auto</c-> <c- n>r11</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*>5}"</c-><c- p>);</c->   <c- c1>// ERROR (field too short)</c->
+<c- k>auto</c-> <c- n>r11</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*>5}"</c-><c- p>);</c->   <c- c1>// ERROR (length_too_short)</c->
 <c- k>auto</c-> <c- n>r12</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*>.5}"</c-><c- p>);</c->  <c- c1>// r12->value() == 42, r12->range() == ""</c->
-<c- k>auto</c-> <c- n>r13</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*>5.5}"</c-><c- p>);</c-> <c- c1>// ERROR (field too short)</c->
+<c- k>auto</c-> <c- n>r13</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*>5.5}"</c-><c- p>);</c-> <c- c1>// ERROR (length_too_short)</c->
 
 <c- k>auto</c-> <c- n>r14</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42***"</c-><c- p>,</c-> <c- s>"{:*&lt;}"</c-><c- p>);</c->    <c- c1>// r14->value() == 42, r14->range() == ""</c->
 <c- k>auto</c-> <c- n>r15</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42***"</c-><c- p>,</c-> <c- s>"{:*&lt;5}"</c-><c- p>);</c->   <c- c1>// r15->value() == 42, r15->range() == ""</c->
@@ -2753,9 +2756,9 @@ leading whitespace is skipped regardless of alignment specifiers.</p>
 <c- k>auto</c-> <c- n>r18</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42***"</c-><c- p>,</c-> <c- s>"{:*&lt;4.4}"</c-><c- p>);</c-> <c- c1>// r18->value() == 42, r18->range() == "*"</c->
 
 <c- k>auto</c-> <c- n>r19</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*&lt;}"</c-><c- p>);</c->    <c- c1>// r19->value() == 42, r19->range() == ""</c->
-<c- k>auto</c-> <c- n>r20</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*&lt;5}"</c-><c- p>);</c->   <c- c1>// ERROR (field too short)</c->
+<c- k>auto</c-> <c- n>r20</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*&lt;5}"</c-><c- p>);</c->   <c- c1>// ERROR (length_too_short)</c->
 <c- k>auto</c-> <c- n>r21</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*&lt;.5}"</c-><c- p>);</c->  <c- c1>// r21->value() == 42, r19->range() == ""</c->
-<c- k>auto</c-> <c- n>r22</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*&lt;5.5}"</c-><c- p>);</c-> <c- c1>// ERROR (field too short)</c->
+<c- k>auto</c-> <c- n>r22</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*&lt;5.5}"</c-><c- p>);</c-> <c- c1>// ERROR (length_too_short)</c->
 
 <c- k>auto</c-> <c- n>r23</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"42"</c-><c- p>,</c-> <c- s>"{:*^}"</c-><c- p>);</c->    <c- c1>// r23->value() == 42, r23->range() == ""</c->
 <c- k>auto</c-> <c- n>r24</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"*42*"</c-><c- p>,</c-> <c- s>"{:*^}"</c-><c- p>);</c->  <c- c1>// r24->value() == 42, r24->range() == ""</c->
@@ -2765,9 +2768,16 @@ leading whitespace is skipped regardless of alignment specifiers.</p>
 <c- k>auto</c-> <c- n>r27</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42**"</c-><c- p>,</c-> <c- s>"{:*^6}"</c-><c- p>);</c->  <c- c1>// r27->value() == 42, r27->range() == ""</c->
 <c- k>auto</c-> <c- n>r28</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"*42**"</c-><c- p>,</c-> <c- s>"{:*^5}"</c-><c- p>);</c->   <c- c1>// r28->value() == 42, r28->range() == ""</c->
 <c- k>auto</c-> <c- n>r29</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^5}"</c-><c- p>);</c->   <c- c1>// r29->value() == 42, r29->range() == ""</c->
-<c- k>auto</c-> <c- n>r30</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^6}"</c-><c- p>);</c->   <c- c1>// ERROR (field too short)</c->
+<c- k>auto</c-> <c- n>r30</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^6}"</c-><c- p>);</c->   <c- c1>// ERROR (length_too_short)</c->
 <c- k>auto</c-> <c- n>r31</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^.6}"</c-><c- p>);</c->  <c- c1>// r31->value() == 42, r31->range() == ""</c->
-<c- k>auto</c-> <c- n>r32</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^6.6}"</c-><c- p>);</c-> <c- c1>// ERROR (field too short)</c->
+<c- k>auto</c-> <c- n>r32</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"**42*"</c-><c- p>,</c-> <c- s>"{:*^6.6}"</c-><c- p>);</c-> <c- c1>// ERROR (length_too_short)</c->
+
+<c- k>auto</c-> <c- n>r33</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"#*42*"</c-><c- p>,</c-> <c- s>"{:*^}"</c-><c- p>);</c->   <c- c1>// ERROR (invalid_scanned_value)</c->
+<c- k>auto</c-> <c- n>r34</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"#*42*"</c-><c- p>,</c-> <c- s>"#{:*^}"</c-><c- p>);</c->  <c- c1>// r34->value() == 42, r34->range() == ""</c->
+<c- k>auto</c-> <c- n>r35</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"#*42*"</c-><c- p>,</c-> <c- s>"#{:#^}"</c-><c- p>);</c->  <c- c1>// ERROR (invalid_scanned_value)</c->
+
+<c- k>auto</c-> <c- n>r36</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"***42*"</c-><c- p>,</c-> <c- s>"{:*^3}"</c-><c- p>);</c->   <c- c1>// r36->value() == 42, r36->range() == ""</c->
+<c- k>auto</c-> <c- n>r37</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"***42*"</c-><c- p>,</c-> <c- s>"{:*^.3}"</c-><c- p>);</c->  <c- c1>// ERROR (invalid_fill)</c->
 </pre>
    </div>
    <h4 class="heading settled" data-level="4.3.3" id="fmt-sign-hash-0"><span class="secno">4.3.3. </span><span class="content">Sign, <code class="highlight"><c- cp>#</c-></code>, and <code class="highlight"><c- mi>0</c-></code></span><a class="self-link" href="#fmt-sign-hash-0"></a></h4>
@@ -3198,6 +3208,18 @@ it gives more details about the error, but its contents are unspecified.</p>
     <c- c1>// for the type to be scanned.</c->
     <c- n>invalid_scanned_value</c-><c- p>,</c->
 
+    <c- c1>// Literal character specified in the format string</c->
+    <c- c1>// was not found in the source.</c->
+    <c- n>invalid_literal</c-><c- p>,</c->
+
+    <c- c1>// Too many fill characters scanned,</c->
+    <c- c1>// field precision (maximum field width) exceeded.</c->
+    <c- n>invalid_fill</c-><c- p>,</c->
+
+    <c- c1>// Scanned field width was shorter than</c->
+    <c- c1>// what was specified as the minimum field width.</c->
+    <c- n>length_too_short</c-><c- p>,</c->
+
     <c- c1>// Value too large (higher than the maximum value)</c->
     <c- n>value_positive_overflow</c-><c- p>,</c->
 
@@ -3222,6 +3244,10 @@ it gives more details about the error, but its contents are unspecified.</p>
    <p class="note" role="note"><span class="marker">Note:</span> <a data-link-type="biblio" href="#biblio-scnlib" title="scnlib: scanf for modern C++">[SCNLIB]</a> has an additional error code enumerator, <code class="highlight"><c- n>invalid_source_state</c-></code>.
 It’s currently used when the input is not a range, but something like a file or an <code class="highlight"><c- n>istream</c-></code>.
 As these kinds of input are currently not supported with this proposal, this is not proposed.</p>
+   <p class="note" role="note"><span class="marker">Note:</span> A previous revision of this proposal had fewer enumerators,
+with the overflow/underflow enumerators being one <code class="highlight"><c- n>value_out_of_range</c-></code>,
+and <code class="highlight"><c- n>invalid_literal</c-></code>, <code class="highlight"><c- n>invalid_fill</c-></code>, and <code class="highlight"><c- n>length_too_short</c-></code> being folded into <code class="highlight"><c- n>invalid_scanned_value</c-></code>.
+The added granularity provided in this revision was found to be useful.</p>
    <p>The reason why we propose adding the type <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>scan_error</c-></code> instead of just using <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> is,
 that we want to avoid losing information. The enumerators of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code> are insufficient for
 this use, as evident by the table below: there are no clear one-to-one mappings between <code class="highlight"><c- k>enum</c-> <c- nc>scan_error</c-><c- o>::</c-><c- n>code</c-></code> and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-></code>, but <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> would need to cover a lot of cases.
@@ -3237,11 +3263,17 @@ Even with the <code class="highlight"><c- k>enum</c-> <c- nc>scan_error</c-><c- 
     <tbody>
      <tr style="border-top:2px solid;">
       <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>end_of_input</c-></code> 
-      <td rowspan="3" style="vertical-align: middle"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> 
+      <td rowspan="6" style="vertical-align: middle"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>invalid_argument</c-></code> 
      <tr>
       <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_format_string</c-></code> 
      <tr>
       <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_scanned_value</c-></code> 
+     <tr>
+      <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_literal</c-></code> 
+     <tr>
+      <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_fill</c-></code> 
+     <tr>
+      <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>length_too_short</c-></code> 
      <tr style="border-top:2px solid;">
       <td><code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>value_positive_overflow</c-></code> 
       <td rowspan="4" style="vertical-align: middle"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>errc</c-><c- o>::</c-><c- n>result_out_of_range</c-></code> 
@@ -3404,13 +3436,13 @@ to be in the (ordinary/wide) literal encoding.</p>
    <p>If an error in encoding is encountered while reading a value of a string type
 (<code class="highlight"><c- n>basic_string</c-></code>, <code class="highlight"><c- n>basic_string_view</c-></code>), an <code class="highlight"><c- n>invalid_scanned_value</c-></code> error is returned.
 For other types, the reading is stopped, as the parser can’t parse a numeric value from
-something that isn’t digits.</p>
-   <div class="example" id="example-047db6d3">
-    <a class="self-link" href="#example-047db6d3"></a> 
+something that isn’t digits, indirectly causing an error.</p>
+   <div class="example" id="example-de784ddc">
+    <a class="self-link" href="#example-de784ddc"></a> 
 <pre class="language-c++ highlight"><c- c1>// Invalid UTF-8</c->
 <c- k>auto</c-> <c- n>r</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>string</c-><c- o>></c-><c- p>(</c-><c- s>"a</c-><c- se>\xc3</c-><c- s> "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->
 <c- c1>// r == false</c->
-<c- c1>// r->error() == std::scan_error::invalid_scanner_value</c->
+<c- c1>// r->error() == std::scan_error::invalid_scanned_value</c->
 
 <c- k>auto</c-> <c- n>r2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>scan</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-><c- p>(</c-><c- s>"1</c-><c- se>\xc3</c-><c- s> "</c-><c- p>,</c-> <c- s>"{}"</c-><c- p>);</c->
 <c- c1>// r2 == true</c->
@@ -3837,20 +3869,20 @@ for non-arithmetic non-pointer types, <code class="highlight"><c- n>charT</c-></
      <tr>
       <td><code class="highlight"><c- o>></c-></code> 
       <td>Skips fill characters before the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
-If the maximum field width is reached by only reading fill characters, an error with the code <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_scanned_value</c-></code> is returned;
+If the maximum field width is reached by only reading fill characters, an error with the code <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_fill</c-></code> is returned;
 If no <i>align</i> option is specified, but a <i>scan-width</i> or <i>scan-precision</i> is, this is the option used
 for arithmetic types other than <code class="highlight"><c- n>charT</c-></code> and <code class="highlight"><c- b>bool</c-></code>, pointer types, or when any integer presentation type is specified. 
      <tr>
       <td><code class="highlight"><c- o>^</c-></code> 
       <td>
        Skips fill characters both before and after the scanned value, until either a non-fill character is encountered, or the maximum field width is reached.
-If the maximum field width is reached by only reading fill characters, an error with the code <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_scanned_value</c-></code> is returned; 
+If the maximum field width is reached by only reading fill characters, an error with the code <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_fill</c-></code> is returned; 
        <p>[<i>Note 3</i>: The number of fill characters doesn’t have to be equal both before and after the value. — <i>end note</i>]</p>
    </table>
    <p>The <i>scan-width</i> option specifies the minimum field width. If the <i>scan-width</i> option is absent, the minimum field width is <code class="highlight"><c- mi>0</c-></code>.
 Otherwise, the value of the <i>positive-integer</i> is interpreted as a decimal integer and used as the value of the option.
 If the number of characters consumed for scanning a value, including the value itself and fill characters used for alignment,
-but excluding possibly skipped preceding whitespace is less than the minimum field width, an error with the code <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>invalid_scanned_value</c-></code> is returned.</p>
+but excluding possibly skipped preceding whitespace is less than the minimum field width, an error with the code <code class="highlight"><c- n>scan_error</c-><c- o>::</c-><c- n>length_too_short</c-></code> is returned.</p>
    <p>For the purposes of width computation, a string is assumed to be in a locale-independent, implementation-defined encoding.</p>
    <div class="note" role="note">
      <span class="marker">Wording note:</span> In [format.string.std], we additionally say 
@@ -4113,6 +4145,9 @@ Failure to allocate storage is reported by throwing an exception as described in
       <c- n>end_of_input</c-><c- p>,</c->
       <c- n>invalid_format_string</c-><c- p>,</c->
       <c- n>invalid_scanned_value</c-><c- p>,</c->
+      <c- n>invalid_literal</c-><c- p>,</c->
+      <c- n>invalid_fill</c-><c- p>,</c->
+      <c- n>length_too_short</c-><c- p>,</c->
       <c- n>value_positive_overflow</c-><c- p>,</c->
       <c- n>value_negative_overflow</c-><c- p>,</c->
       <c- n>value_positive_underflow</c-><c- p>,</c->
