@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Prevent path presentation problems
 Shortname: P2319
-Revision: 3
+Revision: 4
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-11-18
+Date: 2024-12-07
 Markup Shorthands: markdown yes
 </pre>
 
@@ -42,6 +42,13 @@ eliminating a common source of bugs.
 <!-- fixing these issues, making the path API more reliable, user-friendly
 and consistent with other standard facilities. -->
 
+Changes since R3 {#changes3}
+================
+
+- Reintroduced `system_string` and `display_string` accessors per LEWG feedback.
+- Renamed `system_string` to `system_encoded_string`.
+- Added LEWG poll results for R3.
+
 Changes since R2 {#changes2}
 ================
 
@@ -57,6 +64,75 @@ Changes since R0 {#changes0}
 
 - Removed `system_string` and `display_string` per SG16 feedback focusing just
     on deprecating broken accessors.
+
+LEWG poll results for R3 {#poll-r3}
+========================
+
+**POLL**: Re-add the function `system_string` which was presented in P2319R0
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>7
+  <td>7
+  <td>4
+  <td>1
+  <td>3
+</tr>
+</table>
+
+**Outcome**: Consensus in favor
+
+**POLL**: Re-add the function `display_string` (result of calling format) which
+was presented in P2319R0
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>13
+  <td>7
+  <td>2
+  <td>0
+  <td>0
+</tr>
+</table>
+
+**Outcome**: Strong consensus in favor
+
+**POLL**: Approve the design (re-add `display_string`, `system_string`)
+presented in "P2319R3 Prevent path presentation problems" (deprecating functions
+in `path`).
+
+<table class="poll">
+<tr>
+  <th>SF
+  <th>F
+  <th>N
+  <th>A
+  <th>SA
+</th>
+<tr>
+  <td>10
+  <td>8
+  <td>2
+  <td>1
+  <td>2
+</tr>
+</table>
+
+**Outcome**: Consensus in favor
 
 SG16 poll results for R2 {#poll-r2}
 ========================
@@ -82,7 +158,8 @@ SG16 poll results for R2 {#poll-r2}
 
 Strong consensus in favor.
 
-From https://github.com/cplusplus/papers/issues/1987#issuecomment-2482417123:
+From [https://github.com/cplusplus/papers/issues/1987#issuecomment-2482417123](
+https://github.com/cplusplus/papers/issues/1987#issuecomment-2482417123):
 
 > The general consensus of the group is that portable code should be written to
 > use `std::format()` to format paths or to use the `native()` member function
@@ -245,15 +322,14 @@ To summarize, `std::filesystem::path::string()` has the following problems:
 and the "native" encoding is almost always the wrong choice, making it yet
 another example of a wrong default. -->
 
-The current paper proposes deprecating the `std::filesystem::path::string()`
-and `std::filesystem::path::generic_string()`, which has the same problems,
-overloads for `char`. <!--, replacing it with alternatives that make the target
-encoding clear:
+The current paper proposes deprecating the `std::filesystem::path::string()`,
+providing alternatives that make the target encoding clear:
 
-* `system_string()` returning `std::string` in the operating system dependent
-    current encoding for pathnames (native ordinary encoding). Similarly to the
-    current `string()`, it is lossy and only useful for passing to legacy system
-    APIs.
+* `system_encoded_string()` returning `std::string` in the operating system
+    dependent current encoding for pathnames (native ordinary encoding).
+    Similarly to the current `string()`, it is lossy and only useful for passing
+    to legacy system APIs.
+
 * `display_string()` returning `std::string` in the literal encoding suitable
     for display, e.g. formatting with `std::format` and printing with
     `std::print`. It is lossless if the literal encoding is UTF-8 and the path
@@ -262,10 +338,16 @@ encoding clear:
 We use "system" instead of "native" because the latter is ambiguous: it can
 either refer to encoding or format (path separators, etc.)
 
-Similarly, `generic_string()`, which has the same problems, is split into
-`generic_system_string()` and `generic_display_string()`.
+Similarly, `generic_string()`, which has the same problems, is also deprecated
+with `generic_system_encoded_string()` and `generic_display_string()`
+alternatives provided.
 
-This will solve common issues with `string()` by requiring the caller to
+`system_encoded_string()` can be used to simplify bulk bug-to-bug compatible
+migration of a large existing codebase. This will make problematic call sites
+easy to grep and fix incrementally, prioritizing more critical parts of the
+codebase where potential data loss due to transcoding is especially undesirable.
+
+<!--This will solve common issues with `string()` by requiring the caller to
 specify which encoding they want. In particular, the original example will
 work with `display_string()`:
 
@@ -299,8 +381,9 @@ std::filesystem::remove(p); // Lossless, portable and more efficient.
 Ideally, `std::remove` should be deprecated but this is out of scope of the
 current paper.
 
-And for lossless display, these accessors can be replaced with formatting `path`
-using new facilities such as `std::format` or `std::print`.
+For lossless display, deprecated accessors can be replaced with
+`display_string()` or formatting `path` using new facilities such as
+`std::format` or `std::print`.
 
 Wording {#wording}
 =======
@@ -321,8 +404,8 @@ template&lt;class EcharT, class traits = char_traits&lt;EcharT>,
   basic_string&lt;EcharT, traits, Allocator>
     string(const Allocator&amp; a = Allocator()) const;
 <del>std::string    string() const;</del>
-<!--ins>std::string    display_string() const;</ins>
-<ins>std::string    system_string() const;</ins-->
+<ins>std::string    display_string() const;</ins>
+<ins>std::string    system_encoded_string() const;</ins>
 std::wstring   wstring() const;
 std::u8string  u8string() const;
 std::u16string u16string() const;
@@ -334,8 +417,8 @@ template&lt;class EcharT, class traits = char_traits&lt;EcharT>,
   basic_string&lt;EcharT, traits, Allocator>
     generic_string(const Allocator&amp; a = Allocator()) const;
 <del>std::string    generic_string() const;</del>
-<!--ins>std::string    generic_display_string() const;</ins>
-<ins>std::string    generic_system_string() const;</ins-->
+<ins>std::string    generic_display_string() const;</ins>
+<ins>std::string    generic_system_encoded_string() const;</ins>
 std::wstring   generic_wstring() const;
 std::u8string  generic_u8string() const;
 std::u16string generic_u16string() const;
@@ -350,7 +433,7 @@ Modify [[fs.path.native.obs](https://eel.is/c++draft/fs.path.native.obs)]:
 
 <pre>
 <del>std::string string() const;</del>
-<!--ins>std::string system_string() const;</ins-->
+<ins>std::string system_encoded_string() const;</ins>
 std::wstring wstring() const;
 std::u8string u8string() const;
 std::u16string u16string() const;
@@ -361,7 +444,7 @@ std::u32string u32string() const;
 
 *Remarks*: Conversion, if any, is performed as specified by [fs.path.cvt].
 
-<!--pre>
+<pre>
 <ins>std::string display_string() const;</ins>
 </pre>
 <ins>
@@ -373,7 +456,7 @@ std::u32string u32string() const;
 [<i>Note</i>: The returned string is suitable for use with formatting
 ([[format.functions](https://eel.is/c++draft/format.functions)]) and print
 functions ([[print.fun](https://eel.is/c++draft/print.fun)]). — *end note*]
-</ins-->
+</ins>
 
 Modify [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
 
@@ -381,7 +464,7 @@ Modify [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
 
 <pre>
 <del>std::string generic_string() const;</del>
-<!--ins>std::string generic_system_string() const;</ins-->
+<ins>std::string generic_system_encoded_string() const;</ins>
 std::wstring generic_wstring() const;
 std::u8string generic_u8string() const;
 std::u16string generic_u16string() const;
@@ -392,7 +475,7 @@ std::u32string generic_u32string() const;
 
 *Remarks*: Conversion, if any, is specified by [fs.path.cvt].
 
-<!--pre>
+<pre>
 <ins>std::string generic_display_string() const;</ins>
 </pre>
 
@@ -404,7 +487,7 @@ std::u32string generic_u32string() const;
 [<i>Note</i>: The returned string is suitable for use with formatting
 ([[format.functions](https://eel.is/c++draft/format.functions)]) and print
 functions ([[print.fun](https://eel.is/c++draft/print.fun)]). — *end note*]
-</ins-->
+</ins>
 
 Add a new subclause in Annex D:
 
