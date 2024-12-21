@@ -540,9 +540,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#formatting-variants" class="md-nav__link">
+  <a href="#variants" class="md-nav__link">
     <span class="md-ellipsis">
-      Formatting Variants
+      Variants
     </span>
   </a>
   
@@ -550,6 +550,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bit-fields-and-packed-structs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bit-Fields and Packed Structs
+    </span>
+  </a>
   
 </li>
       
@@ -1561,7 +1570,7 @@ int main() {
 <div class="docblock-desc">
 </div>
 </div>
-<h3 id="formatting-variants">Formatting Variants</h3>
+<h3 id="variants">Variants</h3>
 <p>A <code>std::variant</code> is only formattable if every variant alternative is
 formattable, and requires the <code>__cpp_lib_variant</code> <a href="https://en.cppreference.com/w/cpp/feature_test">library
 feature</a>.</p>
@@ -1573,6 +1582,18 @@ fmt::print("{}", std::variant&lt;char, float&gt;('x'));
 
 fmt::print("{}", std::variant&lt;std::monostate, char&gt;());
 // Output: variant(monostate)</code></pre>
+<h2 id="bit-fields-and-packed-structs">Bit-Fields and Packed Structs</h2>
+<p>To format a bit-field or a field of a struct with <code>__attribute__((packed))</code>
+applied to it, you need to convert it to the underlying or compatible type via
+a cast or a unary <code>+</code> (<a href="https://www.godbolt.org/z/3qKKs6T5Y">godbolt</a>):</p>
+<pre><code class="language-c++">struct smol {
+  int bit : 1;
+};
+
+auto s = smol();
+fmt::print(&quot;{}&quot;, +s.bit);
+</code></pre>
+<p>This is a known limitation of "perfect" forwarding in C++.</p>
 <p><a id="compile-api"></a></p>
 <h2 id="format-string-compilation">Format String Compilation</h2>
 <p><code>fmt/compile.h</code> provides format string compilation enabled via the
