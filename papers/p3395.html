@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6ac93cf206345cb7b18eeed96b8754bcce73ebb2" name="revision">
+  <meta content="0c63f947a5df1c5bc33de36cc64097f4fa43790f" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2148,7 +2148,7 @@ confusing output:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>left</c-> <c- o>&lt;&lt;</c-> <c- n>std</c-><c- o>::</c-><c- n>setw</c-><c- p>(</c-><c- mi>12</c-><c- p>)</c-> <c- o>&lt;&lt;</c-> <c- n>ec</c-><c- p>;</c->
 </pre>
    <p>prints</p>
-<pre class="highlight"><c- nl>generic</c->     <c- p>:</c-><c- mi>2</c->
+<pre class="language-text highlight">generic     :2
 </pre>
    <p>It also doesn’t allow formatting the error message and has potential encoding
 issues because the encoding of the category name is unspecified.</p>
@@ -2158,19 +2158,19 @@ issues because the encoding of the category name is unspecified.</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
 </pre>
    <p>Output:</p>
-<pre class="highlight"><c- nl>generic</c-><c- p>:</c-><c- mi>2</c->
+<pre class="language-text highlight">generic:2
 </pre>
    <p>It will correctly handle width and alignment:</p>
-<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{:>12}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
+<pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"[{:>12}]</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
 </pre>
    <p>Output:</p>
-<pre class="highlight"><c- nl>generic</c-><c- p>:</c-><c- mi>2</c->
+<pre class="language-text highlight">[   generic:2]
 </pre>
    <p>It will also allow formatting the error message:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{:s}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
 </pre>
    <p>Output:</p>
-<pre class="highlight"><c- n>No</c-> <c- n>such</c-> <c- n>file</c-> <c- k>or</c-> <c- n>directory</c->
+<pre class="language-text highlight">No such file or directory
 </pre>
    <p>(The actual message depends on the platform.)</p>
    <p>The main challenge is that the standard doesn’t specify the encodings of
@@ -2216,6 +2216,38 @@ to change anyway. This also resolves <a data-link-type="biblio" href="#biblio-lw
 This approach is challenging because of ABI and would complicate usage compared
 to a single encoding.</p>
    <h2 class="heading settled" data-level="4" id="wording"><span class="secno">4. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <p>Add to "Header &lt;system_error> synopsis" <a href="https://eel.is/c++draft/system.error.syn">[system.error.syn</a>]:</p>
+<pre class="highlight"><c- c1>// [system.error.fmt], formatter</c->
+<c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>error_code</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
+</pre>
+   <p>Add a new section "Formatting" [system.error.fmt] under "Class <code class="highlight"><c- n>error_code</c-></code>" <a href="https://eel.is/c++draft/syserr.errcode">[syserr.errcode</a>]:</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>error_code</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
+  <c- k>constexpr</c-> <c- k>typename</c-> <c- nc>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>::</c-><c- n>iterator</c->
+    <c- n>parse</c-><c- p>(</c-><c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+
+  <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>FormatContext</c-><c- o>></c->
+    <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c->
+      <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>error_code</c-><c- o>&amp;</c-> <c- n>ec</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+<c- p>};</c->
+</pre>
+<pre class="highlight"><c- k>constexpr</c-> <c- k>typename</c-> <c- nc>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>::</c-><c- n>iterator</c->
+  <c- n>parse</c-><c- p>(</c-><c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+</pre>
+   <p><em>Effects</em>: Parses the format specifier as a <em>error-code-format-spec</em> and stores the
+parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</p>
+   <p><i>error-code-format-spec</i>:<br>   <i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code class="highlight"><c- n>s</c-></code><i><sub>opt</sub></i></p>
+   <p>where the productions <i>fill-and-align</i> and <i>width</i> are described in <a href="http://eel.is/c++draft/format#string">[format.string</a>].</p>
+   <p><em>Returns</em>: An iterator past the end of the <em>error-code-format-spec</em>.</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>FormatContext</c-><c- o>></c->
+  <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c->
+    <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>error_code</c-><c- o>&amp;</c-> <c- n>ec</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+</pre>
+   <p><em>Effects</em>: Let <code class="highlight"><c- n>s</c-></code> be <code class="highlight"><c- n>ec</c-><c- p>.</c-><c- n>message</c-><c- p>()</c-></code> transcoded into the ordinary literal
+encoding, with maximal subparts of ill-formed subsequences substituted with
+U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD
+Substitution in Conversion, if the <code class="highlight"><c- n>s</c-></code> option is used, otherwise <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}:{}"</c-><c- p>,</c-> <c- n>ec</c-><c- p>.</c-><c- n>category</c-><c- p>().</c-><c- n>name</c-><c- p>(),</c-> <c- n>ec</c-><c- p>.</c-><c- n>value</c-><c- p>())</c-></code>.
+Writes <code class="highlight"><c- n>s</c-></code> into <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code>, adjusted according to the <em>error-code-format-spec</em>.</p>
+   <p><em>Returns</em>: An iterator past the end of the output range.</p>
    <p>Modify <a href="https://eel.is/c++draft/syserr.errcat.virtuals">[syserr.errcat.virtuals</a>]:</p>
    <p>...</p>
 <pre class="highlight"><c- k>virtual</c-> <c- n>string</c-> <c- nf>message</c-><c- p>(</c-><c- b>int</c-> <c- n>ev</c-><c- p>)</c-> <c- k>const</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
