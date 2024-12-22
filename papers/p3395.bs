@@ -28,8 +28,8 @@ Markup Shorthands: markdown yes
 Introduction {#intro}
 ============
 
-This paper proposes making `std::error_code` formattable with the formatting
-facility added in C++20 (`std::format`).
+This paper proposes making `std::error_code` formattable using the formatting
+facility introduced in C++20 (`std::format`).
 
 Motivation {#motivation}
 ==========
@@ -42,7 +42,7 @@ auto size = std::filesystem::file_size("nonexistent", ec);
 std::cout << ec;
 ```
 
-works and prints `generic:2`.
+This works and prints `generic:2`.
 
 However, the following code doesn't compile:
 
@@ -50,30 +50,30 @@ However, the following code doesn't compile:
 std::print("{}\n", ec);
 ```
 
-Unfortunately, the existing inserter has obvious issues such as I/O manipulators
-applying only to the category name and not to the whole error code leading to
-confusing output:
+Unfortunately, the existing inserter has several issues, such as I/O
+manipulators applying only to the category name rather than the entire error
+code, resulting in confusing output:
 
 ```
 std::cout << std::left << std::setw(12) << ec;
 ```
 
-prints
+This prints:
 
 ```text
 generic     :2
 ```
 
-It also doesn't allow formatting the error message and has potential encoding
-issues because the encoding of the category name is unspecified.
+Additionally, it doesn’t allow formatting the error message and introduces
+potential encoding issues, as the encoding of the category name is unspecified.
 
 Proposal {#proposal}
 ========
 
-The current paper proposes adding a `formatter` specialization for `error_code`
-that addresses the problems discussed in the previous section.
+This paper proposes adding a `formatter` specialization for `std::error_code`
+to address the problems discussed in the previous section.
 
-The default format will give the same output as the `ostream` inserter:
+The default format will produce the same output as the `ostream` inserter:
 
 ```
 std::print("{}\n", ec);
@@ -97,7 +97,7 @@ Output:
 [   generic:2]
 ```
 
-It will also allow formatting the error message:
+Additionally, it will allow formatting the error message:
 
 ```
 std::print("{:s}\n", ec);
@@ -111,9 +111,9 @@ No such file or directory
 
 (The actual message depends on the platform.)
 
-The main challenge is that the standard doesn't specify the encodings of
-strings returned by `error_category::name` and `error_code::message` / 
-`error_category::message` ([syserr.errcat.virtuals](
+The main challenge lies in the standard's lack of specification for the
+encodings of strings returned by `error_category::name` and
+`error_code::message` / `error_category::message` ([syserr.errcat.virtuals](
 https://eel.is/c++draft/syserr.errcat.virtuals)):
 
 ```
@@ -128,20 +128,22 @@ virtual string message(int ev) const = 0;
 
 *Returns*: A string that describes the error condition denoted by `ev`.
 
-In practice implementations define category names as string literals and
-therefore they are in ordinary literal encoding.
+In practice, implementations typically define category names as string literals,
+meaning they are in the ordinary literal encoding. 
 
 <!-- https://github.com/llvm/llvm-project/blob/8f31ee996ae21ee77db29abb02a3aef4750e6d35/libcxx/src/system_error.cpp#L161 -->
 <!-- https://github.com/gcc-mirror/gcc/blob/20486ec75734f3e641a3ade4297f6ba64881bca8/libstdc%2B%2B-v3/src/c%2B%2B11/system_error.cc#L589 -->
 <!-- https://github.com/gcc-mirror/gcc/blob/20486ec75734f3e641a3ade4297f6ba64881bca8/libstdc%2B%2B-v3/src/c%2B%2B11/system_error.cc#L589 -->
 
-There is implementation divergence in the encoding for messages. libc++ and
+However, there is significant divergence in message encodings. libc++ and
 libstdc++ use `strerror[_r]` for the generic category which is in the C
 (not "C") locale encoding but disagree on the encoding for the system category:
 libstdc++ uses the Active Code Page (ACP) while libc++ again uses `strerror`
 / C locale on Windows. Microsoft STL uses a table of string literals in the
 ordinary literal encoding for the generic category and ACP for the system
-category. The following table summarizes this:
+category.
+
+The following table summarizes the differences:
 
 <table>
 <tr>
@@ -195,15 +197,15 @@ int main() {
 ```
 -->
 
-The current paper proposes using the C locale encoding (execution character
-set) since it is already used in most cases and consistent with the underlying
-system API. Microsoft STL's implementation has a number of bugs in
-`std::system_category::what` ([[MSSTL-3254]], [[MSSTL-4711]]) and will likely
-to change anyway. This also resolves [[LWG4156]].
+To address this, the proposal suggests using the C locale encoding (execution
+character set), which is already employed in most cases and aligns with
+underlying system APIs. Microsoft STL's implementation has a number of bugs in
+`std::system_category::message` ([[MSSTL-3254]], [[MSSTL-4711]]) and will
+likely need to change anyway. This also resolves [[LWG4156]].
 
-One alternative to this is to communicate the encoding from `error_category`.
-This approach is challenging because of ABI and would complicate usage compared
-to a single encoding.
+An alternative approach could involve communicating the encoding from
+`error_category`. However, this introduces ABI challenges and complicates usage
+compared to adopting a single encoding.
 
 <!-- ABI: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1196r0.html -->
 
