@@ -420,18 +420,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#named-arguments" class="md-nav__link">
+  <a href="#type-erasure" class="md-nav__link">
     <span class="md-ellipsis">
-      Named Arguments
+      Type Erasure
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#type-erasure" class="md-nav__link">
+  <a href="#named-arguments" class="md-nav__link">
     <span class="md-ellipsis">
-      Type Erasure
+      Named Arguments
     </span>
   </a>
   
@@ -1011,13 +1011,17 @@ disallowed.</p>
 that support C++20 <code>consteval</code>. On older compilers you can use the
 <a href="#legacy-checks">FMT_STRING</a> macro defined in <code>fmt/format.h</code> instead.</p>
 <p>Unused arguments are allowed as in Python's <code>str.format</code> and ordinary functions.</p>
+<p>See <a href="#type-erasure">Type Erasure</a> for an example of how to enable compile-time
+checks in your own functions with <code>fmt::format_string</code> while avoiding template
+bloat.</p>
 <div class="docblock">
-<a id="basic_format_string">
-<pre><code class="language-cpp decl"><div>template &lt;typename Char, typename...&nbsp;T&gt;
-</div><div>using basic_format_string = basic_fstring&lt;Char, T...>;</div></code></pre>
+<a id="fstring">
+<pre><code class="language-cpp decl"><div>template &lt;typename...&nbsp;T&gt;
+</div><div>struct fstring;</div></code></pre>
 </a>
 <div class="docblock-desc">
-</div>
+<p>A compile-time format string. </p>
+    </div>
 </div>
 <div class="docblock">
 <a id="format_string">
@@ -1038,19 +1042,6 @@ fmt::print(fmt::runtime("{:d}"), "I am not a number");
 </code></pre> </p>
         </div>
 </div>
-<h3 id="named-arguments">Named Arguments</h3>
-<div class="docblock">
-<a id="arg">
-<pre><code class="language-cpp decl"><div>template &lt;typename Char, typename T&gt;
-</div><div>auto arg(const Char* name, const T& arg) -&NoBreak;>&nbsp;detail::named_arg&lt;Char, T>;</div></code></pre>
-</a>
-<div class="docblock-desc">
-<p>Returns a named argument to be used in a formatting function. It should only be used in a call to a formatting function.</p>
-<p><b>Example</b>: <pre><code class="language-cpp">fmt::print("The answer is {answer}.", fmt::arg("answer", 42));
-</code></pre> </p>
-        </div>
-</div>
-<p>Named arguments are not supported in compile-time checks at the moment.</p>
 <h3 id="type-erasure">Type Erasure</h3>
 <p>You can create your own formatting function with compile-time checks and
 small binary footprint, for example (<a href="https://godbolt.org/z/b9Pbasvzc">run</a>):</p>
@@ -1133,6 +1124,19 @@ fmt::format_args args = fmt::make_format_args();  // Dangling reference
 </div>
 </div>
 </div>
+<h3 id="named-arguments">Named Arguments</h3>
+<div class="docblock">
+<a id="arg">
+<pre><code class="language-cpp decl"><div>template &lt;typename Char, typename T&gt;
+</div><div>auto arg(const Char* name, const T& arg) -&NoBreak;>&nbsp;detail::named_arg&lt;Char, T>;</div></code></pre>
+</a>
+<div class="docblock-desc">
+<p>Returns a named argument to be used in a formatting function. It should only be used in a call to a formatting function.</p>
+<p><b>Example</b>: <pre><code class="language-cpp">fmt::print("The answer is {answer}.", fmt::arg("answer", 42));
+</code></pre> </p>
+        </div>
+</div>
+<p>Named arguments are not supported in compile-time checks at the moment.</p>
 <h3 id="compatibility">Compatibility</h3>
 <div class="docblock">
 <a id="basic_string_view">
