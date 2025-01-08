@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting enums
 Shortname: P3070
-Revision: 1
+Revision: 2
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-10-13
+Date: 2024-12-30
 Markup Shorthands: markdown yes
 </pre>
 
@@ -22,6 +22,10 @@ Markup Shorthands: markdown yes
   .poll th, .poll td {
     text-align: right;
     width: 20%;
+  }
+
+  .wording ul li::marker {
+    content: '– ';
   }
 </style>
 
@@ -179,7 +183,79 @@ component and does not necessitate alterations to current language features or
 core library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in `std::format`.
 
-<!-- TOOD: Wording -->
+# Wording # {#wording}
+
+<div class="wording">
+
+<!-- Disabling implicit conversions would make enums::format_as not work
+     and therefore not proposed. -->
+
+Modify [[format.arg](https://eel.is/c++draft/format.arg)]:
+
+```
+template<class T> explicit basic_format_arg(T& v) noexcept;
+```
+
+*Constraints*: `T` satisfies *formattable-with*`<Context>`.
+
+*Preconditions*: If `decay_t<T>` is `char_type*` or `const char_type*`,
+`static_cast<const char_type*>(v)` points to a NTCTS ([[defns.ntcts](
+https://eel.is/c++draft/defns.ntcts)]).
+
+*Effects*: Let `TD` be `remove_const_t<T>`.
+<ins>
+If `format_as(v)` is a valid expression, let `u` be `format_as(v)` and `U` be
+`remove_cvref_t<decltype(u)>`. Otherwise, let `u` be `v` and `U` be `TD`.
+</ins>
+
+- If <code><del>TD</del><ins>U</ins></code> is `bool` or `char_type`, initializes
+    `value` with <code><del>v</del><ins>u</ins></code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is `char` and `char_type` is
+    `wchar_t`, initializes `value` with
+    <code>static_cast&lt;wchar_t>(static_cast&lt;unsigned char>(<del>v</del><ins>u</ins>))</code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is a signed integer type
+    ([[basic.fundamental](https://eel.is/c++draft/basic.fundamental)]) and
+    <code>sizeof(<del>TD</del><ins>U</ins>) &lt;= sizeof(int)</code>, initializes `value`
+    with <code>static_cast<int>(<del>v</del><ins>u</ins>)</code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is an unsigned integer type and
+    <code>sizeof(<del>TD</del><ins>U</ins>) &lt;= sizeof(unsigned int)</code>,
+    initializes `value` with <code>static_cast&lt;unsigned int>(<del>v</del><ins>u</ins>)</code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is a signed integer type and
+    <code>sizeof(<del>TD</del><ins>U</ins>) &lt;= sizeof(long long int)</code>,
+    initializes `value` with <code>static_cast&lt;long long int>(<del>v</del><ins>u</ins>)</code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is an unsigned integer type and
+    <code>sizeof(<del>TD</del><ins>U</ins>) &lt;= sizeof(unsigned long long int)</code>,
+    initializes `value` with <code>static_cast&lt;unsigned long long int>(<del>v</del><ins>u</ins>)</code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is a standard floating-point type,
+    initializes `value` with <code><del>v</del><ins>u</ins></code>;
+
+- otherwise, if <code><del>TD</del><ins>U</ins></code> is a specialization of
+    <code>basic_string_view</code> or <code>basic_string</code><del>
+    and</del><ins>,</ins> <code><del>TD</del><ins>U</ins>::​value_type</code>
+    is `char_type` <ins>and `format_as(v)` is not a valid expression</ins>,
+    initializes `value` with `basic_string_view<char_type>(v.data(), v.size())`;
+
+- otherwise, if <code>decay_t&lt;<del>TD</del><ins>U</ins>&gt;</code> is `char_type*` or
+    `const char_type*` <ins>and `format_as(v)` is not a valid expression</ins>,
+    initializes `value` with `static_cast<const char_type*>(v)`;
+
+- otherwise, if <code>is_void_v&lt;remove_pointer_t&lt;<del>TD</del><ins>U</ins>&gt;&gt;</code>
+    is `true` or `is_null_pointer_v<TD>` is `true`, initializes `value` with
+    <code>static_cast&lt;const void*>(<del>v</del><ins>u</ins>)</code>;
+
+- otherwise, initializes `value` with `handle(v)`.
+
+https://eel.is/c++draft/format.formatter.spec
+
+TODO: partial specialization of formatter for format_as
+
+</div>
 
 # Implementation # {#impl}
 
