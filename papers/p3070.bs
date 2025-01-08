@@ -251,9 +251,72 @@ If `format_as(v)` is a valid expression, let `u` be `format_as(v)` and `U` be
 
 - otherwise, initializes `value` with `handle(v)`.
 
-https://eel.is/c++draft/format.formatter.spec
+Modify [[format.formatter.spec](https://eel.is/c++draft/format.formatter.spec)]:
 
-TODO: partial specialization of formatter for format_as
+The functions defined in [[format.functions](
+https://eel.is/c++draft/format.functions)] use specializations of the class
+template formatter to format individual arguments.
+
+Let `charT` be either `char` or `wchar_t`. Each specialization of `formatter`
+is either enabled or disabled, as described below. A *debug-enabled*
+specialization of `formatter` additionally provides a public, constexpr,
+non-static member function `set_debug_format()` which modifies the state of
+the `formatter` to be as if the type of the *std-format-spec* parsed by the
+last call to `parse` were `?`. Each header that declares the template
+`formatter` provides the following enabled specializations:
+
+- The debug-enabled specializations
+
+    ```
+    template<> struct formatter<char, char>;
+    template<> struct formatter<char, wchar_t>;
+    template<> struct formatter<wchar_t, wchar_t>;
+    ```
+
+    ...
+
+The `parse` member functions of these formatters interpret the format
+specification as a *std-format-spec* as described in [[format.string.std](
+https://eel.is/c++draft/format.string.std)].
+
+<ins>
+Let *format-as-type*`<T>` for type `T` be
+`remove_cvref_t<decltype(format_as(declval<const T&>()))>`.
+Each header that declares the template `formatter` provides the following
+enabled specialization:
+</ins>
+
+<pre>
+<ins>template&lt;class T, class charT>
+  requires (formattable&lt;<i>format-as-type</i>&lt;T>>)
+struct formatter&lt;T, charT> {
+ private:
+  formatter&lt;<i>format-as-type</i>&lt;T>> <i>underlying_</i>;  <i>// exposition-only</i>
+
+ public:
+  constexpr format_parse_context::iterator parse(format_parse_context& ctx);
+
+  template &lt;typename FormatContext>
+    typename FormatContext::iterator format(const T& val, FormatContext& ctx) const;
+};</ins>
+</pre>
+
+<pre>
+<ins>constexpr format_parse_context::iterator parse(format_parse_context& ctx);</ins>
+</pre>
+
+<ins>
+*Effects*: TODO
+</ins>
+
+<pre>
+<ins>template &lt;typename FormatContext>
+  typename FormatContext::iterator format(const T& val, FormatContext& ctx) const;</ins>
+</pre>
+
+<ins>
+*Effects*: TODO
+</ins>
 
 </div>
 

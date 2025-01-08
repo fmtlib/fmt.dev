@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e1b9cfe7b2cfbc95b5cad1e4b6309234a36d4beb" name="revision">
+  <meta content="c312c5e87e2f0e0ba54055179d403a5316aa3f78" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2303,8 +2303,47 @@ initializes <code class="highlight"><c- n>value</c-></code> with <code class="hi
      <li data-md>
       <p>otherwise, initializes <code class="highlight"><c- n>value</c-></code> with <code class="highlight"><c- n>handle</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code>.</p>
     </ul>
-    <p>https://eel.is/c++draft/format.formatter.spec</p>
-    <p>TODO: partial specialization of formatter for format_as</p>
+    <p>Modify <a href="https://eel.is/c++draft/format.formatter.spec">[format.formatter.spec</a>]:</p>
+    <p>The functions defined in <a href="https://eel.is/c++draft/format.functions">[format.functions</a>] use specializations of the class
+template formatter to format individual arguments.</p>
+    <p>Let <code class="highlight"><c- n>charT</c-></code> be either <code class="highlight"><c- b>char</c-></code> or <code class="highlight"><c- b>wchar_t</c-></code>. Each specialization of <code class="highlight"><c- n>formatter</c-></code> is either enabled or disabled, as described below. A <em>debug-enabled</em> specialization of <code class="highlight"><c- n>formatter</c-></code> additionally provides a public, constexpr,
+non-static member function <code class="highlight"><c- n>set_debug_format</c-><c- p>()</c-></code> which modifies the state of
+the <code class="highlight"><c- n>formatter</c-></code> to be as if the type of the <em>std-format-spec</em> parsed by the
+last call to <code class="highlight"><c- n>parse</c-></code> were <code class="highlight"><c- o>?</c-></code>. Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following enabled specializations:</p>
+    <ul>
+     <li data-md>
+      <p>The debug-enabled specializations</p>
+<pre class="highlight"><c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- b>char</c-><c- o>></c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-><c- p>;</c->
+<c- k>template</c-><c- o>&lt;></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- b>wchar_t</c-><c- p>,</c-> <c- b>wchar_t</c-><c- o>></c-><c- p>;</c->
+</pre>
+      <p>...</p>
+    </ul>
+    <p>The <code class="highlight"><c- n>parse</c-></code> member functions of these formatters interpret the format
+specification as a <em>std-format-spec</em> as described in <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>].</p>
+    <ins> Let <em>format-as-type</em><code class="highlight"><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> for type <code class="highlight"><c- n>T</c-></code> be <code class="highlight"><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>format_as</c-><c- p>(</c-><c- n>declval</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;></c-><c- p>()))</c-><c- o>></c-></code>.
+Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following
+enabled specialization: </ins>
+<pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
+  <c- k>requires</c-> <c- p>(</c-><c- n>formattable</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-><c- p>)</c->
+<c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
+ <c- k>private</c-><c- o>:</c->
+  <c- n>formatter</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-> <i><c- n>underlying_</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+
+ <c- k>public</c-><c- o>:</c->
+  <c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- n>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
+
+  <c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>FormatContext</c-><c- o>></c->
+    <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c->
+<c- p>};</c-></ins>
+</pre>
+<pre class="highlight"><ins><c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- nf>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c-></ins>
+</pre>
+    <ins> <em>Effects</em>: TODO </ins>
+<pre class="highlight"><ins><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>FormatContext</c-><c- o>></c->
+  <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins>
+</pre>
+    <ins> <em>Effects</em>: TODO </ins>
    </div>
    <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
