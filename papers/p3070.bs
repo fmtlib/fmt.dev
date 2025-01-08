@@ -8,7 +8,7 @@ Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-12-30
+Date: 2025-01-08
 Markup Shorthands: markdown yes
 </pre>
 
@@ -42,6 +42,10 @@ requires creating somewhat verbose formatter specializations. This proposal
 aims to introduce a more intuitive and simpler method to define custom formats
 for enums using `format_as`. When formatting enums as integers it is also more
 efficient than a formatter specialization.
+
+# Changes since R1 # {#changes1}
+
+- Added wording.
 
 # Changes since R0 # {#changes0}
 
@@ -291,7 +295,7 @@ enabled specialization:
   requires (formattable&lt;<i>format-as-type</i>&lt;T>>)
 struct formatter&lt;T, charT> {
  private:
-  formatter&lt;<i>format-as-type</i>&lt;T>> <i>underlying_</i>;  <i>// exposition-only</i>
+  formatter&lt;<i>format-as-type</i>&lt;T>> <i>fmt_</i>;  <i>// exposition-only</i>
 
  public:
   constexpr format_parse_context::iterator parse(format_parse_context& ctx);
@@ -306,8 +310,7 @@ struct formatter&lt;T, charT> {
 </pre>
 
 <ins>
-*Effects*: TODO
-</ins>
+*Returns*: <code><i>fmt_</i>.parse(ctx);</code>.
 
 <pre>
 <ins>template &lt;typename FormatContext>
@@ -315,18 +318,68 @@ struct formatter&lt;T, charT> {
 </pre>
 
 <ins>
-*Effects*: TODO
+*Returns*: <code><i>fmt_</i>.format(format_as(val), ctx)</code>.
 </ins>
 
+<!-- TODO: set_debug_format -->
+
 </div>
+
+# Alternatives Considered # {#alt}
+
+Another option is to use the `format_kind` extension point:
+
+```
+namespace kevin_namespacy {
+enum class film {
+  house_of_cards, american_beauty, se7en = 7
+};
+}
+
+template<>
+std::format_as std::format_kind<kevin_namespacy::film> =
+  [](kevin_namespacy::film f) {
+    return std::to_underlying(f);
+  };
+```
+
+where `format_as` is
+
+```
+template <typename F>
+struct format_as {
+   F f;
+
+   template<typename T>
+   constexpr decltype(auto) operator()(T&& t) const {
+     return std::invoke(f, std::forward<T>(t));
+   }
+};
+```
+
+The benefit of this approach is that we don't need to introduce another
+extension point but unfortunately it has a number of drawbacks compared to the
+ADL-based one:
+
+* It's more cumbersome to use.
+* There is an extra level of indirection and at least debug codegen will be
+    worse.
+* It doesn't allow specifying a single conversion for all enums in a namespace
+    which, based on usage experience in {fmt}, is an important use case.
+
+For these reasons it is not proposed in the current paper.
 
 # Implementation # {#impl}
 
 The proposed extension API has been implemented in the open-source {fmt} library
-([[FMT]]) and as of December 2023 has been shipping for two major versions.
-It has been recently extended to all user-defined types and not just enums but
-this is not proposed in the current paper since usage experience is still
-limited.
+([[FMT]]) and as of January 2025 has been shipping for three major versions.
+It has been extended to all user-defined types and not just enums but this is
+not proposed in the current paper since usage experience is still limited.
+
+# Acknowledgements # {#ack}
+
+Thanks to Tomasz Kamiński for providing useful feedback and suggesting an
+alternative extension API.
 
 # Appendix A: Benchmark # {#appendix}
 

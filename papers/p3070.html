@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="c312c5e87e2f0e0ba54055179d403a5316aa3f78" name="revision">
+  <meta content="3199fb1fa18bc215d46c08eb181ef643d3f1b6ae" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2103,7 +2103,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3070R2<br>Formatting enums</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2024-12-30">2024-12-30</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-01-08">2025-01-08</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2121,13 +2121,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#polls"><span class="secno">3</span> <span class="content">SG16 Poll</span></a>
-    <li><a href="#motivation"><span class="secno">4</span> <span class="content">Motivation and Scope</span></a>
-    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposed Change</span></a>
-    <li><a href="#impact"><span class="secno">6</span> <span class="content">Impact on the Standard</span></a>
-    <li><a href="#wording"><span class="secno">7</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">8</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">4</span> <span class="content">SG16 Poll</span></a>
+    <li><a href="#motivation"><span class="secno">5</span> <span class="content">Motivation and Scope</span></a>
+    <li><a href="#proposal"><span class="secno">6</span> <span class="content">Proposed Change</span></a>
+    <li><a href="#impact"><span class="secno">7</span> <span class="content">Impact on the Standard</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#alt"><span class="secno">9</span> <span class="content">Alternatives Considered</span></a>
+    <li><a href="#impl"><span class="secno">10</span> <span class="content">Implementation</span></a>
+    <li><a href="#ack"><span class="secno">11</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#appendix"><span class="secno"></span> <span class="content">Appendix A: Benchmark</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2146,15 +2149,20 @@ requires creating somewhat verbose formatter specializations. This proposal
 aims to introduce a more intuitive and simpler method to define custom formats
 for enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers it is also more
 efficient than a formatter specialization.</p>
-   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added wording.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Added the SG16 poll results.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="polls"><span class="secno">3. </span><span class="content">SG16 Poll</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">SG16 Poll</span><a class="self-link" href="#polls"></a></h2>
    <p><strong>Poll 3: Forward P3070R0 to LEWG.</strong></p>
    <p>No objection to unanimous consent.</p>
-   <h2 class="heading settled" data-level="4" id="motivation"><span class="secno">4. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="5" id="motivation"><span class="secno">5. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation"></a></h2>
    <p>Enums are fundamental in C++ for representing sets of named constants. There
 is often a need to convert these enums to string representations, especially
 for logging, debugging, or interfacing with users. The current methods for
@@ -2194,7 +2202,7 @@ namespace.</p>
 </pre>
    <p>The drawback of the second option is that the conversion has to be done at every
 call site.</p>
-   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposal"></a></h2>
    <p>We propose adding a <code class="highlight"><c- n>format_as</c-></code> extension point to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. <code class="highlight"><c- n>format_as</c-></code> is a function discovered by the argument-dependent lookup (ADL) that takes an
 enum to be formatted as the argument and converts it to an object of another
 formattable type, normally an integer or a string.</p>
@@ -2247,12 +2255,12 @@ similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></c
 </pre>
    <p>Considering that <code class="highlight"><c- n>format_as</c-></code> has almost 2x better performance, this paper also
 proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable using the new facility.</p>
-   <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
 component and does not necessitate alterations to current language features or
 core library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
-   <h2 class="heading settled" data-level="7" id="wording"><span class="secno">7. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <div class="wording">
     <p>Modify <a href="https://eel.is/c++draft/format.arg">[format.arg</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- o>></c-> <c- k>explicit</c-> <c- n>basic_format_arg</c-><c- p>(</c-><c- n>T</c-><c- o>&amp;</c-> <c- n>v</c-><c- p>)</c-> <c- k>noexcept</c-><c- p>;</c->
@@ -2328,7 +2336,7 @@ enabled specialization: </ins>
   <c- k>requires</c-> <c- p>(</c-><c- n>formattable</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-><c- p>)</c->
 <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
  <c- k>private</c-><c- o>:</c->
-  <c- n>formatter</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-> <i><c- n>underlying_</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+  <c- n>formatter</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-> <i><c- n>fmt_</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
 
  <c- k>public</c-><c- o>:</c->
   <c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- n>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
@@ -2339,18 +2347,61 @@ enabled specialization: </ins>
 </pre>
 <pre class="highlight"><ins><c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- nf>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c-></ins>
 </pre>
-    <ins> <em>Effects</em>: TODO </ins>
+    <ins>
+      <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>);</c-></code>. 
 <pre class="highlight"><ins><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>FormatContext</c-><c- o>></c->
   <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins>
 </pre>
-    <ins> <em>Effects</em>: TODO </ins>
+     <ins> <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>format_as</c-><c- p>(</c-><c- n>val</c-><c- p>),</c-> <c- n>ctx</c-><c- p>)</c-></code>. </ins>
+    </ins>
    </div>
-   <h2 class="heading settled" data-level="8" id="impl"><span class="secno">8. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="9" id="alt"><span class="secno">9. </span><span class="content">Alternatives Considered</span><a class="self-link" href="#alt"></a></h2>
+   <p>Another option is to use the <code class="highlight"><c- n>format_kind</c-></code> extension point:</p>
+<pre class="highlight"><c- k>namespace</c-> <c- nn>kevin_namespacy</c-> <c- p>{</c->
+<c- k>enum</c-> <c- k>class</c-> <c- nc>film</c-> <c- p>{</c->
+  <c- n>house_of_cards</c-><c- p>,</c-> <c- n>american_beauty</c-><c- p>,</c-> <c- n>se7en</c-> <c- o>=</c-> <c- mi>7</c->
+<c- p>};</c->
+<c- p>}</c->
+
+<c- k>template</c-><c- o>&lt;></c->
+<c- n>std</c-><c- o>::</c-><c- n>format_as</c-> <c- n>std</c-><c- o>::</c-><c- n>format_kind</c-><c- o>&lt;</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-><c- o>></c-> <c- o>=</c->
+  <c- p>[](</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>)</c-> <c- p>{</c->
+    <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>);</c->
+  <c- p>};</c->
+</pre>
+   <p>where <code class="highlight"><c- n>format_as</c-></code> is</p>
+<pre class="highlight"><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>F</c-><c- o>></c->
+<c- k>struct</c-> <c- nc>format_as</c-> <c- p>{</c->
+   <c- n>F</c-> <c- n>f</c-><c- p>;</c->
+
+   <c- k>template</c-><c- o>&lt;</c-><c- k>typename</c-> <c- nc>T</c-><c- o>></c->
+   <c- k>constexpr</c-> <c- k>decltype</c-><c- p>(</c-><c- k>auto</c-><c- p>)</c-> <c- k>operator</c-><c- p>()(</c-><c- n>T</c-><c- o>&amp;&amp;</c-> <c- n>t</c-><c- p>)</c-> <c- k>const</c-> <c- p>{</c->
+     <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>invoke</c-><c- p>(</c-><c- n>f</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>forward</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>(</c-><c- n>t</c-><c- p>));</c->
+   <c- p>}</c->
+<c- p>};</c->
+</pre>
+   <p>The benefit of this approach is that we don’t need to introduce another
+extension point but unfortunately it has a number of drawbacks compared to the
+ADL-based one:</p>
+   <ul>
+    <li data-md>
+     <p>It’s more cumbersome to use.</p>
+    <li data-md>
+     <p>There is an extra level of indirection and at least debug codegen will be
+worse.</p>
+    <li data-md>
+     <p>It doesn’t allow specifying a single conversion for all enums in a namespace
+which, based on usage experience in {fmt}, is an important use case.</p>
+   </ul>
+   <p>For these reasons it is not proposed in the current paper.</p>
+   <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
-(<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of December 2023 has been shipping for two major versions.
-It has been recently extended to all user-defined types and not just enums but
-this is not proposed in the current paper since usage experience is still
-limited.</p>
+(<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of January 2025 has been shipping for three major versions.
+It has been extended to all user-defined types and not just enums but this is
+not proposed in the current paper since usage experience is still limited.</p>
+   <h2 class="heading settled" data-level="11" id="ack"><span class="secno">11. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
+   <p>Thanks to Tomasz Kamiński for providing useful feedback and suggesting an
+alternative extension API.</p>
    <h2 class="heading settled" id="appendix"><span class="content">Appendix A: Benchmark</span><a class="self-link" href="#appendix"></a></h2>
    <p>This appendix gives the source code of the benchmark used for comparing
 performance of <code class="highlight"><c- n>format_as</c-></code> with a <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
