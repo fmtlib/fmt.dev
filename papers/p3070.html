@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="92c1884695fa9c1022fa97aba2b3d362b4e85ab2" name="revision">
+  <meta content="3c1ff62aaf42e90811080fb1ff28edc6798d896c" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2143,12 +2143,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p style="text-align: right"> "It is a mistake to think you can solve any major problems just with potatoes."
  ― Douglas Adams </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
-   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, as introduced in C++20, has significantly improved string
+   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, introduced in C++20, has significantly improved string
 formatting in C++. However, custom formatting for enumeration types currently
-requires creating somewhat verbose formatter specializations. This proposal
-aims to introduce a more intuitive and simpler method to define custom formats
-for enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers it is also more
-efficient than a formatter specialization.</p>
+requires creating somewhat verbose <code class="highlight"><c- n>formatter</c-></code> specializations. This proposal
+aims to introduce a more intuitive and straightforward method for defining
+custom formats for enums using <code class="highlight"><c- n>format_as</c-></code>. When formatting enums as integers,
+this approach is more efficient than using a <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
    <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
@@ -2157,17 +2157,17 @@ efficient than a formatter specialization.</p>
    <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
-     <p>Added the SG16 poll results.</p>
+     <p>Included the SG16 poll results.</p>
    </ul>
    <h2 class="heading settled" data-level="4" id="polls"><span class="secno">4. </span><span class="content">SG16 Poll</span><a class="self-link" href="#polls"></a></h2>
    <p><strong>Poll 3: Forward P3070R0 to LEWG.</strong></p>
    <p>No objection to unanimous consent.</p>
    <h2 class="heading settled" data-level="5" id="motivation"><span class="secno">5. </span><span class="content">Motivation and Scope</span><a class="self-link" href="#motivation"></a></h2>
-   <p>Enums are fundamental in C++ for representing sets of named constants. There
-is often a need to convert these enums to string representations, especially
-for logging, debugging, or interfacing with users. The current methods for
-customizing enum formatting in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> are not as user-friendly or
-integrated as they could be.</p>
+   <p>Enums are fundamental in C++ for representing sets of named constants.
+Often, there is a need to convert these enums to string representations,
+particularly for logging, debugging, or interfacing with users.
+The current methods for customizing enum formatting in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> are not
+as user-friendly or integrated as they could be.</p>
    <p>With the introduction of a <code class="highlight"><c- n>format_as</c-></code> extension for enums, we aim to:</p>
    <ul>
     <li data-md>
@@ -2175,7 +2175,7 @@ integrated as they could be.</p>
     <li data-md>
      <p>Improve enum formatting efficiency.</p>
     <li data-md>
-     <p>Ensure compatibility with existing code and minimal disruption.</p>
+     <p>Ensure compatibility with existing code and extension mechanism.</p>
    </ul>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
@@ -2184,7 +2184,7 @@ integrated as they could be.</p>
 <c- p>};</c->
 <c- p>}</c->
 </pre>
-   <p>If we want to format this enum as an underlying type with<code class="highlight"> <c- n>std</c-><c- o>::</c-><c- n>format</c-></code> we have
+   <p>If we want to format this enum as its underlying type with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> we have
 two options. The first option is defining a formatter specialization:</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;></c->
 <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-><c- o>></c-> <c- o>:</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- p>{</c->
@@ -2193,21 +2193,23 @@ two options. The first option is defining a formatter specialization:</p>
   <c- p>}</c->
 <c- p>};</c->
 </pre>
-   <p>The drawback of this option is that even with forwarding to another formatter
-there is a fair amount of boilerplate and it cannot be done in the same
+   <p>The drawback of this approach is that, even when forwarding to another <code class="highlight"><c- n>formatter</c-></code>, it introduces a significant amount of boilerplate code.
+Additionally, this customization cannot be implemented within the same
 namespace.</p>
    <p>The second option is converting the enum to the underlying type:</p>
 <pre class="language-c++ highlight"><c- n>film</c-> <c- n>f</c-> <c- o>=</c-> <c- n>kevin_namespacy</c-><c- o>::</c-><c- n>se7en</c-><c- p>;</c->
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>));</c->
 </pre>
-   <p>The drawback of the second option is that the conversion has to be done at every
-call site.</p>
+   <p>The drawback of this option is that the conversion must be performed at every
+call site, adding unnecessary complexity and repetition.</p>
    <h2 class="heading settled" data-level="6" id="proposal"><span class="secno">6. </span><span class="content">Proposed Change</span><a class="self-link" href="#proposal"></a></h2>
-   <p>We propose adding a <code class="highlight"><c- n>format_as</c-></code> extension point to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. <code class="highlight"><c- n>format_as</c-></code> is a function discovered by the argument-dependent lookup (ADL) that takes an
-enum to be formatted as the argument and converts it to an object of another
-formattable type, normally an integer or a string.</p>
-   <p>This significantly improves user experience by eliminating almost all
-boilerplate:</p>
+   <p>The current paper proposes adding a <code class="highlight"><c- n>format_as</c-></code> extension point to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. <code class="highlight"><c- n>format_as</c-></code> is a function discovered by argument-dependent
+lookup (ADL) that takes an enum to be formatted as an argument and converts
+it to an object of another formattable type, typically an integer or a string.
+It acts as a shorthand for defining a <code class="highlight"><c- n>formatter</c-></code> specialization and is fully
+compatible with existing extension mechanism.</p>
+   <p>This significantly improves the user experience by eliminating almost all
+boilerplate code:</p>
    <p><strong>Before:</strong></p>
 <pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
 <c- k>enum</c-> <c- n>class</c-> <c- n>film</c-> <c- p>{...};</c->
@@ -2239,14 +2241,14 @@ boilerplate:</p>
 
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>color</c-><c- o>::</c-><c- n>red</c-><c- p>);</c-> <c- c1>// s == "red"</c->
 </pre>
-   <p>Apart from usability improvement, if the target type is one of the built-in
+   <p>Apart from usability improvements, if the target type is one of the built-in
 types directly supported by <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, formatting can be implemented more
 efficiently. Instead of going through the general-purpose <code class="highlight"><c- n>formatter</c-></code> API the
 enum can be converted directly to the built-in type at the call site.
 And conversion from an enum to its underlying type is effectively a noop so
 there is no effect on the binary size.</p>
-   <p>The difference can be seen on the following benchmark results for an enum
-similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code>:</p>
+   <p>The difference in performance can be seen in the following benchmark results
+for an enum similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code>:</p>
 <pre class="highlight"><c- o>---------------------------------------------------------------------</c->
 <c- n>Benchmark</c->                           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
 <c- o>---------------------------------------------------------------------</c->
@@ -2257,8 +2259,8 @@ similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></c
 proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable using the new facility.</p>
    <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
-component and does not necessitate alterations to current language features or
-core library interfaces. It is a backward-compatible enhancement that addresses
+component and does not require changes to current language features or core
+library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
    <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <div class="wording">
@@ -2333,10 +2335,10 @@ specification as a <em>std-format-spec</em> as described in <a href="https://eel
 Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following
 enabled specialization: </ins>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
-  <c- k>requires</c-> <c- p>(</c-><c- n>formattable</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-><c- p>)</c->
+  <c- k>requires</c-> <c- p>(</c-><c- n>formattable</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>)</c->
 <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
  <c- k>private</c-><c- o>:</c->
-  <c- n>formatter</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>>></c-> <i><c- n>fmt_</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
+  <c- n>formatter</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <i><c- n>fmt_</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
 
  <c- k>public</c-><c- o>:</c->
   <c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- n>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c->
@@ -2348,7 +2350,7 @@ enabled specialization: </ins>
 <pre class="highlight"><ins><c- k>constexpr</c-> <c- n>format_parse_context</c-><c- o>::</c-><c- n>iterator</c-> <c- nf>parse</c-><c- p>(</c-><c- n>format_parse_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>);</c-></ins>
 </pre>
     <ins>
-      <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>);</c-></code>. 
+      <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code>. 
 <pre class="highlight"><ins><c- k>template</c-> <c- o>&lt;</c-><c- k>typename</c-> <c- nc>FormatContext</c-><c- o>></c->
   <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>,</c-> <c- n>FormatContext</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins>
 </pre>
@@ -2380,20 +2382,20 @@ enabled specialization: </ins>
    <c- p>}</c->
 <c- p>};</c->
 </pre>
-   <p>The benefit of this approach is that we don’t need to introduce another
-extension point but unfortunately it has a number of drawbacks compared to the
-ADL-based one:</p>
+   <p>The benefit of this approach is that it eliminates the need to introduce
+another extension point. However, it has several drawbacks compared to the
+ADL-based solution:</p>
    <ul>
     <li data-md>
      <p>It’s more cumbersome to use.</p>
     <li data-md>
-     <p>There is an extra level of indirection and at least debug codegen will be
-worse.</p>
+     <p>It introduces an extra level of indirection, and at least the debug code
+will be less efficient.</p>
     <li data-md>
      <p>It doesn’t allow specifying a single conversion for all enums in a namespace
 which, based on usage experience in {fmt}, is an important use case.</p>
    </ul>
-   <p>For these reasons it is not proposed in the current paper.</p>
+   <p>For these reasons, this approach is not proposed in the current paper.</p>
    <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
 (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of January 2025 has been shipping for three major versions.

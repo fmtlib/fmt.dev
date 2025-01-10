@@ -36,12 +36,12 @@ Markup Shorthands: markdown yes
 
 # Introduction # {#intro}
 
-`std::format`, as introduced in C++20, has significantly improved string
+`std::format`, introduced in C++20, has significantly improved string
 formatting in C++. However, custom formatting for enumeration types currently
-requires creating somewhat verbose formatter specializations. This proposal
-aims to introduce a more intuitive and simpler method to define custom formats
-for enums using `format_as`. When formatting enums as integers it is also more
-efficient than a formatter specialization.
+requires creating somewhat verbose `formatter` specializations. This proposal
+aims to introduce a more intuitive and straightforward method for defining
+custom formats for enums using `format_as`. When formatting enums as integers,
+this approach is more efficient than using a `formatter` specialization.
 
 # Changes since R1 # {#changes1}
 
@@ -49,7 +49,7 @@ efficient than a formatter specialization.
 
 # Changes since R0 # {#changes0}
 
-- Added the SG16 poll results.
+- Included the SG16 poll results.
 
 # SG16 Poll # {#polls}
 
@@ -59,17 +59,17 @@ No objection to unanimous consent.
 
 # Motivation and Scope # {#motivation}
 
-Enums are fundamental in C++ for representing sets of named constants. There
-is often a need to convert these enums to string representations, especially
-for logging, debugging, or interfacing with users. The current methods for
-customizing enum formatting in `std::format` are not as user-friendly or
-integrated as they could be.
+Enums are fundamental in C++ for representing sets of named constants.
+Often, there is a need to convert these enums to string representations,
+particularly for logging, debugging, or interfacing with users.
+The current methods for customizing enum formatting in `std::format` are not
+as user-friendly or integrated as they could be.
 
 With the introduction of a `format_as` extension for enums, we aim to:
 
 * Simplify the process of defining custom formatting representations for enums.
 * Improve enum formatting efficiency.
-* Ensure compatibility with existing code and minimal disruption.
+* Ensure compatibility with existing code and extension mechanism.
 
 Consider the following example:
 
@@ -81,7 +81,7 @@ enum class film {
 }
 ```
 
-If we want to format this enum as an underlying type with` std::format` we have
+If we want to format this enum as its underlying type with `std::format` we have
 two options. The first option is defining a formatter specialization:
 
 ```c++
@@ -93,8 +93,9 @@ struct std::formatter<kevin_namespacy::film> : formatter<int> {
 };
 ```
 
-The drawback of this option is that even with forwarding to another formatter
-there is a fair amount of boilerplate and it cannot be done in the same
+The drawback of this approach is that, even when forwarding to another
+`formatter`, it introduces a significant amount of boilerplate code.
+Additionally, this customization cannot be implemented within the same
 namespace.
 
 The second option is converting the enum to the underlying type:
@@ -104,18 +105,20 @@ film f = kevin_namespacy::se7en;
 auto s = std::format("{}", std::to_underlying(f));
 ```
 
-The drawback of the second option is that the conversion has to be done at every
-call site.
+The drawback of this option is that the conversion must be performed at every
+call site, adding unnecessary complexity and repetition.
 
 # Proposed Change # {#proposal}
 
-We propose adding a `format_as` extension point to `std::format`. `format_as`
-is a function discovered by the argument-dependent lookup (ADL) that takes an
-enum to be formatted as the argument and converts it to an object of another
-formattable type, normally an integer or a string.
+The current paper proposes adding a `format_as` extension point to
+`std::format`. `format_as` is a function discovered by argument-dependent
+lookup (ADL) that takes an enum to be formatted as an argument and converts
+it to an object of another formattable type, typically an integer or a string.
+It acts as a shorthand for defining a `formatter` specialization and is fully
+compatible with existing extension mechanism.
 
-This significantly improves user experience by eliminating almost all
-boilerplate:
+This significantly improves the user experience by eliminating almost all
+boilerplate code:
 
 **Before:**
 
@@ -159,15 +162,15 @@ auto format_as(color c) -> std::string_view {
 auto s = std::format("{}", color::red); // s == "red"
 ```
 
-Apart from usability improvement, if the target type is one of the built-in
+Apart from usability improvements, if the target type is one of the built-in
 types directly supported by `std::format`, formatting can be implemented more
 efficiently. Instead of going through the general-purpose `formatter` API the
 enum can be converted directly to the built-in type at the call site.
 And conversion from an enum to its underlying type is effectively a noop so
 there is no effect on the binary size.
 
-The difference can be seen on the following benchmark results for an enum
-similar to `std::byte`:
+The difference in performance can be seen in the following benchmark results
+for an enum similar to `std::byte`:
 
 <pre>
 ---------------------------------------------------------------------
@@ -183,11 +186,13 @@ proposes making `std::byte` formattable using the new facility.
 # Impact on the Standard # {#impact}
 
 This proposal is an additive change to the existing `<format>` standard library
-component and does not necessitate alterations to current language features or
-core library interfaces. It is a backward-compatible enhancement that addresses
+component and does not require changes to current language features or core
+library interfaces. It is a backward-compatible enhancement that addresses
 a common use case in `std::format`.
 
 # Wording # {#wording}
+
+<!-- Wording test: https://www.godbolt.org/z/n7qdazqdn -->
 
 <div class="wording">
 
@@ -292,10 +297,10 @@ enabled specialization:
 
 <pre>
 <ins>template&lt;class T, class charT>
-  requires (formattable&lt;<i>format-as-type</i>&lt;T>>)
+  requires (formattable&lt;<i>format-as-type</i>&lt;T>, charT>)
 struct formatter&lt;T, charT> {
  private:
-  formatter&lt;<i>format-as-type</i>&lt;T>> <i>fmt_</i>;  <i>// exposition-only</i>
+  formatter&lt;<i>format-as-type</i>&lt;T>, charT> <i>fmt_</i>;  <i>// exposition-only</i>
 
  public:
   constexpr format_parse_context::iterator parse(format_parse_context& ctx);
@@ -310,7 +315,7 @@ struct formatter&lt;T, charT> {
 </pre>
 
 <ins>
-*Returns*: <code><i>fmt_</i>.parse(ctx);</code>.
+*Returns*: <code><i>fmt_</i>.parse(ctx)</code>.
 
 <pre>
 <ins>template &lt;typename FormatContext>
@@ -357,17 +362,17 @@ struct format_as {
 };
 ```
 
-The benefit of this approach is that we don't need to introduce another
-extension point but unfortunately it has a number of drawbacks compared to the
-ADL-based one:
+The benefit of this approach is that it eliminates the need to introduce
+another extension point. However, it has several drawbacks compared to the
+ADL-based solution:
 
 * It's more cumbersome to use.
-* There is an extra level of indirection and at least debug codegen will be
-    worse.
+* It introduces an extra level of indirection, and at least the debug code
+    will be less efficient.
 * It doesn't allow specifying a single conversion for all enums in a namespace
     which, based on usage experience in {fmt}, is an important use case.
 
-For these reasons it is not proposed in the current paper.
+For these reasons, this approach is not proposed in the current paper.
 
 # Implementation # {#impl}
 
