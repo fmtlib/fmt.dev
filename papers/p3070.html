@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="22c982b6e127435554d2e4b60fd0982d71692e6c" name="revision">
+  <meta content="560e407fc664677e4bea691317d7825733434491" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2144,8 +2144,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  ― Douglas Adams </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, introduced in C++20, has significantly improved string
-formatting in C++. However, custom formatting for enumeration types currently
-requires creating somewhat verbose <code class="highlight"><c- n>formatter</c-></code> specializations. This proposal
+formatting in C++. However, custom formatting of enumeration types currently
+requires creating <code class="highlight"><c- n>formatter</c-></code> specializations which can be unnecessarily
+verbose for the common case of forwarding to other formatters. This proposal
 aims to introduce a more streamlined method for defining custom formatters for
 enums. When formatting enums as integers, this approach is more efficient than
 using a <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
@@ -2153,6 +2154,8 @@ using a <code class="highlight"><c- n>formatter</c-></code> specialization.</p>
    <ul>
     <li data-md>
      <p>Added Wording, Alternatives Considered and Acknowledgements sections.</p>
+    <li data-md>
+     <p>Clarified that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formatting will be proposed in a separate paper.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
@@ -2175,7 +2178,7 @@ as user-friendly as they could be.</p>
     <li data-md>
      <p>Improve enum formatting efficiency.</p>
     <li data-md>
-     <p>Ensure compatibility with existing code and extension mechanism.</p>
+     <p>Ensure compatibility with existing code and extension mechanisms.</p>
    </ul>
    <p>Consider the following example:</p>
 <pre class="language-c++ highlight"><c- n>namespace</c-> <c- n>kevin_namespacy</c-> <c- p>{</c->
@@ -2188,7 +2191,7 @@ as user-friendly as they could be.</p>
 two options. The first option is defining a formatter specialization:</p>
 <pre class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;></c->
 <c- k>struct</c-> <c- nc>std</c-><c- o>::</c-><c- n>formatter</c-><c- o>&lt;</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-><c- o>></c-> <c- o>:</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>></c-> <c- p>{</c->
-  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>auto</c-> <c- n>format</c-><c- p>(</c-><c- n>kevin_namespacy</c-><c- o>::</c-><c- n>film</c-> <c- n>f</c-><c- p>,</c-> <c- n>format_context</c-><c- o>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-> <c- p>{</c->
     <c- k>return</c-> <c- n>formatter</c-><c- o>&lt;</c-><c- b>int</c-><c- o>>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>),</c-> <c- n>ctx</c-><c- p>);</c->
   <c- p>}</c->
 <c- p>};</c->
@@ -2207,7 +2210,7 @@ call site, adding unnecessary complexity and repetition.</p>
 lookup (ADL) that takes an enum to be formatted as an argument and converts
 it to an object of another formattable type, typically an integer or a string.
 It acts as a shorthand for defining a <code class="highlight"><c- n>formatter</c-></code> specialization and is fully
-compatible with existing extension mechanism.</p>
+compatible with existing extension mechanisms.</p>
    <p>This significantly improves the user experience by eliminating almost all
 boilerplate code:</p>
    <p><strong>Before:</strong></p>
@@ -2255,8 +2258,12 @@ for an enum similar to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>
 <c- n>BM_Formatter</c->                     <c- mf>17.7</c-> <c- n>ns</c->         <c- mf>17.7</c-> <c- n>ns</c->     <c- mi>38037070</c->
 <c- n>BM_FormatAs</c->                      <c- mf>8.90</c-> <c- n>ns</c->         <c- mf>8.88</c-> <c- n>ns</c->     <c- mi>79036210</c->
 </pre>
-   <p>Considering that <code class="highlight"><c- n>format_as</c-></code> has almost 2x better performance, this paper also
-proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable using the new facility.</p>
+   <p>This will allow making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable with ~2x better performance
+than using a <code class="highlight"><c- n>formatter</c-></code> specialization. It will be done in a follow-up paper.</p>
+   <p>This can be trivially extended to other user-defined types and not just enums.
+At the time of writing of R0 of this paper we only had extensive usage
+experience with enums but since the paper was in the review pipeline for a long
+time we now have implementation and usage experience with all types.</p>
    <h2 class="heading settled" data-level="7" id="impact"><span class="secno">7. </span><span class="content">Impact on the Standard</span><a class="self-link" href="#impact"></a></h2>
    <p>This proposal is an additive change to the existing <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> standard library
 component and does not require changes to current language features or core
@@ -2270,7 +2277,9 @@ a common use case in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>fo
     <p><em>Constraints</em>: <code class="highlight"><c- n>T</c-></code> satisfies <em>formattable-with</em><code class="highlight"><c- o>&lt;</c-><c- n>Context</c-><c- o>></c-></code>.</p>
     <p><em>Preconditions</em>: If <code class="highlight"><c- n>decay_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code> is <code class="highlight"><c- n>char_type</c-><c- o>*</c-></code> or <code class="highlight"><c- k>const</c-> <c- n>char_type</c-><c- o>*</c-></code>, <code class="highlight"><c- k>static_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- n>char_type</c-><c- o>*></c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code> points to a NTCTS (<a href="https://eel.is/c++draft/defns.ntcts">[defns.ntcts</a>]).</p>
     <p><em>Effects</em>: Let <code class="highlight"><c- n>TD</c-></code> be <code class="highlight"><c- n>remove_const_t</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-></code>.</p>
-    <ins> If <code class="highlight"><c- n>format_as</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code> is a valid expression, let <code class="highlight"><c- n>u</c-></code> be <code class="highlight"><c- n>format_as</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code> and <code class="highlight"><c- n>U</c-></code> be <code class="highlight"><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>u</c-><c- p>)</c-><c- o>></c-></code>. Otherwise, let <code class="highlight"><c- n>u</c-></code> be <code class="highlight"><c- n>v</c-></code> and <code class="highlight"><c- n>U</c-></code> be <code class="highlight"><c- n>TD</c-></code>. </ins>
+    <ins> If <code class="highlight"><c- n>format_as</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code> is a valid expression and <code class="highlight"><c- n>TD</c-></code> is an enumeration type,
+let <code class="highlight"><c- n>u</c-></code> be <code class="highlight"><c- n>format_as</c-><c- p>(</c-><c- n>v</c-><c- p>)</c-></code> and <code class="highlight"><c- n>U</c-></code> be <code class="highlight"><c- n>remove_cvref_t</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>u</c-><c- p>)</c-><c- o>></c-></code>.
+Otherwise, let <code class="highlight"><c- n>u</c-></code> be <code class="highlight"><c- n>v</c-></code> and <code class="highlight"><c- n>U</c-></code> be <code class="highlight"><c- n>TD</c-></code>. </ins>
     <ul>
      <li data-md>
       <p>If <code class="highlight"><del><c- n>TD</c-></del><ins><c- n>U</c-></ins></code> is <code class="highlight"><c- b>bool</c-></code> or <code class="highlight"><c- n>char_type</c-></code>, initializes <code class="highlight"><c- n>value</c-></code> with <code class="highlight"><del><c- n>v</c-></del><ins><c- n>u</c-></ins></code>;</p>
@@ -2335,7 +2344,7 @@ specification as a <em>std-format-spec</em> as described in <a href="https://eel
 Each header that declares the template <code class="highlight"><c- n>formatter</c-></code> provides the following
 enabled specialization: </ins>
 <pre class="highlight"><ins><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>T</c-><c- p>,</c-> <c- k>class</c-> <c- nc>charT</c-><c- o>></c->
-  <c- k>requires</c-> <c- p>(</c-><c- n>formattable</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>)</c->
+  <c- k>requires</c-> <c- p>(</c-><c- n>formattable</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- o>&amp;&amp;</c-> <c- n>is_enum_v</c-><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>)</c->
 <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>T</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <c- p>{</c->
  <c- k>private</c-><c- o>:</c->
   <c- n>formatter</c-><c- o>&lt;</c-><i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>type</c-></i><c- o>&lt;</c-><c- n>T</c-><c- o>></c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-> <i><c- n>fmt_</c-></i><c- p>;</c->  <i><c- c1>// exposition-only</c-></i>
@@ -2398,9 +2407,8 @@ which, based on usage experience in {fmt}, is an important use case.</p>
    <p>For these reasons, this approach is not proposed in the current paper.</p>
    <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed extension API has been implemented in the open-source {fmt} library
-(<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of January 2025 has been shipping for three major versions.
-It has been extended to all user-defined types and not just enums but this is
-not proposed in the current paper since usage experience is still limited.</p>
+(<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) and as of January 2025 has been shipping for three major versions
+for enums and two major version for other user-defined types.</p>
    <h2 class="heading settled" data-level="11" id="ack"><span class="secno">11. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks to Tomasz Kamiński for providing useful feedback and suggesting an
 alternative extension API.</p>

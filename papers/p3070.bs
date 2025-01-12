@@ -37,8 +37,9 @@ Markup Shorthands: markdown yes
 # Introduction # {#intro}
 
 `std::format`, introduced in C++20, has significantly improved string
-formatting in C++. However, custom formatting for enumeration types currently
-requires creating somewhat verbose `formatter` specializations. This proposal
+formatting in C++. However, custom formatting of enumeration types currently
+requires creating `formatter` specializations which can be unnecessarily
+verbose for the common case of forwarding to other formatters. This proposal
 aims to introduce a more streamlined method for defining custom formatters for
 enums. When formatting enums as integers, this approach is more efficient than
 using a `formatter` specialization.
@@ -46,6 +47,7 @@ using a `formatter` specialization.
 # Changes since R1 # {#changes1}
 
 - Added Wording, Alternatives Considered and Acknowledgements sections.
+- Clarified that `std::byte` formatting will be proposed in a separate paper.
 
 # Changes since R0 # {#changes0}
 
@@ -69,7 +71,7 @@ With the introduction of a `format_as` extension point for enums, we aim to:
 
 * Simplify the process of defining custom formatting representations for enums.
 * Improve enum formatting efficiency.
-* Ensure compatibility with existing code and extension mechanism.
+* Ensure compatibility with existing code and extension mechanisms.
 
 Consider the following example:
 
@@ -87,7 +89,7 @@ two options. The first option is defining a formatter specialization:
 ```c++
 template <>
 struct std::formatter<kevin_namespacy::film> : formatter<int> {
-  auto format(kevin_namespacy::film f, format_context& ctx) {
+  auto format(kevin_namespacy::film f, format_context& ctx) const {
     return formatter<int>::format(std::to_underlying(f), ctx);
   }
 };
@@ -115,7 +117,7 @@ The current paper proposes adding a `format_as` extension point to
 lookup (ADL) that takes an enum to be formatted as an argument and converts
 it to an object of another formattable type, typically an integer or a string.
 It acts as a shorthand for defining a `formatter` specialization and is fully
-compatible with existing extension mechanism.
+compatible with existing extension mechanisms.
 
 This significantly improves the user experience by eliminating almost all
 boilerplate code:
@@ -180,8 +182,13 @@ BM_Formatter                     17.7 ns         17.7 ns     38037070
 BM_FormatAs                      8.90 ns         8.88 ns     79036210
 </pre>
 
-Considering that `format_as` has almost 2x better performance, this paper also
-proposes making `std::byte` formattable using the new facility.
+This will allow making `std::byte` formattable with ~2x better performance
+than using a `formatter` specialization. It will be done in a follow-up paper.
+
+This can be trivially extended to other user-defined types and not just enums.
+At the time of writing of R0 of this paper we only had extensive usage
+experience with enums but since the paper was in the review pipeline for a long
+time we now have implementation and usage experience with all types.
 
 # Impact on the Standard # {#impact}
 
@@ -192,7 +199,7 @@ a common use case in `std::format`.
 
 # Wording # {#wording}
 
-<!-- Wording test: https://www.godbolt.org/z/n7qdazqdn -->
+<!-- Wording test: https://www.godbolt.org/z/Y9ehzbY59 -->
 
 <div class="wording">
 
@@ -213,8 +220,9 @@ https://eel.is/c++draft/defns.ntcts)]).
 
 *Effects*: Let `TD` be `remove_const_t<T>`.
 <ins>
-If `format_as(v)` is a valid expression, let `u` be `format_as(v)` and `U` be
-`remove_cvref_t<decltype(u)>`. Otherwise, let `u` be `v` and `U` be `TD`.
+If `format_as(v)` is a valid expression and `TD` is an enumeration type,
+let `u` be `format_as(v)` and `U` be `remove_cvref_t<decltype(u)>`.
+Otherwise, let `u` be `v` and `U` be `TD`.
 </ins>
 
 - If <code><del>TD</del><ins>U</ins></code> is `bool` or `char_type`, initializes
@@ -297,7 +305,7 @@ enabled specialization:
 
 <pre>
 <ins>template&lt;class T, class charT>
-  requires (formattable&lt;<i>format-as-type</i>&lt;T>, charT>)
+  requires (formattable&lt;<i>format-as-type</i>&lt;T>, charT> && is_enum_v&lt;T>)
 struct formatter&lt;T, charT> {
  private:
   formatter&lt;<i>format-as-type</i>&lt;T>, charT> <i>fmt_</i>;  <i>// exposition-only</i>
@@ -371,15 +379,15 @@ ADL-based solution:
     will be less efficient.
 * It doesn't allow specifying a single conversion for all enums in a namespace
     which, based on usage experience in {fmt}, is an important use case.
+    <!-- Possibly can be addressed with reflection. -->
 
 For these reasons, this approach is not proposed in the current paper.
 
 # Implementation # {#impl}
 
 The proposed extension API has been implemented in the open-source {fmt} library
-([[FMT]]) and as of January 2025 has been shipping for three major versions.
-It has been extended to all user-defined types and not just enums but this is
-not proposed in the current paper since usage experience is still limited.
+([[FMT]]) and as of January 2025 has been shipping for three major versions
+for enums and two major version for other user-defined types.
 
 # Acknowledgements # {#ack}
 
