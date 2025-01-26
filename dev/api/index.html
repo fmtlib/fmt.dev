@@ -1900,10 +1900,22 @@ exotic character types.</p>
 library</a> with the
 following differences:</p>
 <ul>
-<li>Names are defined in the <code>fmt</code> namespace instead of <code>std</code> to avoid
-  collisions with standard library implementations.</li>
-<li>Width calculation doesn't use grapheme clusterization. The latter has
-  been implemented in a separate branch but hasn't been integrated yet.</li>
+<li>
+<p>Names are defined in the <code>fmt</code> namespace instead of <code>std</code> to avoid
+  collisions with standard library implementations.</p>
+</li>
+<li>
+<p>Width calculation doesn't use grapheme clusterization. The latter has
+  been implemented in a separate branch but hasn't been integrated yet.</p>
+</li>
+<li>
+<p>The default floating-point representation in {fmt} uses the smallest
+  precision that provides round-trip guarantees similarly to other languages
+  like Java and Python. <code>std::format</code> is currently specified in terms of
+  <code>std::to_chars</code> which tries to generate the smallest number of characters
+  (ignoring redundant digits and sign in exponent) and may procude more
+  decimal digits than necessary.</p>
+</li>
 </ul>
 
 
