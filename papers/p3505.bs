@@ -1,0 +1,218 @@
+<pre class='metadata'>
+Title: Fix the default floating-point representation in std::format
+Shortname: P3505
+Revision: 0
+Audience: LEWG
+Status: D
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2025-02-01
+Markup Shorthands: markdown yes
+</pre>
+
+TODO: quote
+
+Introduction {#intro}
+============
+
+When `std::format` was proposed for standardization, floating-point formatting
+was defined in terms of `std::to_chars` to simplify specification.
+Unfortunately, this introduced a small but undesirable change compared to the
+reference implementation in [[FMT]] and other mainstream programming languages
+that have similar facilities. This paper proposes fixing this issue, bringing
+the floating-point formatting on par with other languages and consistent with
+the original design intent.
+
+Problem {#problem}
+=======
+
+Since Steele and White’s seminal paper ([[STEELE-WHITE]]), based on their work
+in the 70s, many programming languages converged on similar default
+representation of floating point numbers. The properties of an algorithm
+that produces such a representation are formulated in the paper as follows:
+
+> * No information is lost; the original fraction can be recovered from the
+>     output by rounding.
+> * No "garbage digits" are produced.
+> * The output is correctly rounded.
+> * It is never necessary to propagate carries on rounding.
+
+The second bullet point means
+that the algorithm shouldn't produce more decimal digits (in the significand)
+than necessary to satisfy the other requirements, most importantly the
+round-trip guarantee. For example, `0.1` should be formatted as `0.1` and not
+`0.10000000000000001` even though they produce the same value when read back
+into an IEEE754 `double`.
+
+The last bullet point is more of an optimization and is less relevant on modern
+systems.
+
+[[STEELE-WHITE]] and papers that followed referred to the second criteria as
+"shortness" even though it only talks about the number of decimal digits in
+the significand and ignores other properties such as the exponent and the
+decimal point.
+
+Once such shortest decimal significand and the corresponding exponent are known
+the formatting algorithm normally chooses between fixed and exponential
+representation based on the exponent range. For example, in Python
+([[PYTHON-FORMAT]]), Rust and Swift if the exponent is greater than 15 for
+`double`, the number is printed in the exponential format:
+
+```python
+>>> 1234567890123456.0
+1234567890123456.0
+>>> 12345678901234567.0
+1.2345678901234568e+16
+```
+
+15 is a reasonable choice for `double` since it's
+`std::numeric_limits<double>::digits10`, or "number of decimal digits that can
+be represented without change" ([[CPPREF-NUMLIMITS]]).
+
+[[FMT]], which is modeled after Python's formatting facility, adopted a similar
+representation based on the exponent threshold.
+
+When `std::format` was proposed for standardization, floating-point formatting
+was defined in terms of `std::to_chars` to simplify specification with the
+assumption that the latter follows the industry practice for the default format
+described above. It turned out recently that this introduced an undesirable
+change because `std::to_chars` defines "shortness" in terms of the number of
+characters in the output which is different from the "shortness" of decimal
+significand normally used in the literature.
+
+The exponent range is much easier to reason about. For example, in this modeled
+100000.0 and 120000.0 are printed in the same format:
+
+```python
+>>> 100000.0
+100000.0
+>>> 120000.0
+120000.0
+```
+
+However, if we consider the output size the two similar numbers are now printed
+completely differently:
+
+```c++
+auto s1 = std::format("{}", 100000.0);  // s1 == "1e+05"
+auto s2 = std::format("{}", 120000.0);  // s2 == "120000"
+```
+
+It seems surprising and undesirable.
+
+If the shortness of the output was indeed the main criteria then it is unclear
+why the output format includes redundant `+` and leading zero in the exponent.
+
+Even more importantly, the current representation violates the original
+shortness requirement from [[STEELE-WHITE]]:
+
+```c++
+auto s = std::format("{}\n", 1234567890123456700000.0);
+// s == "1234567890123456774144"
+```
+
+The last 5 digits, 74144, are what Steele and White referred to as "garbage
+digits" that almost no modern formatting facilities produce by default.
+For example, Python avoids it by switching to the exponential format as one
+would expect:
+
+```python
+>>> 12345678901234567800000.0
+1.2345678901234568e+22
+```
+
+Apart from being obviously bad from the readability perspective it also has
+performance implications. Producing "garbage digits" means that you may no
+longer be able to use the fast float-to-string algorithm such as Dragonbox or
+Ryu in some cases. It also introduces complicated logic to switch between the
+algorithms. If the fallback algorithm requires multiprecision arithmetic this
+may also violate the design intent of `<charconv>` paper.
+
+TODO: link to charconv and quote what is being violated
+
+TODO: benchmark
+
+<!-- 
+                  1  1e+00
+                 12  1.2e+01
+                123  1.23e+02
+               1234  1.234e+03
+              12345  1.2345e+04
+              10000  1e+04      -> 10000
+             123456  1.23456e+05
+             100000  1e+05      -> 1e+05
+             120000  1.2e+03    -> 120000
+            1234567  1.234567e+06
+           12345678  1.2345678e+07
+          123456789  1.23456789e+08
+         1234567891  1.234567891e+09
+        12345678901  1.2345678901e+10
+       123456789012  1.23456789012e+11
+            ...           ...
+   1234567890123456  1.234567890123456e+15
+-->
+
+TODO: locale (shortness depends on the locale?!)
+
+TODO: check to_chars implementations
+
+Proposal {#proposal}
+========
+
+The current paper proposes fixing the default floating-point representation in
+`std::format` to use exponent range, fixing the issues described above.
+
+TODO: before / after
+
+Optionally, the same can be done in `std::to_chars`.
+TODO
+
+Implementation and usage experience {#impl}
+===================================
+
+The current proposal is based on the existing implementation in [[FMT]] which
+has been available and widely used for over 12 years. Similar logic is
+implemented in Python, Java, JavaScript, Rust and Swift.
+
+Impact on existing code {#impact}
+=======================
+
+This is technically a breaking change if users rely on the exact output.
+However, this doesn't affect ABI or round trip guarantees. Also reliance on the
+exact representation of floating-point numbers is usually discouraged so the
+impact of this change is likely moderate to small. In the past we had experience
+with changing the output format in [[FMT]] usage of which is currently at least
+an order of magnitude higher than that of `std::format`.
+
+Acknowledgements {#ack}
+================
+
+Thanks Junekey Jeon, the author of Dragonbox, a state-of-the-art floating-point
+to string conversion algorithm, for bringing up this issue.
+
+<pre class=biblio>
+{
+  "FMT": {
+    "title": "The {fmt} library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "STEELE-WHITE": {
+    "title": "How to Print Floating-Point Numbers Accurately",
+    "authors": ["Guy L. Steele Jr.", "Jon L White"],
+    "date": "1990",
+    "publisher": "ACM"
+  },
+  "PYTHON-FORMAT": {
+    "title": "The Python Standard Library, Format Specification Mini-Language",
+    "href": "https://docs.python.org/3/library/string.html#format-specification-mini-language"
+  },
+  "CPPREF-NUMLIMITS": {
+    "title": "C++ reference, `std::numeric_limits`",
+    "href": "https://en.cppreference.com/w/cpp/types/numeric_limits"
+  }
+}
+</pre>
