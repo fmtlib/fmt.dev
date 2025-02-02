@@ -236,7 +236,17 @@ normal(benchmark::State&):
 159.00 ms ... std::__1::to_chars_result std::__1::_Floating_to_chars[abi:ne180100]<...>(char*, char*, double, std::__1::chars_format, int)
 ```
 
-TODO: locale (shortness depends on the locale?!)
+Locale makes the situation even more confusing to users. Consider the following
+example:
+
+```c++
+std::locale::global(std::locale("en_US.UTF-8"));
+auto s = std::format("{:L}", 1200000.0);  // s == "1,200,000"
+```
+
+Here `s` is `"1,200,000"` even though `"1.2e+06"` would be shorter.
+
+<!-- https://www.godbolt.org/z/nnWG8rxzq -->
 
 <!-- 
                   1  1e+00
@@ -264,10 +274,113 @@ Proposal {#proposal}
 The current paper proposes fixing the default floating-point representation in
 `std::format` to use exponent range, fixing the issues described above.
 
-TODO: before / after
+Consistent, easy to reason about output format:
+
+<table>
+<tr>
+  <th>Code
+  <th>Before
+  <th>After
+</tr>
+<tr>
+<td>
+```
+std::format("{}", 100000.0)
+```
+<td>
+```
+"1e+05"
+```
+<td>
+```
+"100000"
+```
+</tr>
+<tr>
+<td>
+```
+std::format("{}", 120000.0)
+```
+<td>
+```
+"120000"
+```
+<td>
+```
+"120000"
+```
+</tr>
+</table>
+
+No "garbage digits":
+
+<table>
+<tr>
+  <th>Code
+  <th>Before
+  <th>After
+</tr>
+<tr>
+<td>
+```
+std::format("{}", 1234567890123456700000.0)
+```
+<td>
+```
+"1234567890123456774144"
+```
+<td>
+```
+"1.2345678901234568e+22"
+```
+</tr>
+</table>
+
+Consistent localized output (assuming <code highlight="text">en_US.UTF-8</code>
+locale):
+
+<table>
+<tr>
+  <th>Code
+  <th>Before
+  <th>After
+</tr>
+<tr>
+<td>
+```
+std::format("{:L}", 1000000.0)
+```
+<td>
+```
+"1e+06"
+```
+<td>
+```
+"1,000,000"
+```
+</tr>
+<tr>
+<td>
+```
+std::format("{:L}", 1200000.0)
+```
+<td>
+```
+"1,200,000"
+```
+<td>
+```
+"1,200,000"
+```
+</tr>
+</table>
 
 Optionally, the same can be done in `std::to_chars`.
+
 TODO
+
+Wording {#impl}
+=======
 
 Implementation and usage experience {#impl}
 ===================================
