@@ -12,7 +12,10 @@ Date: 2025-02-01
 Markup Shorthands: markdown yes
 </pre>
 
-TODO: quote
+<p style="text-align: right">
+"Is floating-point math broken?" - Cato Johnston ([Stack Overflow](
+https://stackoverflow.com/q/588004/471164))
+</p>
 
 Introduction {#intro}
 ============
@@ -46,8 +49,8 @@ round-trip guarantee. For example, `0.1` should be formatted as `0.1` and not
 `0.10000000000000001` even though they produce the same value when read back
 into an IEEE754 `double`.
 
-The last bullet point is more of an optimization and is less relevant on modern
-systems.
+The last bullet point is more of an optimization for retro computers and is less
+relevant on modern systems.
 
 [[STEELE-WHITE]] and papers that followed referred to the second criteria as
 "shortness" even though it only talks about the number of decimal digits in
@@ -72,18 +75,19 @@ representation based on the exponent range. For example, in Python
 be represented without change" ([[CPPREF-NUMLIMITS]]).
 
 [[FMT]], which is modeled after Python's formatting facility, adopted a similar
-representation based on the exponent threshold.
+representation based on the exponent range.
 
 When `std::format` was proposed for standardization, floating-point formatting
 was defined in terms of `std::to_chars` to simplify specification with the
 assumption that the latter follows the industry practice for the default format
-described above. It turned out recently that this introduced an undesirable
-change because `std::to_chars` defines "shortness" in terms of the number of
-characters in the output which is different from the "shortness" of decimal
-significand normally used in the literature.
+described above. It was great for explicit format specifiers such as `e` but,
+as it turned out recently, it introduced an undesirable change to the default
+format. This problem is that `std::to_chars` defines "shortness" in terms of the
+number of characters in the output which is different from the "shortness" of
+decimal significand normally used both in the literature and in the reference.
 
 The exponent range is much easier to reason about. For example, in this modeled
-100000.0 and 120000.0 are printed in the same format:
+`100000.0` and `120000.0` are printed in the same format:
 
 ```python
 >>> 100000.0
@@ -109,11 +113,11 @@ Even more importantly, the current representation violates the original
 shortness requirement from [[STEELE-WHITE]]:
 
 ```c++
-auto s = std::format("{}\n", 1234567890123456700000.0);
+auto s = std::format("{}", 1234567890123456700000.0);
 // s == "1234567890123456774144"
 ```
 
-The last 5 digits, 74144, are what Steele and White referred to as "garbage
+The last 5 digits, `74144`, are what Steele and White referred to as "garbage
 digits" that almost no modern formatting facilities produce by default.
 For example, Python avoids it by switching to the exponential format as one
 would expect:
@@ -124,15 +128,115 @@ would expect:
 ```
 
 Apart from being obviously bad from the readability perspective it also has
-performance implications. Producing "garbage digits" means that you may no
-longer be able to use the fast float-to-string algorithm such as Dragonbox or
-Ryu in some cases. It also introduces complicated logic to switch between the
-algorithms. If the fallback algorithm requires multiprecision arithmetic this
-may also violate the design intent of `<charconv>` paper.
+negative performance implications. Producing "garbage digits" means that you
+may no longer be able to use the optimized float-to-string algorithm such as
+Dragonbox ([[DRAGONBOX]]) in some cases. It also introduces complicated logic
+to handle those cases. If the fallback algorithm does multiprecision arithmetic
+this may even require additional allocation(s).
 
-TODO: link to charconv and quote what is being violated
+The performance issue can be illustrated on the following simple benchmark:
 
-TODO: benchmark
+```c++
+#include <format>
+#include <benchmark/benchmark.h>
+
+double normal_input  = 12345678901234567000000.0;
+double garbage_input = 1234567890123456700000.0;
+
+void normal(benchmark::State& state) {
+  for (auto s : state) {
+    auto result = std::format("{}", normal_input);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(normal);
+
+void garbage(benchmark::State& state) {
+  for (auto s : state) {
+    auto result = std::format("{}", garbage_input);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(garbage);
+
+BENCHMARK_MAIN();
+```
+
+Results on macOS with Apple clang version 16.0.0 (clang-1600.0.26.6) and libc++:
+
+```
+% ./double-benchmark
+Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
+This does not affect benchmark measurements, only the metadata output.
+***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
+2025-02-02T08:06:13-08:00
+Running ./double-benchmark
+Run on (8 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x8)
+Load Average: 7.61, 5.78, 5.16
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+normal           77.5 ns         77.5 ns      9040424
+garbage          91.4 ns         91.4 ns      7675186
+```
+
+Results on GNU/Linux with gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0 and
+libstdc++:
+
+```
+$ ./int-benchmark
+2025-02-02T17:22:25+00:00
+Running ./int-benchmark
+Run on (2 X 48 MHz CPU s)
+CPU Caches:
+  L1 Data 128 KiB (x2)
+  L1 Instruction 192 KiB (x2)
+  L2 Unified 12288 KiB (x2)
+Load Average: 0.25, 0.10, 0.02
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+normal           73.1 ns         73.1 ns      9441284
+garbage          90.6 ns         90.6 ns      7360351
+```
+
+Results on Windows with Microsoft (R) C/C++ Optimizing Compiler Version
+19.40.33811 for ARM64 and Microsoft STL:
+
+```
+>int-benchmark.exe
+2025-02-02T08:10:39-08:00
+Running int-benchmark.exe
+Run on (2 X 2000 MHz CPU s)
+CPU Caches:
+  L1 Instruction 192 KiB (x2)
+  L1 Data 128 KiB (x2)
+  L2 Unified 12288 KiB (x2)
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+normal            144 ns          143 ns      4480000
+garbage           166 ns          165 ns      4072727
+```
+
+Although the output has the same size, producing "garbage digits" makes
+`std::format` 15-24% slower on these inputs. If we exlude string construction
+time, the difference will be even more profound. For example, profiling the
+benchmark on macOS shows that the `to_chars` call itself is more than 50% (!)
+slower:
+
+```
+garbage(benchmark::State&):
+241.00 ms ... std::__1::to_chars_result std::__1::_Floating_to_chars[abi:ne180100]<...>(char*, char*, double, std::__1::chars_format, int)
+normal(benchmark::State&):
+159.00 ms ... std::__1::to_chars_result std::__1::_Floating_to_chars[abi:ne180100]<...>(char*, char*, double, std::__1::chars_format, int)
+```
+
+TODO: locale (shortness depends on the locale?!)
 
 <!-- 
                   1  1e+00
@@ -154,10 +258,6 @@ TODO: benchmark
    1234567890123456  1.234567890123456e+15
 -->
 
-TODO: locale (shortness depends on the locale?!)
-
-TODO: check to_chars implementations
-
 Proposal {#proposal}
 ========
 
@@ -173,18 +273,21 @@ Implementation and usage experience {#impl}
 ===================================
 
 The current proposal is based on the existing implementation in [[FMT]] which
-has been available and widely used for over 12 years. Similar logic is
+has been available and widely used for over 6 years. Similar logic is
 implemented in Python, Java, JavaScript, Rust and Swift.
+
+<!-- Grisu in {fmt}: https://github.com/fmtlib/fmt/issues/147#issuecomment-461118641 -->
 
 Impact on existing code {#impact}
 =======================
 
-This is technically a breaking change if users rely on the exact output.
-However, this doesn't affect ABI or round trip guarantees. Also reliance on the
-exact representation of floating-point numbers is usually discouraged so the
-impact of this change is likely moderate to small. In the past we had experience
-with changing the output format in [[FMT]] usage of which is currently at least
-an order of magnitude higher than that of `std::format`.
+This may technically be a breaking change for users who rely on the exact
+output that is being changed. However, the change doesn't affect ABI or round
+trip guarantees. Also reliance on the exact representation of floating-point
+numbers is usually discouraged so the impact of this change is likely moderate
+to small. In the past we had experience with changing the output format in
+[[FMT]] usage of which is currently at least an order of magnitude higher than
+that of `std::format`.
 
 Acknowledgements {#ack}
 ================
@@ -194,6 +297,11 @@ to string conversion algorithm, for bringing up this issue.
 
 <pre class=biblio>
 {
+  "DRAGONBOX": {
+    "title": "Dragonbox: A New Floating-Point Binary-to-Decimal Conversion Algorithm",
+    "authors": ["Junekey Jeon"],
+    "href": "https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf"
+  },
   "FMT": {
     "title": "The {fmt} library",
     "authors": ["Victor Zverovich"],
