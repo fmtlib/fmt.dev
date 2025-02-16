@@ -1,14 +1,14 @@
 <pre class='metadata'>
-Title: Formatting enums
+Title: Formatting enums and other user-defined types via forwarding
 Shortname: P3070
-Revision: 2
+Revision: 3
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-01-08
+Date: 2025-02-16
 Markup Shorthands: markdown yes
 </pre>
 
@@ -44,6 +44,14 @@ aims to introduce a more streamlined method for defining custom formatters for
 enums. When formatting enums as integers, this approach is more efficient than
 using a `formatter` specialization.
 
+# Changes since R2 # {#changes2}
+
+- Added wording to ensure that `format_as` is only considered if found by ADL
+    to match the design intent.
+- Extended `format_as` to user-defined class (including union) types in addition
+    to enums per LEWG feedback.
+- Added LEWG poll results.
+
 # Changes since R1 # {#changes1}
 
 - Added Wording, Alternatives Considered and Acknowledgements sections.
@@ -52,6 +60,30 @@ using a `formatter` specialization.
 # Changes since R0 # {#changes0}
 
 - Included the SG16 poll results.
+
+# LEWG Polls for R2 # {#lewg-polls}
+
+**POLL**: We would like the utility `format_as` described in P3070R2 to be
+extended to apply on user defined types.
+
+
+```
+SF  F  N  A SA
+10  8  0  1  0
+```
+
+**Outcome**: Consensus in favor
+
+**POLL**: Modify the wording to be applied to user defined types, and amend
+fixes above to match intention for ADL only, then publish P3070R3 (to be
+reviewed by Robert and Fabio) then forward to LWG for C++26.
+
+```
+SF  F  N  A SA
+ 8 11  1  0  0
+```
+
+**Outcome**: Strong consensus in favor
 
 # SG16 Poll # {#polls}
 
@@ -220,9 +252,11 @@ https://eel.is/c++draft/defns.ntcts)]).
 
 *Effects*: Let `TD` be `remove_const_t<T>`.
 <ins>
-If `format_as(v)` is a valid expression and `TD` is an enumeration type,
+If `format_as(v)` is a valid expression and `TD` is a class or enumeration type,
 let `u` be `format_as(v)` and `U` be `remove_cvref_t<decltype(u)>`.
-Otherwise, let `u` be `v` and `U` be `TD`.
+Otherwise, let `u` be `v` and `U` be `TD`. Throughout this clause, the meaning
+of `format_as` is established as-if by performing argument-dependent lookup only
+([basic.lookup.argdep](https://eel.is/c++draft/basic.lookup.argdep)).
 </ins>
 
 - If <code><del>TD</del><ins>U</ins></code> is `bool` or `char_type`, initializes
@@ -298,14 +332,17 @@ https://eel.is/c++draft/format.string.std)].
 
 <ins>
 Let *format-as-type*`<T>` for type `T` be
-`remove_cvref_t<decltype(format_as(declval<const T&>()))>`.
+`remove_cvref_t<decltype(format_as(declval<const T&>()))>` where the meaning
+of `format_as` is established as-if by performing argument-dependent lookup only
+([basic.lookup.argdep](https://eel.is/c++draft/basic.lookup.argdep)).
 Each header that declares the template `formatter` provides the following
 enabled specialization:
 </ins>
 
 <pre>
 <ins>template&lt;class T, class charT>
-  requires (formattable&lt;<i>format-as-type</i>&lt;T>, charT> && is_enum_v&lt;T>)
+  requires (formattable&lt;<i>format-as-type</i>&lt;T>, charT> &&
+            (is_enum_v&lt;T> || is_class_v&lt;T> || is_union_v&lt;T>))
 struct formatter&lt;T, charT> {
  private:
   formatter&lt;<i>format-as-type</i>&lt;T>, charT> <i>fmt_</i>;  <i>// exposition-only</i>
