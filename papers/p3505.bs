@@ -23,10 +23,10 @@ Introduction {#intro}
 When `std::format` was proposed for standardization, floating-point formatting
 was defined in terms of `std::to_chars` to simplify specification.
 Unfortunately, this introduced a small but undesirable change compared to the
-reference implementation in [[FMT]] and other mainstream programming languages
-that have similar facilities. This paper proposes fixing this issue, bringing
-the floating-point formatting on par with other languages and consistent with
-the original design intent.
+reference implementation in [[FMT]] and surprising inconsistency with other
+mainstream programming languages that have similar facilities. This paper
+proposes fixing this issue, bringing the floating-point formatting on par with
+other languages and consistent with the original design intent.
 
 Problem {#problem}
 =======
@@ -62,6 +62,8 @@ the formatting algorithm normally chooses between fixed and exponential
 representation based on the exponent range. For example, in Python
 ([[PYTHON-FORMAT]]), Rust and Swift if the exponent is greater than 15 for
 `double`, the number is printed in the exponential format:
+
+<!-- TODO: check Swift https://github.com/swiftlang/swift/blob/main/stdlib/public/runtime/SwiftDtoa.cpp -->
 
 ```python
 >>> 1234567890123456.0
