@@ -23,10 +23,11 @@ Introduction {#intro}
 When `std::format` was proposed for standardization, floating-point formatting
 was defined in terms of `std::to_chars` to simplify specification.
 Unfortunately, this introduced a small but undesirable change compared to the
-reference implementation in [[FMT]] and surprising inconsistency with other
-mainstream programming languages that have similar facilities. This paper
-proposes fixing this issue, bringing the floating-point formatting on par with
-other languages and consistent with the original design intent.
+reference implementation in [[FMT]], resulting in surprising behavior to users,
+performance regression and an inconsistency with other mainstream programming
+languages that have similar facilities. This paper proposes fixing this issue,
+bringing the floating-point formatting on par with other languages and
+consistent with the original design intent.
 
 Problem {#problem}
 =======
@@ -59,11 +60,20 @@ decimal point.
 
 Once such shortest decimal significand and the corresponding exponent are known
 the formatting algorithm normally chooses between fixed and exponential
-representation based on the exponent range. For example, in Python
-([[PYTHON-FORMAT]]), Rust and Swift if the exponent is greater than 15 for
-`double`, the number is printed in the exponential format:
+representation based on the value range. For example, in Python
+([[PYTHON-FORMAT]]) and Rust (the ``?`` format which gives the "shortest"
+representation for FP numbers) if the decimal exponent is greater or equal to 16
+for `double`, the number is printed in the exponential format:
 
-<!-- TODO: check Swift https://github.com/swiftlang/swift/blob/main/stdlib/public/runtime/SwiftDtoa.cpp -->
+<!--
+Python:
+>>> 9999999999999998.0
+9999999999999998.0
+>>> 10000000000000000.0
+1e+16
+
+Rust - same as Python: https://rust.godbolt.org/z/b7sYd7jc5
+-->
 
 ```python
 >>> 1234567890123456.0
@@ -72,12 +82,24 @@ representation based on the exponent range. For example, in Python
 1.2345678901234568e+16
 ```
 
-15 is a reasonable choice for `double` since it's
-`std::numeric_limits<double>::digits10`, or "number of decimal digits that can
-be represented without change" ([[CPPREF-NUMLIMITS]]).
+16 is a reasonable threshold because IEEE 754 double precision can represent
+most 16-digit decimal values with high fidelity, and it balances human
+readability with precision retention when switching between fixed and
+exponential notation.
 
 [[FMT]], which is modeled after Python's formatting facility, adopted a similar
 representation based on the exponent range.
+
+Swift has similar logic, switching to exponential notation for numbers greater
+or equal to 2<sup>53</sup> (9007199254740992). This is also a reasonable choice
+although a threshold that is not a power of 10 might be less intuitive to some
+users.
+
+<!--
+Swift logic to switch to exponential:
+https://github.com/swiftlang/swift/blob/main/stdlib/public/runtime/SwiftDtoa.cpp#L1261
+https://swift.godbolt.org/z/68nneoTW7
+-->
 
 When `std::format` was proposed for standardization, floating-point formatting
 was defined in terms of `std::to_chars` to simplify specification with the
@@ -88,7 +110,7 @@ format. This problem is that `std::to_chars` defines "shortness" in terms of the
 number of characters in the output which is different from the "shortness" of
 decimal significand normally used both in the literature and in the reference.
 
-The exponent range is much easier to reason about. For example, in this modeled
+The exponent range is much easier to reason about. For example, in this model
 `100000.0` and `120000.0` are printed in the same format:
 
 ```python
@@ -377,32 +399,77 @@ std::format("{:L}", 1200000.0)
 </tr>
 </table>
 
-<!-- TODO: discuss doing it on to_chars vs format level
+<!-- TODO: discuss doing it on to_chars vs format level -->
 
-Wording {#impl}
+Wording {#wording}
 =======
 
--->
+Modify [[format.string.std](https://eel.is/c++draft/format.string.std)]:
+
+Table 105 — Meaning of type options for floating-point types
+[[tab:format.type.float](https://eel.is/c++draft/format.string.std)]
+
+<table>
+<tr>
+  <td>**Type**
+  <td>**Meaning**
+</tr>
+<tr>
+  <td>`a`
+  <td>
+    If *precision* is specified, equivalent to
+    ```
+      to_chars(first, last, value, chars_format::hex, precision)
+    ```
+    where `precision` is the specified formatting precision; equivalent to
+    ```
+      to_chars(first, last, value, chars_format::hex)
+    ```
+    otherwise.
+</tr>
+<tr>
+  <td>...
+  <td>...
+</tr>
+<tr>
+  <td>`G`
+  <td>The same as `g`, except that it uses `E` to indicate exponent.
+</tr>
+<tr>
+  <td>none
+  <td>
+    If *precision* is specified, equivalent to
+    ```
+      to_chars(first, last, value, chars_format::general, precision)
+    ```
+    where `precision` is the specified formatting precision; equivalent to
+    ```
+      to_chars(first, last, value)
+    ```
+    otherwise.
+</tr>
+</table>
 
 Implementation and usage experience {#impl}
 ===================================
 
 The current proposal is based on the existing implementation in [[FMT]] which
-has been available and widely used for over 6 years. Similar logic is
-implemented in Python, Java, JavaScript, Rust and Swift.
+has been available and widely used for over 6 years. Similar logic based on the
+value range rather than output size is implemented in Python, Java, JavaScript,
+Rust and Swift.
 
 <!-- Grisu in {fmt}: https://github.com/fmtlib/fmt/issues/147#issuecomment-461118641 -->
 
 Impact on existing code {#impact}
 =======================
 
-This may technically be a breaking change for users who rely on the exact
+This is technically a breaking change for users who rely on the exact
 output that is being changed. However, the change doesn't affect ABI or round
 trip guarantees. Also reliance on the exact representation of floating-point
-numbers is usually discouraged so the impact of this change is likely moderate
-to small. In the past we had experience with changing the output format in
-[[FMT]] usage of which is currently at least an order of magnitude higher than
-that of `std::format`.
+numbers is usually discouraged so the impact of this change is likely moderate.
+In the past we had experience with changing the output format in [[FMT]], usage
+of which is currently at least an order of magnitude higher than that of
+`std::format`.
 
 Acknowledgements {#ack}
 ================
@@ -432,10 +499,6 @@ to string conversion algorithm, for bringing up this issue.
   "PYTHON-FORMAT": {
     "title": "The Python Standard Library, Format Specification Mini-Language",
     "href": "https://docs.python.org/3/library/string.html#format-specification-mini-language"
-  },
-  "CPPREF-NUMLIMITS": {
-    "title": "C++ reference, `std::numeric_limits`",
-    "href": "https://en.cppreference.com/w/cpp/types/numeric_limits"
   }
 }
 </pre>
