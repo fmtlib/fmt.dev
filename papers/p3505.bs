@@ -95,6 +95,10 @@ or equal to 2<sup>53</sup> (9007199254740992). This is also a reasonable choice
 although a threshold that is not a power of 10 might be less intuitive to some
 users.
 
+Similarly, languages normally switch from fixed to exponential notation when
+the absolute value is smaller than some small decimal power of 10, usually
+10<sup>-3</sup> ([[JAVA-DOUBLE]]) or 10<sup>-4</sup> (Python, Rust, Swift).
+
 <!--
 Swift logic to switch to exponential:
 https://github.com/swiftlang/swift/blob/main/stdlib/public/runtime/SwiftDtoa.cpp#L1261
@@ -438,14 +442,20 @@ Table 105 — Meaning of type options for floating-point types
 <tr>
   <td>none
   <td>
+    <ins>Let <code>fmt</code> be `chars_format::fixed` if <code>value</code>
+    is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where <i>n</i> is
+    2<sup><code>std::numeric_limits&lt;decltype(value)&gt;::digits</code></sup>
+    rounded to the nearest power of 10, `chars_format::scientific` otherwise.
+    </ins>
+    
     If *precision* is specified, equivalent to
     ```
       to_chars(first, last, value, chars_format::general, precision)
     ```
     where `precision` is the specified formatting precision; equivalent to
-    ```
-      to_chars(first, last, value)
-    ```
+    <pre>
+      to_chars(first, last, value<ins>, fmt</ins>)
+    </pre>
     otherwise.
 </tr>
 </table>
@@ -499,6 +509,10 @@ to string conversion algorithm, for bringing up this issue.
   "PYTHON-FORMAT": {
     "title": "The Python Standard Library, Format Specification Mini-Language",
     "href": "https://docs.python.org/3/library/string.html#format-specification-mini-language"
+  },
+  "JAVA-DOUBLE": {
+    "title": "Java™ Platform, Standard Edition 8 API Specification, Class Double, toString",
+    "href": "https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-"
   }
 }
 </pre>

@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9bb223d8c35c09f12d3947d3558692baa6333552" name="revision">
+  <meta content="aee0796a728dd66c0f959c4659a98cf350501f05" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2179,6 +2179,9 @@ representation based on the exponent range.</p>
 or equal to 2<sup>53</sup> (9007199254740992). This is also a reasonable choice
 although a threshold that is not a power of 10 might be less intuitive to some
 users.</p>
+   <p>Similarly, languages normally switch from fixed to exponential notation when
+the absolute value is smaller than some small decimal power of 10, usually
+10<sup>-3</sup> (<a data-link-type="biblio" href="#biblio-java-double" title="Java™ Platform, Standard Edition 8 API Specification, Class Double, toString">[JAVA-DOUBLE]</a>) or 10<sup>-4</sup> (Python, Rust, Swift).</p>
    <p>When <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> was proposed for standardization, floating-point formatting
 was defined in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> to simplify specification with the
 assumption that the latter follows the industry practice for the default format
@@ -2414,11 +2417,13 @@ example:</p>
      <tr>
       <td>none 
       <td>
-        If <em>precision</em> is specified, equivalent to 
+       <ins>Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if <code class="highlight"><c- n>value</c-></code> is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where <i>n</i> is
+    2<sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-><c- o>>::</c-><c- n>digits</c-></code></sup> rounded to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
+       <p>If <em>precision</em> is specified, equivalent to</p>
 <pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>general</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c->
 </pre>
        <p>where <code class="highlight"><c- n>precision</c-></code> is the specified formatting precision; equivalent to</p>
-<pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>)</c->
+<pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><ins><c- p>,</c-> <c- n>fmt</c-></ins><c- p>)</c->
 </pre>
        <p>otherwise.</p>
    </table>
@@ -2574,6 +2579,8 @@ to string conversion algorithm, for bringing up this issue.</p>
    <dd>Junekey Jeon. <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf"><cite>Dragonbox: A New Floating-Point Binary-to-Decimal Conversion Algorithm</cite></a>. URL: <a href="https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf">https://github.com/jk-jeon/dragonbox/blob/master/other_files/Dragonbox.pdf</a>
    <dt id="biblio-fmt">[FMT]
    <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The {fmt} library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
+   <dt id="biblio-java-double">[JAVA-DOUBLE]
+   <dd><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-"><cite>Java™ Platform, Standard Edition 8 API Specification, Class Double, toString</cite></a>. URL: <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-">https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-</a>
    <dt id="biblio-python-format">[PYTHON-FORMAT]
    <dd><a href="https://docs.python.org/3/library/string.html#format-specification-mini-language"><cite>The Python Standard Library, Format Specification Mini-Language</cite></a>. URL: <a href="https://docs.python.org/3/library/string.html#format-specification-mini-language">https://docs.python.org/3/library/string.html#format-specification-mini-language</a>
    <dt id="biblio-steele-white">[STEELE-WHITE]
