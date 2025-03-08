@@ -21,13 +21,13 @@ Introduction {#intro}
 ============
 
 When `std::format` was proposed for standardization, floating-point formatting
-was defined in terms of `std::to_chars` to simplify specification.
-Unfortunately, this introduced a small but undesirable change compared to the
-reference implementation in [[FMT]], resulting in surprising behavior to users,
-performance regression and an inconsistency with other mainstream programming
-languages that have similar facilities. This paper proposes fixing this issue,
-bringing the floating-point formatting on par with other languages and
-consistent with the original design intent.
+was defined in terms of `std::to_chars` to simplify specification. While being
+a positive change overall, this introduced a small but undesirable change
+compared to the reference implementation in [[FMT]], resulting in surprising
+behavior to users, performance regression and an inconsistency with other
+mainstream programming languages that have similar facilities. This paper
+proposes fixing this issue, bringing the floating-point formatting on par with
+other languages and in line with the original design intent.
 
 Problem {#problem}
 =======
@@ -48,7 +48,7 @@ that the algorithm shouldn't produce more decimal digits (in the significand)
 than necessary to satisfy the other requirements, most importantly the
 round-trip guarantee. For example, `0.1` should be formatted as `0.1` and not
 `0.10000000000000001` even though they produce the same value when read back
-into an IEEE754 `double`.
+into an IEEE 754 `double`.
 
 The last bullet point is more of an optimization for retro computers and is less
 relevant on modern systems.
@@ -135,7 +135,16 @@ auto s2 = std::format("{}", 120000.0);  // s2 == "120000"
 It seems surprising and undesirable.
 
 If the shortness of the output was indeed the main criteria then it is unclear
-why the output format includes redundant `+` and leading zero in the exponent.
+why the output format requires redundant `+` and leading zero in the exponent.
+Those are included in the output because, according to the specification of
+`to_chars` ([[charconv.to.chars](https://eel.is/c++draft/charconv.to.chars)]),
+
+> `value` is converted to a string in the style of `printf` in the `"C"` locale.
+
+and the exponential format is defined as follows by the C standard ([[N3220]]):
+
+> A `double` argument representing a floating-point number is converted in the
+> style *[−]d.ddd e±dd* ...
 
 Even more importantly, the current representation violates the original
 shortness requirement from [[STEELE-WHITE]]:
@@ -155,12 +164,22 @@ would expect:
 1.2345678901234568e+22
 ```
 
-Apart from being obviously bad from the readability perspective it also has
-negative performance implications. Producing "garbage digits" means that you
+The current behavior is a consequence of the shortness-in-characters criterion
+favoring the fixed format for large numbers while still satisfying the correct
+rounding condition
+(([[charconv.to.chars](https://eel.is/c++draft/charconv.to.chars)])):
+
+> If there are several such representations, the representation with the
+> smallest difference from the floating-point argument value is chosen,
+> resolving any remaining ties using rounding according to `round_to_nearest`
+> ([[round.style](https://eel.is/c++draft/round.style)]).
+
+Apart from giving a false sense of accuracy to users it also has negative
+performance implications. Producing "garbage digits" means that you
 may no longer be able to use the optimized float-to-string algorithm such as
-Dragonbox ([[DRAGONBOX]]) in some cases. It also introduces complicated logic
-to handle those cases. If the fallback algorithm does multiprecision arithmetic
-this may even require additional allocation(s).
+Dragonbox ([[DRAGONBOX]]) and Ryū ([[RYU]]) in some cases. It also introduces
+complicated logic to handle those cases. If the fallback algorithm does
+multiprecision arithmetic this may even require additional allocation(s).
 
 The performance issue can be illustrated on the following simple benchmark:
 
@@ -252,7 +271,7 @@ garbage           166 ns          165 ns      4072727
 ```
 
 Although the output has the same size, producing "garbage digits" makes
-`std::format` 15-24% slower on these inputs. If we exlude string construction
+`std::format` 15-24% slower on these inputs. If we exclude string construction
 time, the difference will be even more profound. For example, profiling the
 benchmark on macOS shows that the `to_chars` call itself is more than 50% (!)
 slower:
@@ -443,8 +462,8 @@ Table 105 — Meaning of type options for floating-point types
   <td>none
   <td>
     <ins>Let <code>fmt</code> be `chars_format::fixed` if <code>value</code>
-    is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where <i>n</i> is
-    2<sup><code>std::numeric_limits&lt;decltype(value)&gt;::digits</code></sup>
+    is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where
+    10<sup><i>n</i></sup> is 2<sup><code>std::numeric_limits&lt;decltype(value)&gt;::digits</code></sup>
     rounded to the nearest power of 10, `chars_format::scientific` otherwise.
     </ins>
     
@@ -485,7 +504,8 @@ Acknowledgements {#ack}
 ================
 
 Thanks Junekey Jeon, the author of Dragonbox, a state-of-the-art floating-point
-to string conversion algorithm, for bringing up this issue.
+to string conversion algorithm, for bringing up this issue and providing
+valuable feedback on an early revision of the paper.
 
 <pre class=biblio>
 {
@@ -513,6 +533,18 @@ to string conversion algorithm, for bringing up this issue.
   "JAVA-DOUBLE": {
     "title": "Java™ Platform, Standard Edition 8 API Specification, Class Double, toString",
     "href": "https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-"
+  },
+  "N3220": {
+    "title": "ISO/IEC 9899:2024. Information technology — Programming languages — C. 7.23.6 Formatted input/output functions",
+    "authors": ["JeanHeyd Meneide", "Freek Wiedijk"],
+    "etAl": true,
+    "href": "https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=346"
+  },
+  "RYU": {
+    "title": "Ryū: fast float-to-string conversion",
+    "authors": ["Ulf Adams"],
+    "date": "2018",
+    "href": "https://dl.acm.org/doi/10.1145/3192366.3192369"
   }
 }
 </pre>

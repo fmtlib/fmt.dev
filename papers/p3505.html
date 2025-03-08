@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="aee0796a728dd66c0f959c4659a98cf350501f05" name="revision">
+  <meta content="3e4efda042696db80a8e7a63a174d36981ec2601" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2122,13 +2122,13 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p style="text-align: right"> "Is floating-point math broken?" - Cato Johnston (<a href="https://stackoverflow.com/q/588004/471164">Stack Overflow</a>) </p>
    <h2 class="heading settled" data-level="1" id="intro"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#intro"></a></h2>
    <p>When <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> was proposed for standardization, floating-point formatting
-was defined in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> to simplify specification.
-Unfortunately, this introduced a small but undesirable change compared to the
-reference implementation in <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>, resulting in surprising behavior to users,
-performance regression and an inconsistency with other mainstream programming
-languages that have similar facilities. This paper proposes fixing this issue,
-bringing the floating-point formatting on par with other languages and
-consistent with the original design intent.</p>
+was defined in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> to simplify specification. While being
+a positive change overall, this introduced a small but undesirable change
+compared to the reference implementation in <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>, resulting in surprising
+behavior to users, performance regression and an inconsistency with other
+mainstream programming languages that have similar facilities. This paper
+proposes fixing this issue, bringing the floating-point formatting on par with
+other languages and in line with the original design intent.</p>
    <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
    <p>Since Steele and White’s seminal paper (<a data-link-type="biblio" href="#biblio-steele-white" title="How to Print Floating-Point Numbers Accurately">[STEELE-WHITE]</a>), based on their work
 in the 70s, many programming languages converged on similar default
@@ -2151,7 +2151,7 @@ output by rounding.</p>
 that the algorithm shouldn’t produce more decimal digits (in the significand)
 than necessary to satisfy the other requirements, most importantly the
 round-trip guarantee. For example, <code class="highlight"><c- mf>0.1</c-></code> should be formatted as <code class="highlight"><c- mf>0.1</c-></code> and not <code class="highlight"><c- mf>0.10000000000000001</c-></code> even though they produce the same value when read back
-into an IEEE754 <code class="highlight"><c- b>double</c-></code>.</p>
+into an IEEE 754 <code class="highlight"><c- b>double</c-></code>.</p>
    <p>The last bullet point is more of an optimization for retro computers and is less
 relevant on modern systems.</p>
    <p><a data-link-type="biblio" href="#biblio-steele-white" title="How to Print Floating-Point Numbers Accurately">[STEELE-WHITE]</a> and papers that followed referred to the second criteria as
@@ -2203,7 +2203,16 @@ completely differently:</p>
 </pre>
    <p>It seems surprising and undesirable.</p>
    <p>If the shortness of the output was indeed the main criteria then it is unclear
-why the output format includes redundant <code class="highlight"><c- o>+</c-></code> and leading zero in the exponent.</p>
+why the output format requires redundant <code class="highlight"><c- o>+</c-></code> and leading zero in the exponent.
+Those are included in the output because, according to the specification of <code class="highlight"><c- n>to_chars</c-></code> (<a href="https://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>]),</p>
+   <blockquote>
+    <p><code class="highlight"><c- n>value</c-></code> is converted to a string in the style of <code class="highlight"><c- n>printf</c-></code> in the <code class="highlight"><c- s>"C"</c-></code> locale.</p>
+   </blockquote>
+   <p>and the exponential format is defined as follows by the C standard (<a data-link-type="biblio" href="#biblio-n3220" title="ISO/IEC 9899:2024. Information technology — Programming languages — C. 7.23.6 Formatted input/output functions">[N3220]</a>):</p>
+   <blockquote>
+    <p>A <code class="highlight"><c- b>double</c-></code> argument representing a floating-point number is converted in the
+style <em>[−]d.ddd e±dd</em> ...</p>
+   </blockquote>
    <p>Even more importantly, the current representation violates the original
 shortness requirement from <a data-link-type="biblio" href="#biblio-steele-white" title="How to Print Floating-Point Numbers Accurately">[STEELE-WHITE]</a>:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- mf>1234567890123456700000.0</c-><c- p>);</c->
@@ -2216,12 +2225,21 @@ would expect:</p>
 <pre class="language-python highlight"><c- o>>>></c-> <c- mf>12345678901234567800000.0</c->
 <c- mf>1.2345678901234568e+22</c->
 </pre>
-   <p>Apart from being obviously bad from the readability perspective it also has
-negative performance implications. Producing "garbage digits" means that you
+   <p>The current behavior is a consequence of the shortness-in-characters criterion
+favoring the fixed format for large numbers while still satisfying the correct
+rounding condition
+((<a href="https://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>])):</p>
+   <blockquote>
+    <p>If there are several such representations, the representation with the
+smallest difference from the floating-point argument value is chosen,
+resolving any remaining ties using rounding according to <code class="highlight"><c- n>round_to_nearest</c-></code> (<a href="https://eel.is/c++draft/round.style">[round.style</a>]).</p>
+   </blockquote>
+   <p>Apart from giving a false sense of accuracy to users it also has negative
+performance implications. Producing "garbage digits" means that you
 may no longer be able to use the optimized float-to-string algorithm such as
-Dragonbox (<a data-link-type="biblio" href="#biblio-dragonbox" title="Dragonbox: A New Floating-Point Binary-to-Decimal Conversion Algorithm">[DRAGONBOX]</a>) in some cases. It also introduces complicated logic
-to handle those cases. If the fallback algorithm does multiprecision arithmetic
-this may even require additional allocation(s).</p>
+Dragonbox (<a data-link-type="biblio" href="#biblio-dragonbox" title="Dragonbox: A New Floating-Point Binary-to-Decimal Conversion Algorithm">[DRAGONBOX]</a>) and Ryū (<a data-link-type="biblio" href="#biblio-ryu" title="Ryū: fast float-to-string conversion">[RYU]</a>) in some cases. It also introduces
+complicated logic to handle those cases. If the fallback algorithm does
+multiprecision arithmetic this may even require additional allocation(s).</p>
    <p>The performance issue can be illustrated on the following simple benchmark:</p>
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;format>
 <c- cp>#include</c-> &lt;benchmark/benchmark.h>
@@ -2299,7 +2317,7 @@ libstdc++:</p>
 <c- n>normal</c->            <c- mi>144</c-> <c- n>ns</c->          <c- mi>143</c-> <c- n>ns</c->      <c- mi>4480000</c->
 <c- n>garbage</c->           <c- mi>166</c-> <c- n>ns</c->          <c- mi>165</c-> <c- n>ns</c->      <c- mi>4072727</c->
 </pre>
-   <p>Although the output has the same size, producing "garbage digits" makes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> 15-24% slower on these inputs. If we exlude string construction
+   <p>Although the output has the same size, producing "garbage digits" makes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> 15-24% slower on these inputs. If we exclude string construction
 time, the difference will be even more profound. For example, profiling the
 benchmark on macOS shows that the <code class="highlight"><c- n>to_chars</c-></code> call itself is more than 50% (!)
 slower:</p>
@@ -2417,8 +2435,8 @@ example:</p>
      <tr>
       <td>none 
       <td>
-       <ins>Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if <code class="highlight"><c- n>value</c-></code> is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where <i>n</i> is
-    2<sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-><c- o>>::</c-><c- n>digits</c-></code></sup> rounded to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
+       <ins>Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if <code class="highlight"><c- n>value</c-></code> is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where
+    10<sup><i>n</i></sup> is 2<sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-><c- o>>::</c-><c- n>digits</c-></code></sup> rounded to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
        <p>If <em>precision</em> is specified, equivalent to</p>
 <pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>general</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c->
 </pre>
@@ -2441,7 +2459,8 @@ In the past we had experience with changing the output format in <a data-link-ty
 of which is currently at least an order of magnitude higher than that of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
    <h2 class="heading settled" data-level="7" id="ack"><span class="secno">7. </span><span class="content">Acknowledgements</span><a class="self-link" href="#ack"></a></h2>
    <p>Thanks Junekey Jeon, the author of Dragonbox, a state-of-the-art floating-point
-to string conversion algorithm, for bringing up this issue.</p>
+to string conversion algorithm, for bringing up this issue and providing
+valuable feedback on an early revision of the paper.</p>
   </main>
 <script>
 (function() {
@@ -2581,8 +2600,12 @@ to string conversion algorithm, for bringing up this issue.</p>
    <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The {fmt} library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-java-double">[JAVA-DOUBLE]
    <dd><a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-"><cite>Java™ Platform, Standard Edition 8 API Specification, Class Double, toString</cite></a>. URL: <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-">https://docs.oracle.com/javase/8/docs/api/java/lang/Double.html#toString-double-</a>
+   <dt id="biblio-n3220">[N3220]
+   <dd>JeanHeyd Meneide; Freek Wiedijk; et al. <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=346"><cite>ISO/IEC 9899:2024. Information technology — Programming languages — C. 7.23.6 Formatted input/output functions</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=346">https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=346</a>
    <dt id="biblio-python-format">[PYTHON-FORMAT]
    <dd><a href="https://docs.python.org/3/library/string.html#format-specification-mini-language"><cite>The Python Standard Library, Format Specification Mini-Language</cite></a>. URL: <a href="https://docs.python.org/3/library/string.html#format-specification-mini-language">https://docs.python.org/3/library/string.html#format-specification-mini-language</a>
+   <dt id="biblio-ryu">[RYU]
+   <dd>Ulf Adams. <a href="https://dl.acm.org/doi/10.1145/3192366.3192369"><cite>Ryū: fast float-to-string conversion</cite></a>. 2018. URL: <a href="https://dl.acm.org/doi/10.1145/3192366.3192369">https://dl.acm.org/doi/10.1145/3192366.3192369</a>
    <dt id="biblio-steele-white">[STEELE-WHITE]
    <dd>Guy L. Steele Jr.; Jon L White. <cite>How to Print Floating-Point Numbers Accurately</cite>. 1990. 
   </dl>
