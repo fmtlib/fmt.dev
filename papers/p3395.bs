@@ -1,14 +1,14 @@
 <pre class='metadata'>
-Title: Formatting of std::error_code
+Title: Fix encoding issues and add a formatter for std::error_code
 Shortname: P3395
-Revision: 0
-Audience: SG16
+Revision: 1
+Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-12-21
+Date: 2025-03-12
 Markup Shorthands: markdown yes
 </pre>
 
@@ -29,7 +29,22 @@ Introduction {#intro}
 ============
 
 This paper proposes making `std::error_code` formattable using the formatting
-facility introduced in C++20 (`std::format`).
+facility introduced in C++20 (`std::format`) and fixes encoding issues in the
+underlying API ([[LWG4156]]).
+
+Changes since R0 {#changes0}
+================
+
+- Changed the title from "Formatting of std::error_code" to "Fix encoding
+    issues and add a formatter for std::error_code" to reflect the fact that
+    the paper also fixes [[LWG4156]].
+- Specified that `error_category::name()` returns a string the ordinary literal
+    encoding per SG16 feedback.
+- Made transcoding in `error_category::message()` implementation-defined if the
+    literal encoding is not UTF-8 per SG16 feedback and for consistency with
+    other similar cases in the standard.
+
+<!-- TODO: add SG16 poll results -->
 
 Motivation {#motivation}
 ==========
@@ -274,16 +289,31 @@ http://eel.is/c++draft/format.string.escaped)]). -->
       format(const error_code& ec, FormatContext& ctx) const;
 </pre>
 
-*Effects*: Let `s` be `ec.message()` transcoded into the ordinary literal
-encoding, with maximal subparts of ill-formed subsequences substituted with
-U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD
-Substitution in Conversion, if the `s` option is used, otherwise
-`format("{}:{}", ec.category().name(), ec.value())`.
-Writes `s` into `ctx.out()`, adjusted according to the *error-code-format-spec*.
+*Effects*: If the `s` option is used, then:
+
+- If the ordinary literal encoding is UTF-8, then let `msg` be `ec.message()`
+    transcoded to UTF-8 with maximal subparts of ill-formed subsequences
+    substituted with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard,
+    Chapter 3.9 U+FFFD Substitution in Conversion.
+- Otherwise, let `msg` be `ec.message()` transcoded to an implementation-defined
+    encoding.
+
+Otherwise, let `msg` be `format("{}:{}", ec.category().name(), ec.value())`.
+
+Writes `msg` into `ctx.out()`, adjusted according to the
+*error-code-format-spec*.
 
 *Returns*: An iterator past the end of the output range.
 
-Modify [[syserr.errcat.virtuals](https://eel.is/c++draft/syserr.errcat.virtuals)]:
+Modify [[syserr.errcat.virtuals](
+https://eel.is/c++draft/syserr.errcat.virtuals)]:
+
+```
+virtual const char* name() const noexcept = 0;
+```
+
+*Returns*: A string <ins>in the ordinary literal encoding</ins> naming the
+error category.
 
 ...
 
