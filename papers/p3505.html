@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="3e4efda042696db80a8e7a63a174d36981ec2601" name="revision">
+  <meta content="9ba8e7e132faeb866c05311a62ee45087811fb4d" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2087,7 +2087,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3505R0<br>Fix the default floating-point representation in std::format</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Draft Proposal, <time class="dt-updated" datetime="2025-02-01">2025-02-01</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-03-15">2025-03-15</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2124,9 +2124,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p>When <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> was proposed for standardization, floating-point formatting
 was defined in terms of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> to simplify specification. While being
 a positive change overall, this introduced a small but undesirable change
-compared to the reference implementation in <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>, resulting in surprising
-behavior to users, performance regression and an inconsistency with other
-mainstream programming languages that have similar facilities. This paper
+compared to the design and reference implementation in <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>, resulting in
+surprising behavior to users, performance regression and an inconsistency with
+other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.</p>
    <h2 class="heading settled" data-level="2" id="problem"><span class="secno">2. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
@@ -2189,7 +2189,7 @@ described above. It was great for explicit format specifiers such as <code class
 as it turned out recently, it introduced an undesirable change to the default
 format. This problem is that <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> defines "shortness" in terms of the
 number of characters in the output which is different from the "shortness" of
-decimal significand normally used both in the literature and in the reference.</p>
+decimal significand normally used both in the literature and in the industry.</p>
    <p>The exponent range is much easier to reason about. For example, in this model <code class="highlight"><c- mf>100000.0</c-></code> and <code class="highlight"><c- mf>120000.0</c-></code> are printed in the same format:</p>
 <pre class="language-python highlight"><c- o>>>></c-> <c- mf>100000.0</c->
 <c- mf>100000.0</c->
@@ -2202,9 +2202,9 @@ completely differently:</p>
 <c- k>auto</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- mf>120000.0</c-><c- p>);</c->  <c- c1>// s2 == "120000"</c->
 </pre>
    <p>It seems surprising and undesirable.</p>
-   <p>If the shortness of the output was indeed the main criteria then it is unclear
-why the output format requires redundant <code class="highlight"><c- o>+</c-></code> and leading zero in the exponent.
-Those are included in the output because, according to the specification of <code class="highlight"><c- n>to_chars</c-></code> (<a href="https://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>]),</p>
+   <p>Note that the output <code class="highlight"><c- mf>1e+05</c-></code> is not really of the shortest possible number of
+characters, because + and the leading zero in the exponent are redundant.
+In fact, those are required, according to the specification of <code class="highlight"><c- n>to_chars</c-></code> (<a href="https://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>]),</p>
    <blockquote>
     <p><code class="highlight"><c- n>value</c-></code> is converted to a string in the style of <code class="highlight"><c- n>printf</c-></code> in the <code class="highlight"><c- s>"C"</c-></code> locale.</p>
    </blockquote>
@@ -2213,6 +2213,8 @@ Those are included in the output because, according to the specification of <cod
     <p>A <code class="highlight"><c- b>double</c-></code> argument representing a floating-point number is converted in the
 style <em>[−]d.ddd e±dd</em> ...</p>
    </blockquote>
+   <p>Nevertheless, users interpreting the shortness condition too literally may find
+this surprising.</p>
    <p>Even more importantly, the current representation violates the original
 shortness requirement from <a data-link-type="biblio" href="#biblio-steele-white" title="How to Print Floating-Point Numbers Accurately">[STEELE-WHITE]</a>:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- mf>1234567890123456700000.0</c-><c- p>);</c->
@@ -2235,16 +2237,30 @@ smallest difference from the floating-point argument value is chosen,
 resolving any remaining ties using rounding according to <code class="highlight"><c- n>round_to_nearest</c-></code> (<a href="https://eel.is/c++draft/round.style">[round.style</a>]).</p>
    </blockquote>
    <p>Apart from giving a false sense of accuracy to users it also has negative
-performance implications. Producing "garbage digits" means that you
-may no longer be able to use the optimized float-to-string algorithm such as
-Dragonbox (<a data-link-type="biblio" href="#biblio-dragonbox" title="Dragonbox: A New Floating-Point Binary-to-Decimal Conversion Algorithm">[DRAGONBOX]</a>) and Ryū (<a data-link-type="biblio" href="#biblio-ryu" title="Ryū: fast float-to-string conversion">[RYU]</a>) in some cases. It also introduces
-complicated logic to handle those cases. If the fallback algorithm does
-multiprecision arithmetic this may even require additional allocation(s).</p>
+performance implications. Many of the optimized float-to-string algorithms
+based on Steele and White’s criteria, such as Dragonbox (<a data-link-type="biblio" href="#biblio-dragonbox" title="Dragonbox: A New Floating-Point Binary-to-Decimal Conversion Algorithm">[DRAGONBOX]</a>) and
+Ryū (<a data-link-type="biblio" href="#biblio-ryu" title="Ryū: fast float-to-string conversion">[RYU]</a>), only focus on those criteria, especially the shortness of
+decimal significand rather than the number of characters. As a result, an
+implementation of the default floating-point handling of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code>) cannot just directly rely on these otherwise perfectly
+appropriate algorithms. Instead, it has to introduce non-trivial logic
+dedicated for computing these "garbage digits". Furthermore, having to
+introduce dedicated logic is likely not just because of the lack of advancement
+in the algorithm research, because in this case we do need to compute more
+digits than the actual precision implied by the data type, thus it is natural
+to expect that we may need more precision than the case without garbage digits.
+(In other words, even though a new algorithm that correctly deals with this
+garbage digits case according to the current C++ standard is invented, it is
+likely that it still includes some special handling of that case, in one form
+or another.)</p>
    <p>The performance issue can be illustrated on the following simple benchmark:</p>
 <pre class="language-c++ highlight"><c- cp>#include</c-> &lt;format>
 <c- cp>#include</c-> &lt;benchmark/benchmark.h>
 
+<c- c1>// Output: "1.2345678901234568e+22"</c->
 <c- b>double</c-> <c- n>normal_input</c->  <c- o>=</c-> <c- mf>12345678901234567000000.0</c-><c- p>;</c->
+
+<c- c1>// Output (current): "1234567890123456774144"</c->
+<c- c1>// Output (desired): "1.2345678901234568e+21"</c->
 <c- b>double</c-> <c- n>garbage_input</c-> <c- o>=</c-> <c- mf>1234567890123456700000.0</c-><c- p>;</c->
 
 <c- b>void</c-> <c- nf>normal</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-> <c- n>state</c-><c- p>)</c-> <c- p>{</c->
@@ -2266,56 +2282,56 @@ multiprecision arithmetic this may even require additional allocation(s).</p>
 <c- n>BENCHMARK_MAIN</c-><c- p>();</c->
 </pre>
    <p>Results on macOS with Apple clang version 16.0.0 (clang-1600.0.26.6) and libc++:</p>
-<pre class="highlight"><c- o>%</c-> <c- p>.</c-><c- o>/</c-><c- b>double</c-><c- o>-</c-><c- n>benchmark</c->
-<c- n>Unable</c-> <c- n>to</c-> <c- n>determine</c-> <c- n>clock</c-> <c- n>rate</c-> <c- n>from</c-> <c- n>sysctl</c-><c- o>:</c-> <c- n>hw</c-><c- p>.</c-><c- n>cpufrequency</c-><c- o>:</c-> <c- n>No</c-> <c- n>such</c-> <c- n>file</c-> <c- k>or</c-> <c- n>directory</c->
-<c- n>This</c-> <c- n>does</c-> <c- k>not</c-> <c- n>affect</c-> <c- n>benchmark</c-> <c- n>measurements</c-><c- p>,</c-> <c- n>only</c-> <c- n>the</c-> <c- n>metadata</c-> <c- n>output</c-><c- p>.</c->
-<c- o>***</c-><c- n>WARNING</c-><c- o>***</c-> <c- n>Failed</c-> <c- n>to</c-> <c- n>set</c-> <c- kr>thread</c-> <c- n>affinity</c-><c- p>.</c-> <c- n>Estimated</c-> <c- n>CPU</c-> <c- n>frequency</c-> <c- n>may</c-> <c- n>be</c-> <c- n>incorrect</c-><c- p>.</c->
-<c- mi>2025</c-><c- mo>-02-02</c-><c- n>T08</c-><c- o>:</c-><c- mo>06</c-><c- o>:</c-><c- mi>13-08</c-><c- o>:</c-><c- mo>00</c->
-<c- n>Running</c-> <c- p>.</c-><c- o>/</c-><c- b>double</c-><c- o>-</c-><c- n>benchmark</c->
-<c- n>Run</c-> <c- n>on</c-> <c- p>(</c-><c- mi>8</c-> <c- n>X</c-> <c- mi>24</c-> <c- n>MHz</c-> <c- n>CPU</c-> <c- n>s</c-><c- p>)</c->
-<c- n>CPU</c-> <c- n>Caches</c-><c- o>:</c->
-  <c- n>L1</c-> <c- n>Data</c-> <c- mi>64</c-> <c- n>KiB</c->
-  <c- n>L1</c-> <c- n>Instruction</c-> <c- mi>128</c-> <c- n>KiB</c->
-  <c- n>L2</c-> <c- n>Unified</c-> <c- mi>4096</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x8</c-><c- p>)</c->
-<c- n>Load</c-> <c- n>Average</c-><c- o>:</c-> <c- mf>7.61</c-><c- p>,</c-> <c- mf>5.78</c-><c- p>,</c-> <c- mf>5.16</c->
-<c- o>-----------------------------------------------------</c->
-<c- n>Benchmark</c->           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
-<c- o>-----------------------------------------------------</c->
-<c- n>normal</c->           <c- mf>77.5</c-> <c- n>ns</c->         <c- mf>77.5</c-> <c- n>ns</c->      <c- mi>9040424</c->
-<c- n>garbage</c->          <c- mf>91.4</c-> <c- n>ns</c->         <c- mf>91.4</c-> <c- n>ns</c->      <c- mi>7675186</c->
+<pre class="language-text highlight">% ./double-benchmark
+Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
+This does not affect benchmark measurements, only the metadata output.
+***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
+2025-02-02T08:06:13-08:00
+Running ./double-benchmark
+Run on (8 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x8)
+Load Average: 7.61, 5.78, 5.16
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+normal           77.5 ns         77.5 ns      9040424
+garbage          91.4 ns         91.4 ns      7675186
 </pre>
    <p>Results on GNU/Linux with gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0 and
 libstdc++:</p>
-<pre class="highlight"><c- n>$</c-> <c- p>.</c-><c- o>/</c-><c- b>int</c-><c- o>-</c-><c- n>benchmark</c->
-<c- mi>2025</c-><c- mo>-02-02</c-><c- n>T17</c-><c- o>:</c-><c- mi>22</c-><c- o>:</c-><c- mi>25</c-><c- o>+</c-><c- mo>00</c-><c- o>:</c-><c- mo>00</c->
-<c- n>Running</c-> <c- p>.</c-><c- o>/</c-><c- b>int</c-><c- o>-</c-><c- n>benchmark</c->
-<c- n>Run</c-> <c- n>on</c-> <c- p>(</c-><c- mi>2</c-> <c- n>X</c-> <c- mi>48</c-> <c- n>MHz</c-> <c- n>CPU</c-> <c- n>s</c-><c- p>)</c->
-<c- n>CPU</c-> <c- n>Caches</c-><c- o>:</c->
-  <c- n>L1</c-> <c- n>Data</c-> <c- mi>128</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x2</c-><c- p>)</c->
-  <c- n>L1</c-> <c- n>Instruction</c-> <c- mi>192</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x2</c-><c- p>)</c->
-  <c- n>L2</c-> <c- n>Unified</c-> <c- mi>12288</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x2</c-><c- p>)</c->
-<c- n>Load</c-> <c- n>Average</c-><c- o>:</c-> <c- mf>0.25</c-><c- p>,</c-> <c- mf>0.10</c-><c- p>,</c-> <c- mf>0.02</c->
-<c- o>-----------------------------------------------------</c->
-<c- n>Benchmark</c->           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
-<c- o>-----------------------------------------------------</c->
-<c- n>normal</c->           <c- mf>73.1</c-> <c- n>ns</c->         <c- mf>73.1</c-> <c- n>ns</c->      <c- mi>9441284</c->
-<c- n>garbage</c->          <c- mf>90.6</c-> <c- n>ns</c->         <c- mf>90.6</c-> <c- n>ns</c->      <c- mi>7360351</c->
+<pre class="language-text highlight">$ ./double-benchmark
+2025-02-02T17:22:25+00:00
+Running ./double-benchmark
+Run on (2 X 48 MHz CPU s)
+CPU Caches:
+  L1 Data 128 KiB (x2)
+  L1 Instruction 192 KiB (x2)
+  L2 Unified 12288 KiB (x2)
+Load Average: 0.25, 0.10, 0.02
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+normal           73.1 ns         73.1 ns      9441284
+garbage          90.6 ns         90.6 ns      7360351
 </pre>
    <p>Results on Windows with Microsoft (R) C/C++ Optimizing Compiler Version
 19.40.33811 for ARM64 and Microsoft STL:</p>
-<pre class="highlight"><c- o>></c-><c- b>int</c-><c- o>-</c-><c- n>benchmark</c-><c- p>.</c-><c- n>exe</c->
-<c- mi>2025</c-><c- mo>-02-02</c-><c- n>T08</c-><c- o>:</c-><c- mi>10</c-><c- o>:</c-><c- mi>39-08</c-><c- o>:</c-><c- mo>00</c->
-<c- n>Running</c-> <c- b>int</c-><c- o>-</c-><c- n>benchmark</c-><c- p>.</c-><c- n>exe</c->
-<c- n>Run</c-> <c- n>on</c-> <c- p>(</c-><c- mi>2</c-> <c- n>X</c-> <c- mi>2000</c-> <c- n>MHz</c-> <c- n>CPU</c-> <c- n>s</c-><c- p>)</c->
-<c- n>CPU</c-> <c- n>Caches</c-><c- o>:</c->
-  <c- n>L1</c-> <c- n>Instruction</c-> <c- mi>192</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x2</c-><c- p>)</c->
-  <c- n>L1</c-> <c- n>Data</c-> <c- mi>128</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x2</c-><c- p>)</c->
-  <c- n>L2</c-> <c- n>Unified</c-> <c- mi>12288</c-> <c- n>KiB</c-> <c- p>(</c-><c- n>x2</c-><c- p>)</c->
-<c- o>-----------------------------------------------------</c->
-<c- n>Benchmark</c->           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
-<c- o>-----------------------------------------------------</c->
-<c- n>normal</c->            <c- mi>144</c-> <c- n>ns</c->          <c- mi>143</c-> <c- n>ns</c->      <c- mi>4480000</c->
-<c- n>garbage</c->           <c- mi>166</c-> <c- n>ns</c->          <c- mi>165</c-> <c- n>ns</c->      <c- mi>4072727</c->
+<pre class="language-text highlight">>double-benchmark.exe
+2025-02-02T08:10:39-08:00
+Running double-benchmark.exe
+Run on (2 X 2000 MHz CPU s)
+CPU Caches:
+  L1 Instruction 192 KiB (x2)
+  L1 Data 128 KiB (x2)
+  L2 Unified 12288 KiB (x2)
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+normal            144 ns          143 ns      4480000
+garbage           166 ns          165 ns      4072727
 </pre>
    <p>Although the output has the same size, producing "garbage digits" makes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> 15-24% slower on these inputs. If we exclude string construction
 time, the difference will be even more profound. For example, profiling the
@@ -2326,6 +2342,28 @@ slower:</p>
 <c- n>normal</c-><c- p>(</c-><c- n>benchmark</c-><c- o>::</c-><c- n>State</c-><c- o>&amp;</c-><c- p>)</c-><c- o>:</c->
 <c- mf>159.00</c-> <c- n>ms</c-> <c- p>...</c-> <c- n>std</c-><c- o>::</c-><c- n>__1</c-><c- o>::</c-><c- n>to_chars_result</c-> <c- n>std</c-><c- o>::</c-><c- n>__1</c-><c- o>::</c-><c- n>_Floating_to_chars</c-><c- p>[</c-><c- n>abi</c-><c- o>:</c-><c- n>ne180100</c-><c- p>]</c-><c- o>&lt;</c-><c- p>...</c-><c- o>></c-><c- p>(</c-><c- b>char</c-><c- o>*</c-><c- p>,</c-> <c- b>char</c-><c- o>*</c-><c- p>,</c-> <c- b>double</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>__1</c-><c- o>::</c-><c- n>chars_format</c-><c- p>,</c-> <c- b>int</c-><c- p>)</c->
 </pre>
+   <p>For comparison here are the results of running the same benchmark with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> replaced with <code class="highlight"><c- n>fmt</c-><c- o>::</c-><c- n>format</c-></code> which doesn’t produce "garbage
+digits":</p>
+<pre class="language-text highlight">$ ./double-benchmark
+Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
+This does not affect benchmark measurements, only the metadata output.
+***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
+2025-03-15T08:18:56-07:00
+Running ./double-benchmark
+Run on (8 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x8)
+Load Average: 3.00, 3.91, 4.85
+------------------------------------------------------
+Benchmark            Time             CPU   Iterations
+------------------------------------------------------
+fmt_normal        53.0 ns         53.0 ns     13428484
+fmt_garbage       53.4 ns         53.4 ns     13032712
+</pre>
+   <p>As expected, the time is nearly identical between the two cases. It demonstrates
+that the performance gap can be eliminated if this paper is accepted.</p>
    <p>Locale makes the situation even more confusing to users. Consider the following
 example:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- o>::</c-><c- n>global</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>locale</c-><c- p>(</c-><c- s>"en_US.UTF-8"</c-><c- p>));</c->
@@ -2436,7 +2474,8 @@ example:</p>
       <td>none 
       <td>
        <ins>Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if <code class="highlight"><c- n>value</c-></code> is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where
-    10<sup><i>n</i></sup> is 2<sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-><c- o>>::</c-><c- n>digits</c-></code></sup> rounded to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
+    10<sup><i>n</i></sup> is
+    2<sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-><c- o>>::</c-><c- n>digits</c-></code> + 1</sup> rounded down to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
        <p>If <em>precision</em> is specified, equivalent to</p>
 <pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>general</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c->
 </pre>
@@ -2448,8 +2487,8 @@ example:</p>
    <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation and usage experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The current proposal is based on the existing implementation in <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a> which
 has been available and widely used for over 6 years. Similar logic based on the
-value range rather than output size is implemented in Python, Java, JavaScript,
-Rust and Swift.</p>
+value range rather than the output size is implemented in Python, Java,
+JavaScript, Rust and Swift.</p>
    <h2 class="heading settled" data-level="6" id="impact"><span class="secno">6. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This is technically a breaking change for users who rely on the exact
 output that is being changed. However, the change doesn’t affect ABI or round

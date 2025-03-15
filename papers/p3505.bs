@@ -3,12 +3,12 @@ Title: Fix the default floating-point representation in std::format
 Shortname: P3505
 Revision: 0
 Audience: LEWG
-Status: D
+Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-02-01
+Date: 2025-03-15
 Markup Shorthands: markdown yes
 </pre>
 
@@ -23,9 +23,9 @@ Introduction {#intro}
 When `std::format` was proposed for standardization, floating-point formatting
 was defined in terms of `std::to_chars` to simplify specification. While being
 a positive change overall, this introduced a small but undesirable change
-compared to the reference implementation in [[FMT]], resulting in surprising
-behavior to users, performance regression and an inconsistency with other
-mainstream programming languages that have similar facilities. This paper
+compared to the design and reference implementation in [[FMT]], resulting in
+surprising behavior to users, performance regression and an inconsistency with
+other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.
 
@@ -112,7 +112,7 @@ described above. It was great for explicit format specifiers such as `e` but,
 as it turned out recently, it introduced an undesirable change to the default
 format. This problem is that `std::to_chars` defines "shortness" in terms of the
 number of characters in the output which is different from the "shortness" of
-decimal significand normally used both in the literature and in the reference.
+decimal significand normally used both in the literature and in the industry.
 
 The exponent range is much easier to reason about. For example, in this model
 `100000.0` and `120000.0` are printed in the same format:
@@ -134,9 +134,9 @@ auto s2 = std::format("{}", 120000.0);  // s2 == "120000"
 
 It seems surprising and undesirable.
 
-If the shortness of the output was indeed the main criteria then it is unclear
-why the output format requires redundant `+` and leading zero in the exponent.
-Those are included in the output because, according to the specification of
+Note that the output `1e+05` is not really of the shortest possible number of
+characters, because + and the leading zero in the exponent are redundant.
+In fact, those are required, according to the specification of
 `to_chars` ([[charconv.to.chars](https://eel.is/c++draft/charconv.to.chars)]),
 
 > `value` is converted to a string in the style of `printf` in the `"C"` locale.
@@ -145,6 +145,9 @@ and the exponential format is defined as follows by the C standard ([[N3220]]):
 
 > A `double` argument representing a floating-point number is converted in the
 > style *[−]d.ddd e±dd* ...
+
+Nevertheless, users interpreting the shortness condition too literally may find
+this surprising.
 
 Even more importantly, the current representation violates the original
 shortness requirement from [[STEELE-WHITE]]:
@@ -175,11 +178,22 @@ rounding condition
 > ([[round.style](https://eel.is/c++draft/round.style)]).
 
 Apart from giving a false sense of accuracy to users it also has negative
-performance implications. Producing "garbage digits" means that you
-may no longer be able to use the optimized float-to-string algorithm such as
-Dragonbox ([[DRAGONBOX]]) and Ryū ([[RYU]]) in some cases. It also introduces
-complicated logic to handle those cases. If the fallback algorithm does
-multiprecision arithmetic this may even require additional allocation(s).
+performance implications. Many of the optimized float-to-string algorithms
+based on Steele and White's criteria, such as Dragonbox ([[DRAGONBOX]]) and
+Ryū ([[RYU]]), only focus on those criteria, especially the shortness of
+decimal significand rather than the number of characters. As a result, an
+implementation of the default floating-point handling of `std::format`
+(and `std::to_chars`) cannot just directly rely on these otherwise perfectly
+appropriate algorithms. Instead, it has to introduce non-trivial logic
+dedicated for computing these "garbage digits". Furthermore, having to
+introduce dedicated logic is likely not just because of the lack of advancement
+in the algorithm research, because in this case we do need to compute more
+digits than the actual precision implied by the data type, thus it is natural
+to expect that we may need more precision than the case without garbage digits.
+(In other words, even though a new algorithm that correctly deals with this
+garbage digits case according to the current C++ standard is invented, it is
+likely that it still includes some special handling of that case, in one form
+or another.)
 
 The performance issue can be illustrated on the following simple benchmark:
 
@@ -187,7 +201,11 @@ The performance issue can be illustrated on the following simple benchmark:
 #include <format>
 #include <benchmark/benchmark.h>
 
+// Output: "1.2345678901234568e+22"
 double normal_input  = 12345678901234567000000.0;
+
+// Output (current): "1234567890123456774144"
+// Output (desired): "1.2345678901234568e+21"
 double garbage_input = 1234567890123456700000.0;
 
 void normal(benchmark::State& state) {
@@ -211,7 +229,7 @@ BENCHMARK_MAIN();
 
 Results on macOS with Apple clang version 16.0.0 (clang-1600.0.26.6) and libc++:
 
-```
+```text
 % ./double-benchmark
 Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
 This does not affect benchmark measurements, only the metadata output.
@@ -234,10 +252,10 @@ garbage          91.4 ns         91.4 ns      7675186
 Results on GNU/Linux with gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0 and
 libstdc++:
 
-```
-$ ./int-benchmark
+```text
+$ ./double-benchmark
 2025-02-02T17:22:25+00:00
-Running ./int-benchmark
+Running ./double-benchmark
 Run on (2 X 48 MHz CPU s)
 CPU Caches:
   L1 Data 128 KiB (x2)
@@ -254,10 +272,10 @@ garbage          90.6 ns         90.6 ns      7360351
 Results on Windows with Microsoft (R) C/C++ Optimizing Compiler Version
 19.40.33811 for ARM64 and Microsoft STL:
 
-```
->int-benchmark.exe
+```text
+>double-benchmark.exe
 2025-02-02T08:10:39-08:00
-Running int-benchmark.exe
+Running double-benchmark.exe
 Run on (2 X 2000 MHz CPU s)
 CPU Caches:
   L1 Instruction 192 KiB (x2)
@@ -282,6 +300,33 @@ garbage(benchmark::State&):
 normal(benchmark::State&):
 159.00 ms ... std::__1::to_chars_result std::__1::_Floating_to_chars[abi:ne180100]<...>(char*, char*, double, std::__1::chars_format, int)
 ```
+
+For comparison here are the results of running the same benchmark with
+`std::format` replaced with `fmt::format` which doesn't produce "garbage
+digits":
+
+```text
+$ ./double-benchmark
+Unable to determine clock rate from sysctl: hw.cpufrequency: No such file or directory
+This does not affect benchmark measurements, only the metadata output.
+***WARNING*** Failed to set thread affinity. Estimated CPU frequency may be incorrect.
+2025-03-15T08:18:56-07:00
+Running ./double-benchmark
+Run on (8 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x8)
+Load Average: 3.00, 3.91, 4.85
+------------------------------------------------------
+Benchmark            Time             CPU   Iterations
+------------------------------------------------------
+fmt_normal        53.0 ns         53.0 ns     13428484
+fmt_garbage       53.4 ns         53.4 ns     13032712
+```
+
+As expected, the time is nearly identical between the two cases. It demonstrates
+that the performance gap can be eliminated if this paper is accepted.
 
 Locale makes the situation even more confusing to users. Consider the following
 example:
@@ -463,8 +508,9 @@ Table 105 — Meaning of type options for floating-point types
   <td>
     <ins>Let <code>fmt</code> be `chars_format::fixed` if <code>value</code>
     is in the range [10<sup>-4</sup>, 10<sup><i>n</i></sup>), where
-    10<sup><i>n</i></sup> is 2<sup><code>std::numeric_limits&lt;decltype(value)&gt;::digits</code></sup>
-    rounded to the nearest power of 10, `chars_format::scientific` otherwise.
+    10<sup><i>n</i></sup> is
+    2<sup><code>std::numeric_limits&lt;decltype(value)&gt;::digits</code> + 1</sup>
+    rounded down to the nearest power of 10, `chars_format::scientific` otherwise.
     </ins>
     
     If *precision* is specified, equivalent to
@@ -484,8 +530,8 @@ Implementation and usage experience {#impl}
 
 The current proposal is based on the existing implementation in [[FMT]] which
 has been available and widely used for over 6 years. Similar logic based on the
-value range rather than output size is implemented in Python, Java, JavaScript,
-Rust and Swift.
+value range rather than the output size is implemented in Python, Java,
+JavaScript, Rust and Swift.
 
 <!-- Grisu in {fmt}: https://github.com/fmtlib/fmt/issues/147#issuecomment-461118641 -->
 
