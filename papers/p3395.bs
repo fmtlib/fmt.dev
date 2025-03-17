@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Fix encoding issues and add a formatter for std::error_code
 Shortname: P3395
-Revision: 1
+Revision: 2
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-03-12
+Date: 2025-03-17
 Markup Shorthands: markdown yes
 </pre>
 
@@ -32,6 +32,12 @@ This paper proposes making `std::error_code` formattable using the formatting
 facility introduced in C++20 (`std::format`) and fixes encoding issues in the
 underlying API ([[LWG4156]]).
 
+Changes since R1 {#changes1}
+================
+
+- Added a debug format to avoid ambiguity when formatting error codes in maps.
+- Added SG16 poll results.
+
 Changes since R0 {#changes0}
 ================
 
@@ -44,7 +50,22 @@ Changes since R0 {#changes0}
     literal encoding is not UTF-8 per SG16 feedback and for consistency with
     other similar cases in the standard.
 
-<!-- TODO: add SG16 poll results -->
+Polls {#polls}
+=====
+
+SG16 poll results for R0:
+
+**Poll 1**: Forward P3395R0 to LEWG amended to specify an encoding for
+`std::error_category::name()` and for transcoding to be to UTF-8 if that
+matches the ordinary literal encoding and to an implementation-defined encoding
+otherwise.
+
+```text
+SF  F  N  A SA
+ 1  6  0  0  0
+```
+
+Outcome: Strong consensus.
 
 Motivation {#motivation}
 ==========
@@ -244,6 +265,8 @@ Add a new section "Formatting" [system.error.fmt] under "Class `error_code`"
 
 <pre>
 template&lt;class charT> struct formatter&lt;error_code, charT> {
+  constexpr void set_debug_format();
+
   constexpr typename basic_format_parse_context&lt;charT>::iterator
     parse(basic_format_parse_context&lt;charT>& ctx);
 
@@ -254,14 +277,13 @@ template&lt;class charT> struct formatter&lt;error_code, charT> {
 </pre>
 
 
-<!--
 ```
 constexpr void set_debug_format();
 ```
 
 *Effects*: Modifies the state of the `formatter` to be as if the
-*path-format-spec* parsed by the last call to `parse` contained the `?` option.
--->
+*error-code-format-spec* parsed by the last call to `parse` contained the
+`?` option.
 
 ```
 constexpr typename basic_format_parse_context<charT>::iterator
@@ -272,10 +294,13 @@ constexpr typename basic_format_parse_context<charT>::iterator
 parsed specifiers in `*this`.
 
 <i>error-code-format-spec</i>:<br>
-&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code>s</code><i><sub>opt</sub></i>
+&nbsp;&nbsp;<i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i>
+<code>?</code><i><sub>opt</sub></i> <code>s</code><i><sub>opt</sub></i>
 
 where the productions <i>fill-and-align</i> and <i>width</i> are described in
-[[format.string](http://eel.is/c++draft/format#string)].
+[[format.string](http://eel.is/c++draft/format#string)]. If the `?` option is
+used then the path is formatted as an escaped string ([[format.string.escaped](
+http://eel.is/c++draft/format.string.escaped)]).
 
 <!-- If the `?` option is
 used then the path is formatted as an escaped string ([[format.string.escaped](
