@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3395R3: Fix encoding issues and add a formatter for std::error_code</title>
+  <title>P3395R4: Fix encoding issues and add a formatter for std::error_code</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="ffa4bbcf62ea6e9cab438f2e0b9a8d68ffa82427" name="revision">
+  <meta content="45e6272aa1eec1ebdf0da352b8d044c4db4a59c8" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2098,8 +2098,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3395R3<br>Fix encoding issues and add a formatter for std::error_code</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-03-22">2025-03-22</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3395R4<br>Fix encoding issues and add a formatter for std::error_code</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-04-12">2025-04-12</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2117,15 +2117,16 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes since R2</span></a>
-    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes since R1</span></a>
-    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#polls"><span class="secno">5</span> <span class="content">Polls</span></a>
-    <li><a href="#motivation"><span class="secno">6</span> <span class="content">Motivation</span></a>
-    <li><a href="#proposal"><span class="secno">7</span> <span class="content">Proposal</span></a>
-    <li><a href="#previous"><span class="secno">8</span> <span class="content">Previous work</span></a>
-    <li><a href="#wording"><span class="secno">9</span> <span class="content">Wording</span></a>
-    <li><a href="#impl"><span class="secno">10</span> <span class="content">Implementation</span></a>
+    <li><a href="#changes3"><span class="secno">2</span> <span class="content">Changes since R3</span></a>
+    <li><a href="#changes2"><span class="secno">3</span> <span class="content">Changes since R2</span></a>
+    <li><a href="#changes1"><span class="secno">4</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">5</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">6</span> <span class="content">Polls</span></a>
+    <li><a href="#motivation"><span class="secno">7</span> <span class="content">Motivation</span></a>
+    <li><a href="#proposal"><span class="secno">8</span> <span class="content">Proposal</span></a>
+    <li><a href="#previous"><span class="secno">9</span> <span class="content">Previous work</span></a>
+    <li><a href="#wording"><span class="secno">10</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">11</span> <span class="content">Implementation</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2138,19 +2139,24 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p>This paper proposes making <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> formattable using the formatting
 facility introduced in C++20 (<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>) and fixes encoding issues in the
 underlying API (<a data-link-type="biblio" href="#biblio-lwg4156" title="`error_category` messages have unspecified encoding">[LWG4156]</a>).</p>
-   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes3"><span class="secno">2. </span><span class="content">Changes since R3</span><a class="self-link" href="#changes3"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Fixed a typo in the wording.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes2"><span class="secno">3. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
    <ul>
     <li data-md>
      <p>Added a reference to <a data-link-type="biblio" href="#biblio-p2930" title="Formatter specializations for the standard library">[P2930]</a> and how it differs from the current proposal.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <h2 class="heading settled" data-level="4" id="changes1"><span class="secno">4. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Added a debug format to avoid ambiguity when formatting error codes in maps.</p>
     <li data-md>
      <p>Added SG16 poll results.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="5" id="changes0"><span class="secno">5. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Changed the title from "Formatting of std::error_code" to "Fix encoding
@@ -2164,7 +2170,7 @@ encoding per SG16 feedback.</p>
 literal encoding is not UTF-8 per SG16 feedback and for consistency with
 other similar cases in the standard.</p>
    </ul>
-   <h2 class="heading settled" data-level="5" id="polls"><span class="secno">5. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <h2 class="heading settled" data-level="6" id="polls"><span class="secno">6. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
    <p>SG16 poll results for R0:</p>
    <p><strong>Poll 1</strong>: Forward P3395R0 to LEWG amended to specify an encoding for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_category</c-><c- o>::</c-><c- n>name</c-><c- p>()</c-></code> and for transcoding to be to UTF-8 if that
 matches the ordinary literal encoding and to an implementation-defined encoding
@@ -2173,7 +2179,7 @@ otherwise.</p>
  1  6  0  0  0
 </pre>
    <p>Outcome: Strong consensus.</p>
-   <h2 class="heading settled" data-level="6" id="motivation"><span class="secno">6. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="7" id="motivation"><span class="secno">7. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p><code class="highlight"><c- n>error_code</c-></code> has a rudimentary <code class="highlight"><c- n>ostream</c-></code> inserter. For example:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- n>ec</c-><c- p>;</c->
 <c- k>auto</c-> <c- n>size</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>file_size</c-><c- p>(</c-><c- s>"nonexistent"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
@@ -2193,7 +2199,7 @@ code, resulting in confusing output:</p>
 </pre>
    <p>Additionally, it doesn’t allow formatting the error message and introduces
 potential encoding issues, as the encoding of the category name is unspecified.</p>
-   <h2 class="heading settled" data-level="7" id="proposal"><span class="secno">7. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="8" id="proposal"><span class="secno">8. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>This paper proposes adding a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> to address the problems discussed in the previous section.</p>
    <p>The default format will produce the same output as the <code class="highlight"><c- n>ostream</c-></code> inserter:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
@@ -2256,10 +2262,10 @@ underlying system APIs. Microsoft STL’s implementation has a number of bugs in
 likely need to change anyway. This also resolves <a data-link-type="biblio" href="#biblio-lwg4156" title="`error_category` messages have unspecified encoding">[LWG4156]</a>.</p>
    <p>An alternative approach could involve communicating the encoding from <code class="highlight"><c- n>error_category</c-></code>. However, this introduces ABI challenges and complicates usage
 compared to adopting a single encoding.</p>
-   <h2 class="heading settled" data-level="8" id="previous"><span class="secno">8. </span><span class="content">Previous work</span><a class="self-link" href="#previous"></a></h2>
+   <h2 class="heading settled" data-level="9" id="previous"><span class="secno">9. </span><span class="content">Previous work</span><a class="self-link" href="#previous"></a></h2>
    <p>A formatter for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> was proposed as part of <a data-link-type="biblio" href="#biblio-p2930" title="Formatter specializations for the standard library">[P2930]</a> which
 has more formatting options but doesn’t try to address encoding issues.</p>
-   <h2 class="heading settled" data-level="9" id="wording"><span class="secno">9. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="10" id="wording"><span class="secno">10. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add to "Header &lt;system_error> synopsis" <a href="https://eel.is/c++draft/system.error.syn">[system.error.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [system.error.fmt], formatter</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- o>></c-> <c- k>struct</c-> <c- nc>formatter</c-><c- o>&lt;</c-><c- n>error_code</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-><c- p>;</c->
@@ -2323,7 +2329,7 @@ error category.
 set</ins>
      that describes the error condition denoted by <code class="highlight"><c- n>ev</c-></code>.
    </p>
-   <h2 class="heading settled" data-level="10" id="impl"><span class="secno">10. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="11" id="impl"><span class="secno">11. </span><span class="content">Implementation</span><a class="self-link" href="#impl"></a></h2>
    <p>The proposed <code class="highlight"><c- n>formatter</c-></code> for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> has been implemented in the
 open-source {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>).</p>
   </main>
