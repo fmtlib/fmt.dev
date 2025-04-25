@@ -1509,9 +1509,9 @@ fmt::print("{}", fmt::join(v, ", "));
 <pre class="highlight"><code>#include &lt;fmt/chrono.h&gt;
 
 int main() {
-  std::time_t t = std::time(nullptr);
+  auto now = std::chrono::system_clock::now();
 
-  fmt::print("The date is {:%Y-%m-%d}.", fmt::localtime(t));
+  fmt::print("The date is {:%Y-%m-%d}.\n", now);
   // Output: The date is 2020-11-07.
   // (with 2020-11-07 replaced by the current date)
 
@@ -1523,14 +1523,6 @@ int main() {
   fmt::print("strftime-like format: {:%H:%M:%S}\n", 3h + 15min + 30s);
   // Output: strftime-like format: 03:15:30
 }</code></pre>
-<div class="docblock">
-<a id="localtime">
-<pre><code class="language-cpp decl"><div></div><div>auto localtime(std::time_t time) -&NoBreak;>&nbsp;std::tm;</div></code></pre>
-</a>
-<div class="docblock-desc">
-<p>Converts given time since epoch as <code>std::time_t</code> value into calendar time, expressed in local time. Unlike <code>std::localtime</code>, this function is thread-safe on most platforms. </p>
-        </div>
-</div>
 <div class="docblock">
 <a id="gmtime">
 <pre><code class="language-cpp decl"><div></div><div>auto gmtime(std::time_t time) -&NoBreak;>&nbsp;std::tm;</div></code></pre>
