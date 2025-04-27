@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="45e6272aa1eec1ebdf0da352b8d044c4db4a59c8" name="revision">
+  <meta content="92399007fb612aa768f5a5cc62fda5f142bb3811" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2099,7 +2099,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3395R4<br>Fix encoding issues and add a formatter for std::error_code</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-04-12">2025-04-12</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-04-27">2025-04-27</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2142,7 +2142,11 @@ underlying API (<a data-link-type="biblio" href="#biblio-lwg4156" title="`error_
    <h2 class="heading settled" data-level="2" id="changes3"><span class="secno">2. </span><span class="content">Changes since R3</span><a class="self-link" href="#changes3"></a></h2>
    <ul>
     <li data-md>
+     <p>Added LEWG poll results for R3.</p>
+    <li data-md>
      <p>Fixed a typo in the wording.</p>
+    <li data-md>
+     <p>Fixed wording for the debug output.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes2"><span class="secno">3. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
    <ul>
@@ -2171,14 +2175,21 @@ literal encoding is not UTF-8 per SG16 feedback and for consistency with
 other similar cases in the standard.</p>
    </ul>
    <h2 class="heading settled" data-level="6" id="polls"><span class="secno">6. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <p>LEWG poll results for R3:</p>
+   <p><strong>POLL</strong>: P3395 should explore format specifier support to define which
+information (error number/category/message) to format.</p>
+<pre class="language-text highlight">SF  F  N  A SA
+ 1  9  4  2  0
+</pre>
+   <p>Outcome: Consensus in favour</p>
    <p>SG16 poll results for R0:</p>
-   <p><strong>Poll 1</strong>: Forward P3395R0 to LEWG amended to specify an encoding for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_category</c-><c- o>::</c-><c- n>name</c-><c- p>()</c-></code> and for transcoding to be to UTF-8 if that
+   <p><strong>POLL</strong>: Forward P3395R0 to LEWG amended to specify an encoding for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_category</c-><c- o>::</c-><c- n>name</c-><c- p>()</c-></code> and for transcoding to be to UTF-8 if that
 matches the ordinary literal encoding and to an implementation-defined encoding
 otherwise.</p>
 <pre class="language-text highlight">SF  F  N  A SA
  1  6  0  0  0
 </pre>
-   <p>Outcome: Strong consensus.</p>
+   <p>Outcome: Strong consensus</p>
    <h2 class="heading settled" data-level="7" id="motivation"><span class="secno">7. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p><code class="highlight"><c- n>error_code</c-></code> has a rudimentary <code class="highlight"><c- n>ostream</c-></code> inserter. For example:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-> <c- n>ec</c-><c- p>;</c->
@@ -2199,6 +2210,14 @@ code, resulting in confusing output:</p>
 </pre>
    <p>Additionally, it doesn’t allow formatting the error message and introduces
 potential encoding issues, as the encoding of the category name is unspecified.</p>
+   <p>A specifier for an error code’s value is intentionally not provided because it
+is of limited use without the associated category information. Moreover, the
+value can be easily accessed and formatted using other means, for example:</p>
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>.</c-><c- n>value</c-><c- p>());</c->
+</pre>
+   <p>This functionality is not currently provided by {fmt}, and over several years
+of usage, there have been no requests to add it. However, if sufficient demand
+emerges, it could be considered for future inclusion.</p>
    <h2 class="heading settled" data-level="8" id="proposal"><span class="secno">8. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>This paper proposes adding a <code class="highlight"><c- n>formatter</c-></code> specialization for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> to address the problems discussed in the previous section.</p>
    <p>The default format will produce the same output as the <code class="highlight"><c- n>ostream</c-></code> inserter:</p>
@@ -2264,7 +2283,8 @@ likely need to change anyway. This also resolves <a data-link-type="biblio" href
 compared to adopting a single encoding.</p>
    <h2 class="heading settled" data-level="9" id="previous"><span class="secno">9. </span><span class="content">Previous work</span><a class="self-link" href="#previous"></a></h2>
    <p>A formatter for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> was proposed as part of <a data-link-type="biblio" href="#biblio-p2930" title="Formatter specializations for the standard library">[P2930]</a> which
-has more formatting options but doesn’t try to address encoding issues.</p>
+has more formatting options for the numeric code but doesn’t try to address
+encoding issues or provide a debug format.</p>
    <h2 class="heading settled" data-level="10" id="wording"><span class="secno">10. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add to "Header &lt;system_error> synopsis" <a href="https://eel.is/c++draft/system.error.syn">[system.error.syn</a>]:</p>
 <pre class="highlight"><c- c1>// [system.error.fmt], formatter</c->
@@ -2291,8 +2311,7 @@ has more formatting options but doesn’t try to address encoding issues.</p>
    <p><em>Effects</em>: Parses the format specifier as a <em>error-code-format-spec</em> and stores the
 parsed specifiers in <code class="highlight"><c- o>*</c-><c- k>this</c-></code>.</p>
    <p><i>error-code-format-spec</i>:<br>   <i>fill-and-align<sub>opt</sub></i> <i>width<sub>opt</sub></i> <code class="highlight"><c- o>?</c-></code><i><sub>opt</sub></i> <code class="highlight"><c- n>s</c-></code><i><sub>opt</sub></i></p>
-   <p>where the productions <i>fill-and-align</i> and <i>width</i> are described in <a href="http://eel.is/c++draft/format#string">[format.string</a>]. If the <code class="highlight"><c- o>?</c-></code> option is
-used then the path is formatted as an escaped string (<a href="http://eel.is/c++draft/format.string.escaped">[format.string.escaped</a>]).</p>
+   <p>where the productions <i>fill-and-align</i> and <i>width</i> are described in <a href="http://eel.is/c++draft/format#string">[format.string</a>].</p>
    <p><em>Returns</em>: An iterator past the end of the <em>error-code-format-spec</em>.</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>FormatContext</c-><c- o>></c->
   <c- k>typename</c-> <c- nc>FormatContext</c-><c- o>::</c-><c- n>iterator</c->
@@ -2309,7 +2328,8 @@ Chapter 3.9 U+FFFD Substitution in Conversion.</p>
 encoding.</p>
    </ul>
    <p>Otherwise, let <code class="highlight"><c- n>msg</c-></code> be <code class="highlight"><c- n>format</c-><c- p>(</c-><c- s>"{}:{}"</c-><c- p>,</c-> <c- n>ec</c-><c- p>.</c-><c- n>category</c-><c- p>().</c-><c- n>name</c-><c- p>(),</c-> <c- n>ec</c-><c- p>.</c-><c- n>value</c-><c- p>())</c-></code>.</p>
-   <p>Writes <code class="highlight"><c- n>msg</c-></code> into <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code>, adjusted according to the <em>error-code-format-spec</em>.</p>
+   <p>Writes <code class="highlight"><c- n>msg</c-></code> into <code class="highlight"><c- n>ctx</c-><c- p>.</c-><c- n>out</c-><c- p>()</c-></code>, adjusted according to the <em>error-code-format-spec</em>. If the <code class="highlight"><c- o>?</c-></code> option is used then <code class="highlight"><c- n>msg</c-></code> is formatted as
+an escaped string (<a href="http://eel.is/c++draft/format.string.escaped">[format.string.escaped</a>]).</p>
    <p><em>Returns</em>: An iterator past the end of the output range.</p>
    <p>Modify <a href="https://eel.is/c++draft/syserr.errcat.virtuals">[syserr.errcat.virtuals</a>]:</p>
 <pre class="highlight"><c- k>virtual</c-> <c- k>const</c-> <c- b>char</c-><c- o>*</c-> <c- nf>name</c-><c- p>()</c-> <c- k>const</c-> <c- k>noexcept</c-> <c- o>=</c-> <c- mi>0</c-><c- p>;</c->
