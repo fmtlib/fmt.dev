@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting enums
 Shortname: P3070
-Revision: 3
+Revision: 4
 Audience: LEWG
 Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-02-16
+Date: 2025-06-16
 Markup Shorthands: markdown yes
 </pre>
 
@@ -43,6 +43,13 @@ verbose for the common case of forwarding to other formatters. This proposal
 aims to introduce a more streamlined method for defining custom formatters for
 enums. When formatting enums as integers, this approach is more efficient than
 using a `formatter` specialization.
+
+# Changes since R3 # {#changes3}
+
+- Move "The meaning of `format_as` is established as-if by performing
+    argument-dependent lookup only ([basic.lookup.argdep](
+    https://eel.is/c++draft/basic.lookup.argdep))." to [[contents](
+    https://eel.is/c++draft/format.arg)] per feedback from Jonathan Wakely.
 
 # Changes since R2 # {#changes2}
 
@@ -238,6 +245,22 @@ a common use case in `std::format`.
 <!-- Disabling implicit conversions would make enums::format_as not work
      and therefore not proposed. -->
 
+Modify [[contents](https://eel.is/c++draft/format.arg)]:
+
+...
+
+The meaning of the unqualified name `swap` is established in an overload
+resolution context for swappable values (\[swappable.requirements\]). The
+meanings of the unqualified names `make_error_code`, `make_error_condition`,
+`from_stream`, and `submdspan_mapping` are established as-if by performing
+argument-dependent lookup (\[basic.lookup.argdep\]).
+
+<ins>
+The meaning of `format_as` is established as-if by performing
+argument-dependent lookup only ([basic.lookup.argdep](
+https://eel.is/c++draft/basic.lookup.argdep)).
+</ins>
+
 Modify [[format.arg](https://eel.is/c++draft/format.arg)]:
 
 ```
@@ -256,9 +279,7 @@ https://eel.is/c++draft/defns.ntcts)]).
 <ins>
 If `format_as(v)` is a valid expression and `TD` is a class or enumeration type,
 let `u` be `format_as(v)` and `U` be `remove_cvref_t<decltype(u)>`.
-Otherwise, let `u` be `v` and `U` be `TD`. Throughout this clause, the meaning
-of `format_as` is established as-if by performing argument-dependent lookup only
-([basic.lookup.argdep](https://eel.is/c++draft/basic.lookup.argdep)).
+Otherwise, let `u` be `v` and `U` be `TD`.
 </ins>
 
 - If <code><del>TD</del><ins>U</ins></code> is `bool` or `char_type`, initializes
@@ -334,9 +355,7 @@ https://eel.is/c++draft/format.string.std)].
 
 <ins>
 Let *format-as-type*`<T>` for type `T` be
-`remove_cvref_t<decltype(format_as(declval<const T&>()))>` where the meaning
-of `format_as` is established as-if by performing argument-dependent lookup only
-([basic.lookup.argdep](https://eel.is/c++draft/basic.lookup.argdep)).
+`remove_cvref_t<decltype(format_as(declval<const T&>()))>`.
 Each header that declares the template `formatter` provides the following
 enabled specialization:
 </ins>
