@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Prevent path presentation problems
 Shortname: P2319
-Revision: 4
-Audience: LEWG
+Revision: 5
+Audience: LWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-12-07
+Date: 2025-06-17
 Markup Shorthands: markdown yes
 </pre>
 
@@ -41,6 +41,19 @@ proposes deprecating these accessors, making the path API more reliable and
 eliminating a common source of bugs.
 <!-- fixing these issues, making the path API more reliable, user-friendly
 and consistent with other standard facilities. -->
+
+Changes since R4 {#changes4}
+================
+
+- Simplified the Annex D entry by defining `string` and `generic_string`
+    in terms of `system_encoded_string` and `generic_system_encoded_string`
+    respectively.
+
+- Changed the format of the Annex D entry for consistency with other similar
+    entries such as
+    [[depr.move.iter.elem](https://eel.is/c++draft/depr.move.iter.elem)].
+
+- Added instructions to bump the `__cpp_lib_format_path` feature test macro.
 
 Changes since R3 {#changes3}
 ================
@@ -388,6 +401,9 @@ For lossless display, deprecated accessors can be replaced with
 Wording {#wording}
 =======
 
+Update the value of the feature-testing macro `__cpp_lib_format_path` to the
+date of adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
+
 Modify [[https://eel.is/c++draft/fs.class.path.general](
 https://eel.is/c++draft/fs.class.path.general)]:
 
@@ -497,27 +513,26 @@ Add a new subclause in Annex D:
 <p>
 
 <ins>
-The following `filesystem::path` member is defined in addition to those
-specified in [[fs.path.native.obs](https://eel.is/c++draft/fs.path.native.obs)]:
+The following members are declared in addition to those members specified in
+[[fs.path.member](https://eel.is/c++draft/fs.path.member)]:
 </ins>
+
+<pre>
+<ins>namespace std::filesystem {
+  class path {
+  public:
+    std::string string() const;
+    std::string generic_string() const;
+  };
+}</ins>
+</pre>
 
 <pre>
 <ins>std::string string() const;</ins>
 </pre>
 
 <ins>
-*Returns*: native().
-</ins>
-<p>
-<ins>
-*Remarks*: Conversion, if any, is performed as specified by [fs.path.cvt].
-</ins>
-
-<p>
-
-<ins>
-The following `filesystem::path` member is defined in addition to those
-specified in [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)]:
+*Returns*: `system_encoded_string()`.
 </ins>
 
 <pre>
@@ -525,12 +540,9 @@ specified in [[fs.path.generic.obs](https://eel.is/c++draft/fs.path.generic.obs)
 </pre>
 
 <ins>
-*Returns*: The pathname in the generic format.
+*Returns*: `generic_system_encoded_string()`.
 </ins>
 <p>
-<ins>
-*Remarks*: Conversion, if any, is specified by [fs.path.cvt].
-</ins>
 
 <!--Implementation {#impl}
 ==============
