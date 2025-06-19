@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="f928666038d84b2106cab0cebf141fb25c458ea9" name="revision">
+  <meta content="96a0490c57af5d5820be5818589636b073ee8671" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2167,6 +2167,8 @@ LWG.</p>
      <p>Replaced <code class="highlight"><c- n>format_parse_context</c-></code> with <code class="highlight"><c- n>basic_format_parse_context</c-><c- o>&amp;</c-><c- n>lt</c-><c- p>;</c-><c- n>charT</c-><c- o>></c-></code>.</p>
     <li data-md>
      <p>Replaced <code class="highlight"><c- n>FormatContext</c-></code> with <code class="highlight"><c- n>basic_format_context</c-><c- o>&amp;</c-><c- n>lt</c-><c- p>;</c-><c- n>Out</c-><c- p>,</c-> <c- n>charT</c-><c- o>></c-></code> in the <code class="highlight"><c- n>format</c-></code> member function.</p>
+    <li data-md>
+     <p>Replaced <em>Returns</em> with <em>Effects</em> in the <code class="highlight"><c- n>parse</c-></code> function specification.</p>
    </ul>
    <h2 class="heading settled" data-level="3" id="changes2"><span class="secno">3. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
    <ul>
@@ -2426,13 +2428,13 @@ enabled specialization: </ins>
 <pre class="highlight"><ins><c- k>constexpr</c-> <c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>::</c-><c- n>iterator</c->
   <c- n>parse</c-><c- p>(</c-><c- n>basic_format_parse_context</c-><c- o>&lt;</c-><c- n>charT</c-><c- o>>&amp;</c-> <c- n>ctx</c-><c- p>);</c-></ins>
 </pre>
-    <ins>
-      <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>)</c-></code>. 
+    <ins> <em>Effects</em>: Equivalent to: </ins>
+<pre class="highlight"><ins><c- k>return</c-> <i><c- n>fmt_</c-></i><c- p>.</c-><c- n>parse</c-><c- p>(</c-><c- n>ctx</c-><c- p>);</c->
+</ins></pre>
 <pre class="highlight"><ins><c- k>template</c-> <c- o>&lt;</c-><c- k>class</c-> <c- nc>Out</c-><c- o>></c->
   <c- n>Out</c-> <c- n>format</c-><c- p>(</c-><c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>val</c-><c- p>,</c-> <c- n>basic_format_context</c-><c- o>&lt;</c-><c- n>Out</c-><c- p>,</c-> <c- n>charT</c-><c- o>>&amp;</c-> <c- n>ctx</c-><c- p>)</c-> <c- k>const</c-><c- p>;</c-></ins>
 </pre>
-     <ins> <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>format_as</c-><c- p>(</c-><c- n>val</c-><c- p>),</c-> <c- n>ctx</c-><c- p>)</c-></code>. </ins>
-    </ins>
+    <ins> <em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>format_as</c-><c- p>(</c-><c- n>val</c-><c- p>),</c-> <c- n>ctx</c-><c- p>)</c-></code>. </ins>
    </div>
    <h2 class="heading settled" data-level="12" id="alt"><span class="secno">12. </span><span class="content">Alternatives Considered</span><a class="self-link" href="#alt"></a></h2>
    <p>Another option is to use the <code class="highlight"><c- n>format_kind</c-></code> extension point:</p>
