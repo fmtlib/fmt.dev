@@ -46,10 +46,22 @@ using a `formatter` specialization.
 
 # Changes since R3 # {#changes3}
 
-- Move "The meaning of `format_as` is established as-if by performing
+- Integrated "The meaning of `format_as` is established as-if by performing
     argument-dependent lookup only ([basic.lookup.argdep](
-    https://eel.is/c++draft/basic.lookup.argdep))." to [[contents](
-    https://eel.is/c++draft/format.arg)] per feedback from Jonathan Wakely.
+    https://eel.is/c++draft/basic.lookup.argdep))." into [[contents](
+    https://eel.is/c++draft/format.arg)] per feedback from Jonathan Wakely and
+    LWG.
+
+- Moved `(is_enum_v&lt;T> || is_class_v&lt;T> || is_union_v&lt;T>)` before
+    `formattable&lt;<i>format-as-type</i>&lt;T>, charT>` in the `requires`
+    clause of the `formatter` specialization per LWG feedback.
+
+- Replaced `typename` with `class`.
+
+- Replaced `format_parse_context` with `basic_format_parse_context&lt;charT>`.
+
+- Replaced `FormatContext` with `basic_format_context&lt;Out, charT>` in the
+    `format` member function.
 
 # Changes since R2 # {#changes2}
 
@@ -245,22 +257,34 @@ a common use case in `std::format`.
 <!-- Disabling implicit conversions would make enums::format_as not work
      and therefore not proposed. -->
 
-Modify [[contents](https://eel.is/c++draft/format.arg)]:
+Modify [[contents](https://eel.is/c++draft/contents)]:
+
+...
+
+All library entities except `operator new` and `operator delete` are defined
+within the namespace `std` or namespaces nested within namespace `std`.
+It is unspecified whether names declared in a specific namespace are declared
+directly in that namespace or in an inline namespace inside that namespace.
+
+Whenever an unqualified name other than `swap`, `make_error_code`,
+`make_error_condition`, `from_stream`, <ins>`format_as`,</ins> or
+`submdspan_mapping` is used in the specification of a declaration `D` in
+[[support](https://eel.is/c++draft/support)] through
+[[exec](https://eel.is/c++draft/exec)] or
+[[depr](https://eel.is/c++draft/depr)], its meaning is established as-if by
+performing unqualified name lookup ([basic.lookup.unqual](
+https://eel.is/c++draft/basic.lookup.unqual)) in the context of `D`.
 
 ...
 
 The meaning of the unqualified name `swap` is established in an overload
 resolution context for swappable values (\[swappable.requirements]). The
 meanings of the unqualified names `make_error_code`, `make_error_condition`,
-`from_stream`, and `submdspan_mapping` are established as-if by performing
-argument-dependent lookup ([basic.lookup.argdep](
+`from_stream`,  <ins>`format_as`,</ins> and `submdspan_mapping` are established
+as-if by performing argument-dependent lookup ([basic.lookup.argdep](
 https://eel.is/c++draft/basic.lookup.argdep)).
 
-<ins>
-The meaning of `format_as` is established as-if by performing
-argument-dependent lookup only ([basic.lookup.argdep](
-https://eel.is/c++draft/basic.lookup.argdep)).
-</ins>
+...
 
 Modify [[format.arg](https://eel.is/c++draft/format.arg)]:
 
@@ -363,30 +387,32 @@ enabled specialization:
 
 <pre>
 <ins>template&lt;class T, class charT>
-  requires (formattable&lt;<i>format-as-type</i>&lt;T>, charT> &&
-            (is_enum_v&lt;T> || is_class_v&lt;T> || is_union_v&lt;T>))
+  requires ((is_enum_v&lt;T> || is_class_v&lt;T> || is_union_v&lt;T>) &&
+            formattable&lt;<i>format-as-type</i>&lt;T>, charT>)
 struct formatter&lt;T, charT> {
  private:
   formatter&lt;<i>format-as-type</i>&lt;T>, charT> <i>fmt_</i>;  <i>// exposition-only</i>
 
  public:
-  constexpr format_parse_context::iterator parse(format_parse_context& ctx);
+  constexpr basic_format_parse_context&lt;charT>::iterator
+    parse(basic_format_parse_context&lt;charT>& ctx);
 
-  template &lt;typename FormatContext>
-    typename FormatContext::iterator format(const T& val, FormatContext& ctx) const;
+  template &lt;class Out>
+    Out format(const T& val, basic_format_context&lt;Out, charT>& ctx) const;
 };</ins>
 </pre>
 
 <pre>
-<ins>constexpr format_parse_context::iterator parse(format_parse_context& ctx);</ins>
+<ins>constexpr basic_format_parse_context&lt;charT>::iterator
+  parse(basic_format_parse_context&lt;charT>& ctx);</ins>
 </pre>
 
 <ins>
 *Returns*: <code><i>fmt_</i>.parse(ctx)</code>.
 
 <pre>
-<ins>template &lt;typename FormatContext>
-  typename FormatContext::iterator format(const T& val, FormatContext& ctx) const;</ins>
+<ins>template &lt;class Out>
+  Out format(const T& val, basic_format_context&lt;Out, charT>& ctx) const;</ins>
 </pre>
 
 <ins>
