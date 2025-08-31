@@ -563,9 +563,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#format-string-compilation" class="md-nav__link">
+  <a href="#compile-time-support" class="md-nav__link">
     <span class="md-ellipsis">
-      Format String Compilation
+      Compile-Time Support
     </span>
   </a>
   
@@ -1590,13 +1590,13 @@ fmt::print(&quot;{}&quot;, +s.bit);
 </code></pre>
 <p>This is a known limitation of "perfect" forwarding in C++.</p>
 <p><a id="compile-api"></a></p>
-<h2 id="format-string-compilation">Format String Compilation</h2>
+<h2 id="compile-time-support">Compile-Time Support</h2>
 <p><code>fmt/compile.h</code> provides format string compilation and compile-time
 (<code>constexpr</code>) formatting enabled via the <code>FMT_COMPILE</code> macro or the <code>_cf</code>
 user-defined literal defined in namespace <code>fmt::literals</code>. Format strings
 marked with <code>FMT_COMPILE</code> or <code>_cf</code> are parsed, checked and converted into
 efficient formatting code at compile-time. This supports arguments of built-in
-and string types as well as user-defined types with <code>format</code> functions taking
+and string types as well as user-defined types with <code>format</code> methods taking
 the format context type as a template parameter in their <code>formatter</code>
 specializations. For example:</p>
 <pre class="highlight"><code>template &lt;&gt; struct fmt::formatter&lt;point&gt; {
@@ -1608,6 +1608,27 @@ specializations. For example:</p>
 <p>Format string compilation can generate more binary code compared to the
 default API and is only recommended in places where formatting is a
 performance bottleneck.</p>
+<p>The same API supports formatting at compile time e.g. in <code>constexpr</code> functions.
+It works with built-in and user-defined formatters that have <code>constexpr</code> <code>parse</code>
+and <code>format</code> methods. Example (<a href="https://www.godbolt.org/z/rzY8Tcjf8">run</a>):</p>
+<pre class="highlight"><code>struct point {
+  double x;
+  double y;
+};
+
+template &lt;&gt; struct fmt::formatter&lt;point&gt; {
+  constexpr auto parse(format_parse_context&amp; ctx) {
+    return ctx.begin();
+  }
+
+  template &lt;typename FormatContext&gt;
+  constexpr auto format(const point&amp; p, FormatContext&amp; ctx) const {
+    return format_to(ctx.out(), "({}, {})"_cf, p.x, p.y);
+  }
+};
+
+using namespace fmt::literals;
+constexpr std::string s = fmt::format("{}"_cf, point(1, 2));</code></pre>
 <div class="docblock">
 <a id="FMT_COMPILE">
 <pre><code class="language-cpp decl"><div></div><div>FMT_COMPILE(s)</div></code></pre>
