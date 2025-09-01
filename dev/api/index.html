@@ -1599,27 +1599,33 @@ efficient formatting code at compile-time. This supports arguments of built-in
 and string types as well as user-defined types with <code>format</code> methods taking
 the format context type as a template parameter in their <code>formatter</code>
 specializations. For example:</p>
-<pre class="highlight"><code>template &lt;&gt; struct fmt::formatter&lt;point&gt; {
-  constexpr auto parse(format_parse_context&amp; ctx);
-
-  template &lt;typename FormatContext&gt;
-  auto format(const point&amp; p, FormatContext&amp; ctx) const;
-};</code></pre>
-<p>Format string compilation can generate more binary code compared to the
-default API and is only recommended in places where formatting is a
-performance bottleneck.</p>
-<p>The same API supports formatting at compile time e.g. in <code>constexpr</code> functions.
-It works with built-in and user-defined formatters that have <code>constexpr</code> <code>parse</code>
-and <code>format</code> methods. Example (<a href="https://www.godbolt.org/z/rzY8Tcjf8">run</a>):</p>
 <pre class="highlight"><code>struct point {
   double x;
   double y;
 };
 
 template &lt;&gt; struct fmt::formatter&lt;point&gt; {
-  constexpr auto parse(format_parse_context&amp; ctx) {
-    return ctx.begin();
+  constexpr auto parse(format_parse_context&amp; ctx) { return ctx.begin(); }
+
+  template &lt;typename FormatContext&gt;
+  auto format(const point&amp; p, FormatContext&amp; ctx) const {
+    return format_to(ctx.out(), "({}, {})"_cf, p.x, p.y);
   }
+};
+
+using namespace fmt::literals;
+std::string s = fmt::format("{}"_cf, point(4, 2));</code></pre>
+<p>Format string compilation can generate more binary code compared to the
+default API and is only recommended in places where formatting is a
+performance bottleneck.</p>
+<p>The same APIs support formatting at compile time e.g. in <code>constexpr</code>
+and <code>consteval</code> functions. Additionally there is an experimental
+<code>FMT_STATIC_FORMAT</code> that allows formatting into a string of the exact
+required size at compile time. Compile-time formatting works with built-in
+and user-defined formatters that have <code>constexpr</code> <code>format</code> methods.
+Example:</p>
+<pre class="highlight"><code>template &lt;&gt; struct fmt::formatter&lt;point&gt; {
+  constexpr auto parse(format_parse_context&amp; ctx) { return ctx.begin(); }
 
   template &lt;typename FormatContext&gt;
   constexpr auto format(const point&amp; p, FormatContext&amp; ctx) const {
@@ -1627,8 +1633,16 @@ template &lt;&gt; struct fmt::formatter&lt;point&gt; {
   }
 };
 
-using namespace fmt::literals;
-constexpr std::string s = fmt::format("{}"_cf, point(1, 2));</code></pre>
+constexpr auto s = FMT_STATIC_FORMAT("{}", point(4, 2));
+const char* cstr = s.c_str(); // Points the static string "(4, 2)".</code></pre>
+<div class="docblock">
+<a id="operator""_cf">
+<pre><code class="language-cpp decl"><div>template &lt;detail::fixed_string&nbsp;Str&gt;
+</div><div>constexpr auto operator""_cf();</div></code></pre>
+</a>
+<div class="docblock-desc">
+</div>
+</div>
 <div class="docblock">
 <a id="FMT_COMPILE">
 <pre><code class="language-cpp decl"><div></div><div>FMT_COMPILE(s)</div></code></pre>
@@ -1642,12 +1656,17 @@ std::string s = fmt::format(FMT_COMPILE("{}"), 42);
         </div>
 </div>
 <div class="docblock">
-<a id="operator""_cf">
-<pre><code class="language-cpp decl"><div>template &lt;detail::fixed_string&nbsp;Str&gt;
-</div><div>constexpr auto operator""_cf();</div></code></pre>
+<a id="FMT_STATIC_FORMAT">
+<pre><code class="language-cpp decl"><div></div><div>FMT_STATIC_FORMAT(fmt_str, ...)</div></code></pre>
 </a>
 <div class="docblock-desc">
-</div>
+<p>Formats arguments according to the format string <code>fmt_str</code> and produces a string of the exact required size at compile time. Both the format string and the arguments must be compile-time expressions.</p>
+<p>The resulting string can be accessed as a C string via <code>c_str()</code> or as a <code>fmt::string_view</code> via <code>str()</code>.</p>
+<p><b>Example</b>: <pre><code class="language-cpp">// Produces the static string "42" at compile time.
+static constexpr auto result = FMT_STATIC_FORMAT("{}", 42);
+const char* s = result.c_str();
+</code></pre> </p>
+        </div>
 </div>
 <p><a id="color-api"></a></p>
 <h2 id="terminal-colors-and-text-styles">Terminal Colors and Text Styles</h2>
