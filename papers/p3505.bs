@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Fix the default floating-point representation in std::format
 Shortname: P3505
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
@@ -9,7 +9,7 @@ URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Junekey Jeon, j6jeon@ucsd.edu
 No abstract: true
-Date: 2025-03-16
+Date: 2025-09-30
 Markup Shorthands: markdown yes
 </pre>
 
@@ -29,6 +29,11 @@ surprising behavior to users, performance regression and an inconsistency with
 other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.
+
+# Changes since R0 # {#changes0}
+
+- Use the same number in Python and C++ to illustrate that the former
+    satisifies shortness requirements and the latter doesn't.
 
 Problem {#problem}
 =======
@@ -164,8 +169,8 @@ For example, Python avoids it by switching to the exponential format as one
 would expect:
 
 ```python
->>> 12345678901234567800000.0
-1.2345678901234568e+22
+>>> 1234567890123456700000.0
+1.2345678901234568e+21
 ```
 
 The current behavior is a consequence of the shortness-in-characters criterion
