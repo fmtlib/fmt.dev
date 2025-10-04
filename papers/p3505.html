@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="2d29383f11b0e6df97ee4cb972d2b3c63aaeea9c" name="revision">
+  <meta content="eafaf113aa5698d1fc72fe7a6303cdd0125ab458" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2136,6 +2136,8 @@ other languages and in line with the original design intent.</p>
      <p>Clarify in the wording that lower and upper bounds are the nearest
 representable as the argument type values.</p>
     <li data-md>
+     <p>Use the absolute value in the wording.</p>
+    <li data-md>
      <p>Use the same number in Python and C++ to illustrate that the former
 satisifies shortness requirements and the latter doesn’t.</p>
    </ul>
@@ -2484,10 +2486,8 @@ example:</p>
       <td>none 
       <td>
        <ins>Let <code class="highlight"><c- n>T</c-></code> be <code class="highlight"><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-></code>.
-    Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if <code class="highlight"><c- n>value</c-></code> is in
-    the range [<i>m</i>, <i>n</i>), where <i>m</i> is the nearest representable
-    as <code class="highlight"><c- n>T</c-></code> value of 10<sup>-4</sup> and <i>n</i> is the nearest
-    representable as <code class="highlight"><c- n>T</c-></code> value of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>radix</c-></code><sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-></code> + 1</sup> rounded
+    Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if the absolute value of <code class="highlight"><c- n>value</c-></code> is in the range [<i>m</i>, <i>n</i>), where <i>m</i> is
+    the nearest representable as <code class="highlight"><c- n>T</c-></code> value of 10<sup>-4</sup> and <i>n</i> is the nearest representable as <code class="highlight"><c- n>T</c-></code> value of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>radix</c-></code><sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-></code> + 1</sup> rounded
     down to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
        <p>If <em>precision</em> is specified, equivalent to</p>
 <pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>general</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c->
