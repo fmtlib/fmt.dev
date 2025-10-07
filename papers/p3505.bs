@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: Fix the default floating-point representation in std::format
-Shortname: P3505
-Revision: 1
+Shortname: D3505
+Revision: 2
 Audience: LEWG
-Status: P
+Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Junekey Jeon, j6jeon@ucsd.edu
 No abstract: true
-Date: 2025-09-30
+Date: 2025-10-07
 Markup Shorthands: markdown yes
 </pre>
 
@@ -29,6 +29,10 @@ surprising behavior to users, performance regression and an inconsistency with
 other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.
+
+# Changes since R1 # {#changes1}
+
+- Added an option to fix `std::to_chars`.
 
 # Changes since R0 # {#changes0}
 
@@ -481,6 +485,9 @@ std::format("{:L}", 1200000.0)
 Wording {#wording}
 =======
 
+Option 1: fix `std::format` {#option1}
+---------------------------
+
 Modify [[format.string.std](https://eel.is/c++draft/format.string.std)]:
 
 Table 105 — Meaning of type options for floating-point types
@@ -536,6 +543,48 @@ Table 105 — Meaning of type options for floating-point types
     otherwise.
 </tr>
 </table>
+
+Option 2: fix `std::to_chars` {#option2}
+-----------------------------
+
+Modify [[charconv.to.chars](https://eel.is/c++draft/charconv.to.chars)]:
+
+...
+
+2 The functions that take a floating-point `value` but not a `precision`
+parameter ensure that the string representation consists of the smallest
+number of characters such that there is at least one digit before the radix
+point (if present) and parsing the representation using the corresponding
+`from_chars` function recovers `value` exactly.
+
+[*Note 1*: This guarantee applies only if `to_chars` and `from_chars` are
+executed on the same implementation. — *end note*]
+
+If there are several such representations, the representation with the smallest
+difference from the floating-point argument value is chosen, resolving any
+remaining ties using rounding according to `round_to_nearest`
+([[round.style](https://eel.is/c++draft/round.style)]).
+
+3 The functions taking a `chars_format` parameter determine the conversion
+specifier for `printf` as follows: The conversion specifier is `f` if `fmt`
+is `chars_format​::​fixed`, `e` if `fmt` is `chars_format​::​scientific`,
+`a` (without leading `"0x"` in the result) if `fmt` is `chars_format​::​hex`,
+and `g` if `fmt` is `chars_format​::​general`.
+
+<ins>
+Let `T` be <i>floating-point-type</i>.
+The functions that take a floating-point `value` but not a `chars_format`
+parameter determine the conversion specifier for `printf` as follows:
+The conversion specifier is `f` if the absolute value of <code>value</code>
+is in the range [<i>m</i>, <i>n</i>), where <i>m</i> is the nearest
+representable as <code>T</code> value of 10<sup>-4</sup> and
+<i>n</i> is the nearest representable as <code>T</code> value of
+<code>std::numeric_limits&lt;T&gt;::radix</code><!--
+--><sup><code>std::numeric_limits&lt;T&gt;::digits</code> + 1</sup> rounded
+down to the nearest power of 10, `chars_format::scientific` otherwise.
+</ins>
+
+...
 
 Implementation and usage experience {#impl}
 ===================================
