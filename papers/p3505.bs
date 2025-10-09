@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Fix the default floating-point representation in std::format
 Shortname: P3505
-Revision: 2
+Revision: 3
 Audience: LEWG
 Status: P
 Group: WG21
@@ -9,7 +9,7 @@ URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Junekey Jeon, j6jeon@ucsd.edu
 No abstract: true
-Date: 2025-10-07
+Date: 2025-10-08
 Markup Shorthands: markdown yes
 </pre>
 
@@ -30,6 +30,12 @@ other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.
 
+# Changes since R2 # {#changes2}
+
+- Add LEWG poll results.
+- Clarify that the paper fixes `std::to_chars` in addition to `std::format`.
+- Remove option 1 from the wording, leaving only LEWG-approved changes.
+
 # Changes since R1 # {#changes1}
 
 - Added an option to fix `std::to_chars` per feedback from the author of
@@ -45,6 +51,34 @@ other languages and in line with the original design intent.
 - Use the absolute value in the wording.
 - Use the same number in Python and C++ to illustrate that the former
     satisifies shortness requirements and the latter doesn't.
+
+Polls {#polls}
+=====
+
+LEWG poll results for R2:
+
+**POLL**: Change the behavior for printing floating point values using
+`to_chars()` as proposed in P3505R2 (option 2)
+
+```text
+SF  F  N  A SA
+ 9  4  0  0  0
+```
+
+Outcome: Unanimous consensus in favour.
+
+
+**POLL**: Bump FTMs `__cpp_lib_to_chars`, `__cpp_lib_constexpr_charconv` and
+forward the corrected paper (P3505R2) to LWG for C++29 (with a recommendation
+to make it a DR for C++17, C++20, C++23, C++26), to be confirmed via electronic
+poll.
+
+```text
+SF  F  N  A SA
+ 9  4  0  0  0
+```
+
+Outcome: Unanimous consensus in favour.
 
 Problem {#problem}
 =======
@@ -381,7 +415,8 @@ Proposal {#proposal}
 ========
 
 The current paper proposes fixing the default floating-point representation in
-`std::format` to use exponent range, fixing the issues described above.
+`std::format` (and `std::to_char`) to use exponent range, fixing the issues
+described above.
 
 Consistent, easy to reason about output format:
 
@@ -488,68 +523,6 @@ std::format("{:L}", 1200000.0)
 
 Wording {#wording}
 =======
-
-Option 1: fix `std::format` {#option1}
----------------------------
-
-Modify [[format.string.std](https://eel.is/c++draft/format.string.std)]:
-
-Table 105 — Meaning of type options for floating-point types
-[[tab:format.type.float](https://eel.is/c++draft/format.string.std)]
-
-<table>
-<tr>
-  <td>**Type**
-  <td>**Meaning**
-</tr>
-<tr>
-  <td>`a`
-  <td>
-    If *precision* is specified, equivalent to
-    ```
-      to_chars(first, last, value, chars_format::hex, precision)
-    ```
-    where `precision` is the specified formatting precision; equivalent to
-    ```
-      to_chars(first, last, value, chars_format::hex)
-    ```
-    otherwise.
-</tr>
-<tr>
-  <td>...
-  <td>...
-</tr>
-<tr>
-  <td>`G`
-  <td>The same as `g`, except that it uses `E` to indicate exponent.
-</tr>
-<tr>
-  <td>none
-  <td>
-    <ins>Let <code>T</code> be <code>decltype(value)</code>.
-    Let <code>fmt</code> be `chars_format::fixed` if the absolute value of
-    <code>value</code> is in the range [<i>m</i>, <i>n</i>), where <i>m</i> is
-    the nearest representable as <code>T</code> value of 10<sup>-4</sup> and
-    <i>n</i> is the nearest representable as <code>T</code> value of
-    <code>std::numeric_limits&lt;T&gt;::radix</code><!--
-    --><sup><code>std::numeric_limits&lt;T&gt;::digits</code> + 1</sup> rounded
-    down to the nearest power of 10, `chars_format::scientific` otherwise.
-    </ins>
-    
-    If *precision* is specified, equivalent to
-    ```
-      to_chars(first, last, value, chars_format::general, precision)
-    ```
-    where `precision` is the specified formatting precision; equivalent to
-    <pre>
-      to_chars(first, last, value<ins>, fmt</ins>)
-    </pre>
-    otherwise.
-</tr>
-</table>
-
-Option 2: fix `std::to_chars` {#option2}
------------------------------
 
 Update the value of the feature-testing macros `__cpp_lib_to_chars` and
 `__cpp_lib_constexpr_charconv` to the date of adoption in

@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3505R2: Fix the default floating-point representation in std::format</title>
+  <title>P3505R3: Fix the default floating-point representation in std::format</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="efcde76a3d9136b71e944052d2bca713630267cb" name="revision">
+  <meta content="dd9ab28d1ff853b96bfb62d43bac0d3ef36ee321" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,8 +2086,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3505R2<br>Fix the default floating-point representation in std::format</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-10-07">2025-10-07</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3505R3<br>Fix the default floating-point representation in std::format</h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-10-08">2025-10-08</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Authors:
@@ -2106,18 +2106,15 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#changes1"><span class="secno">2</span> <span class="content">Changes since R1</span></a>
-    <li><a href="#changes0"><span class="secno">3</span> <span class="content">Changes since R0</span></a>
-    <li><a href="#problem"><span class="secno">4</span> <span class="content">Problem</span></a>
-    <li><a href="#proposal"><span class="secno">5</span> <span class="content">Proposal</span></a>
-    <li>
-     <a href="#wording"><span class="secno">6</span> <span class="content">Wording</span></a>
-     <ol class="toc">
-      <li><a href="#option1"><span class="secno">6.1</span> <span class="content">Option 1: fix <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code></span></a>
-      <li><a href="#option2"><span class="secno">6.2</span> <span class="content">Option 2: fix <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code></span></a>
-     </ol>
-    <li><a href="#impl"><span class="secno">7</span> <span class="content">Implementation and usage experience</span></a>
-    <li><a href="#impact"><span class="secno">8</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#changes2"><span class="secno">2</span> <span class="content">Changes since R2</span></a>
+    <li><a href="#changes1"><span class="secno">3</span> <span class="content">Changes since R1</span></a>
+    <li><a href="#changes0"><span class="secno">4</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#polls"><span class="secno">5</span> <span class="content">Polls</span></a>
+    <li><a href="#problem"><span class="secno">6</span> <span class="content">Problem</span></a>
+    <li><a href="#proposal"><span class="secno">7</span> <span class="content">Proposal</span></a>
+    <li><a href="#wording"><span class="secno">8</span> <span class="content">Wording</span></a>
+    <li><a href="#impl"><span class="secno">9</span> <span class="content">Implementation and usage experience</span></a>
+    <li><a href="#impact"><span class="secno">10</span> <span class="content">Impact on existing code</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2136,7 +2133,16 @@ surprising behavior to users, performance regression and an inconsistency with
 other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.</p>
-   <h2 class="heading settled" data-level="2" id="changes1"><span class="secno">2. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes2"><span class="secno">2. </span><span class="content">Changes since R2</span><a class="self-link" href="#changes2"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Add LEWG poll results.</p>
+    <li data-md>
+     <p>Clarify that the paper fixes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> in addition to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>.</p>
+    <li data-md>
+     <p>Remove option 1 from the wording, leaving only LEWG-approved changes.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="changes1"><span class="secno">3. </span><span class="content">Changes since R1</span><a class="self-link" href="#changes1"></a></h2>
    <ul>
     <li data-md>
      <p>Added an option to fix <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code> per feedback from the author of
@@ -2144,7 +2150,7 @@ P0067 "Elementary string conversions" that introduced the feature.</p>
     <li data-md>
      <p>Added instructions to update the <code class="highlight"><c- n>__cpp_lib_to_chars</c-></code> and <code class="highlight"><c- n>__cpp_lib_constexpr_charconv</c-></code> feature testing macros.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="changes0"><span class="secno">3. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <h2 class="heading settled" data-level="4" id="changes0"><span class="secno">4. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
    <ul>
     <li data-md>
      <p>Clarify in the wording that lower and upper bounds are the nearest
@@ -2155,7 +2161,22 @@ representable as the argument type values.</p>
      <p>Use the same number in Python and C++ to illustrate that the former
 satisifies shortness requirements and the latter doesn’t.</p>
    </ul>
-   <h2 class="heading settled" data-level="4" id="problem"><span class="secno">4. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
+   <h2 class="heading settled" data-level="5" id="polls"><span class="secno">5. </span><span class="content">Polls</span><a class="self-link" href="#polls"></a></h2>
+   <p>LEWG poll results for R2:</p>
+   <p><strong>POLL</strong>: Change the behavior for printing floating point values using <code class="highlight"><c- n>to_chars</c-><c- p>()</c-></code> as proposed in P3505R2 (option 2)</p>
+<pre class="language-text highlight">SF  F  N  A SA
+ 9  4  0  0  0
+</pre>
+   <p>Outcome: Unanimous consensus in favour.</p>
+   <p><strong>POLL</strong>: Bump FTMs <code class="highlight"><c- n>__cpp_lib_to_chars</c-></code>, <code class="highlight"><c- n>__cpp_lib_constexpr_charconv</c-></code> and
+forward the corrected paper (P3505R2) to LWG for C++29 (with a recommendation
+to make it a DR for C++17, C++20, C++23, C++26), to be confirmed via electronic
+poll.</p>
+<pre class="language-text highlight">SF  F  N  A SA
+ 9  4  0  0  0
+</pre>
+   <p>Outcome: Unanimous consensus in favour.</p>
+   <h2 class="heading settled" data-level="6" id="problem"><span class="secno">6. </span><span class="content">Problem</span><a class="self-link" href="#problem"></a></h2>
    <p>Since Steele and White’s seminal paper (<a data-link-type="biblio" href="#biblio-steele-white" title="How to Print Floating-Point Numbers Accurately">[STEELE-WHITE]</a>), based on their work
 in the 70s, many programming languages converged on similar default
 representation of floating point numbers. The properties of an algorithm
@@ -2396,8 +2417,9 @@ example:</p>
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:L}"</c-><c- p>,</c-> <c- mf>1200000.0</c-><c- p>);</c->  <c- c1>// s == "1,200,000"</c->
 </pre>
    <p>Here <code class="highlight"><c- n>s</c-></code> is <code class="highlight"><c- s>"1,200,000"</c-></code> even though <code class="highlight"><c- s>"1.2e+06"</c-></code> would be shorter.</p>
-   <h2 class="heading settled" data-level="5" id="proposal"><span class="secno">5. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
-   <p>The current paper proposes fixing the default floating-point representation in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> to use exponent range, fixing the issues described above.</p>
+   <h2 class="heading settled" data-level="7" id="proposal"><span class="secno">7. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p>The current paper proposes fixing the default floating-point representation in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> (and <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_char</c-></code>) to use exponent range, fixing the issues
+described above.</p>
    <p>Consistent, easy to reason about output format:</p>
    <table>
     <tbody>
@@ -2472,47 +2494,7 @@ example:</p>
 <pre class="highlight"><c- s>"1,200,000"</c->
 </pre>
    </table>
-   <h2 class="heading settled" data-level="6" id="wording"><span class="secno">6. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
-   <h3 class="heading settled" data-level="6.1" id="option1"><span class="secno">6.1. </span><span class="content">Option 1: fix <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code></span><a class="self-link" href="#option1"></a></h3>
-   <p>Modify <a href="https://eel.is/c++draft/format.string.std">[format.string.std</a>]:</p>
-   <p>Table 105 — Meaning of type options for floating-point types <a href="https://eel.is/c++draft/format.string.std">[tab:format.type.float</a>]</p>
-   <table>
-    <tbody>
-     <tr>
-      <td><strong>Type</strong> 
-      <td><strong>Meaning</strong> 
-     <tr>
-      <td><code class="highlight"><c- n>a</c-></code> 
-      <td>
-        If <em>precision</em> is specified, equivalent to 
-<pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>hex</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c->
-</pre>
-       <p>where <code class="highlight"><c- n>precision</c-></code> is the specified formatting precision; equivalent to</p>
-<pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>hex</c-><c- p>)</c->
-</pre>
-       <p>otherwise.</p>
-     <tr>
-      <td>... 
-      <td>... 
-     <tr>
-      <td><code class="highlight"><c- n>G</c-></code> 
-      <td>The same as <code class="highlight"><c- n>g</c-></code>, except that it uses <code class="highlight"><c- n>E</c-></code> to indicate exponent. 
-     <tr>
-      <td>none 
-      <td>
-       <ins>Let <code class="highlight"><c- n>T</c-></code> be <code class="highlight"><c- k>decltype</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-></code>.
-    Let <code class="highlight"><c- n>fmt</c-></code> be <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>fixed</c-></code> if the absolute value of <code class="highlight"><c- n>value</c-></code> is in the range [<i>m</i>, <i>n</i>), where <i>m</i> is
-    the nearest representable as <code class="highlight"><c- n>T</c-></code> value of 10<sup>-4</sup> and <i>n</i> is the nearest representable as <code class="highlight"><c- n>T</c-></code> value of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>radix</c-></code><sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-></code> + 1</sup> rounded
-    down to the nearest power of 10, <code class="highlight"><c- n>chars_format</c-><c- o>::</c-><c- n>scientific</c-></code> otherwise. </ins>
-       <p>If <em>precision</em> is specified, equivalent to</p>
-<pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><c- p>,</c-> <c- n>chars_format</c-><c- o>::</c-><c- n>general</c-><c- p>,</c-> <c- n>precision</c-><c- p>)</c->
-</pre>
-       <p>where <code class="highlight"><c- n>precision</c-></code> is the specified formatting precision; equivalent to</p>
-<pre class="highlight"><c- n>to_chars</c-><c- p>(</c-><c- n>first</c-><c- p>,</c-> <c- n>last</c-><c- p>,</c-> <c- n>value</c-><ins><c- p>,</c-> <c- n>fmt</c-></ins><c- p>)</c->
-</pre>
-       <p>otherwise.</p>
-   </table>
-   <h3 class="heading settled" data-level="6.2" id="option2"><span class="secno">6.2. </span><span class="content">Option 2: fix <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_chars</c-></code></span><a class="self-link" href="#option2"></a></h3>
+   <h2 class="heading settled" data-level="8" id="wording"><span class="secno">8. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Update the value of the feature-testing macros <code class="highlight"><c- n>__cpp_lib_to_chars</c-></code> and <code class="highlight"><c- n>__cpp_lib_constexpr_charconv</c-></code> to the date of adoption in <a href="https://eel.is/c++draft/version.syn">[version.syn</a>].</p>
    <p>Modify <a href="https://eel.is/c++draft/charconv.to.chars">[charconv.to.chars</a>]:</p>
    <p>...</p>
@@ -2533,12 +2515,12 @@ The conversion specifier is <code class="highlight"><c- n>f</c-></code> if the a
 representable as <code class="highlight"><c- n>T</c-></code> value of 10<sup>-4</sup> and <i>n</i> is the nearest representable as <code class="highlight"><c- n>T</c-></code> value of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>radix</c-></code><sup><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>numeric_limits</c-><c- o>&lt;</c-><c- n>T</c-><c- o>>::</c-><c- n>digits</c-></code> + 1</sup> rounded
 down to the nearest power of 10, <code class="highlight"><c- n>e</c-></code> otherwise. </ins>
    <p>...</p>
-   <h2 class="heading settled" data-level="7" id="impl"><span class="secno">7. </span><span class="content">Implementation and usage experience</span><a class="self-link" href="#impl"></a></h2>
+   <h2 class="heading settled" data-level="9" id="impl"><span class="secno">9. </span><span class="content">Implementation and usage experience</span><a class="self-link" href="#impl"></a></h2>
    <p>The current proposal is based on the existing implementation in <a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a> which
 has been available and widely used for over 6 years. Similar logic based on the
 value range rather than the output size is implemented in Python, Java,
 JavaScript, Rust and Swift.</p>
-   <h2 class="heading settled" data-level="8" id="impact"><span class="secno">8. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="10" id="impact"><span class="secno">10. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>This is technically a breaking change for users who rely on the exact
 output that is being changed. However, the change doesn’t affect ABI or round
 trip guarantees. Also reliance on the exact representation of floating-point
