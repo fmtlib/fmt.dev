@@ -635,13 +635,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#compile-time-configuration" class="md-nav__link">
+  <a href="#configuration-options" class="md-nav__link">
     <span class="md-ellipsis">
-      Compile-Time Configuration
+      Configuration Options
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Compile-Time Configuration">
+    <nav class="md-nav" aria-label="Configuration Options">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -654,9 +654,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#size-optimization-recipe" class="md-nav__link">
+  <a href="#binary-size-optimization" class="md-nav__link">
     <span class="md-ellipsis">
-      Size Optimization Recipe
+      Binary Size Optimization
     </span>
   </a>
   
@@ -1972,77 +1972,60 @@ following differences:</p>
   decimal digits than necessary.</p>
 </li>
 </ul>
-<h2 id="compile-time-configuration">Compile-Time Configuration</h2>
-<p>{fmt} provides configuration via CMake options and preprocessor macros to enable or disable features and to optimize for binary size. You can set CMake options when generating your build system (e.g. <code>-DFMT_OS=OFF</code>) and define macros or pass them to your compiler (e.g. <code>-DFMT_USE_EXCEPTIONS=0</code>).</p>
+<h2 id="configuration-options">Configuration Options</h2>
+<p>{fmt} provides configuration via CMake options and preprocessor macros to
+enable or disable features and to optimize for binary size. For example, you
+can disable OS-specific APIs defined in <code>fmt/os.h</code> with <code>-DFMT_OS=OFF</code> when
+configuring CMake.</p>
 <h3 id="available-options">Available Options</h3>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Header-Only Mode</td>
-<td>CMake target</td>
-<td><code>fmt::fmt</code></td>
-<td>Enable header-only usage by linking the <code>fmt::fmt-header-only</code> target.</td>
-</tr>
-<tr>
-<td><code>FMT_HEADER_ONLY</code></td>
-<td>0 / 1</td>
-<td>0</td>
-<td>Enables header-only mode when set to 1 (CMake target <code>fmt::fmt-header-only</code> defines it); disable with 0 for library mode.</td>
-</tr>
-<tr>
-<td><code>FMT_OS</code></td>
-<td>ON / OFF</td>
-<td>ON</td>
-<td>Enables OS-specific APIs (<code>fmt/os.h</code>); disable with OFF.</td>
-</tr>
-<tr>
-<td><code>FMT_UNICODE</code></td>
-<td>ON / OFF</td>
-<td>ON</td>
-<td>Enables Unicode support; disable with OFF.</td>
-</tr>
-<tr>
-<td><code>FMT_USE_EXCEPTIONS</code></td>
-<td>0 / 1</td>
-<td>1 (0 if compiled with <code>-fno-exceptions</code>)</td>
-<td>Enables exception-based error handling; disable with 0.</td>
-</tr>
-<tr>
-<td><code>FMT_BUILTIN_TYPES</code></td>
-<td>0 / 1</td>
-<td>1</td>
-<td>Enables built-in type formatters; disable with 0.</td>
-</tr>
-<tr>
-<td><code>FMT_OPTIMIZE_SIZE</code></td>
-<td>0 / 1 / 2</td>
-<td>0</td>
-<td>Controls size-optimized routines: 0 = off, 1 = size optimization, &gt;1 = aggressive size optimization disabling format-string checks.</td>
-</tr>
-<tr>
-<td><code>FMT_USE_LOCALE</code></td>
-<td>0 / 1</td>
-<td>1 (0 when <code>FMT_OPTIMIZE_SIZE &gt; 1</code>)</td>
-<td>Enables locale-dependent formatting; disable with 0.</td>
-</tr>
-<tr>
-<td><code>FMT_THROW(x)</code></td>
-<td>macro</td>
-<td><code>throw x</code> (or <code>abort</code>)</td>
-<td>Defines error handling via macro (not a toggle flag): if exceptions enabled, <code>throw x</code>; otherwise, <code>fmt::assert_fail(...)</code>.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="size-optimization-recipe">Size Optimization Recipe</h3>
-<p>To minimize your binary footprint, use the following CMake configuration and compile definitions:</p>
+<ul>
+<li>
+<p><strong><code>FMT_HEADER_ONLY</code></strong>
+  Default: <code>0</code>
+  Enables header-only mode when set to <code>1</code> (CMake target <code>fmt::fmt-header-only</code>
+  defines it); disable with <code>0</code> for library mode.</p>
+</li>
+<li>
+<p><strong><code>FMT_OS</code></strong>
+  Default: <code>ON</code>
+  Enables OS-specific APIs (<code>fmt/os.h</code>); disable with <code>OFF</code>.</p>
+</li>
+<li>
+<p><strong><code>FMT_UNICODE</code></strong>
+  Default: <code>ON</code>
+  Enables Unicode support; disable with <code>OFF</code>.</p>
+</li>
+<li>
+<p><strong><code>FMT_USE_EXCEPTIONS</code></strong>
+  Default: <code>1</code> (<code>0</code> if compiled with <code>-fno-exceptions</code>)
+  Enables exception-based error handling; disable with <code>0</code>.</p>
+</li>
+<li>
+<p><strong><code>FMT_BUILTIN_TYPES</code></strong>
+  Default: <code>1</code>
+  Enables built-in type formatters; disable with <code>0</code>.</p>
+</li>
+<li>
+<p><strong><code>FMT_OPTIMIZE_SIZE</code></strong>
+  Default: <code>0</code>
+  Controls size-optimized routines: <code>0</code> = off, <code>1</code> = size optimization, <code>&gt;1</code> =
+  aggressive size optimization disabling format-string checks.</p>
+</li>
+<li>
+<p><strong><code>FMT_USE_LOCALE</code></strong>
+  Default: <code>1</code> (<code>0</code> when <code>FMT_OPTIMIZE_SIZE &gt; 1</code>)
+  Enables locale-dependent formatting; disable with <code>0</code>.</p>
+</li>
+<li>
+<p><strong><code>FMT_THROW(x)</code></strong>
+  Default: <code>throw x</code> (or <code>abort</code>)
+  Defines error handling via macro (not a toggle flag): if exceptions enabled,
+  <code>throw x</code>; otherwise, <code>fmt::assert_fail(...)</code>.</p>
+</li>
+</ul>
+<h3 id="binary-size-optimization">Binary Size Optimization</h3>
+<p>To minimize your binary footprint, use the following CMake configuration and
+compile definitions:</p>
 <pre><code class="language-cmake"># Link to the header-only target
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt-header-only)
 # Disable OS-specific APIs
