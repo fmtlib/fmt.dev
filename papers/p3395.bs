@@ -8,7 +8,7 @@ Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-04-12
+Date: 2025-04-27
 Markup Shorthands: markdown yes
 </pre>
 
@@ -35,7 +35,9 @@ underlying API ([[LWG4156]]).
 Changes since R3 {#changes3}
 ================
 
+- Added LEWG poll results for R3.
 - Fixed a typo in the wording.
+- Fixed wording for the debug output.
 
 Changes since R2 {#changes2}
 ================
@@ -63,9 +65,21 @@ Changes since R0 {#changes0}
 Polls {#polls}
 =====
 
+LEWG poll results for R3:
+
+**POLL**: P3395 should explore format specifier support to define which
+information (error number/category/message) to format.
+
+```text
+SF  F  N  A SA
+ 1  9  4  2  0
+```
+
+Outcome: Consensus in favour
+
 SG16 poll results for R0:
 
-**Poll 1**: Forward P3395R0 to LEWG amended to specify an encoding for
+**POLL**: Forward P3395R0 to LEWG amended to specify an encoding for
 `std::error_category::name()` and for transcoding to be to UTF-8 if that
 matches the ordinary literal encoding and to an implementation-defined encoding
 otherwise.
@@ -75,7 +89,7 @@ SF  F  N  A SA
  1  6  0  0  0
 ```
 
-Outcome: Strong consensus.
+Outcome: Strong consensus
 
 Motivation {#motivation}
 ==========
@@ -114,6 +128,18 @@ generic     :2
 
 Additionally, it doesn’t allow formatting the error message and introduces
 potential encoding issues, as the encoding of the category name is unspecified.
+
+A specifier for an error code’s value is intentionally not provided because it
+is of limited use without the associated category information. Moreover, the
+value can be easily accessed and formatted using other means, for example:
+
+```c++
+std::print("{}\n", ec.value());
+```
+
+This functionality is not currently provided by {fmt}, and over several years
+of usage, there have been no requests to add it. However, if sufficient demand
+emerges, it could be considered for future inclusion.
 
 Proposal {#proposal}
 ========
@@ -261,7 +287,8 @@ Previous work {#previous}
 =============
 
 A formatter for `std::error_code` was proposed as part of [[P2930]] which
-has more formatting options but doesn't try to address encoding issues.
+has more formatting options for the numeric code but doesn't try to address
+encoding issues or provide a debug format.
 
 Wording {#wording}
 =======
@@ -292,7 +319,6 @@ template&lt;class charT> struct formatter&lt;error_code, charT> {
 };
 </pre>
 
-
 ```
 constexpr void set_debug_format();
 ```
@@ -314,13 +340,7 @@ parsed specifiers in `*this`.
 <code>?</code><i><sub>opt</sub></i> <code>s</code><i><sub>opt</sub></i>
 
 where the productions <i>fill-and-align</i> and <i>width</i> are described in
-[[format.string](http://eel.is/c++draft/format#string)]. If the `?` option is
-used then the path is formatted as an escaped string ([[format.string.escaped](
-http://eel.is/c++draft/format.string.escaped)]).
-
-<!-- If the `?` option is
-used then the path is formatted as an escaped string ([[format.string.escaped](
-http://eel.is/c++draft/format.string.escaped)]). -->
+[[format.string](http://eel.is/c++draft/format#string)].
 
 *Returns*: An iterator past the end of the *error-code-format-spec*.
 
@@ -342,7 +362,9 @@ http://eel.is/c++draft/format.string.escaped)]). -->
 Otherwise, let `msg` be `format("{}:{}", ec.category().name(), ec.value())`.
 
 Writes `msg` into `ctx.out()`, adjusted according to the
-*error-code-format-spec*.
+*error-code-format-spec*. If the `?` option is used then `msg` is formatted as
+an escaped string ([[format.string.escaped](
+http://eel.is/c++draft/format.string.escaped)]).
 
 *Returns*: An iterator past the end of the output range.
 
