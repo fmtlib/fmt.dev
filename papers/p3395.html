@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8df8c349d71809e3bace25cc487ececb0d3ffa91" name="revision">
+  <meta content="ed2a925eac35fd22eb591f4669075c3fa4d24015" name="revision">
 <style type="text/css">
   td {
     vertical-align: middle;
@@ -2144,8 +2144,7 @@ underlying API (<a data-link-type="biblio" href="#biblio-lwg4156" title="`error_
    <h2 class="heading settled" data-level="2" id="changes4"><span class="secno">2. </span><span class="content">Changes since R4</span><a class="self-link" href="#changes4"></a></h2>
    <ul>
     <li data-md>
-     <p>Fixed handling of <code class="highlight"><c- b>wchar_t</c-></code> in the wording, making it consistent with the one
-from <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code>.</p>
+     <p>Fixed handling of <code class="highlight"><c- b>wchar_t</c-></code> in the wording, making it consistent with that of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code>.</p>
     <li data-md>
      <p>Clarified ABI implications of future changes.</p>
     <li data-md>
@@ -2158,7 +2157,7 @@ from <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c-
    <h2 class="heading settled" data-level="3" id="changes3"><span class="secno">3. </span><span class="content">Changes since R3</span><a class="self-link" href="#changes3"></a></h2>
    <ul>
     <li data-md>
-     <p>Added LEWG poll results for R3.</p>
+     <p>Added the LEWG poll results for R3.</p>
     <li data-md>
      <p>Fixed a typo in the wording.</p>
     <li data-md>
@@ -2215,7 +2214,7 @@ otherwise.</p>
 <c- n>std</c-><c- o>::</c-><c- n>cout</c-> <c- o>&lt;&lt;</c-> <c- n>ec</c-><c- p>;</c->
 </pre>
    <p>This works and prints <code class="highlight"><c- nl>generic</c-><c- p>:</c-><c- mi>2</c-></code>.</p>
-   <p>However, the following code doesn’t compile:</p>
+   <p>However, the following code does not compile:</p>
 <pre class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>ec</c-><c- p>);</c->
 </pre>
    <p>Unfortunately, the existing inserter has several issues, such as I/O
@@ -2301,9 +2300,9 @@ of usage, there have been no requests to add it. However, if sufficient demand
 emerges, it could be considered for future inclusion. Even if there are ABI
 implications to such extensions, since the current proposal is targeting C++29,
 there is plenty of time to do this.</p>
-   <p>The same applies to the error category and a separate paper (<a data-link-type="biblio" href="#biblio-p3885" title="Add a formatter for std::error_category">[P3885]</a>) provides
+   <p>The same applies to the error category, and a separate paper (<a data-link-type="biblio" href="#biblio-p3885" title="Add a formatter for std::error_category">[P3885]</a>) provides
 a formatter for it.</p>
-   <p>The current proposal provides the debug format for <code class="highlight"><c- n>error_code</c-></code>. The main
+   <p>The current proposal provides the debug format for <code class="highlight"><c- n>error_code</c-></code>. The main reason
 for that is that the <code class="highlight"><c- o>:</c-></code> separating the error category and code can be confused
 with <code class="highlight"><c- o>:</c-></code> separating keys and values in a map. For example:</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>map</c-><c- o>&lt;</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- p>,</c-> <c- b>int</c-><c- o>></c-><c- p>{{</c-><c- n>std</c-><c- o>::</c-><c- n>error_code</c-><c- p>{},</c-> <c- mi>1</c-><c- p>}});</c->
@@ -2315,8 +2314,8 @@ with <code class="highlight"><c- o>:</c-></code> separating keys and values in a
 <pre class="highlight"><c- p>{</c-><c- s>"system:0"</c-><c- o>:</c-> <c- mi>1</c-><c- p>}</c->
 </pre>
    <p>with.</p>
-   <p>This is also one of the reasons why quotation applies to the whole error code
-and not just error category.</p>
+   <p>This is also one of the reasons why quotation applies to the whole error code,
+and not just to the error category.</p>
    <h2 class="heading settled" data-level="10" id="previous"><span class="secno">10. </span><span class="content">Previous work</span><a class="self-link" href="#previous"></a></h2>
    <p>A formatter for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>error_code</c-></code> was proposed as part of <a data-link-type="biblio" href="#biblio-p2930" title="Formatter specializations for the standard library">[P2930]</a> which
 has more formatting options for the numeric code but doesn’t try to address
