@@ -1,0 +1,117 @@
+<pre class='metadata'>
+Title: Add a formatter for std::error_category
+Shortname: P3885
+Revision: 0
+Audience: SG16
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2025-10-19
+Markup Shorthands: markdown yes
+</pre>
+
+<style type="text/css">
+  td {
+    vertical-align: middle;
+  }
+  ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+
+  .poll th, .poll td {
+    text-align: right;
+    width: 20%;
+  }
+</style>
+
+Introduction {#intro}
+============
+
+This paper proposes making `std::error_category` formattable using the
+formatting facility introduced in C++20 (`std::format`).
+
+Motivation {#motivation}
+==========
+
+`std::error_category` currently has no standard way to be formatted or printed
+directly. For example none of this compiles:
+
+```c++
+std::cout << std::generic_category();
+std::print("{}", std::generic_category());
+```
+
+Additionally the encoding of `std::error_category::name()` was unspecified
+making it difficult to use it reliably - this is addressed by [[P3395]].
+
+Proposal {#proposal}
+========
+
+The current paper proposes making `std::error_category` formattable:
+
+```c++
+std::print("{}", std::generic_category());
+```
+
+This prints `generic`.
+
+It will correctly handle width and alignment:
+
+```c++
+std::print("[{:>10}]\n", std::generic_category());
+```
+
+Output:
+
+```
+[   generic]
+```
+
+Similarly to other recent cases, an ostream inserter is not proposed but it is
+possible to stream the string returned by `std::error_categor::name()` or
+the output of `std::format`.
+
+Wording {#wording}
+=======
+
+Add to "Header &lt;system_error> synopsis" [[system.error.syn](
+https://eel.is/c++draft/system.error.syn)]:
+
+```
+// [system.error.fmt], formatter
+template<class charT> struct formatter<error_category, charT>;
+```
+
+Add a new section "Formatting" [system.error.fmt] under "Class `error_category`"
+[[syserr.errcat](https://eel.is/c++draft/syserr.errcat)]:
+
+<pre>
+template&lt;class charT> struct formatter&lt;error_category, charT>
+    : formatter&lt;basic_string_view&lt;charT>, charT> {
+  template&lt;class FormatContext>
+    typename FormatContext::iterator
+      format(const error_category& cat, FormatContext& ctx) const;
+};
+</pre>
+
+<pre>
+  template&lt;class FormatContext>
+    typename FormatContext::iterator
+      format(const error_category& cat, FormatContext& ctx) const;
+</pre>
+
+Let `name` be `cat.name()` if `charT` is `char` and `cat.name()`,
+  transcoded to wide literal encoding otherwise.
+
+*Returns*: `formatter<basic_string_view<charT>, charT>::format(name, ctx)`.
+
+<pre class=biblio>
+{
+  "P3395": {
+    "title": "Formatter specializations for the standard library",
+    "authors": ["Victor Zverovich"],
+    "href": "https://isocpp.org/files/papers/P3395R4.html"
+  }
+}
+</pre>
