@@ -1,7 +1,7 @@
 <pre class='metadata'>
 Title: Fix encoding issues and add a formatter for std::error_code
 Shortname: P3395
-Revision: 4
+Revision: 5
 Audience: LEWG
 Status: P
 Group: WG21
@@ -31,6 +31,14 @@ Introduction {#intro}
 This paper proposes making `std::error_code` formattable using the formatting
 facility introduced in C++20 (`std::format`) and fixes encoding issues in the
 underlying API ([[LWG4156]]).
+
+Changes since R4 {#changes4}
+================
+
+- Fixed handling of `wchar_t` in the wording, making it consistent with the one
+    from `std::filesystem::path`.
+- Clarify ABI implications of future changes.
+- Clarify why debug format applies to the whole error code.
 
 Changes since R3 {#changes3}
 ================
@@ -129,18 +137,6 @@ generic     :2
 
 Additionally, it doesn’t allow formatting the error message and introduces
 potential encoding issues, as the encoding of the category name is unspecified.
-
-A specifier for an error code’s value is intentionally not provided because it
-is of limited use without the associated category information. Moreover, the
-value can be easily accessed and formatted using other means, for example:
-
-```c++
-std::print("{}\n", ec.value());
-```
-
-This functionality is not currently provided by {fmt}, and over several years
-of usage, there have been no requests to add it. However, if sufficient demand
-emerges, it could be considered for future inclusion.
 
 Proposal {#proposal}
 ========
@@ -284,6 +280,40 @@ compared to adopting a single encoding.
 
 <!-- ABI: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1196r0.html -->
 
+A specifier for an error code’s value is intentionally not provided because it
+is of limited use without the associated category information. Moreover, the
+value can be easily accessed and formatted using other means, for example:
+
+```c++
+std::print("{}\n", ec.value());
+```
+
+This functionality is not currently provided by {fmt}, and over several years
+of usage, there have been no requests to add it. However, if sufficient demand
+emerges, it could be considered for future inclusion. Even if there are ABI
+implications to such extensions, since the current proposal is targeting C++29,
+there is plenty of time to do this.
+
+The current proposal provides the debug format for `error_code`. The main
+for that is that the `:` separating the error category and code can be confused
+with `:` separating keys and values in a map. For example:
+
+```c++
+std::print("{}", std::map<std::error_code, int>{{std::error_code{}, 1}});
+```
+would be printed as
+```
+{system:0: 1}
+```
+without debug format and as
+```
+{"system:0": 1}
+```
+with.
+
+This is also one of the reasons why the whole error code and not just error
+category should be quoted.
+
 Previous work {#previous}
 =============
 
@@ -304,8 +334,6 @@ template<class charT> struct formatter<error_code, charT>;
 
 Add a new section "Formatting" [system.error.fmt] under "Class `error_code`"
 [[syserr.errcode](https://eel.is/c++draft/syserr.errcode)]:
-
-<!-- TODO: debug format -->
 
 <pre>
 template&lt;class charT> struct formatter&lt;error_code, charT> {
@@ -353,10 +381,10 @@ where the productions <i>fill-and-align</i> and <i>width</i> are described in
 
 *Effects*: If the `s` option is used, then:
 
-- If the ordinary literal encoding is UTF-8, then let `msg` be `ec.message()`
-    transcoded to UTF-8 with maximal subparts of ill-formed subsequences
-    substituted with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard,
-    Chapter 3.9 U+FFFD Substitution in Conversion.
+- If `charT` is `char` and the ordinary literal encoding is UTF-8, then let
+    `msg` be `ec.message()` transcoded to UTF-8 with maximal subparts of
+    ill-formed subsequences substituted with U+FFFD REPLACEMENT CHARACTER per
+    the Unicode Standard, Chapter 3.9 U+FFFD Substitution in Conversion.
 - Otherwise, let `msg` be `ec.message()` transcoded to an implementation-defined
     encoding.
 
