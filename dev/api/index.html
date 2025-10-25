@@ -1779,8 +1779,16 @@ const char* s = result.c_str();
 <p>Constructs a <code>std::system_error</code> object with the description of the form <pre><code class="language-cpp">&lt;message>: &lt;system-message>
 </code></pre> where <code>&lt;message></code> is the formatted message and <code>&lt;system-message></code> is the system message corresponding to the error code. <code>error_code</code> is a Windows error code as given by <code>GetLastError</code>. If <code>error_code</code> is not a valid error code such as -1, the system message will look like "error -1".</p>
 <p><b>Example</b>: <pre><code class="language-cpp">// This throws a system_error with the description
-//   cannot open file 'madeup': The system cannot find the file
-</code></pre> specified. // or similar (system message may vary). const char *filename = "madeup"; LPOFSTRUCT of = LPOFSTRUCT(); HFILE file = OpenFile(filename, &of, OF_READ); if (file == HFILE_ERROR) { throw fmt::windows_error(GetLastError(), "cannot open file '{}'", filename); } </p>
+//   cannot open file 'foo': The system cannot find the file specified.
+// or similar (system message may vary) if the file doesn't exist.
+const char *filename = "foo";
+LPOFSTRUCT of = LPOFSTRUCT();
+HFILE file = OpenFile(filename, &of, OF_READ);
+if (file == HFILE_ERROR) {
+  throw fmt::windows_error(GetLastError(),
+                           "cannot open file '{}'", filename);
+}
+</code></pre> </p>
         </div>
 </div>
 <p><a id="ostream-api"></a></p>
