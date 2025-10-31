@@ -1,5 +1,5 @@
 <pre class='metadata'>
-When paths go WTF: making formatting lossless
+Title: When paths go WTF: making formatting lossless
 Shortname: P3904
 Revision: 0
 Audience: SG16
@@ -12,15 +12,58 @@ Date: 2025-10-30
 Markup Shorthands: markdown yes
 </pre>
 
-# Introduction
+<p style="text-align: right">
+"Compatibility means deliberately repeating other people’s mistakes." -
+David Wheeler
+</p>
+
+# Introduction # {#intro}
 
 [[P2845]], adopted in C++26, added formatting support for
 `std::filesystem::path`, addressing encoding issues and making formatting
 lossless except for one case, unpaired surrogates on Windows. This paper
 proposes addressing this case and making formatting 100% lossless by default
-via the WTF-8 encoding ([[WTF]]).
+via the WTF-8 encoding ([[WTF]]). This will improve consistency in path
+handling between Windows and POSIX platforms and align with the design of
+`std::format` where the default formatting is normally lossless.
 
-# Motivation
+# Motivation # {#motivation}
+
+[[P2845]] made it possible to format and print Unicode paths, even on Windows,
+which historically had problems because of legacy code pages. For example
+
+```c++
+std::print("{}\n", std::filesystem::path(L"Шчучыншчына"));
+```
+
+is correctly formatted and printed on Windows when the literal encoding is
+UTF-8 regardles of the Active Code Page.
+
+However, paths are not guaranteed to be valid Unicode or even text. In general
+they are just sequences of bytes (or 16-bit values on Windows) which often but
+not always contain Unicode text, quoting [[WIN32-FILEIO]]:
+
+> the file system treats path and file names as an opaque sequence of `WCHAR`s
+
+Arbitrary paths are formatted on POSIX such that there is no data loss.
+Unfortunately this is not the case on Windows, for example:
+
+```c++
+auto p1 = std::filesystem::path(L"\xd800"); // a lone surrogate
+auto p2 = std::filesystem::path(L"\xd801"); // another lone surrogate
+auto s1 = std::format("{}\n", p1); // s1 == "�"
+auto s2 = std::format("{}\n", p2); // s2 == "�"
+```
+
+Apart from being inconsistent between platforms, this makes it impossible to
+reliably round trip paths. For example, `p1` and `p2` above are two distinct
+paths that are formatted as the same string. This may result in a silent data
+loss and is remarkably different from other standard formatters such as the ones
+for floating point numbers which are specifically designed to allow round trip.
+
+# Proposal # {#proposal}
+
+TODO
 
 <pre class=biblio>
 {
@@ -33,6 +76,13 @@ via the WTF-8 encoding ([[WTF]]).
     "title": "The WTF-8 encoding",
     "authors": ["Simon Sapin"],
     "href": "https://wtf-8.codeberg.page/"
+  },
+  "WIN32-FILEIO": {
+    "authors": ["Microsoft Corporation"],
+    "title":
+      "Maximum Path Length Limitation – Local file systems",
+    "href":
+      "https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation"
   }
 }
 </pre>
