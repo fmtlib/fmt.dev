@@ -45,6 +45,12 @@ not always contain Unicode text, quoting [[WIN32-FILEIO]]:
 
 > the file system treats path and file names as an opaque sequence of `WCHAR`s
 
+This is also true on POSIX ([[PEP383]]):
+
+> File names, environment variables, and command line arguments are defined as
+> being character data in POSIX; the C APIs however allow passing arbitrary
+> bytes - whether these conform to a certain encoding or not.
+
 Arbitrary paths are formatted on POSIX such that there is no data loss.
 Unfortunately this is not the case on Windows, for example:
 
@@ -113,7 +119,30 @@ std::format("{}\n", std::filesystem::path(L"\xD801"));
 </tr>
 </table>
 
-TODO
+At the same time this will preserve the observable behavior for `std::print`
+when printing to a terminal. For example:
+
+```c++
+std::print("{}\n", std::filesystem::path(L"\xD800"));
+```
+
+will still print
+
+```
+�
+```
+
+on implementations that follow the recommended practice from
+[[ostream.formatted.print](https://eel.is/c++draft/ostream.formatted.print)]:
+
+> *Recommended practice*: For `vprint_unicode`, if invoking the native Unicode
+> API requires transcoding, implementations should substitute invalid code
+> units with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9
+> U+FFFD Substitution in Conversion.
+
+WTF-8 is used to handle invalid UTF-16 in Rust ([[RUST-OSSTRING]]) and Node.js
+libuv ([[LIBUV]]). Python also handles this but with a different mechanism
+([[PEP383]]).
 
 <pre class=biblio>
 {
@@ -121,6 +150,21 @@ TODO
     "title": "Formatting of std::filesystem::path",
     "authors": ["Victor Zverovich"],
     "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2845r8.html"
+  },
+  "PEP383": {
+    "title": "PEP 383 – Non-decodable Bytes in System Character Interfaces",
+    "authors": ["Martin von Löwis"],
+    "href": "https://peps.python.org/pep-0383/"
+  },
+  "RUST-OSSTRING": {
+    "title": "OsString Struct. The Rust Standard Library.",
+    "authors": "Rust Project Developers",
+    "href": "https://doc.rust-lang.org/std/ffi/struct.OsString.html"
+  },
+  "LIBUV": {
+    "title": "Miscellaneous utilities. libuv Documentation.",
+    "authors": "libuv contributors,",
+    "href": "https://docs.libuv.org/en/v1.x/misc.html"
   },
   "WTF": {
     "title": "The WTF-8 encoding",

@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="13d7c997af9d4ef75ba4d5addd710fe9c58a4268" name="revision">
+  <meta content="36253156092910ff21aa2d4b2a5b9a7ec762c0bf" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2136,6 +2136,12 @@ not always contain Unicode text, quoting <a data-link-type="biblio" href="#bibli
    <blockquote>
     <p>the file system treats path and file names as an opaque sequence of <code class="highlight"><c- n>WCHAR</c-></code>s</p>
    </blockquote>
+   <p>This is also true on POSIX (<a data-link-type="biblio" href="#biblio-pep383" title="PEP 383 – Non-decodable Bytes in System Character Interfaces">[PEP383]</a>):</p>
+   <blockquote>
+    <p>File names, environment variables, and command line arguments are defined as
+being character data in POSIX; the C APIs however allow passing arbitrary
+bytes - whether these conform to a certain encoding or not.</p>
+   </blockquote>
    <p>Arbitrary paths are formatted on POSIX such that there is no data loss.
 Unfortunately this is not the case on Windows, for example:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xD800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
@@ -2186,7 +2192,22 @@ well-formedness constraints of UTF-8." (<a data-link-type="biblio" href="#biblio
 <pre class="highlight"><c- s>"</c-><c- se>\xED\xA0\x81</c-><c- s>"</c->
 </pre>
    </table>
-   <p>TODO</p>
+   <p>At the same time this will preserve the observable behavior for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-></code> when printing to a terminal. For example:</p>
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xD800</c-><c- s>"</c-><c- p>));</c->
+</pre>
+   <p>will still print</p>
+<pre class="highlight">�
+</pre>
+   <p>on implementations that follow the recommended practice from <a href="https://eel.is/c++draft/ostream.formatted.print">[ostream.formatted.print</a>]:</p>
+   <blockquote>
+    <p><em>Recommended practice</em>: For <code class="highlight"><c- n>vprint_unicode</c-></code>, if invoking the native Unicode
+API requires transcoding, implementations should substitute invalid code
+units with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9
+U+FFFD Substitution in Conversion.</p>
+   </blockquote>
+   <p>WTF-8 is used to handle invalid UTF-16 in Rust (<a data-link-type="biblio" href="#biblio-rust-osstring" title="OsString Struct. The Rust Standard Library.">[RUST-OSSTRING]</a>) and Node.js
+libuv (<a data-link-type="biblio" href="#biblio-libuv" title="Miscellaneous utilities. libuv Documentation.">[LIBUV]</a>). Python also handles this but with a different mechanism
+(<a data-link-type="biblio" href="#biblio-pep383" title="PEP 383 – Non-decodable Bytes in System Character Interfaces">[PEP383]</a>).</p>
   </main>
 <script>
 (function() {
@@ -2320,8 +2341,14 @@ well-formedness constraints of UTF-8." (<a data-link-type="biblio" href="#biblio
   <h2 class="no-num no-ref heading settled" id="references"><span class="content">References</span><a class="self-link" href="#references"></a></h2>
   <h3 class="no-num no-ref heading settled" id="informative"><span class="content">Informative References</span><a class="self-link" href="#informative"></a></h3>
   <dl>
+   <dt id="biblio-libuv">[LIBUV]
+   <dd>l; et al. <a href="https://docs.libuv.org/en/v1.x/misc.html"><cite>Miscellaneous utilities. libuv Documentation.</cite></a>. URL: <a href="https://docs.libuv.org/en/v1.x/misc.html">https://docs.libuv.org/en/v1.x/misc.html</a>
    <dt id="biblio-p2845">[P2845]
    <dd>Victor Zverovich. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2845r8.html"><cite>Formatting of std::filesystem::path</cite></a>. URL: <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2845r8.html">https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2845r8.html</a>
+   <dt id="biblio-pep383">[PEP383]
+   <dd>Martin von Löwis. <a href="https://peps.python.org/pep-0383/"><cite>PEP 383 – Non-decodable Bytes in System Character Interfaces</cite></a>. URL: <a href="https://peps.python.org/pep-0383/">https://peps.python.org/pep-0383/</a>
+   <dt id="biblio-rust-osstring">[RUST-OSSTRING]
+   <dd>R; et al. <a href="https://doc.rust-lang.org/std/ffi/struct.OsString.html"><cite>OsString Struct. The Rust Standard Library.</cite></a>. URL: <a href="https://doc.rust-lang.org/std/ffi/struct.OsString.html">https://doc.rust-lang.org/std/ffi/struct.OsString.html</a>
    <dt id="biblio-win32-fileio">[WIN32-FILEIO]
    <dd>Microsoft Corporation. <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation"><cite>Maximum Path Length Limitation – Local file systems</cite></a>. URL: <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation">https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation</a>
    <dt id="biblio-wtf">[WTF]
