@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="d43ff0c47551e157762ce58dcadb6301e7929605" name="revision">
+  <meta content="13d7c997af9d4ef75ba4d5addd710fe9c58a4268" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2138,8 +2138,8 @@ not always contain Unicode text, quoting <a data-link-type="biblio" href="#bibli
    </blockquote>
    <p>Arbitrary paths are formatted on POSIX such that there is no data loss.
 Unfortunately this is not the case on Windows, for example:</p>
-<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
-<c- k>auto</c-> <c- n>p2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xd801</c-><c- s>"</c-><c- p>);</c-> <c- c1>// another lone surrogate</c->
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xD800</c-><c- s>"</c-><c- p>);</c-> <c- c1>// a lone surrogate</c->
+<c- k>auto</c-> <c- n>p2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xD801</c-><c- s>"</c-><c- p>);</c-> <c- c1>// another lone surrogate</c->
 <c- k>auto</c-> <c- n>s1</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p1</c-><c- p>);</c-> <c- c1>// s1 == "�"</c->
 <c- k>auto</c-> <c- n>s2</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p2</c-><c- p>);</c-> <c- c1>// s2 == "�"</c->
 </pre>
@@ -2147,8 +2147,45 @@ Unfortunately this is not the case on Windows, for example:</p>
 reliably round trip paths. For example, <code class="highlight"><c- n>p1</c-></code> and <code class="highlight"><c- n>p2</c-></code> above are two distinct
 paths that are formatted as the same string. This may result in a silent data
 loss and is remarkably different from other standard formatters such as the ones
-for floating point numbers which are specifically designed to allow round trip.</p>
+for floating point numbers which are specifically designed to round trip.</p>
+   <p>For comparison, on POSIX formatting of arbitrary paths including the ones that
+are not valid Unicode works as expected and is lossless:</p>
+<pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c-><c- s>"</c-><c- se>\x80</c-><c- s>"</c-><c- p>);</c->
+<c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c-> <c- c1>// s == "\x80"</c->
+</pre>
    <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <p>The current paper proposes preventing data loss and formatting ill-formed
+UTF-16 paths using WTF-8 (Wobbly Transformation Format − 8-bit) which is
+"a superset of UTF-8 that can losslessly represent arbitrary sequences of
+16-bit code unit (even if ill-formed in UTF-16) but preserves the other
+well-formedness constraints of UTF-8." (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>)</p>
+   <table>
+    <tbody>
+     <tr>
+      <th>Code 
+      <th>Before 
+      <th>After 
+     <tr>
+      <td>
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xD800</c-><c- s>"</c-><c- p>));</c->
+</pre>
+      <td>
+<pre class="highlight"><c- s>"�"</c->
+</pre>
+      <td>
+<pre class="highlight"><c- s>"</c-><c- se>\xED\xA0\x80</c-><c- s>"</c->
+</pre>
+     <tr>
+      <td>
+<pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"</c-><c- se>\xD801</c-><c- s>"</c-><c- p>));</c->
+</pre>
+      <td>
+<pre class="highlight"><c- s>"�"</c->
+</pre>
+      <td>
+<pre class="highlight"><c- s>"</c-><c- se>\xED\xA0\x81</c-><c- s>"</c->
+</pre>
+   </table>
    <p>TODO</p>
   </main>
 <script>

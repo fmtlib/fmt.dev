@@ -49,8 +49,8 @@ Arbitrary paths are formatted on POSIX such that there is no data loss.
 Unfortunately this is not the case on Windows, for example:
 
 ```c++
-auto p1 = std::filesystem::path(L"\xd800"); // a lone surrogate
-auto p2 = std::filesystem::path(L"\xd801"); // another lone surrogate
+auto p1 = std::filesystem::path(L"\xD800"); // a lone surrogate
+auto p2 = std::filesystem::path(L"\xD801"); // another lone surrogate
 auto s1 = std::format("{}\n", p1); // s1 == "�"
 auto s2 = std::format("{}\n", p2); // s2 == "�"
 ```
@@ -59,9 +59,59 @@ Apart from being inconsistent between platforms, this makes it impossible to
 reliably round trip paths. For example, `p1` and `p2` above are two distinct
 paths that are formatted as the same string. This may result in a silent data
 loss and is remarkably different from other standard formatters such as the ones
-for floating point numbers which are specifically designed to allow round trip.
+for floating point numbers which are specifically designed to round trip.
+
+For comparison, on POSIX formatting of arbitrary paths including the ones that
+are not valid Unicode works as expected and is lossless:
+
+```c++
+auto p = std::filesystem::path("\x80");
+auto s = std::format("{}\n", p); // s == "\x80"
+```
 
 # Proposal # {#proposal}
+
+The current paper proposes preventing data loss and formatting ill-formed
+UTF-16 paths using WTF-8 (Wobbly Transformation Format − 8-bit) which is
+"a superset of UTF-8 that can losslessly represent arbitrary sequences of
+16-bit code unit (even if ill-formed in UTF-16) but preserves the other
+well-formedness constraints of UTF-8." ([[WTF]])
+
+<table>
+<tr>
+  <th>Code
+  <th>Before
+  <th>After
+</tr>
+<tr>
+<td>
+```c++
+std::format("{}\n", std::filesystem::path(L"\xD800"));
+```
+<td>
+```
+"�"
+```
+<td>
+```
+"\xED\xA0\x80"
+```
+</tr>
+<tr>
+<td>
+```c++
+std::format("{}\n", std::filesystem::path(L"\xD801"));
+```
+<td>
+```
+"�"
+```
+<td>
+```
+"\xED\xA0\x81"
+```
+</tr>
+</table>
 
 TODO
 
