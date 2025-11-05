@@ -23,7 +23,7 @@ David Wheeler
 `std::filesystem::path`, addressing encoding issues and making formatting
 lossless except for one case, unpaired surrogates on Windows. This paper
 proposes addressing this case and making formatting 100% lossless by default
-via the WTF-8 encoding ([[WTF]]). This will improve consistency in path
+via the WTF-8 encoding ([[WTF-8]]). This will improve consistency in path
 handling between Windows and POSIX platforms and align with the design of
 `std::format` where the default formatting is normally lossless.
 
@@ -81,7 +81,7 @@ The current paper proposes preventing data loss and formatting ill-formed
 UTF-16 paths using WTF-8 (Wobbly Transformation Format − 8-bit) which is
 "a superset of UTF-8 that can losslessly represent arbitrary sequences of
 16-bit code unit (even if ill-formed in UTF-16) but preserves the other
-well-formedness constraints of UTF-8." ([[WTF]])
+well-formedness constraints of UTF-8." ([[WTF-8]])
 
 <table>
 <tr>
@@ -140,9 +140,9 @@ on implementations that follow the recommended practice from
 > units with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9
 > U+FFFD Substitution in Conversion.
 
-WTF-8 is used to handle invalid UTF-16 in Rust ([[RUST-OSSTRING]]) and Node.js
-libuv ([[LIBUV]]). Python also handles this but with a different mechanism
-([[PEP383]]).
+WTF-8 is used to handle invalid UTF-16 in paths and other system APIs in Rust
+([[RUST-OSSTRING]]) and Node.js libuv ([[LIBUV]]). Python also handles this but
+with a different mechanism ([[PEP383]]).
 
 <pre class=biblio>
 {
@@ -166,7 +166,7 @@ libuv ([[LIBUV]]). Python also handles this but with a different mechanism
     "authors": "libuv contributors,",
     "href": "https://docs.libuv.org/en/v1.x/misc.html"
   },
-  "WTF": {
+  "WTF-8": {
     "title": "The WTF-8 encoding",
     "authors": ["Simon Sapin"],
     "href": "https://wtf-8.codeberg.page/"

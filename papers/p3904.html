@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="36253156092910ff21aa2d4b2a5b9a7ec762c0bf" name="revision">
+  <meta content="26969f8e22b014ff36432e52efdd0173cfcf5071" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2121,7 +2121,7 @@ David Wheeler </p>
    <p><a data-link-type="biblio" href="#biblio-p2845" title="Formatting of std::filesystem::path">[P2845]</a>, adopted in C++26, added formatting support for <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code>, addressing encoding issues and making formatting
 lossless except for one case, unpaired surrogates on Windows. This paper
 proposes addressing this case and making formatting 100% lossless by default
-via the WTF-8 encoding (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>). This will improve consistency in path
+via the WTF-8 encoding (<a data-link-type="biblio" href="#biblio-wtf-8" title="The WTF-8 encoding">[WTF-8]</a>). This will improve consistency in path
 handling between Windows and POSIX platforms and align with the design of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> where the default formatting is normally lossless.</p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2845" title="Formatting of std::filesystem::path">[P2845]</a> made it possible to format and print Unicode paths, even on Windows,
@@ -2164,7 +2164,7 @@ are not valid Unicode works as expected and is lossless:</p>
 UTF-16 paths using WTF-8 (Wobbly Transformation Format − 8-bit) which is
 "a superset of UTF-8 that can losslessly represent arbitrary sequences of
 16-bit code unit (even if ill-formed in UTF-16) but preserves the other
-well-formedness constraints of UTF-8." (<a data-link-type="biblio" href="#biblio-wtf" title="The WTF-8 encoding">[WTF]</a>)</p>
+well-formedness constraints of UTF-8." (<a data-link-type="biblio" href="#biblio-wtf-8" title="The WTF-8 encoding">[WTF-8]</a>)</p>
    <table>
     <tbody>
      <tr>
@@ -2205,9 +2205,9 @@ API requires transcoding, implementations should substitute invalid code
 units with U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9
 U+FFFD Substitution in Conversion.</p>
    </blockquote>
-   <p>WTF-8 is used to handle invalid UTF-16 in Rust (<a data-link-type="biblio" href="#biblio-rust-osstring" title="OsString Struct. The Rust Standard Library.">[RUST-OSSTRING]</a>) and Node.js
-libuv (<a data-link-type="biblio" href="#biblio-libuv" title="Miscellaneous utilities. libuv Documentation.">[LIBUV]</a>). Python also handles this but with a different mechanism
-(<a data-link-type="biblio" href="#biblio-pep383" title="PEP 383 – Non-decodable Bytes in System Character Interfaces">[PEP383]</a>).</p>
+   <p>WTF-8 is used to handle invalid UTF-16 in paths and other system APIs in Rust
+(<a data-link-type="biblio" href="#biblio-rust-osstring" title="OsString Struct. The Rust Standard Library.">[RUST-OSSTRING]</a>) and Node.js libuv (<a data-link-type="biblio" href="#biblio-libuv" title="Miscellaneous utilities. libuv Documentation.">[LIBUV]</a>). Python also handles this but
+with a different mechanism (<a data-link-type="biblio" href="#biblio-pep383" title="PEP 383 – Non-decodable Bytes in System Character Interfaces">[PEP383]</a>).</p>
   </main>
 <script>
 (function() {
@@ -2351,6 +2351,6 @@ libuv (<a data-link-type="biblio" href="#biblio-libuv" title="Miscellaneous util
    <dd>R; et al. <a href="https://doc.rust-lang.org/std/ffi/struct.OsString.html"><cite>OsString Struct. The Rust Standard Library.</cite></a>. URL: <a href="https://doc.rust-lang.org/std/ffi/struct.OsString.html">https://doc.rust-lang.org/std/ffi/struct.OsString.html</a>
    <dt id="biblio-win32-fileio">[WIN32-FILEIO]
    <dd>Microsoft Corporation. <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation"><cite>Maximum Path Length Limitation – Local file systems</cite></a>. URL: <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation">https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation</a>
-   <dt id="biblio-wtf">[WTF]
+   <dt id="biblio-wtf-8">[WTF-8]
    <dd>Simon Sapin. <a href="https://wtf-8.codeberg.page/"><cite>The WTF-8 encoding</cite></a>. URL: <a href="https://wtf-8.codeberg.page/">https://wtf-8.codeberg.page/</a>
   </dl>
