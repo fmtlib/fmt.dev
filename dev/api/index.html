@@ -1285,10 +1285,9 @@ fmt::format_args args = fmt::make_format_args();  // Dangling reference
 <div class="docblock-desc">
 <p>Returns a named argument to be used in a formatting function. It should only be used in a call to a formatting function.</p>
 <p><b>Example</b>: <pre><code class="language-cpp">fmt::print("The answer is {answer}.", fmt::arg("answer", 42));
-</code> </pre></p>
+</code> Named arguments passed with </pre><code>fmt::arg</code> are not supported in compile-time checks, but <code>"answer"_a=42</code> are compile-time checked in sufficiently new compilers. See <code>operator""_a()</code>. </p>
         </div>
 </div>
-<p>Named arguments are not supported in compile-time checks at the moment.</p>
 <h3 id="compatibility">Compatibility</h3>
 <div class="docblock">
 <a id="basic_string_view">
@@ -1366,7 +1365,11 @@ std::string message = fmt::format("The answer is {}.", 42);
 </div><div>constexpr auto operator""_a();</div></code></pre>
 </a>
 <div class="docblock-desc">
-</div>
+<p>User-defined literal equivalent of <code>fmt::arg</code>, but with compile-time checks.</p>
+<p><b>Example</b>: <pre><code class="language-cpp">using namespace fmt::literals;
+fmt::print("The answer is {answer}.", "answer"_a=42);
+</code> </pre></p>
+        </div>
 </div>
 <h3 id="utilities">Utilities</h3>
 <div class="docblock">
