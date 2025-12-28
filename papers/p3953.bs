@@ -1,0 +1,95 @@
+<pre class='metadata'>
+Title: Rename `std::runtime_format`
+Shortname: P3953
+Revision: 0
+Audience: LEWG
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2025-12-28
+Markup Shorthands: markdown yes
+</pre>
+
+<p style="text-align: right">
+There are only two hard things in Computer Science: cache invalidation and naming things.<br>
+— Phil Karlton
+</p>
+
+# Abstract # {#abstract}
+
+
+[[P2918]] introduced `std::runtime_format` to allow opting out of compile-time
+format string checks in `std::format`. Subsequently, [[P3391]] made
+`std::format` usable in constant evaluation. As a result, `std::runtime_format`
+can now be evaluated at compile time, making its name misleading. This paper
+proposes renaming `std::runtime_format` to `std::dynamic_format` to better
+reflect its semantics and avoid confusion in `constexpr `contexts.
+
+
+# Motivation # {#motivation}
+
+The name `std::runtime_format` was accurate when introduced in [[P2918]], as
+format strings were not usable in constant evaluation. However, with the
+adoption of `constexpr` `std::format`, the term runtime no longer reliably
+describes the behavior of `std::runtime_format`.
+
+Consider the following code:
+
+```c++
+constexpr auto f(std::string_view fmt, int value) {
+  return std::format(std::runtime_format(fmt), value);
+}
+```
+
+Despite its name, `std::runtime_format` can be evaluated at compile time.
+This creates a semantic mismatch:
+
+- "runtime" suggests evaluation timing
+- The facility actually describes how the format string is obtained.
+
+The real distinction is not when formatting occurs, but how the format string
+is provided and validated. The term runtime conflates it with evaluation time.
+
+# Proposed Naming: `std::dynamic_format` # {#naming}
+
+The proposed name `std::dynamic_format` reflects the actual semantics:
+
+- The format string is dynamically provided
+- The format string is not a compile-time constant
+- The validation is deferred (but may still occur during constant evaluation)
+
+This aligns with existing terminology `std::format` such as dynamic format
+specifiers (`check_dynamic_spec`).
+
+Example with proposed name:
+
+```
+constexpr auto f(std::string_view fmt, int value) {
+  return std::format(std::runtime_format(fmt), value);
+}
+```
+
+This reads naturally and avoids semantic contradiction.
+
+Impact on existing code {#impact}
+=======================
+
+If this is adopted for C++26 there will be no impact on existing code since
+`std::runtime_format` is a C++26 feature.
+
+<pre class=biblio>
+{
+  "P2918": {
+    "title": "Runtime format strings II",
+    "authors": ["Victor Zverovich"],
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2918r2.html"
+  },
+  "P3391": {
+    "title": "`constexpr std::format`",
+    "authors": ["Barry Revzin"],
+    "href": "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3391r2.html"
+  }
+}
+</pre>
