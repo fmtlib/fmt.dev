@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P3953R0: Rename std::runtime_format</title>
+  <title>P3953R1: Rename std::runtime_format</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="e1a76fdac59139852e53b4af62b23c6270a316c2" name="revision">
+  <meta content="e4330c2d693a8eea750d2a8dd6240b2f3b1c7938" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2086,8 +2086,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">P3953R0<br>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code></h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-12-28">2025-12-28</time></span></h2>
+   <h1 class="p-name no-ref" id="title">P3953R1<br>Rename <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code></h1>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2026-01-17">2026-01-17</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2105,9 +2105,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#abstract"><span class="secno">1</span> <span class="content">Abstract</span></a>
-    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
-    <li><a href="#naming"><span class="secno">3</span> <span class="content">Proposed Naming: <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-></code></span></a>
-    <li><a href="#impact"><span class="secno">4</span> <span class="content">Impact on existing code</span></a>
+    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#motivation"><span class="secno">3</span> <span class="content">Motivation</span></a>
+    <li><a href="#naming"><span class="secno">4</span> <span class="content">Proposed Naming: <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-></code></span></a>
+    <li><a href="#impact"><span class="secno">5</span> <span class="content">Impact on existing code</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2122,7 +2123,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
 format string checks in <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. Subsequently, <a data-link-type="biblio" href="#biblio-p3391" title="`constexpr std::format`">[P3391]</a> made <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> usable in constant evaluation. As a result, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> can now be evaluated at compile time, making its name misleading. This paper
 proposes renaming <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-></code> to better
 reflect its semantics and avoid confusion in <code class="highlight"><c- k>constexpr</c-> </code>contexts.</p>
-   <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Use the actual proposed name in the "after" example.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="motivation"><span class="secno">3. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p>The name <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> was accurate when introduced in <a data-link-type="biblio" href="#biblio-p2918" title="Runtime format strings II">[P2918]</a>, as
 format strings were not usable in constant evaluation. However, with the
 adoption of <code class="highlight"><c- k>constexpr</c-></code> <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>, the term runtime no longer reliably
@@ -2142,7 +2148,7 @@ This creates a semantic mismatch:</p>
    </ul>
    <p>The real distinction is not when formatting occurs, but how the format string
 is provided and validated. The term runtime conflates it with evaluation time.</p>
-   <h2 class="heading settled" data-level="3" id="naming"><span class="secno">3. </span><span class="content">Proposed Naming: <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-></code></span><a class="self-link" href="#naming"></a></h2>
+   <h2 class="heading settled" data-level="4" id="naming"><span class="secno">4. </span><span class="content">Proposed Naming: <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-></code></span><a class="self-link" href="#naming"></a></h2>
    <p>The proposed name <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-></code> reflects the actual semantics:</p>
    <ul>
     <li data-md>
@@ -2155,12 +2161,12 @@ is provided and validated. The term runtime conflates it with evaluation time.</
    <p>This aligns with existing terminology <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> such as dynamic format
 specifiers (<code class="highlight"><c- n>check_dynamic_spec</c-></code>).</p>
    <p>Example with proposed name:</p>
-<pre class="highlight"><c- k>constexpr</c-> <c- k>auto</c-> <c- n>f</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- b>int</c-> <c- n>value</c-><c- p>)</c-> <c- p>{</c->
-  <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-><c- p>(</c-><c- n>fmt</c-><c- p>),</c-> <c- n>value</c-><c- p>);</c->
+<pre class="language-c++ highlight"><c- n>constexpr</c-> <c- k>auto</c-> <c- n>f</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>string_view</c-> <c- n>fmt</c-><c- p>,</c-> <c- b>int</c-> <c- n>value</c-><c- p>)</c-> <c- p>{</c->
+  <c- k>return</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- n>std</c-><c- o>::</c-><c- n>dynamic_format</c-><c- p>(</c-><c- n>fmt</c-><c- p>),</c-> <c- n>value</c-><c- p>);</c->
 <c- p>}</c->
 </pre>
    <p>This reads naturally and avoids semantic contradiction.</p>
-   <h2 class="heading settled" data-level="4" id="impact"><span class="secno">4. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
+   <h2 class="heading settled" data-level="5" id="impact"><span class="secno">5. </span><span class="content">Impact on existing code</span><a class="self-link" href="#impact"></a></h2>
    <p>If this is adopted for C++26 there will be no impact on existing code since <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>runtime_format</c-></code> is a C++26 feature.</p>
   </main>
 <script>
