@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Rename `std::runtime_format`
 Shortname: P3953
-Revision: 0
+Revision: 1
 Audience: LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-12-28
+Date: 2026-01-17
 Markup Shorthands: markdown yes
 </pre>
 
@@ -19,7 +19,6 @@ There are only two hard things in Computer Science: cache invalidation and namin
 
 # Abstract # {#abstract}
 
-
 [[P2918]] introduced `std::runtime_format` to allow opting out of compile-time
 format string checks in `std::format`. Subsequently, [[P3391]] made
 `std::format` usable in constant evaluation. As a result, `std::runtime_format`
@@ -27,6 +26,9 @@ can now be evaluated at compile time, making its name misleading. This paper
 proposes renaming `std::runtime_format` to `std::dynamic_format` to better
 reflect its semantics and avoid confusion in `constexpr `contexts.
 
+# Changes since R0 # {#changes0}
+
+- Use the actual proposed name in the "after" example.
 
 # Motivation # {#motivation}
 
@@ -65,9 +67,9 @@ specifiers (`check_dynamic_spec`).
 
 Example with proposed name:
 
-```
+```c++
 constexpr auto f(std::string_view fmt, int value) {
-  return std::format(std::runtime_format(fmt), value);
+  return std::format(std::dynamic_format(fmt), value);
 }
 ```
 
