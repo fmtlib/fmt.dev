@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="9d7995a5dd4f6d846fe5cd7e1a6e15c580693b08" name="revision">
+  <meta content="aaf4e55caf4c276bc7638f02303d39f4d02900ac" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2087,7 +2087,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">P3904R0<br>When paths go WTF: making formatting lossless</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2025-10-30">2025-10-30</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Published Proposal, <time class="dt-updated" datetime="2026-01-28">2026-01-28</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2105,8 +2105,10 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation</span></a>
-    <li><a href="#proposal"><span class="secno">3</span> <span class="content">Proposal</span></a>
+    <li><a href="#changes"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#motivation"><span class="secno">3</span> <span class="content">Motivation</span></a>
+    <li><a href="#proposal"><span class="secno">4</span> <span class="content">Proposal</span></a>
+    <li><a href="#impl"><span class="secno">5</span> <span class="content">Implementation experience</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2123,7 +2125,12 @@ lossless except for one case, unpaired surrogates on Windows. This paper
 proposes addressing this case and making formatting 100% lossless by default
 via the WTF-8 encoding (<a data-link-type="biblio" href="#biblio-wtf-8" title="The WTF-8 encoding">[WTF-8]</a>). This will improve consistency in path
 handling between Windows and POSIX platforms and align with the design of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> where the default formatting is normally lossless.</p>
-   <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Added the "Implementation experience" section.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="motivation"><span class="secno">3. </span><span class="content">Motivation</span><a class="self-link" href="#motivation"></a></h2>
    <p><a data-link-type="biblio" href="#biblio-p2845" title="Formatting of std::filesystem::path">[P2845]</a> made it possible to format and print Unicode paths, even on Windows,
 which historically had problems because of legacy code pages. For example</p>
 <pre class="language-c++ highlight"><c- n>std</c-><c- o>::</c-><c- n>print</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c->L<c- s>"Шчучыншчына"</c-><c- p>));</c->
@@ -2159,7 +2166,7 @@ are not valid Unicode works as expected and is lossless:</p>
 <pre class="language-c++ highlight"><c- k>auto</c-> <c- n>p</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-><c- p>(</c-><c- s>"</c-><c- se>\x80</c-><c- s>"</c-><c- p>);</c->
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}</c-><c- se>\n</c-><c- s>"</c-><c- p>,</c-> <c- n>p</c-><c- p>);</c-> <c- c1>// s == "\x80"</c->
 </pre>
-   <h2 class="heading settled" data-level="3" id="proposal"><span class="secno">3. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="4" id="proposal"><span class="secno">4. </span><span class="content">Proposal</span><a class="self-link" href="#proposal"></a></h2>
    <p>The current paper proposes preventing data loss and formatting ill-formed
 UTF-16 paths using WTF-8 (Wobbly Transformation Format − 8-bit) which is
 "a superset of UTF-8 that can losslessly represent arbitrary sequences of
@@ -2211,6 +2218,8 @@ U+FFFD Substitution in Conversion.</p>
    <p>WTF-8 is used to handle invalid UTF-16 in paths and other system APIs in Rust
 (<a data-link-type="biblio" href="#biblio-rust-osstring" title="OsString Struct. The Rust Standard Library.">[RUST-OSSTRING]</a>) and Node.js libuv (<a data-link-type="biblio" href="#biblio-libuv" title="Miscellaneous utilities. libuv Documentation.">[LIBUV]</a>). Python also handles this but
 with a different mechanism (<a data-link-type="biblio" href="#biblio-pep383" title="PEP 383 – Non-decodable Bytes in System Character Interfaces">[PEP383]</a>).</p>
+   <h2 class="heading settled" data-level="5" id="impl"><span class="secno">5. </span><span class="content">Implementation experience</span><a class="self-link" href="#impl"></a></h2>
+   <p>The proposal has been implemented in the default <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>filesystem</c-><c- o>::</c-><c- n>path</c-></code> representation in {fmt}.</p>
   </main>
 <script>
 (function() {
