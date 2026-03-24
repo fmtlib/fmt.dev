@@ -12,6 +12,12 @@ Date: 2026-01-17
 Markup Shorthands: markdown yes
 </pre>
 
+<style type="text/css">
+  ins { text-decoration: none; }
+  ins code { background: #cfc !important; }
+  del code { background: #fcc !important; }
+</style>
+
 <p style="text-align: right">
 There are only two hard things in Computer Science: cache invalidation and naming things.<br>
 — Phil Karlton
@@ -26,9 +32,13 @@ can now be evaluated at compile time, making its name misleading. This paper
 proposes renaming `std::runtime_format` to `std::dynamic_format` to better
 reflect its semantics and avoid confusion in `constexpr `contexts.
 
+# Changes since R1 # {#changes1}
+
+- Added wording.
+
 # Changes since R0 # {#changes0}
 
-- Use the actual proposed name in the "after" example.
+- Used the actual proposed name in the "after" example.
 
 # Motivation # {#motivation}
 
@@ -80,6 +90,46 @@ Impact on existing code {#impact}
 
 If this is adopted for C++26 there will be no impact on existing code since
 `std::runtime_format` is a C++26 feature.
+
+Wording {#wording}
+=======
+
+Modify "Header `<format>` synopsis" [[format.syn](
+https://eel.is/c++draft/format.syn)]:
+
+<pre>
+  template&lt;class charT> struct <i><del>runtime</del><ins>dynamic</ins>-format-string</i> {    // <i>exposition only</i>
+  private:
+    basic_string_view&lt;charT> <i>str</i>;    // <i>exposition only</i>
+  public:
+    constexpr <i><del>runtime</del><ins>dynamic</ins>-format-string</i>(basic_string_view&lt;charT> s) noexcept : <i>str</i>(s) {}
+    <i><del>runtime</del><ins>dynamic</ins>-format-string</i>(const <i><del>runtime</del><ins>dynamic</ins>-format-string</i>&) = delete;
+    <i><del>runtime</del><ins>dynamic</ins>-format-string</i>& operator=(const <i><del>runtime</del><ins>dynamic</ins>-format-string</i>&) = delete;
+  };
+  constexpr <i><del>runtime</del><ins>dynamic</ins>-format-string</i>&lt;char>
+    <del>runtime</del><ins>dynamic</ins>_format(string_view fmt) noexcept { return fmt; }
+  constexpr <i><del>runtime</del><ins>dynamic</ins>-format-string</i>&lt;wchar_t>
+    <del>runtime</del><ins>dynamic</ins>_format(wstring_view fmt) noexcept { return fmt; }
+</pre>
+
+Modify "Class template `basic_format_string`" [[format.fmt.string](
+https://eel.is/c++draft/format.fmt.string)]:
+
+<pre>
+namespace std {
+  template&lt;class charT, class... Args>
+  struct basic_format_string {
+  private:
+    basic_string_view&lt;charT> <i>str</i>;    // <i>exposition only</i>
+
+  public:
+    template&lt;class T> consteval basic_format_string(const T& s);
+    constexpr basic_format_string(<i><del>runtime</del><ins>dynamic</ins>-format-string</i>&lt;charT> s) noexcept : <i>str</i>(s.<i>str</i>) {}
+
+    constexpr basic_string_view&lt;charT> get() const noexcept { return <i>str</i>; }
+  };
+}
+</pre>
 
 <pre class=biblio>
 {
