@@ -724,10 +724,10 @@ indistinguishable from an option in another position — so to use a custom
 fill you must also specify an alignment.</p>
 <p>Alignment has no observable effect when the value's natural rendering is
 already at least as wide as <em>width</em>; the value is never truncated to fit.</p>
-<pre><code class="language-c++">fmt::format(&quot;[{:&lt;10}]&quot;, &quot;42&quot;);    // Result: &quot;[42        ]&quot;
-fmt::format(&quot;[{:&gt;10}]&quot;, &quot;42&quot;);    // Result: &quot;[        42]&quot;
-fmt::format(&quot;[{:^10}]&quot;, &quot;42&quot;);    // Result: &quot;[    42    ]&quot;
-fmt::format(&quot;[{:*^10}]&quot;, &quot;42&quot;);   // Result: &quot;[****42****]&quot;  -- '*' as fill
+<pre><code class="language-c++">fmt::format(&quot;[{:&lt;10}]&quot;, &quot;42&quot;);   // Result: &quot;[42        ]&quot;
+fmt::format(&quot;[{:&gt;10}]&quot;, &quot;42&quot;);   // Result: &quot;[        42]&quot;
+fmt::format(&quot;[{:^10}]&quot;, &quot;42&quot;);   // Result: &quot;[    42    ]&quot;
+fmt::format(&quot;[{:*^10}]&quot;, &quot;42&quot;);  // Result: &quot;[****42****]&quot;  -- '*' as fill
 </code></pre>
 <h3 id="sign">Sign</h3>
 <p>The <em>sign</em> field controls how the sign of a numeric value is emitted. It
@@ -755,8 +755,8 @@ applies to signed integer and floating-point types only.</p>
 </tbody>
 </table>
 <p>The sign of <code>-0.0</code> is preserved in floating-point output.</p>
-<pre><code class="language-c++">fmt::format(&quot;{:+d} {:+d}&quot;, 7, -7);    // Result: &quot;+7 -7&quot;
-fmt::format(&quot;{: d} {: d}&quot;, 7, -7);    // Result: &quot; 7 -7&quot;
+<pre><code class="language-c++">fmt::format(&quot;{:+d} {:+d}&quot;, 7, -7);  // Result: &quot;+7 -7&quot;
+fmt::format(&quot;{: d} {: d}&quot;, 7, -7);  // Result: &quot; 7 -7&quot;
 </code></pre>
 <h3 id="alternate-form">Alternate form (<code>#</code>)</h3>
 <p>The <code>#</code> flag selects an <em>alternate form</em> whose exact meaning depends on the
@@ -766,7 +766,7 @@ presentation type:</p>
   appropriate base prefix (<code>0b</code>/<code>0B</code>, <code>0</code>, or <code>0x</code>/<code>0X</code>). The case of the
   prefix follows the case of the type specifier — <code>0x</code> for <code>x</code>, <code>0X</code> for
   <code>X</code>, and so on.</li>
-<li>For floating-point values, it forces the radix character to appear in the
+<li>For floating-point values, it forces the decimal point to appear in the
   output even if no fractional digits would otherwise be emitted, and
   prevents the <code>g</code>/<code>G</code> presentation types from removing trailing zeros from
   the significand.</li>
@@ -782,7 +782,7 @@ applied to <code>120</code> produces <code>+0000120</code>.</p>
 <ul>
 <li>applies only to numeric types;</li>
 <li>has no effect on <code>inf</code> or <code>nan</code>;</li>
-<li>is silently ignored when an explicit <em>align</em> is also present.</li>
+<li>is ignored when an explicit <em>align</em> is also present.</li>
 </ul>
 <h3 id="width">Width</h3>
 <p><em>width</em> is a non-negative decimal integer giving the minimum number of
@@ -798,9 +798,9 @@ Unicode-aware estimate (East Asian wide and fullwidth characters, plus
 common emoji ranges, count as two columns; everything else counts as one).
 This keeps fixed <em>width</em> values visually consistent in monospace renderings
 that combine Latin and CJK text.</p>
-<pre><code class="language-c++">fmt::format(&quot;[{:6}]&quot;, 42);          // Result: &quot;[    42]&quot;  -- right-aligned by default
-fmt::format(&quot;[{:6}]&quot;, &quot;hi&quot;);        // Result: &quot;[hi    ]&quot;  -- left-aligned by default
-fmt::format(&quot;[{:{}}]&quot;, 42, 6);      // Result: &quot;[    42]&quot;  -- width from an argument
+<pre><code class="language-c++">fmt::format(&quot;[{:6}]&quot;, 42);      // Result: &quot;[    42]&quot;  -- right-aligned by default
+fmt::format(&quot;[{:6}]&quot;, &quot;hi&quot;);    // Result: &quot;[hi    ]&quot;  -- left-aligned by default
+fmt::format(&quot;[{:{}}]&quot;, 42, 6);  // Result: &quot;[    42]&quot;  -- width from an argument
 </code></pre>
 <h3 id="precision">Precision</h3>
 <p><em>precision</em> is a non-negative decimal integer (introduced by <code>.</code>) whose
@@ -816,7 +816,7 @@ supplied as a nested replacement field for runtime evaluation.</p>
 <tbody>
 <tr>
 <td><code>e</code>, <code>E</code>, <code>f</code>, <code>F</code></td>
-<td>Digits emitted after the radix character.</td>
+<td>Digits emitted after the decimal point.</td>
 </tr>
 <tr>
 <td><code>g</code>, <code>G</code></td>
@@ -824,7 +824,7 @@ supplied as a nested replacement field for runtime evaluation.</p>
 </tr>
 <tr>
 <td><code>a</code>, <code>A</code></td>
-<td>Digits after the radix character in the hexadecimal significand. If omitted, just enough digits are emitted to round-trip the value exactly.</td>
+<td>Digits after the decimal point in the hexadecimal significand. If omitted, just enough digits are emitted to round-trip the value exactly.</td>
 </tr>
 <tr>
 <td>Strings (<code>s</code>, <code>?</code>, or default)</td>
@@ -835,16 +835,16 @@ supplied as a nested replacement field for runtime evaluation.</p>
 <p>A <em>precision</em> is not accepted for integer, character, boolean, or pointer
 types. When a <em>precision</em> limits the number of characters taken from a C
 string, the string must still be null-terminated.</p>
-<pre><code class="language-c++">fmt::format(&quot;{:.2f}&quot;, 3.14159);     // Result: &quot;3.14&quot;
-fmt::format(&quot;{:.3g}&quot;, 3.14159);     // Result: &quot;3.14&quot;
-fmt::format(&quot;{:.4}&quot;, &quot;hello, world&quot;); // Result: &quot;hell&quot;
-fmt::format(&quot;{:.{}f}&quot;, 3.14159, 4); // Result: &quot;3.1416&quot;  -- precision from an argument
+<pre><code class="language-c++">fmt::format(&quot;{:.2f}&quot;, 3.14159);        // Result: &quot;3.14&quot;
+fmt::format(&quot;{:.3g}&quot;, 3.14159);        // Result: &quot;3.14&quot;
+fmt::format(&quot;{:.4}&quot;, &quot;hello, world&quot;);  // Result: &quot;hell&quot;
+fmt::format(&quot;{:.{}f}&quot;, 3.14159, 4);    // Result: &quot;3.1416&quot;  -- precision from an argument
 </code></pre>
 <h3 id="locale-l">Locale (<code>L</code>)</h3>
 <p>The <code>L</code> flag selects locale-sensitive formatting for numeric types. The
 formatter inspects the C++ locale supplied to the formatting function (or
 the global locale, if none was passed) and inserts the locale's digit
-grouping characters and — for floating-point values — its radix character.
+grouping characters and — for floating-point values — its decimal point.
 The flag has no effect on non-numeric types.</p>
 <pre><code class="language-c++">auto loc = std::locale(&quot;en_US.UTF-8&quot;);
 fmt::format(loc, &quot;{:L}&quot;, 1234567890);     // Result: &quot;1,234,567,890&quot;
@@ -899,7 +899,7 @@ grouped below by the value categories they apply to.</p>
 <pre><code class="language-c++">fmt::format(&quot;{:d} {:#x} {:#o} {:#b}&quot;, 42, 42, 42, 42);
 // Result: &quot;42 0x2a 052 0b101010&quot;
 
-fmt::format(&quot;{:#06x}&quot;, 0xfe);   // # adds the prefix, 06 zero-pads to width 6
+fmt::format(&quot;{:#06x}&quot;, 0xfe);  // # adds the prefix, 06 zero-pads to width 6
 // Result: &quot;0x00fe&quot;
 </code></pre>
 <p><strong>Floating-point values:</strong></p>
