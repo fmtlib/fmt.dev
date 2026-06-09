@@ -1,15 +1,15 @@
 <pre class='metadata'>
 Title: Fix the default floating-point representation in std::format
 Shortname: P3505
-Revision: 3
-Audience: LEWG
+Revision: 4
+Audience: LWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 Editor: Junekey Jeon, j6jeon@ucsd.edu
 No abstract: true
-Date: 2025-10-08
+Date: 2026-06-09
 Markup Shorthands: markdown yes
 </pre>
 
@@ -29,6 +29,14 @@ surprising behavior to users, performance regression and an inconsistency with
 other mainstream programming languages that have similar facilities. This paper
 proposes fixing this issue, bringing the floating-point formatting on par with
 other languages and in line with the original design intent.
+
+# Changes since R3 # {#changes3}
+
+- Move the conversion specifier selection wording to the *Effects* clause
+    of the changed `to_chars` overload per LWG feedback.
+- Change `m` and `n` to `l` and `u` respectively.
+- Remove `__cpp_lib_constexpr_charconv` feature macro update since the
+    changed `to_chars` overload is not `constexpr`.
 
 # Changes since R2 # {#changes2}
 
@@ -525,46 +533,38 @@ std::format("{:L}", 1200000.0)
 Wording {#wording}
 =======
 
-Update the value of the feature-testing macros `__cpp_lib_to_chars` and
-`__cpp_lib_constexpr_charconv` to the date of adoption in
-[[version.syn](https://eel.is/c++draft/version.syn)].
+Update the value of the feature-testing macro `__cpp_lib_to_chars` to the date
+of adoption in [[version.syn](https://eel.is/c++draft/version.syn)].
 
 Modify [[charconv.to.chars](https://eel.is/c++draft/charconv.to.chars)]:
 
 ...
 
-2 The functions that take a floating-point `value` but not a `precision`
-parameter ensure that the string representation consists of the smallest
-number of characters such that there is at least one digit before the radix
-point (if present) and parsing the representation using the corresponding
-`from_chars` function recovers `value` exactly.
+<pre>
+to_chars_result to_chars(char* first, char* last, <i>floating-point-type</i> value);
+</pre>
 
-[*Note 1*: This guarantee applies only if `to_chars` and `from_chars` are
-executed on the same implementation. — *end note*]
-
-If there are several such representations, the representation with the smallest
-difference from the floating-point argument value is chosen, resolving any
-remaining ties using rounding according to `round_to_nearest`
-([[round.style](https://eel.is/c++draft/round.style)]).
-
-3 The functions taking a `chars_format` parameter determine the conversion
-specifier for `printf` as follows: The conversion specifier is `f` if `fmt`
-is `chars_format​::​fixed`, `e` if `fmt` is `chars_format​::​scientific`,
-`a` (without leading `"0x"` in the result) if `fmt` is `chars_format​::​hex`,
-and `g` if `fmt` is `chars_format​::​general`.
-
+7 *Effects*: <ins>Let `T` be <i>floating-point-type</i>.</ins>
+`value` is converted to a string in the style of `printf` in the `"C"` locale.
+<del>The conversion specifier is `f` or `e`, chosen according to the requirement for a shortest
+representation (see above); a tie is resolved in favor of `f`.</del>
 <ins>
-Let `T` be <i>floating-point-type</i>.
-The functions that take a floating-point `value` but not a `chars_format`
-parameter determine the conversion specifier for `printf` as follows:
 The conversion specifier is `f` if the absolute value of <code>value</code>
-is in the range [<i>m</i>, <i>n</i>), where <i>m</i> is the nearest
-representable as <code>T</code> value of 10<sup>-4</sup> and
-<i>n</i> is the nearest representable as <code>T</code> value of
+is in the range [<i>l</i>, <i>u</i>), where <i>l</i>
+is the smallest value larger or equal to 10<sup>-4</sup> that is representable by <code>T</code>
+<!-- is the nearest representable as <code>T</code> value of 10<sup>-4</sup> -->
+and <i>u</i>
+is the largest value smaller or equal to
 <code>std::numeric_limits&lt;T&gt;::radix</code><!--
---><sup><code>std::numeric_limits&lt;T&gt;::digits</code> + 1</sup> rounded
-down to the nearest power of 10, `e` otherwise.
+--><sup><code>std::numeric_limits&lt;T&gt;::digits</code> + 1</sup>
+rounded down to the nearest power of 10 representable by <code>T</code>,
+<!-- is the nearest representable as <code>T</code> value of
+<code>std::numeric_limits&lt;T&gt;::radix</code><!--
+<sup><code>std::numeric_limits&lt;T&gt;::digits</code> + 1</sup> -->
+otherwise `e`.
 </ins>
+
+8 *Throws*: Nothing.
 
 ...
 
