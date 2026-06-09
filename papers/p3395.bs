@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Fix encoding issues and add a formatter for std::error_code
 Shortname: P3395
-Revision: 5
-Audience: LEWG
+Revision: 6
+Audience: LWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2025-10-19
+Date: 2026-06-09
 Markup Shorthands: markdown yes
 </pre>
 
@@ -31,6 +31,13 @@ Introduction {#intro}
 This paper proposes making `std::error_code` formattable using the formatting
 facility introduced in C++20 (`std::format`) and fixes encoding issues in the
 underlying API ([[LWG4156]]).
+
+Changes since R5 {#changes5}
+================
+
+- Changed `FormatContext` to `basic_format_context<Out, charT>` per LWG feedback.
+- Moved escaping before write in the wording.
+- Added LEWG poll results for R5.
 
 Changes since R4 {#changes4}
 ================
@@ -75,6 +82,19 @@ Changes since R0 {#changes0}
 
 Polls {#polls}
 =====
+
+LEWG poll results for R5:
+
+**POLL**: Forward "P3395R5: Fix encoding issues and add a formatter for
+std::error_code" to LWG for C++29 to resolve the LWG issue LWG4156.
+(With a recommendation to make the LWG4156 issue a DR for C++11)
+
+```text
+SF  F  N  A SA
+ 7 11  2  0  0
+```
+
+Outcome: Strong consensus in favour
 
 LEWG poll results for R3:
 
@@ -347,9 +367,9 @@ template&lt;class charT> struct formatter&lt;error_code, charT> {
   constexpr typename basic_format_parse_context&lt;charT>::iterator
     parse(basic_format_parse_context&lt;charT>& ctx);
 
-  template&lt;class FormatContext>
-    typename FormatContext::iterator
-      format(const error_code& ec, FormatContext& ctx) const;
+  template&lt;class Out>
+    typename basic_format_context&lt;Out, charT>::iterator
+      format(const error_code& ec, basic_format_context&lt;Out, charT>& ctx) const;
 };
 </pre>
 
@@ -379,9 +399,9 @@ where the productions <i>fill-and-align</i> and <i>width</i> are described in
 *Returns*: An iterator past the end of the *error-code-format-spec*.
 
 <pre>
-  template&lt;class FormatContext>
-    typename FormatContext::iterator
-      format(const error_code& ec, FormatContext& ctx) const;
+  template&lt;class Out>
+    typename basic_format_context&lt;Out, charT>::iterator
+      format(const error_code& ec, basic_format_context&lt;Out, charT>& ctx) const;
 </pre>
 
 *Effects*: If the `s` option is used, then:
@@ -395,10 +415,11 @@ where the productions <i>fill-and-align</i> and <i>width</i> are described in
 
 Otherwise, let `msg` be `format("{}:{}", ec.category().name(), ec.value())`.
 
-Writes `msg` into `ctx.out()`, adjusted according to the
-*error-code-format-spec*. If the `?` option is used then `msg` is formatted as
+If the `?` option is used then `msg` is formatted as
 an escaped string ([[format.string.escaped](
 http://eel.is/c++draft/format.string.escaped)]).
+Writes `msg` into `ctx.out()`, adjusted according to the
+*error-code-format-spec*.
 
 *Returns*: An iterator past the end of the output range.
 
