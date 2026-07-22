@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: When paths go WTF: making formatting lossless
 Shortname: P3904
-Revision: 1
+Revision: 2
 Audience: SG16
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2026-01-28
+Date: 2026-07-22
 Markup Shorthands: markdown yes
 </pre>
 
@@ -27,7 +27,11 @@ via the WTF-8 encoding ([[WTF-8]]). This will improve consistency in path
 handling between Windows and POSIX platforms and align with the design of
 `std::format` where the default formatting is normally lossless.
 
-# Changes since R0 # {#changes}
+# Changes since R1 # {#changes1}
+
+- Added the "Wording" section.
+
+# Changes since R0 # {#changes0}
 
 - Added the "Implementation experience" section.
 
@@ -141,7 +145,7 @@ will still print
 ```
 
 on implementations that follow the recommended practice from
-[[ostream.formatted.print](https://eel.is/c++draft/ostream.formatted.print)]:
+&bs[;[ostream.formatted.print](https://eel.is/c++draft/ostream.formatted.print)]:
 
 > *Recommended practice*: For `vprint_unicode`, if invoking the native Unicode
 > API requires transcoding, implementations should substitute invalid code
@@ -151,6 +155,48 @@ on implementations that follow the recommended practice from
 WTF-8 is used to handle invalid UTF-16 in paths and other system APIs in Rust
 ([[RUST-OSSTRING]]) and Node.js libuv ([[LIBUV]]). Python also handles this but
 with a different mechanism ([[PEP383]]).
+
+# Wording # {#wording}
+
+Modify the value of the feature-test macro `__cpp_lib_format_path` in "Header
+`<version>` synopsis" &bs[;[version.syn](https://eel.is/c++draft/version.syn)] and
+"Header `<filesystem>` synopsis"
+&bs[;[fs.filesystem.syn](https://eel.is/c++draft/fs.filesystem.syn)]:
+
+<pre>
+#define __cpp_lib_format_path <del>202506L</del><ins>**placeholder**</ins>	// also in &lt;filesystem&gt;
+</pre>
+
+Modify the *Effects* of the `format` member function in "Formatting support
+functions" &bs[;[fs.path.fmtr.funcs](https://eel.is/c++draft/fs.path.fmtr.funcs)]
+as indicated:
+
+<blockquote>
+<pre>
+template&lt;class FormatContext>
+  typename FormatContext::iterator
+    format(const filesystem::path& p, FormatContext& ctx) const;
+</pre>
+
+<p>*Effects*: Let `s` be `p.generic_string<filesystem::path::value_type>()` if
+the `g` option is used, otherwise `p.native()`. Writes `s` into `ctx.out()`,
+adjusted according to the *path-format-spec*. If `charT` is `char`,
+`path::value_type` is `wchar_t`, and the literal encoding is UTF-8, then the
+escaped path is transcoded from the native encoding for wide character strings
+to UTF-8<del> with maximal subparts of ill-formed subsequences substituted with
+U+FFFD REPLACEMENT CHARACTER per the Unicode Standard, Chapter 3.9 U+FFFD
+Substitution in Conversion</del><ins>, with each unpaired surrogate code unit
+with value `u` (a code unit in the range `[0xD800, 0xDFFF]` that is not part of a
+valid surrogate pair) encoded as the three bytes `0xE0 | (u >> 12)`,
+`0x80 | ((u >> 6) & 0x3F)`, and `0x80 | (u & 0x3F)`</ins>. If `charT` and
+`path::value_type` are the same, then no transcoding is performed. Otherwise,
+transcoding is implementation-defined.</p>
+
+<p><ins>[*Note*: Special encoding of unpaired surrogates makes `path`
+formatting lossless. — *end note*]</ins></p>
+
+<p>*Returns*: An iterator past the end of the output range.</p>
+</blockquote>
 
 # Implementation experience # {#impl}
 
