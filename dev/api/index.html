@@ -995,7 +995,11 @@ cannot be made formattable via either extension API.</p>
 <p>Use <code>format_as</code> if you want to make your type formattable as some other
 type with the same format specifiers. The <code>format_as</code> function should
 take an object of your type and return an object of a formattable type.
-It should be defined in the same namespace as your type.</p>
+It should be defined in the same namespace as your type.
+<code>format_as</code> cannot be used when a type also matches another <code>formatter</code>
+specialization, such as the range <code>formatter</code>, because the specializations
+would be ambiguous. Disable the conflicting specialization, if possible,
+or provide an explicit <code>formatter</code> specialization instead.</p>
 <p>Example (<a href="https://godbolt.org/z/nvME4arz8">run</a>):</p>
 <pre class="highlight"><code>#include &lt;fmt/format.h&gt;
 
