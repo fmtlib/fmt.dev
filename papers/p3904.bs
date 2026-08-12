@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: When paths go WTF: making formatting lossless
 Shortname: P3904
-Revision: 2
+Revision: 3
 Audience: SG16
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2026-07-22
+Date: 2026-08-12
 Markup Shorthands: markdown yes
 </pre>
 
@@ -20,12 +20,19 @@ David Wheeler
 # Introduction # {#intro}
 
 [[P2845]], adopted in C++26, added formatting support for
-`std::filesystem::path`, addressing encoding issues and making formatting
-lossless except for one case, unpaired surrogates on Windows. This paper
-proposes addressing this case and making formatting 100% lossless by default
-via the WTF-8 encoding ([[WTF-8]]). This will improve consistency in path
-handling between Windows and POSIX platforms and align with the design of
-`std::format` where the default formatting is normally lossless.
+`std::filesystem::path`, addressing encoding issues and making formatting of a
+path as an ordinary (`char`) string lossless except for one case, unpaired
+surrogates on Windows. This paper proposes addressing this case and making such
+formatting lossless by default via the WTF-8 encoding ([[WTF-8]]). This will
+improve consistency in path handling between Windows and POSIX platforms and
+align with the design of `std::format` where the default formatting is normally
+lossless.
+
+# Changes since R2 # {#changes2}
+
+- Narrowed the losslessness claim to formatting of a path as an ordinary
+    (`char`) string and clarified that transcoding to a wide (`wchar_t`) string
+    on POSIX is implementation-defined and out of scope.
 
 # Changes since R1 # {#changes1}
 
@@ -82,6 +89,12 @@ are not valid Unicode works as expected and is lossless:
 auto p = std::filesystem::path("\x80");
 auto s = std::format("{}\n", p); // s == "\x80"
 ```
+
+This paper focuses on formatting a path as an ordinary (`char`) string, which is
+the common case. Formatting a path as a wide (`wchar_t`) string when the native
+encoding uses `char`, as on POSIX, requires transcoding that [[P2845]] leaves
+implementation-defined and that is therefore not guaranteed to be lossless. This
+direction is outside the scope of this paper.
 
 # Proposal # {#proposal}
 
@@ -192,8 +205,8 @@ valid surrogate pair) encoded as the three bytes `0xE0 | (u >> 12)`,
 `path::value_type` are the same, then no transcoding is performed. Otherwise,
 transcoding is implementation-defined.</p>
 
-<p><ins>[*Note*: Special encoding of unpaired surrogates makes `path`
-formatting lossless. — *end note*]</ins></p>
+<p><ins>[*Note*: Special encoding of unpaired surrogates makes this transcoding
+lossless. — *end note*]</ins></p>
 
 <p>*Returns*: An iterator past the end of the output range.</p>
 </blockquote>
