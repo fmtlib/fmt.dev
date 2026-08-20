@@ -1,0 +1,725 @@
+<pre class='metadata'>
+Title: Formatting Enums, Upon Reflection
+Shortname: P4267
+Revision: 0
+Audience: LEWG
+Status: P
+Group: WG21
+URL:
+Editor: Victor Zverovich, victor.zverovich@gmail.com
+No abstract: true
+Date: 2026-08-20
+Markup Shorthands: markdown yes
+</pre>
+
+<p style="text-align: right">
+“Reflection is the beginning of reform.”<br>
+— Mark Twain
+</p>
+
+# Introduction # {#intro}
+
+Formatting an enumeration as its underlying type currently requires either a
+formatter specialization or an explicit conversion at every call site.
+[[P3070]] proposed `format_as`, an ADL-based customization point that makes
+this more convenient and allows the conversion to be performed before type
+erasure.
+
+Since P3070 was written, C++26 has gained reflection ([[P2996]]) and annotations
+([[P3394]]). These provide a more ergonomic way to opt into formatting
+behavior without introducing a new ADL customization point.
+
+This paper supersedes P3070 and proposes annotation-based enum formatting,
+including formatting enumerators as strings.
+
+# Motivation and scope # {#motivation}
+
+Consider the following `enum` from P3070:
+
+```cpp
+namespace kevin_namespacy {
+enum class film {
+  house_of_cards, american_beauty, se7en = 7
+};
+}
+```
+
+Formatting it as its underlying type currently requires a `formatter`
+specialization:
+
+```cpp
+template <>
+struct std::formatter<kevin_namespacy::film> : std::formatter<int> {
+  auto format(kevin_namespacy::film f, std::format_context& ctx) const {
+    return formatter<int>::format(std::to_underlying(f), ctx);
+  }
+};
+```
+
+This is unnecessarily verbose for a common operation.
+
+Another option is to perform the conversion at the call site:
+
+```cpp
+film f = kevin_namespacy::se7en;
+auto s = std::format("{}", std::to_underlying(f));
+```
+
+This reduces formatting overhead but requires the conversion to be repeated at
+every call site.
+
+P3070 tried to address both problems with an ADL customization:
+
+```cpp
+namespace kevin_namespacy {
+enum class film {...};
+
+auto format_as(film f) {
+  return std::to_underlying(f);
+}
+}
+```
+
+This is more concise and allows the formatting implementation to convert the
+enum before type erasure. However, ADL has well-known drawbacks and is no
+longer necessary now that C++ has annotations.
+
+# Problems with `format_as` # {#format-as-problems}
+
+## ADL claims a generic name ## {#adl-name}
+
+`format_as` is found by argument-dependent lookup. As a result, the otherwise
+generic name `format_as` effectively becomes a formatting customization name in
+associated namespaces.
+
+For example:
+
+```cpp
+namespace lib {
+
+struct widget {};
+
+// An existing function unrelated to std::format.
+int format_as(widget);
+
+}
+```
+
+P3070 can cause this function to acquire formatting semantics even though it
+was not written as a formatting customization.
+
+This is not an explicit opt-in.
+
+[[P2279]] discusses this problem for ADL-based customization points and notes
+that ADL effectively requires globally reserving the customization identifier.
+Two libraries cannot independently use the same ADL customization name without
+the possibility of interaction.
+
+An annotation does not have this problem:
+
+```cpp
+enum class [[=std::format_as_underlying]] film {
+  // ...
+};
+```
+
+The formatting behavior is explicitly attached to the declaration it affects.
+
+## ADL pollutes the overload set ## {#adl-overloads}
+
+ADL adds functions from associated namespaces and classes to the overload set.
+For a class template specialization, associated entities can include the types
+of its template arguments, making the lookup nonlocal.
+
+For example, a call involving a type such as:
+
+```cpp
+wrapper<some_namespace::widget>
+```
+
+can consider `format_as` overloads from both the namespace containing `wrapper`
+and the namespace containing `widget`.
+
+This can increase compile time and make diagnostics include unrelated overload
+candidates.
+
+[[P2547]] discusses a more severe version of the same problem for
+`tag_invoke`, where large ADL overload sets increase compilation cost and
+diagnostic size. `format_as` is less problematic because only overloads with one
+name participate, but there is no benefit in introducing this cost when the
+customization can be expressed without overload resolution.
+
+Annotations require neither lookup nor overload resolution.
+
+## `format_as` requires unnecessary boilerplate for enums
+
+For the common case of formatting an enum as its underlying type, the conversion
+is already defined by the language. With format_as, the user must still define a
+function that merely performs this conversion:
+
+```cpp
+constexpr auto format_as(color c) {
+  return std::to_underlying(c);
+}
+```
+
+An annotation can express the intent directly, without requiring a user-defined
+conversion function.
+
+## General `format_as` needs further design
+
+P3070 proposes `format_as` as a general customization mechanism for
+user-defined types, not just enumerations. That generality is useful, but the
+proposed design leaves broader questions about interactions with existing
+formatting customizations, constraints on the result type, and exception
+specifications such as `noexcept`.
+
+These issues should be addressed before standardizing a general `format_as`
+facility. The annotation-based approach proposed here can be extended to
+user-defined types in the future once these design questions have been
+resolved.
+
+The motivating enum use case does not require arbitrary conversion. Conversion
+from an enum to its underlying type is defined by the language, nonthrowing,
+and has no side effects.
+
+# Argument mapping is not formatter forwarding # {#argument-mapping}
+
+P3070 states that the semantics of `format_as` are the same as those of a
+forwarding `formatter` specialization. This is not quite true when the
+conversion is performed before type erasure.
+
+Consider:
+
+```cpp
+enum class width {
+  small = 4,
+  large = 20
+};
+
+auto format_as(width w) {
+  return std::to_underlying(w);
+}
+```
+
+With argument mapping this can be used as:
+
+```cpp
+std::format("{:{}}", "foo", width::large);
+```
+
+because `width::large` is converted to an integer before construction of
+`basic_format_arg`.
+
+A forwarding formatter does not have this property:
+
+```cpp
+template <>
+struct std::formatter<width> : std::formatter<int> {
+  // ...
+};
+```
+
+Dynamic width and precision require the corresponding format argument to have
+an appropriate integer formatting argument type. A custom formatter does not
+make the type an integer format argument.
+
+Therefore there are two observably different facilities:
+
+1. forwarding formatting of `E` to `formatter<underlying_type_t<E>>`; and
+2. mapping `E` to `underlying_type_t<E>` as a formatting argument.
+
+This paper deliberately proposes the second.
+
+# Formatting as the underlying type # {#underlying}
+
+This paper proposes the annotation:
+
+```cpp
+[[=std::format_as_underlying]]
+```
+
+which can be applied to an enumeration definition:
+
+```cpp
+enum class [[=std::format_as_underlying]] color {
+  red   = 1,
+  green = 2,
+  blue  = 4
+};
+```
+
+For formatting purposes, a value of such an enum is mapped as if
+`std::to_underlying` had been applied before passing the argument to the
+formatting facility.
+
+For example:
+
+```cpp
+auto s1 = std::format("{}", color::green);     // "2"
+auto s2 = std::format("{:04x}", color::blue);  // "0004"
+```
+
+The mapping also applies when an argument is used as dynamic width or precision:
+
+```cpp
+enum class [[=std::format_as_underlying]] width {
+  small = 4,
+  large = 10
+};
+
+auto s = std::format("{:{}}", 42, width::large);
+// s == "        42"
+```
+
+This is an intentional part of the semantics and allows the conversion to be
+performed before type erasure, improving efficiency.
+
+The mapped value is type-erased as its mapped type, avoiding the custom-type
+handle and formatter dispatch.
+
+## `std::byte` ## {#byte}
+
+`std::byte` is an important use case.
+
+With the proposed behavior:
+
+```cpp
+std::format("{}", std::byte{42});       // "42"
+std::format("{:x}", std::byte{42});     // "2a"
+std::format("{:{}}", 1, std::byte{4});  // "   1"
+```
+
+`std::byte` retains its type safety outside formatting while behaving like its
+underlying integer where the formatting facility specifically requires an
+integer argument.
+
+P3070 showed that mapping an enum to a built-in formatting argument before type
+erasure can be approximately twice as fast as dispatching through a custom
+formatter for this use case. The same speedup applies to this proposal because
+it uses the same argument-mapping mechanism.
+
+<pre>
+---------------------------------------------------------------------
+Benchmark                           Time             CPU   Iterations
+---------------------------------------------------------------------
+BM_Formatter                     17.7 ns         17.7 ns     38037070
+BM_FormatAs                      8.90 ns         8.88 ns     79036210
+</pre>
+
+# Lightweight opt-in header # {#header}
+
+Formatting annotations appear on type declarations, which are commonly placed
+in widely included headers.
+
+Requiring `<format>` merely to name an annotation would therefore impose the
+compile-time cost of `<format>` on translation units that do not use formatting:
+
+```cpp
+// color.h
+#include <format>
+
+enum class [[=std::format_as_underlying]] color {
+  red,
+  green,
+  blue
+};
+```
+
+This paper instead proposes a lightweight `<format_annotations>` header
+containing the annotation marker objects:
+
+```cpp
+#include <format_annotations>
+
+enum class [[=std::format_as_underlying]] color {
+  red,
+  green,
+  blue
+};
+```
+
+`<format>` includes `<format_annotations>`.
+
+The intended dependency is therefore:
+
+```text
+<format_annotations>
+        ↑
+     <format>
+```
+
+The lightweight header does not need to include `<format>` or `<meta>`. It only
+declares the annotation values used at the type declaration.
+
+This is particularly important for declaration-site customization because the
+cost of the customization mechanism should not be paid by every translation
+unit that sees the declaration.
+
+# Formatting as an identifier # {#identifier}
+
+Reflection enables another common enum formatting mode that does not require
+user-written conversion code.
+
+This paper additionally proposes:
+
+```cpp
+[[=std::format_as_identifier]]
+```
+
+For example:
+
+```cpp
+enum class [[=std::format_as_identifier]] color {
+  red,
+  green,
+  blue
+};
+
+auto s = std::format("{}", color::green);  // "green"
+```
+
+The implementation obtains the enumerators with `std::meta::enumerators_of` and
+their names with `std::meta::identifier_of`.
+
+This is substantially more convenient than writing:
+
+```cpp
+auto format_as(color c) -> std::string_view {
+  switch (c) {
+  case color::red:   return "red";
+  case color::green: return "green";
+  case color::blue:  return "blue";
+  }
+}
+```
+
+and cannot become stale when enumerators are added.
+
+## Aliases ## {#aliases}
+
+Multiple enumerators can have the same value:
+
+```cpp
+enum class [[=std::format_as_identifier]] status {
+  ok      = 0,
+  success = 0
+};
+```
+
+When multiple enumerators have the same value, the first matching enumerator is
+used:
+
+```cpp
+std::format("{}", status::success);  // "ok"
+```
+
+There is no way to distinguish the two values at runtime.
+
+## Values without a matching enumerator ## {#unmatched-values}
+
+An enum value is not necessarily the value of an enumerator:
+
+```cpp
+auto c = static_cast<color>(42);
+```
+
+If no enumerator has the value being formatted, the value is represented as the
+decimal value of the underlying type.
+
+The resulting representation follows string formatting semantics:
+
+```cpp
+std::format("{:>5}", static_cast<color>(42));  // "   42"
+```
+
+Integer presentation specifiers such as `x` are not accepted for
+`format_as_identifier`. Whether the value happens to match an enumerator is a
+runtime property and cannot change the grammar accepted by the formatter.
+
+Users who want integer formatting should use `format_as_underlying` instead.
+
+## Interaction between the annotations ## {#annotation-interaction}
+
+`format_as_underlying` and `format_as_identifier` specify different
+representations and are mutually exclusive.
+
+The following is ill-formed:
+
+```cpp
+enum class
+  [[=std::format_as_underlying]]
+  [[=std::format_as_identifier]]
+color {
+  red,
+  green,
+  blue
+};
+```
+
+The two parts of this proposal are otherwise independent and can be polled
+separately.
+
+# Why annotations? # {#why-annotations}
+
+Annotations have several useful properties for this facility.
+
+First, the opt-in is local and explicit:
+
+```cpp
+enum class [[=std::format_as_underlying]] color {
+  // ...
+};
+```
+
+A reader can determine the enum's default formatting behavior from its
+declaration.
+
+Second, annotations do not introduce a customization name into associated
+namespaces. There is no overload set, no ADL and no possibility that an
+unrelated function accidentally becomes part of the formatting protocol.
+
+Third, annotations are well suited to properties that apply to a declaration as
+a whole. P3394 motivates annotations with declaration-level library
+customization such as serialization, command-line parsing and test
+parametrization. Formatting is another instance of the same pattern.
+
+Finally, reflection makes identifier-based formatting possible without code
+generation or manually maintained lookup tables.
+
+# Prior art # {#prior-art}
+
+Declaration-site opt-in for generated textual representations is common in
+other languages.
+
+Rust provides ([[RUST-DEBUG]]):
+
+```rust
+#[derive(Debug)]
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+```
+
+Elixir provides `@derive Inspect` ([[ELIXIR-DERIVE]]), and Groovy provides
+`@ToString` ([[GROOVY-TOSTRING]]). These mechanisms differ in implementation
+but have the same general property: textual representation behavior is
+requested declaratively on the type.
+
+Other languages also distinguish symbolic and numeric enum representations. For
+example, C# enum formatting provides both name-oriented and numeric forms
+([[CSHARP-ENUM]]).
+
+The proposed annotations bring a similar declarative model to C++ using the
+C++26 reflection facilities.
+
+# Implementation experience # {#implementation}
+
+The underlying-type annotation can use the same format argument mapping that
+{fmt} already uses for arithmetic `format_as` results, except that the
+conversion is fixed to `std::to_underlying` and cannot invoke arbitrary user
+code.
+
+{fmt} also has a prototype for formatting enumerators as identifiers:
+
+```cpp
+enum class [[=fmt::as_identifiers]] color {
+  red,
+  green,
+  blue
+};
+```
+
+The implementation uses C++26 reflection to retrieve the enumerators and their
+identifiers, with the annotation providing the opt-in.
+
+# Proposed change # {#proposal}
+
+Add a new header `<format_annotations>` with:
+
+```cpp
+namespace std {
+
+struct format_as_underlying_t {};
+inline constexpr format_as_underlying_t format_as_underlying;
+
+struct format_as_identifier_t {};
+inline constexpr format_as_identifier_t format_as_identifier;
+
+}
+```
+
+`<format>` includes `<format_annotations>`.
+
+An enumeration whose definition is annotated with `std::format_as_underlying`
+is formatted by mapping the value to its underlying type before the normal
+format argument mapping is applied.
+
+An enumeration whose definition is annotated with `std::format_as_identifier`
+is formatted using the identifier of the first enumerator with the same value.
+If there is no such enumerator, its underlying value is converted to decimal.
+Identifier formatting uses string format specifications.
+
+An enumeration cannot have both annotations.
+
+The first change applies to both `char` and `wchar_t` formatting because it
+delegates to existing integral formatting.
+
+Identifier formatting initially applies to `char` formatting.
+`std::meta::identifier_of` produces a narrow string representation;
+wide-character identifier formatting requires additional encoding specification
+and can be added separately if there is demand.
+
+# Wording # {#wording}
+
+Add a new subclause [format.annotations] and header synopsis:
+
+<pre>
+// &lt;format_annotations>
+
+namespace std {
+
+  struct format_as_underlying_t {};
+  inline constexpr format_as_underlying_t format_as_underlying;
+
+  struct format_as_identifier_t {};
+  inline constexpr format_as_identifier_t format_as_identifier;
+
+}
+</pre>
+
+For an enumeration type `E`, let *format-as-underlying* be `true` if an
+annotation whose underlying constant has type `format_as_underlying_t`
+appertains to the definition of `E`, and `false` otherwise.
+
+Let *format-as-identifier* be defined analogously for `format_as_identifier_t`.
+
+An enumeration type shall not be both *format-as-underlying* and
+*format-as-identifier*.
+
+Modify the format argument mapping in
+&bs[;[format.arg](https://eel.is/c++draft/format.arg)] so that if
+`remove_const_t<T>` is an enumeration type for which *format-as-underlying* is
+`true`, `v` is first mapped to `to_underlying(v)` and normal format argument
+mapping is then applied to the result.
+
+[Note: As a consequence, an enumeration annotated with `format_as_underlying`
+can be used where the formatting facility requires an integer argument,
+including dynamic width and precision. — end note]
+
+Add an enabled specialization for identifier formatting:
+
+<pre>
+template&lt;class E>
+  requires (is_enum_v&lt;E> &amp;&amp; <i>format-as-identifier</i>&lt;E>)
+struct formatter&lt;E, char> {
+private:
+  formatter&lt;string_view, char> <i>fmt_</i>;  // <i>exposition only</i>
+
+public:
+  constexpr format_parse_context::iterator
+    parse(format_parse_context&amp; ctx);
+
+  template&lt;class FormatContext>
+    typename FormatContext::iterator
+      format(E value, FormatContext&amp; ctx) const;
+};
+</pre>
+
+<pre>
+constexpr format_parse_context::iterator
+  parse(format_parse_context&amp; ctx);
+</pre>
+
+*Returns*: <code><i>fmt_</i>.parse(ctx)</code>.
+
+<pre>
+template&lt;class FormatContext>
+  typename FormatContext::iterator
+    format(E value, FormatContext&amp; ctx) const;
+</pre>
+
+Let `e` be the first element of `meta::enumerators_of(^^E)` whose
+value compares equal to `value`.
+
+If such an element exists, let `s` be `meta::identifier_of(e)`. Otherwise let
+`s` be the decimal character representation of `to_underlying(value)` with no
+additional formatting options.
+
+*Returns*: <code><i>fmt_</i>.format(s, ctx)</code>.
+
+Specify `std::byte` as *format-as-underlying*.
+
+# Feature-test macro # {#feature-test}
+
+Set the value of `__cpp_lib_format` to a value corresponding to the date
+of adoption of this proposal.
+
+# Acknowledgements # {#acknowledgements}
+
+Thanks to Avi Kivity for implementing annotation-based enum identifier
+formatting in {fmt} and providing useful implementation experience.
+
+<pre class=biblio>
+{
+  "P2279": {
+    "title": "We need a language mechanism for customization points",
+    "authors": ["Barry Revzin"],
+    "href": "https://wg21.link/p2279r0"
+  },
+  "P2547": {
+    "title": "Language Support for Customisable Functions",
+    "authors": ["Lewis Baker"],
+    "href": "https://wg21.link/p2547r1"
+  },
+  "P2996": {
+    "title": "Reflection for C++26",
+    "authors": ["Barry Revzin"],
+    "etAl": true,
+    "href": "https://wg21.link/p2996r13"
+  },
+  "P3070": {
+    "title": "Formatting enums",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/p3070r3"
+  },
+  "P3394": {
+    "title": "Annotations for Reflection",
+    "authors": [
+      "Wyatt Childers",
+      "Dan Katz",
+      "Barry Revzin",
+      "Daveed Vandevoorde"
+    ],
+    "href": "https://wg21.link/p3394r4"
+  },
+  "FMT": {
+    "title": "The {fmt} library",
+    "authors": ["Victor Zverovich"],
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
+  },
+  "CSHARP-ENUM": {
+    "title": "Enum.ToString Method",
+    "authors": ["Microsoft"],
+    "href": "https://learn.microsoft.com/dotnet/api/system.enum.tostring"
+  },
+  "ELIXIR-DERIVE": {
+    "title": "Inspect",
+    "authors": ["The Elixir Team"],
+    "href": "https://elixir.hexdocs.pm/Inspect.html"
+  },
+  "GROOVY-TOSTRING": {
+    "title": "Code generation transformations — @ToString",
+    "authors": ["The Apache Software Foundation"],
+    "href": "https://groovy-lang.org/metaprogramming.html#xform-ToString"
+  },
+  "RUST-DEBUG": {
+    "title": "Derive - The Rust Reference",
+    "authors": ["The Rust Project Developers"],
+    "href": "https://doc.rust-lang.org/stable/reference/attributes/derive.html"
+  }
+}
+</pre>
