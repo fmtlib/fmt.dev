@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version d113b2e81, updated Tue Jun 9 14:57:55 2026 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="8a8fd42d78e6238eb324884b296b76c055eb160b" name="revision">
+  <meta content="cac2b7a0e9d456867342a7a288ec0863c5d2f3b2" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2126,7 +2126,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dt class="editor">Author:
      <dd class="editor h-card p-author vcard"><a class="email fn p-name u-email" href="mailto:victor.zverovich@gmail.com">Victor Zverovich</a>
      <dt>Audience:
-     <dd>LEWG
+     <dd>SG16, LEWG
      <dt>Project:
      <dd>ISO/IEC 14882 Programming Languages — C++, ISO/IEC JTC1/SC22/WG21
     </dl>
@@ -2144,8 +2144,8 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <ol class="toc">
       <li><a href="#adl-name"><span class="secno">3.1</span> <span class="content">ADL claims a generic name</span></a>
       <li><a href="#adl-overloads"><span class="secno">3.2</span> <span class="content">ADL pollutes the overload set</span></a>
-      <li><a href="#format_as-requires-unnecessary-boilerplate-for-enums"><span class="secno">3.3</span> <span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span></a>
-      <li><a href="#general-format_as-needs-further-design"><span class="secno">3.4</span> <span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span></a>
+      <li><a href="#enum-boilerplate"><span class="secno">3.3</span> <span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span></a>
+      <li><a href="#general-format-as"><span class="secno">3.4</span> <span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span></a>
      </ol>
     <li><a href="#argument-mapping"><span class="secno">4</span> <span class="content">Argument mapping is not formatter forwarding</span></a>
     <li>
@@ -2191,6 +2191,9 @@ erasure.</p>
 behavior without introducing a new ADL customization point.</p>
    <p>This paper supersedes P3070 and proposes annotation-based enum formatting,
 including formatting enumerators as strings.</p>
+   <p>The underlying-type formatting proposal also makes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable by
+annotating its definition, so that it supports integer formatting and is mapped
+to its underlying type before type erasure.</p>
    <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation"></a></h2>
    <p>Consider the following <code class="highlight"><c- k>enum</c-></code> from P3070:</p>
 <pre class="highlight language-cpp"><c- k>namespace</c-> <c- nn>kevin_namespacy</c-> <c- p>{</c->
@@ -2272,7 +2275,7 @@ diagnostic size. <code class="highlight"><c- n>format_as</c-></code> is less pro
 name participate, but there is no benefit in introducing this cost when the
 customization can be expressed without overload resolution.</p>
    <p>Annotations require neither lookup nor overload resolution.</p>
-   <h3 class="heading settled" data-level="3.3" id="format_as-requires-unnecessary-boilerplate-for-enums"><span class="secno">3.3. </span><span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span><a class="self-link" href="#format_as-requires-unnecessary-boilerplate-for-enums"></a></h3>
+   <h3 class="heading settled" data-level="3.3" id="enum-boilerplate"><span class="secno">3.3. </span><span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span><a class="self-link" href="#enum-boilerplate"></a></h3>
    <p>For the common case of formatting an enum as its underlying type, the conversion
 is already defined by the language. With format_as, the user must still define a
 function that merely performs this conversion:</p>
@@ -2282,7 +2285,7 @@ function that merely performs this conversion:</p>
 </pre>
    <p>An annotation can express the intent directly, without requiring a user-defined
 conversion function.</p>
-   <h3 class="heading settled" data-level="3.4" id="general-format_as-needs-further-design"><span class="secno">3.4. </span><span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span><a class="self-link" href="#general-format_as-needs-further-design"></a></h3>
+   <h3 class="heading settled" data-level="3.4" id="general-format-as"><span class="secno">3.4. </span><span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span><a class="self-link" href="#general-format-as"></a></h3>
    <p>P3070 proposes <code class="highlight"><c- n>format_as</c-></code> as a general customization mechanism for
 user-defined types, not just enumerations. That generality is useful, but the
 proposed design leaves broader questions about interactions with existing
@@ -2363,11 +2366,14 @@ performed before type erasure, improving efficiency.</p>
    <p>The mapped value is type-erased as its mapped type, avoiding the custom-type
 handle and formatter dispatch.</p>
    <h3 class="heading settled" data-level="5.1" id="byte"><span class="secno">5.1. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code></span><a class="self-link" href="#byte"></a></h3>
-   <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> is an important use case.</p>
-   <p>With the proposed behavior:</p>
+   <p>As part of the underlying-type formatting proposal, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> opts in by
+applying the proposed annotation to its definition:</p>
+<pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-><c- p>]]</c-> <c- n>byte</c-> <c- o>:</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- p>{};</c->
+</pre>
+   <p>This gives <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> the ordinary integer format specifiers and maps it to its
+underlying type before type erasure. For example:</p>
 <pre class="highlight language-cpp"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>{</c-><c- mi>42</c-><c- p>});</c->       <c- c1>// "42"</c->
 <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:x}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>{</c-><c- mi>42</c-><c- p>});</c->     <c- c1>// "2a"</c->
-<c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{:{}}"</c-><c- p>,</c-> <c- mi>1</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>byte</c-><c- p>{</c-><c- mi>4</c-><c- p>});</c->  <c- c1>// "   1"</c->
 </pre>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> retains its type safety outside formatting while behaving like its
 underlying integer where the formatting facility specifically requires an
@@ -2552,6 +2558,8 @@ identifiers, with the annotation providing the opt-in.</p>
    <p>An enumeration whose definition is annotated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-></code>
 is formatted by mapping the value to its underlying type before the normal
 format argument mapping is applied.</p>
+   <p>As part of this proposal, the definition of <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> is annotated with
+<code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-></code>.</p>
    <p>An enumeration whose definition is annotated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format_as_identifier</c-></code>
 is formatted using the identifier of the first enumerator with the same value.
 If there is no such enumerator, its underlying value is converted to decimal.
@@ -2621,7 +2629,10 @@ value compares equal to <code class="highlight"><c- n>value</c-></code>.</p>
 <code class="highlight"><c- n>s</c-></code> be the decimal character representation of <code class="highlight"><c- n>to_underlying</c-><c- p>(</c-><c- n>value</c-><c- p>)</c-></code> with no
 additional formatting options.</p>
    <p><em>Returns</em>: <code class="highlight"><i><c- n>fmt_</c-></i><c- p>.</c-><c- n>format</c-><c- p>(</c-><c- n>s</c-><c- p>,</c-> <c- n>ctx</c-><c- p>)</c-></code>.</p>
-   <p>Specify <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> as <em>format-as-underlying</em>.</p>
+   <p>Modify the definition of <code class="highlight"><c- n>byte</c-></code> in
+[<a href="https://eel.is/c++draft/cstddef.syn">cstddef.syn</a>] as follows:</p>
+<pre class="highlight"><c- k>enum</c-> <c- k>class</c-> <ins><c- p>[[</c-><c- o>=</c-><c- n>format_as_underlying</c-><c- p>]]</c-></ins> <c- n>byte</c-> <c- o>:</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- p>{};</c->
+</pre>
    <h2 class="heading settled" data-level="13" id="feature-test"><span class="secno">13. </span><span class="content">Feature-test macro</span><a class="self-link" href="#feature-test"></a></h2>
    <p>Set the value of <code class="highlight"><c- n>__cpp_lib_format</c-></code> to a value corresponding to the date
 of adoption of this proposal.</p>

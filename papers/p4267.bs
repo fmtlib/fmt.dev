@@ -2,7 +2,7 @@
 Title: Formatting Enums, Upon Reflection
 Shortname: P4267
 Revision: 0
-Audience: LEWG
+Audience: SG16, LEWG
 Status: P
 Group: WG21
 URL:
@@ -31,6 +31,10 @@ behavior without introducing a new ADL customization point.
 
 This paper supersedes P3070 and proposes annotation-based enum formatting,
 including formatting enumerators as strings.
+
+The underlying-type formatting proposal also makes `std::byte` formattable by
+annotating its definition, so that it supports integer formatting and is mapped
+to its underlying type before type erasure.
 
 # Motivation and scope # {#motivation}
 
@@ -151,7 +155,7 @@ customization can be expressed without overload resolution.
 
 Annotations require neither lookup nor overload resolution.
 
-## `format_as` requires unnecessary boilerplate for enums
+## `format_as` requires unnecessary boilerplate for enums ## {#enum-boilerplate}
 
 For the common case of formatting an enum as its underlying type, the conversion
 is already defined by the language. With format_as, the user must still define a
@@ -166,7 +170,7 @@ constexpr auto format_as(color c) {
 An annotation can express the intent directly, without requiring a user-defined
 conversion function.
 
-## General `format_as` needs further design
+## General `format_as` needs further design ## {#general-format-as}
 
 P3070 proposes `format_as` as a general customization mechanism for
 user-defined types, not just enumerations. That generality is useful, but the
@@ -280,14 +284,19 @@ handle and formatter dispatch.
 
 ## `std::byte` ## {#byte}
 
-`std::byte` is an important use case.
+As part of the underlying-type formatting proposal, `std::byte` opts in by
+applying the proposed annotation to its definition:
 
-With the proposed behavior:
+```cpp
+enum class [[=std::format_as_underlying]] byte : unsigned char {};
+```
+
+This gives `std::byte` the ordinary integer format specifiers and maps it to its
+underlying type before type erasure. For example:
 
 ```cpp
 std::format("{}", std::byte{42});       // "42"
 std::format("{:x}", std::byte{42});     // "2a"
-std::format("{:{}}", 1, std::byte{4});  // "   1"
 ```
 
 `std::byte` retains its type safety outside formatting while behaving like its
@@ -557,6 +566,9 @@ An enumeration whose definition is annotated with `std::format_as_underlying`
 is formatted by mapping the value to its underlying type before the normal
 format argument mapping is applied.
 
+As part of this proposal, the definition of `std::byte` is annotated with
+`std::format_as_underlying`.
+
 An enumeration whose definition is annotated with `std::format_as_identifier`
 is formatted using the identifier of the first enumerator with the same value.
 If there is no such enumerator, its underlying value is converted to decimal.
@@ -650,7 +662,12 @@ additional formatting options.
 
 *Returns*: <code><i>fmt_</i>.format(s, ctx)</code>.
 
-Specify `std::byte` as *format-as-underlying*.
+Modify the definition of `byte` in
+&bs[;[cstddef.syn](https://eel.is/c++draft/cstddef.syn)] as follows:
+
+<pre>
+enum class <ins>&bs[;[=format_as_underlying]]</ins> byte : unsigned char {};
+</pre>
 
 # Feature-test macro # {#feature-test}
 
