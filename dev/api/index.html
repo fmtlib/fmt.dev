@@ -649,6 +649,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#enum-formatting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enum Formatting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#compile-time-support" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -851,6 +862,7 @@
 <li><a href="#ranges-api"><code>fmt/ranges.h</code></a>: formatting of ranges and tuples</li>
 <li><a href="#chrono-api"><code>fmt/chrono.h</code></a>: date and time formatting</li>
 <li><a href="#std-api"><code>fmt/std.h</code></a>: formatters for standard library types</li>
+<li><a href="#enum-api"><code>fmt/enum.h</code></a>: formatting of annotated enums</li>
 <li><a href="#compile-api"><code>fmt/compile.h</code></a>: format string compilation</li>
 <li><a href="#color-api"><code>fmt/color.h</code></a>: terminal colors and text styles</li>
 <li><a href="#os-api"><code>fmt/os.h</code></a>: system APIs</li>
@@ -1731,6 +1743,41 @@ auto s = smol();
 fmt::print(&quot;{}&quot;, +s.bit);
 </code></pre>
 <p>This is a known limitation of "perfect" forwarding in C++.</p>
+<p><a id="enum-api"></a></p>
+<h2 id="enum-formatting">Enum Formatting</h2>
+<p><code>fmt/enum.h</code> provides formatting of enums annotated with
+<code>fmt::as_identifiers</code>. Such an enum is formatted as the identifier of the
+enumerator matching the formatted value:</p>
+<pre class="highlight"><code>#include &lt;fmt/enum.h&gt;
+
+enum class [[=fmt::as_identifiers]] color { red, green, blue };
+
+fmt::print("{}", color::green);
+// Output: green</code></pre>
+<p>Such enums are formatted using the string <a href="../syntax/#format-specification">Format Specification</a>, for example:</p>
+<pre class="highlight"><code>fmt::print("[{:&gt;7}]", color::red);
+// Output: [    red]</code></pre>
+<p>Identifiers are only available as <code>char</code> strings so annotated enums are not
+formattable with other character types.</p>
+<p>If several enumerators have the same value, the first one in the order of
+declaration is used. A value that doesn't match any enumerator is represented
+as its underlying value in decimal before applying string formatting:</p>
+<pre class="highlight"><code>fmt::print("{}", static_cast&lt;color&gt;(42));
+// Output: 42</code></pre>
+<p>Enums without the annotation are not affected and are formatted as before, i.e.
+scoped enums require <code>format_as</code> or a <code>formatter</code> specialization, see
+<a href="#udt">Formatting User-Defined Types</a>.</p>
+<p>Identifiers are retrieved with C++26 reflection (<a href="https://wg21.link/p2996">P2996</a>) and the annotation with <a href="https://wg21.link/p3394">P3394</a>, so this requires a compiler with reflection support,
+which may need an extra flag such as <code>-freflection</code> in GCC. The macro
+<code>FMT_USE_REFLECTION</code> is set to 1 if reflection is available and to 0 otherwise.
+It can also be defined by the user to disable the use of reflection, in which
+case <code>fmt/enum.h</code> is empty.</p>
+<p>When {fmt} is built as a module, reflection support is detected when the module
+itself is compiled, so this API is only available to importers if the module was
+built with reflection enabled. An importing translation unit may also have to
+include <code>&lt;meta&gt;</code> itself: some compilers, such as GCC 16, fail to look up
+implementation details of <code>std::define_static_string</code> when instantiating the
+formatter otherwise.</p>
 <p><a id="compile-api"></a></p>
 <h2 id="compile-time-support">Compile-Time Support</h2>
 <p><code>fmt/compile.h</code> provides format string compilation and compile-time
