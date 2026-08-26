@@ -9,10 +9,14 @@ drawings:
   persist: false
 ---
 
+<script setup>
+import cppLogo from './assets/cpp-logo.png'
+</script>
+
 <div class="title-slide">
   <div class="title-band">
     <div class="title-text">Formatting Enums,<br>Upon Reflection</div>
-    <img class="cpp-logo" src="/cpp-logo.png" alt="C++">
+    <img class="cpp-logo" :src="cppLogo" alt="C++">
   </div>
   <div class="title-details">
     <div><strong>P4267R0</strong></div>
@@ -39,6 +43,8 @@ drawings:
 }
 
 .title-text {
+  -webkit-box-reflect: below 7px
+    linear-gradient(to bottom, transparent 55%, #ffffff18);
   color: white;
   font-size: 48px;
   font-weight: 500;
