@@ -3,7 +3,7 @@ theme: default
 title: Formatting Enums, Upon Reflection
 author: Victor Zverovich
 aspectRatio: 16/9
-transition: none
+transition: fade
 lineNumbers: false
 drawings:
   persist: false
