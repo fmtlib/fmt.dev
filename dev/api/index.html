@@ -1767,17 +1767,18 @@ as its underlying value in decimal before applying string formatting:</p>
 <p>Enums without the annotation are not affected and are formatted as before, i.e.
 scoped enums require <code>format_as</code> or a <code>formatter</code> specialization, see
 <a href="#udt">Formatting User-Defined Types</a>.</p>
-<p>Identifiers are retrieved with C++26 reflection (<a href="https://wg21.link/p2996">P2996</a>) and the annotation with <a href="https://wg21.link/p3394">P3394</a>, so this requires a compiler with reflection support,
+<p>This uses two C++26 features:
+<a href="https://en.cppreference.com/w/cpp/language/operator_reflection">reflection</a> to
+retrieve the enumerator identifiers and
+<a href="https://en.cppreference.com/w/cpp/language/annotations">annotations</a> to opt an
+enum in via <code>fmt::as_identifiers</code>. It therefore requires a compiler with
+reflection support,
 which may need an extra flag such as <code>-freflection</code> in GCC. The macro
 <code>FMT_USE_REFLECTION</code> is set to 1 if reflection is available and to 0 otherwise.
-It can also be defined by the user to disable the use of reflection, in which
-case <code>fmt/enum.h</code> is empty.</p>
+It can also be defined by the user to disable the use of reflection.</p>
 <p>When {fmt} is built as a module, reflection support is detected when the module
 itself is compiled, so this API is only available to importers if the module was
-built with reflection enabled. An importing translation unit may also have to
-include <code>&lt;meta&gt;</code> itself: some compilers, such as GCC 16, fail to look up
-implementation details of <code>std::define_static_string</code> when instantiating the
-formatter otherwise.</p>
+built with reflection enabled.</p>
 <p><a id="compile-api"></a></p>
 <h2 id="compile-time-support">Compile-Time Support</h2>
 <p><code>fmt/compile.h</code> provides format string compilation and compile-time
