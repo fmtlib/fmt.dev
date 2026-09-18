@@ -1,146 +1,302 @@
 <pre class='metadata'>
-Title: `what`'s encoding
+Title: Formatting `what` matters
 Shortname: P3256
 Revision: 0
-Audience: SG16
+Audience: SG16, LEWG
 Status: D
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2024-04-25
+Date: 2026-09-07
 Markup Shorthands: markdown yes
 </pre>
 
 Introduction {#intro}
 ============
 
-TODO
+This paper proposes making `std::exception` and publicly derived exception
+types formattable with `std::format` and printable with `std::print`.
+It also specifies the encoding of library-generated parts of standard exception
+messages, resolving [[LWG4087]].
 
-Problem {#problem}
-=======
+Motivation {#motivation}
+==========
 
-Consider the following example:
+Exception messages are commonly written to logs or diagnostic output. Today
+this requires explicitly calling `what()`:
 
-```
-std::uintmax_t size = 0;
+```c++
 try {
-  size = std::filesystem::file_size("Шчучыншчына");
+  process_request();
 } catch (const std::exception& e) {
-  std::print("{}", e.what());
+  std::println(stderr, "Request failed: {}", e.what());
 }
 ```
 
-On macOS and most GNU/Linux systems with the ordinary literal encoding of UTF-8,
-which is the default for GCC and Clang, it works as expected. Here is the output
-for GCC and libstdc++:
+Unfortunately, this does not work reliably. Consider the following example
+from [[LWG4087]]:
 
-<!-- https://www.godbolt.org/z/h8qaneooh -->
-
-```
-filesystem error: cannot get file size: No such file or directory [Шчучыншчына]
-```
-
-Notice that the path is a part of the error message and rendered correctly.
-
-Now let's consider a similar example on Windows:
-
-```
+```c++
 std::uintmax_t size = 0;
 try {
   size = std::filesystem::file_size(L"Шчучыншчына");
 } catch (const std::exception& e) {
-  std::print("{}", e.what());
+  std::println("Памылка: {}", e.what());
 }
 ```
 
-The only difference from the one above is the use of a wide string to
-construct a path without undesirable transcoding.
-
-Unfortunately this will likely produce [mojibake](
-https://en.wikipedia.org/wiki/Mojibake) despite the fact that both
-`std::filesystem::path` and `std::print` support Unicode. When compiled with 
-<code highlight="text">/utf-8</code> on Visual C++ ([[MSVC-UTF8]]) and run it
-produces no visible output at all:
+This gives the following output on Windows even when the literal encoding is
+UTF-8 and the regional settings are set to Belarusian (the language of the
+text):
 
 ```
-C:\test\what
-
+Памылка: file_size: The system cannot find the file specified.: "�����������"
 ```
 
-This is obviously broken and may give a misleading impression that there was no
-error.
+Microsoft STL implements `system_category().message()` using `FormatMessageA`
+and first requests an en-US message using language identifier `0x0409`. Since
+the English message is ASCII, only the filesystem path exhibits mojibake.
 
-<!--
-"\xd8\xf7\xf3\xf7\xfb\xed\xf8\xf7\xfb\xed\xe0" - CP1251
-
-Output without <code highlight="text">/utf-8</code>:
-file_size: The system cannot find the file specified.: "╨и╤З╤Г╤З╤Л╨╜╤И╤З╤Л╨╜╨░"
--->
-
-These examples use `std::print` because it is capable of portably printing
-Unicode, including Unicode `std::filesystem::path` on Windows ([[P2845]]), e.g.
-<!-- https://www.godbolt.org/z/a5688enoE -->
-
+Trying to do the same with iostreams
+```c++
+std::cout << "Памылка: " << e.what() << std::endl;
 ```
-std::print("{}", std::filesystem::path(L"Шчучыншчына"));
+gives even worse result:
+```
+╨Я╨░╨╝╤Л╨╗╨║╨░: file_size: The system cannot find the file specified.: "╪ўєў√э°ў√эр"
 ```
 
-prints
+The situation is somewhat better on macOS and most Linux systems where UTF-8
+has become de-facto standard.
 
+The current proposal makes `std::exception` directly formattable and specifies
+a consistent encoding for messages produced by the standard library
+implementation itself, making both
+
+```c++
+std::println("Памылка: {}", e);
 ```
-Шчучыншчына
+and
+```c++
+std::println("Памылка: {}", e.what());
 ```
+work and produce the correct output such as
+```
+Памылка: file_size: The system cannot find the file specified.: Шчучыншчына
+```
+(The exact message format depends on the implementation.)
 
-when compiled with `/utf-8` on Windows regardless of terminal and Active Code
-Page settings.
-
-In general, the situation is worse with other output facilities as demonstrated
-in [[P2093]].
-
-Analysis {#analysis}
+Proposal {#proposal}
 ========
 
-Why does printing the filesystem exception message on Windows produce mojibake?
-There are several encodings involved in the process:
+The current paper proposes a `formatter` partial specialization for
+`std::exception` and types publicly derived from it. The default format is the
+string returned by the virtual `what()` member function. The specialization
+uses the standard string format specification, providing the usual fill,
+alignment, width, precision, and debug formatting. It also resolves [[LWG4087]]
+by specifying the encoding of library-generated exception messages.
 
-* Ordinary literal encoding
-* `std::filesystem::path` encoding
-* Active code page (ACP)
-* Console code page
+For example:
 
-All of these can be different even for the same localization.
+```c++
+std::runtime_error e("connection refused");
+auto s1 = std::format("{}", e);       // "connection refused"
+auto s2 = std::format("{:>20}", e);   // "  connection refused"
+auto s3 = std::format("{:?}", e);     // "\"connection refused\""
+```
 
-The ordinarly literal encoding is fixed at compile time.
-<!-- TODO: link to Corentin's paper -->
+The formatter is not opted into the nonlocking formatter optimization because
+`what()` is virtual and can execute program-defined code.
 
-`std::filesystem::path` encoding is a bit more complicated because paths can
-contain arbitrary binary data. On Windows the internal representation of
-`std::filesystem::path` uses wide strings and apart from the rare binary path
-case the encoding is UTF-16.
+Encoding {#encoding}
+--------
 
-The ACP and the console code page can vary at runtime and don't generally match
-each other. For example in Belarusian locale on Windows, the ACP is CP1251 while
-the console code page is 437. Both are legacy code pages not supporting full
-Unicode range.
+The runtime encoding of `what()` is currently unspecified, making portable
+interpretation and display impossible in general. The encoding problem cannot
+be solved in the formatter: by the time it calls `what()`, differently encoded
+components may already have been combined into a single NTBS with no information
+about their source encodings. The message must instead be normalized when it is
+constructed.
+
+For the existing `const char*` interface, the ordinary literal
+encoding is the only choice that makes library-generated messages directly
+composable with ordinary narrow strings on every implementation and fixes both
+direct and formatted output. This is consistent with the design of
+`std::format` and `std::print`, whose narrow-character interfaces use the
+ordinary literal encoding. It also matches how exception messages are formed:
+most are either constructed from string literals or contain literal
+components.
+
+Unlike the C locale encoding, the ordinary literal encoding does not change in
+response to `setlocale` while an exception object is alive. This prevents bugs
+where a message is constructed under one C locale and interpreted under
+another.
+
+The choice is also implementable with existing facilities. [[P2319]] fixed
+filesystem path presentation problems by adding
+`filesystem::path::display_string()`, which produces a string suitable for
+formatting and printing in the ordinary literal encoding. No corresponding API
+converts a path to the C locale encoding.
+
+A known, stable source encoding also enables future formatting support for
+additional code unit types. Program-supplied `what_arg` bytes are preserved:
+when they use the ordinary literal encoding, the complete message does too;
+otherwise only the library-generated parts have that guarantee. Program-defined
+exception types remain responsible for their own encoding but now have a
+consistent standard-library model to follow. The formatter is currently
+provided only for `char` because `what()` returns a narrow string.
+
+Wording {#wording}
+=======
+
+Modify paragraph 2 of &bs[;[exception](
+https://eel.is/c++draft/exception)] as indicated:
+
+The `what()` member function of each such `T` satisfies the constraints
+specified for `exception::what()` (see below).
+
+<ins>
+For a call to `what()` on an object whose dynamic type is a standard library
+class that is `exception` or is derived from `exception`, every character
+sequence incorporated into the returned NTBS, other than an NTBS supplied by
+the program and copied without modification, is in the ordinary literal
+encoding. If every such copied NTBS is in the ordinary literal encoding, the
+returned NTBS is in the ordinary literal encoding.
+</ins>
+
+Modify `exception::what()` in &bs[;[exception](
+https://eel.is/c++draft/exception)] as indicated:
+
+```
+constexpr virtual const char* what() const noexcept;
+```
+
+*Returns*: An implementation-defined NTBS, which during constant evaluation is
+encoded with the ordinary literal encoding.
+
+*Remarks*: <del>The message may be a null-terminated multibyte string, suitable
+for conversion and display as a `wstring`.</del> The return value remains valid
+until the exception object from which it is obtained is destroyed or a
+non-`const` member function of the exception object is called.
+
+Modify `system_error::what()` in &bs[;[syserr.syserr.members](
+https://eel.is/c++draft/syserr.syserr.members)] as indicated:
+
+```
+const char* what() const noexcept override;
+```
+
+*Returns*: An NTBS incorporating the arguments supplied in the constructor.
+
+<ins>
+For a constructor with a `what_arg` parameter, the NTBS designated by
+`what_arg.c_str()` or `what_arg`, as applicable, is incorporated without
+changing its element values. If an error-category message is incorporated, then
+during construction let `m` be `code().message()` and let `E` be the encoding
+of the C locale in effect when that call returns. `m` is
+transcoded from `E` to the ordinary literal encoding during construction and
+incorporated into the returned NTBS. The handling of characters not
+representable in the ordinary literal encoding is implementation-defined.
+</ins>
+
+Modify `filesystem_error::what()` in
+&bs[;[fs.filesystem.error.members](
+https://eel.is/c++draft/fs.filesystem.error.members)] as indicated:
+
+```
+const char* what() const noexcept override;
+```
+
+*Returns*: An NTBS that incorporates the <del>`what_arg` argument supplied to
+the constructor</del><ins>NTBS designated by `what_arg.c_str()` without
+changing its element values</ins>. The exact format is unspecified.
+Implementations should include the `system_error::what()` string and the
+pathnames of `path1` and `path2` <del>in the native format in the returned
+string</del><ins>in the returned string. For each included pathname
+corresponding to a path `p`, `p.display_string()` is evaluated during
+construction and its result is incorporated into the returned string</ins>.
+
+The feature-test macro below detects the formatter addition. The encoding
+changes are intended to be applied as a defect report and do not depend on the
+macro.
+
+Add an entry for `__cpp_lib_format_exception` to section "Header `<version>`
+synopsis" &bs[;[version.syn](https://eel.is/c++draft/version.syn)], in a place that
+respects the table's current alphabetic order:
+
+<pre>
+<ins>#define __cpp_lib_format_exception 20XXXXL // also in &lt;format></ins>
+</pre>
+
+Modify "Header `<format>` synopsis" &bs[;[format.syn](
+https://eel.is/c++draft/format.syn)] as indicated:
+
+<pre>
+  // [format.formatter], formatter
+  template&lt;class T, class charT = char> struct formatter;
+
+  <ins>// [format.exception], exception formatter
+  template&lt;class T>
+    requires derived_from&lt;T, exception>
+  struct formatter&lt;T, char>;</ins>
+
+  // [format.formatter.locking], formatter locking
+  template&lt;class T>
+    constexpr bool enable_nonlocking_formatter_optimization = false;
+
+  <ins>template&lt;class T>
+    requires derived_from&lt;T, exception>
+  constexpr bool enable_nonlocking_formatter_optimization&lt;T> = false;</ins>
+</pre>
+
+Add a new section "Exception formatter" [format.exception] under
+&bs[;[format.formatter](https://eel.is/c++draft/format.formatter)]:
+
+<pre>
+template&lt;class T>
+  requires derived_from&lt;T, exception>
+struct formatter&lt;T, char> : formatter&lt;const char*, char> {
+  template&lt;class FormatContext>
+    constexpr typename FormatContext::iterator
+      format(const T& e, FormatContext& ctx) const;
+};
+</pre>
+
+The specialization is debug-enabled and constexpr-enabled.
+
+<pre>
+template&lt;class FormatContext>
+  constexpr typename FormatContext::iterator
+    format(const T& e, FormatContext& ctx) const;
+</pre>
+
+*Returns*: `formatter<const char*, char>::format(
+static_cast<const exception&>(e).what(), ctx)`.
+
+Implementation experience {#impl}
+=========================
+
+A formatter for `std::exception` itself, as well as types derived from it, is
+available in the open-source {fmt} library ([[FMT]]).
 
 <pre class=biblio>
 {
-  "P2845": {
-    "title": "Formatting of std::filesystem::path",
+  "FMT": {
+    "title": "The {fmt} library",
     "authors": ["Victor Zverovich"],
-    "href": "https://wg21.link/p2845"
+    "etAl": true,
+    "href": "https://github.com/fmtlib/fmt"
   },
-  "P2093": {
-    "title": "Formatted output",
+  "LWG4087": {
+    "title": "LWG Issue 4087: Standard exception messages have unspecified encoding",
     "authors": ["Victor Zverovich"],
-    "href": "https://wg21.link/p2093"
+    "href": "https://cplusplus.github.io/LWG/issue4087"
   },
-  "MSVC-UTF8": {
-    "title":
-    "Visual C++ Documentation, /utf-8 (Set Source and Executable character sets to UTF-8)",
-    "href":
-    "https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8"
+  "P2319": {
+    "title": "Prevent path presentation problems",
+    "authors": ["Victor Zverovich"],
+    "href": "https://wg21.link/P2319R5"
   }
 }
 </pre>
