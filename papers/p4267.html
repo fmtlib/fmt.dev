@@ -2,7 +2,7 @@
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <title>P4267R0: Formatting Enums, Upon Reflection</title>
+  <title>P4267R1: Formatting Enums, Upon Reflection</title>
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
  *
@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version d113b2e81, updated Tue Jun 9 14:57:55 2026 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6b0ff84e21efadc778d4c5015116701d1924d1e1" name="revision">
+  <meta content="6abd66031cc998aa8653c354aa8ad3b147fc6a2a" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2118,9 +2118,9 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="no-ref p-name" id="title">P4267R0<br>Formatting Enums, Upon Reflection</h1>
+   <h1 class="no-ref p-name" id="title">P4267R1<br>Formatting Enums, Upon Reflection</h1>
    <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Published Proposal,
-    <time class="dt-updated" datetime="2026-08-20">2026-08-20</time></span></h2>
+    <time class="dt-updated" datetime="2026-09-26">2026-09-26</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt class="editor">Author:
@@ -2138,36 +2138,37 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <h2 class="no-num no-ref no-toc" id="contents">Table of Contents</h2>
    <ol class="toc">
     <li><a href="#intro"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#motivation"><span class="secno">2</span> <span class="content">Motivation and scope</span></a>
+    <li><a href="#changes0"><span class="secno">2</span> <span class="content">Changes since R0</span></a>
+    <li><a href="#motivation"><span class="secno">3</span> <span class="content">Motivation and scope</span></a>
     <li>
-     <a href="#format-as-problems"><span class="secno">3</span> <span class="content">Problems with <code class="highlight"><c- n>format_as</c-></code></span></a>
+     <a href="#format-as-problems"><span class="secno">4</span> <span class="content">Problems with <code class="highlight"><c- n>format_as</c-></code></span></a>
      <ol class="toc">
-      <li><a href="#adl-name"><span class="secno">3.1</span> <span class="content">ADL claims a generic name</span></a>
-      <li><a href="#adl-overloads"><span class="secno">3.2</span> <span class="content">ADL pollutes the overload set</span></a>
-      <li><a href="#enum-boilerplate"><span class="secno">3.3</span> <span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span></a>
-      <li><a href="#general-format-as"><span class="secno">3.4</span> <span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span></a>
+      <li><a href="#adl-name"><span class="secno">4.1</span> <span class="content">ADL claims a generic name</span></a>
+      <li><a href="#adl-overloads"><span class="secno">4.2</span> <span class="content">ADL pollutes the overload set</span></a>
+      <li><a href="#enum-boilerplate"><span class="secno">4.3</span> <span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span></a>
+      <li><a href="#general-format-as"><span class="secno">4.4</span> <span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span></a>
      </ol>
-    <li><a href="#argument-mapping"><span class="secno">4</span> <span class="content">Argument mapping is not formatter forwarding</span></a>
+    <li><a href="#argument-mapping"><span class="secno">5</span> <span class="content">Argument mapping is not formatter forwarding</span></a>
     <li>
-     <a href="#underlying"><span class="secno">5</span> <span class="content">Formatting as the underlying type</span></a>
+     <a href="#underlying"><span class="secno">6</span> <span class="content">Formatting as the underlying type</span></a>
      <ol class="toc">
-      <li><a href="#byte"><span class="secno">5.1</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code></span></a>
+      <li><a href="#byte"><span class="secno">6.1</span> <span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code></span></a>
      </ol>
-    <li><a href="#header"><span class="secno">6</span> <span class="content">Lightweight opt-in header</span></a>
+    <li><a href="#header"><span class="secno">7</span> <span class="content">Lightweight opt-in header</span></a>
     <li>
-     <a href="#identifier"><span class="secno">7</span> <span class="content">Formatting as an identifier</span></a>
+     <a href="#identifier"><span class="secno">8</span> <span class="content">Formatting as an identifier</span></a>
      <ol class="toc">
-      <li><a href="#aliases"><span class="secno">7.1</span> <span class="content">Aliases</span></a>
-      <li><a href="#unmatched-values"><span class="secno">7.2</span> <span class="content">Values without a matching enumerator</span></a>
-      <li><a href="#annotation-interaction"><span class="secno">7.3</span> <span class="content">Interaction between the annotations</span></a>
+      <li><a href="#aliases"><span class="secno">8.1</span> <span class="content">Aliases</span></a>
+      <li><a href="#unmatched-values"><span class="secno">8.2</span> <span class="content">Values without a matching enumerator</span></a>
+      <li><a href="#annotation-interaction"><span class="secno">8.3</span> <span class="content">Interaction between the annotations</span></a>
      </ol>
-    <li><a href="#why-annotations"><span class="secno">8</span> <span class="content">Why annotations?</span></a>
-    <li><a href="#prior-art"><span class="secno">9</span> <span class="content">Prior art</span></a>
-    <li><a href="#implementation"><span class="secno">10</span> <span class="content">Implementation experience</span></a>
-    <li><a href="#proposal"><span class="secno">11</span> <span class="content">Proposed change</span></a>
-    <li><a href="#wording"><span class="secno">12</span> <span class="content">Wording</span></a>
-    <li><a href="#feature-test"><span class="secno">13</span> <span class="content">Feature-test macro</span></a>
-    <li><a href="#acknowledgements"><span class="secno">14</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#why-annotations"><span class="secno">9</span> <span class="content">Why annotations?</span></a>
+    <li><a href="#prior-art"><span class="secno">10</span> <span class="content">Prior art</span></a>
+    <li><a href="#implementation"><span class="secno">11</span> <span class="content">Implementation experience</span></a>
+    <li><a href="#proposal"><span class="secno">12</span> <span class="content">Proposed change</span></a>
+    <li><a href="#wording"><span class="secno">13</span> <span class="content">Wording</span></a>
+    <li><a href="#feature-test"><span class="secno">14</span> <span class="content">Feature-test macro</span></a>
+    <li><a href="#acknowledgements"><span class="secno">15</span> <span class="content">Acknowledgements</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
      <ol class="toc">
@@ -2194,7 +2195,17 @@ including formatting enumerators as strings.</p>
    <p>The underlying-type formatting proposal also makes <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> formattable by
 annotating its definition, so that it supports integer formatting and is mapped
 to its underlying type before type erasure.</p>
-   <h2 class="heading settled" data-level="2" id="motivation"><span class="secno">2. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation"></a></h2>
+   <h2 class="heading settled" data-level="2" id="changes0"><span class="secno">2. </span><span class="content">Changes since R0</span><a class="self-link" href="#changes0"></a></h2>
+   <ul>
+    <li data-md>
+     <p>Made the annotation marker types exposition only.</p>
+    <li data-md>
+     <p>Clarified the discussion of ADL, overload resolution and the difference
+between argument mapping and formatter forwarding.</p>
+    <li data-md>
+     <p>Streamlined the motivation and rationale.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="motivation"><span class="secno">3. </span><span class="content">Motivation and scope</span><a class="self-link" href="#motivation"></a></h2>
    <p>Consider the following <code class="highlight"><c- k>enum</c-></code> from P3070:</p>
 <pre class="highlight language-cpp"><c- k>namespace</c-> <c- nn>kevin_namespacy</c-> <c- p>{</c->
 <c- k>enum</c-> <c- k>class</c-> <c- nc>film</c-> <c- p>{</c->
@@ -2216,7 +2227,7 @@ specialization:</p>
 <pre class="highlight language-cpp"><c- n>film</c-> <c- n>f</c-> <c- o>=</c-> <c- n>kevin_namespacy</c-><c- o>::</c-><c- n>se7en</c-><c- p>;</c->
 <c- k>auto</c-> <c- n>s</c-> <c- o>=</c-> <c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-><c- p>(</c-><c- n>f</c-><c- p>));</c->
 </pre>
-   <p>This reduces formatting overhead but requires the conversion to be repeated at
+   <p>This removes one-off boilerplate but requires the conversion to be repeated at
 every call site.</p>
    <p>P3070 tried to address both problems with an ADL customization:</p>
 <pre class="highlight language-cpp"><c- k>namespace</c-> <c- nn>kevin_namespacy</c-> <c- p>{</c->
@@ -2230,8 +2241,8 @@ every call site.</p>
    <p>This is more concise and allows the formatting implementation to convert the
 enum before type erasure. However, ADL has well-known drawbacks and is no
 longer necessary now that C++ has annotations.</p>
-   <h2 class="heading settled" data-level="3" id="format-as-problems"><span class="secno">3. </span><span class="content">Problems with <code class="highlight"><c- n>format_as</c-></code></span><a class="self-link" href="#format-as-problems"></a></h2>
-   <h3 class="heading settled" data-level="3.1" id="adl-name"><span class="secno">3.1. </span><span class="content">ADL claims a generic name</span><a class="self-link" href="#adl-name"></a></h3>
+   <h2 class="heading settled" data-level="4" id="format-as-problems"><span class="secno">4. </span><span class="content">Problems with <code class="highlight"><c- n>format_as</c-></code></span><a class="self-link" href="#format-as-problems"></a></h2>
+   <h3 class="heading settled" data-level="4.1" id="adl-name"><span class="secno">4.1. </span><span class="content">ADL claims a generic name</span><a class="self-link" href="#adl-name"></a></h3>
    <p><code class="highlight"><c- n>format_as</c-></code> is found by argument-dependent lookup. As a result, the otherwise
 generic name <code class="highlight"><c- n>format_as</c-></code> effectively becomes a formatting customization name in
 associated namespaces.</p>
@@ -2258,7 +2269,7 @@ the possibility of interaction.</p>
 <c- p>};</c->
 </pre>
    <p>The formatting behavior is explicitly attached to the declaration it affects.</p>
-   <h3 class="heading settled" data-level="3.2" id="adl-overloads"><span class="secno">3.2. </span><span class="content">ADL pollutes the overload set</span><a class="self-link" href="#adl-overloads"></a></h3>
+   <h3 class="heading settled" data-level="4.2" id="adl-overloads"><span class="secno">4.2. </span><span class="content">ADL pollutes the overload set</span><a class="self-link" href="#adl-overloads"></a></h3>
    <p>ADL adds functions from associated namespaces and classes to the overload set.
 For a class template specialization, associated entities can include the types
 of its template arguments, making the lookup nonlocal.</p>
@@ -2274,8 +2285,9 @@ candidates.</p>
 diagnostic size. <code class="highlight"><c- n>format_as</c-></code> is less problematic because only overloads with one
 name participate, but there is no benefit in introducing this cost when the
 customization can be expressed without overload resolution.</p>
-   <p>Annotations require neither lookup nor overload resolution.</p>
-   <h3 class="heading settled" data-level="3.3" id="enum-boilerplate"><span class="secno">3.3. </span><span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span><a class="self-link" href="#enum-boilerplate"></a></h3>
+   <p>Annotation-based formatting requires no ADL and introduces no customization
+overload set to resolve at formatting call sites.</p>
+   <h3 class="heading settled" data-level="4.3" id="enum-boilerplate"><span class="secno">4.3. </span><span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span><a class="self-link" href="#enum-boilerplate"></a></h3>
    <p>For the common case of formatting an enum as its underlying type, the conversion
 is already defined by the language. With format_as, the user must still define a
 function that merely performs this conversion:</p>
@@ -2285,7 +2297,7 @@ function that merely performs this conversion:</p>
 </pre>
    <p>An annotation can express the intent directly, without requiring a user-defined
 conversion function.</p>
-   <h3 class="heading settled" data-level="3.4" id="general-format-as"><span class="secno">3.4. </span><span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span><a class="self-link" href="#general-format-as"></a></h3>
+   <h3 class="heading settled" data-level="4.4" id="general-format-as"><span class="secno">4.4. </span><span class="content">General <code class="highlight"><c- n>format_as</c-></code> needs further design</span><a class="self-link" href="#general-format-as"></a></h3>
    <p>P3070 proposes <code class="highlight"><c- n>format_as</c-></code> as a general customization mechanism for
 user-defined types, not just enumerations. That generality is useful, but the
 proposed design leaves broader questions about interactions with existing
@@ -2293,15 +2305,14 @@ formatting customizations, constraints on the result type, and exception
 specifications such as <code class="highlight"><c- k>noexcept</c-></code>.</p>
    <p>These issues should be addressed before standardizing a general <code class="highlight"><c- n>format_as</c-></code>
 facility. The annotation-based approach proposed here can be extended to
-user-defined types in the future once these design questions have been
-resolved.</p>
+user-defined types in the future.</p>
    <p>The motivating enum use case does not require arbitrary conversion. Conversion
 from an enum to its underlying type is defined by the language, nonthrowing,
 and has no side effects.</p>
-   <h2 class="heading settled" data-level="4" id="argument-mapping"><span class="secno">4. </span><span class="content">Argument mapping is not formatter forwarding</span><a class="self-link" href="#argument-mapping"></a></h2>
+   <h2 class="heading settled" data-level="5" id="argument-mapping"><span class="secno">5. </span><span class="content">Argument mapping is not formatter forwarding</span><a class="self-link" href="#argument-mapping"></a></h2>
    <p>P3070 states that the semantics of <code class="highlight"><c- n>format_as</c-></code> are the same as those of a
-forwarding <code class="highlight"><c- n>formatter</c-></code> specialization. This is not quite true when the
-conversion is performed before type erasure.</p>
+forwarding <code class="highlight"><c- n>formatter</c-></code> specialization. This is mostly correct, except for the
+subtle case where the conversion is performed before type erasure.</p>
    <p>Consider:</p>
 <pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- nc>width</c-> <c- p>{</c->
   <c- n>small</c-> <c- o>=</c-> <c- mi>4</c-><c- p>,</c->
@@ -2334,7 +2345,7 @@ make the type an integer format argument.</p>
      <p>mapping <code class="highlight"><c- n>E</c-></code> to <code class="highlight"><c- n>underlying_type_t</c-><c- o>&lt;</c-><c- n>E</c-><c- o>></c-></code> as a formatting argument.</p>
    </ol>
    <p>This paper deliberately proposes the second.</p>
-   <h2 class="heading settled" data-level="5" id="underlying"><span class="secno">5. </span><span class="content">Formatting as the underlying type</span><a class="self-link" href="#underlying"></a></h2>
+   <h2 class="heading settled" data-level="6" id="underlying"><span class="secno">6. </span><span class="content">Formatting as the underlying type</span><a class="self-link" href="#underlying"></a></h2>
    <p>This paper proposes the annotation:</p>
 <pre class="highlight language-cpp"><c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-><c- p>]]</c->
 </pre>
@@ -2365,7 +2376,7 @@ formatting facility.</p>
 performed before type erasure, improving efficiency.</p>
    <p>The mapped value is type-erased as its mapped type, avoiding the custom-type
 handle and formatter dispatch.</p>
-   <h3 class="heading settled" data-level="5.1" id="byte"><span class="secno">5.1. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code></span><a class="self-link" href="#byte"></a></h3>
+   <h3 class="heading settled" data-level="6.1" id="byte"><span class="secno">6.1. </span><span class="content"><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code></span><a class="self-link" href="#byte"></a></h3>
    <p>As part of the underlying-type formatting proposal, <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> opts in by
 applying the proposed annotation to its definition:</p>
 <pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-><c- p>]]</c-> <c- n>byte</c-> <c- o>:</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- p>{};</c->
@@ -2388,7 +2399,7 @@ it uses the same argument-mapping mechanism.</p>
 <c- n>BM_Formatter</c->                     <c- mf>17.7</c-> <c- n>ns</c->         <c- mf>17.7</c-> <c- n>ns</c->     <c- mi>38037070</c->
 <c- n>BM_FormatAs</c->                      <c- mf>8.90</c-> <c- n>ns</c->         <c- mf>8.88</c-> <c- n>ns</c->     <c- mi>79036210</c->
 </pre>
-   <h2 class="heading settled" data-level="6" id="header"><span class="secno">6. </span><span class="content">Lightweight opt-in header</span><a class="self-link" href="#header"></a></h2>
+   <h2 class="heading settled" data-level="7" id="header"><span class="secno">7. </span><span class="content">Lightweight opt-in header</span><a class="self-link" href="#header"></a></h2>
    <p>Formatting annotations appear on type declarations, which are commonly placed
 in widely included headers.</p>
    <p>Requiring <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> merely to name an annotation would therefore impose the
@@ -2413,18 +2424,13 @@ containing the annotation marker objects:</p>
 <c- p>};</c->
 </pre>
    <p><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> includes <code class="highlight"><c- o>&lt;</c-><c- n>format_annotations</c-><c- o>></c-></code>.</p>
-   <p>The intended dependency is therefore:</p>
-<pre class="highlight language-text">&lt;format_annotations>
-        ↑
-     &lt;format>
-</pre>
    <p>The lightweight header does not need to include <code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> or <code class="highlight"><c- o>&lt;</c-><c- n>meta</c-><c- o>></c-></code>. It only
 declares the annotation values used at the type declaration.</p>
    <p>This is particularly important for declaration-site customization because the
 cost of the customization mechanism should not be paid by every translation
 unit that sees the declaration.</p>
-   <h2 class="heading settled" data-level="7" id="identifier"><span class="secno">7. </span><span class="content">Formatting as an identifier</span><a class="self-link" href="#identifier"></a></h2>
-   <p>Reflection enables another common enum formatting mode that does not require
+   <h2 class="heading settled" data-level="8" id="identifier"><span class="secno">8. </span><span class="content">Formatting as an identifier</span><a class="self-link" href="#identifier"></a></h2>
+   <p>Reflection enables formatting enum values as enumerator identifiers without
 user-written conversion code.</p>
    <p>This paper additionally proposes:</p>
 <pre class="highlight language-cpp"><c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_identifier</c-><c- p>]]</c->
@@ -2450,7 +2456,7 @@ their names with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>meta</
 <c- p>}</c->
 </pre>
    <p>and cannot become stale when enumerators are added.</p>
-   <h3 class="heading settled" data-level="7.1" id="aliases"><span class="secno">7.1. </span><span class="content">Aliases</span><a class="self-link" href="#aliases"></a></h3>
+   <h3 class="heading settled" data-level="8.1" id="aliases"><span class="secno">8.1. </span><span class="content">Aliases</span><a class="self-link" href="#aliases"></a></h3>
    <p>Multiple enumerators can have the same value:</p>
 <pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_identifier</c-><c- p>]]</c-> <c- n>status</c-> <c- p>{</c->
   <c- n>ok</c->      <c- o>=</c-> <c- mi>0</c-><c- p>,</c->
@@ -2462,7 +2468,7 @@ used:</p>
 <pre class="highlight language-cpp"><c- n>std</c-><c- o>::</c-><c- n>format</c-><c- p>(</c-><c- s>"{}"</c-><c- p>,</c-> <c- n>status</c-><c- o>::</c-><c- n>success</c-><c- p>);</c->  <c- c1>// "ok"</c->
 </pre>
    <p>There is no way to distinguish the two values at runtime.</p>
-   <h3 class="heading settled" data-level="7.2" id="unmatched-values"><span class="secno">7.2. </span><span class="content">Values without a matching enumerator</span><a class="self-link" href="#unmatched-values"></a></h3>
+   <h3 class="heading settled" data-level="8.2" id="unmatched-values"><span class="secno">8.2. </span><span class="content">Values without a matching enumerator</span><a class="self-link" href="#unmatched-values"></a></h3>
    <p>An enum value is not necessarily the value of an enumerator:</p>
 <pre class="highlight language-cpp"><c- k>auto</c-> <c- n>c</c-> <c- o>=</c-> <c- k>static_cast</c-><c- o>&lt;</c-><c- n>color</c-><c- o>></c-><c- p>(</c-><c- mi>42</c-><c- p>);</c->
 </pre>
@@ -2475,7 +2481,7 @@ decimal value of the underlying type.</p>
 <code class="highlight"><c- n>format_as_identifier</c-></code>. Whether the value happens to match an enumerator is a
 runtime property and cannot change the grammar accepted by the formatter.</p>
    <p>Users who want integer formatting should use <code class="highlight"><c- n>format_as_underlying</c-></code> instead.</p>
-   <h3 class="heading settled" data-level="7.3" id="annotation-interaction"><span class="secno">7.3. </span><span class="content">Interaction between the annotations</span><a class="self-link" href="#annotation-interaction"></a></h3>
+   <h3 class="heading settled" data-level="8.3" id="annotation-interaction"><span class="secno">8.3. </span><span class="content">Interaction between the annotations</span><a class="self-link" href="#annotation-interaction"></a></h3>
    <p><code class="highlight"><c- n>format_as_underlying</c-></code> and <code class="highlight"><c- n>format_as_identifier</c-></code> specify different
 representations and are mutually exclusive.</p>
    <p>The following is ill-formed:</p>
@@ -2490,7 +2496,7 @@ representations and are mutually exclusive.</p>
 </pre>
    <p>The two parts of this proposal are otherwise independent and can be polled
 separately.</p>
-   <h2 class="heading settled" data-level="8" id="why-annotations"><span class="secno">8. </span><span class="content">Why annotations?</span><a class="self-link" href="#why-annotations"></a></h2>
+   <h2 class="heading settled" data-level="9" id="why-annotations"><span class="secno">9. </span><span class="content">Why annotations?</span><a class="self-link" href="#why-annotations"></a></h2>
    <p>Annotations have several useful properties for this facility.</p>
    <p>First, the opt-in is local and explicit:</p>
 <pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-><c- p>]]</c-> <c- n>color</c-> <c- p>{</c->
@@ -2506,9 +2512,7 @@ unrelated function accidentally becomes part of the formatting protocol.</p>
 a whole. P3394 motivates annotations with declaration-level library
 customization such as serialization, command-line parsing and test
 parametrization. Formatting is another instance of the same pattern.</p>
-   <p>Finally, reflection makes identifier-based formatting possible without code
-generation or manually maintained lookup tables.</p>
-   <h2 class="heading settled" data-level="9" id="prior-art"><span class="secno">9. </span><span class="content">Prior art</span><a class="self-link" href="#prior-art"></a></h2>
+   <h2 class="heading settled" data-level="10" id="prior-art"><span class="secno">10. </span><span class="content">Prior art</span><a class="self-link" href="#prior-art"></a></h2>
    <p>Declaration-site opt-in for generated textual representations is common in
 other languages.</p>
    <p>Rust provides (<a data-link-type="biblio" href="#biblio-rust-debug" title="Derive - The Rust Reference">[RUST-DEBUG]</a>):</p>
@@ -2528,11 +2532,11 @@ example, C# enum formatting provides both name-oriented and numeric forms
 (<a data-link-type="biblio" href="#biblio-csharp-enum" title="Enum.ToString Method">[CSHARP-ENUM]</a>).</p>
    <p>The proposed annotations bring a similar declarative model to C++ using the
 C++26 reflection facilities.</p>
-   <h2 class="heading settled" data-level="10" id="implementation"><span class="secno">10. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation"></a></h2>
+   <h2 class="heading settled" data-level="11" id="implementation"><span class="secno">11. </span><span class="content">Implementation experience</span><a class="self-link" href="#implementation"></a></h2>
    <p>The underlying-type annotation can use the same format argument mapping that
-{fmt} already uses for arithmetic <code class="highlight"><c- n>format_as</c-></code> results, except that the
-conversion is fixed to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-></code> and cannot invoke arbitrary user
-code.</p>
+the {fmt} library (<a data-link-type="biblio" href="#biblio-fmt" title="The {fmt} library">[FMT]</a>) already uses for arithmetic <code class="highlight"><c- n>format_as</c-></code> results,
+except that the conversion is fixed to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>to_underlying</c-></code> and cannot invoke
+arbitrary user code.</p>
    <p>{fmt} also has a prototype for formatting enumerators as identifiers:</p>
 <pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- p>[[</c-><c- o>=</c-><c- n>fmt</c-><c- o>::</c-><c- n>as_identifiers</c-><c- p>]]</c-> <c- n>color</c-> <c- p>{</c->
   <c- n>red</c-><c- p>,</c->
@@ -2542,18 +2546,16 @@ code.</p>
 </pre>
    <p>The implementation uses C++26 reflection to retrieve the enumerators and their
 identifiers, with the annotation providing the opt-in.</p>
-   <h2 class="heading settled" data-level="11" id="proposal"><span class="secno">11. </span><span class="content">Proposed change</span><a class="self-link" href="#proposal"></a></h2>
+   <h2 class="heading settled" data-level="12" id="proposal"><span class="secno">12. </span><span class="content">Proposed change</span><a class="self-link" href="#proposal"></a></h2>
    <p>Add a new header <code class="highlight"><c- o>&lt;</c-><c- n>format_annotations</c-><c- o>></c-></code> with:</p>
 <pre class="highlight language-cpp"><c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
 
-<c- k>struct</c-> <c- nc>format_as_underlying_t</c-> <c- p>{};</c->
-<c- kr>inline</c-> <c- k>constexpr</c-> <c- n>format_as_underlying_t</c-> <c- n>format_as_underlying</c-><c- p>;</c->
-
-<c- k>struct</c-> <c- nc>format_as_identifier_t</c-> <c- p>{};</c->
-<c- kr>inline</c-> <c- k>constexpr</c-> <c- n>format_as_identifier_t</c-> <c- n>format_as_identifier</c-><c- p>;</c->
+<c- kr>inline</c-> <c- k>constexpr</c-> <c- k>struct</c-> <c- p>{}</c-> <c- n>format_as_underlying</c-> <c- p>{};</c->
+<c- kr>inline</c-> <c- k>constexpr</c-> <c- k>struct</c-> <c- p>{}</c-> <c- n>format_as_identifier</c-> <c- p>{};</c->
 
 <c- p>}</c->
 </pre>
+   <p>The types of the annotation marker objects are exposition only.</p>
    <p><code class="highlight"><c- o>&lt;</c-><c- n>format</c-><c- o>></c-></code> includes <code class="highlight"><c- o>&lt;</c-><c- n>format_annotations</c-><c- o>></c-></code>.</p>
    <p>An enumeration whose definition is annotated with <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-></code>
 is formatted by mapping the value to its underlying type before the normal
@@ -2571,24 +2573,25 @@ delegates to existing integral formatting.</p>
 <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>meta</c-><c- o>::</c-><c- n>identifier_of</c-></code> produces a narrow string representation;
 wide-character identifier formatting requires additional encoding specification
 and can be added separately if there is demand.</p>
-   <h2 class="heading settled" data-level="12" id="wording"><span class="secno">12. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
+   <h2 class="heading settled" data-level="13" id="wording"><span class="secno">13. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>Add a new subclause [format.annotations] and header synopsis:</p>
 <pre class="highlight"><c- c1>// &lt;format_annotations></c->
 
 <c- k>namespace</c-> <c- nn>std</c-> <c- p>{</c->
 
-  <c- k>struct</c-> <c- nc>format_as_underlying_t</c-> <c- p>{};</c->
-  <c- kr>inline</c-> <c- k>constexpr</c-> <c- n>format_as_underlying_t</c-> <c- n>format_as_underlying</c-><c- p>;</c->
+  <c- k>struct</c-> <i><c- nc>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>underlying</c-><c- o>-</c-><c- n>type</c-></i> <c- p>{};</c->  <c- c1>// </c-><i><c- c1>exposition only</c-></i>
+  <c- kr>inline</c-> <c- k>constexpr</c-> <i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>underlying</c-><c- o>-</c-><c- n>type</c-></i> <c- n>format_as_underlying</c-><c- p>;</c->
 
-  <c- k>struct</c-> <c- nc>format_as_identifier_t</c-> <c- p>{};</c->
-  <c- kr>inline</c-> <c- k>constexpr</c-> <c- n>format_as_identifier_t</c-> <c- n>format_as_identifier</c-><c- p>;</c->
+  <c- k>struct</c-> <i><c- nc>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>identifier</c-><c- o>-</c-><c- n>type</c-></i> <c- p>{};</c->  <c- c1>// </c-><i><c- c1>exposition only</c-></i>
+  <c- kr>inline</c-> <c- k>constexpr</c-> <i><c- n>format</c-><c- o>-</c-><c- n>as</c-><c- o>-</c-><c- n>identifier</c-><c- o>-</c-><c- n>type</c-></i> <c- n>format_as_identifier</c-><c- p>;</c->
 
 <c- p>}</c->
 </pre>
    <p>For an enumeration type <code class="highlight"><c- n>E</c-></code>, let <em>format-as-underlying</em> be <code class="highlight">true</code> if an
-annotation whose underlying constant has type <code class="highlight"><c- n>format_as_underlying_t</c-></code>
+annotation whose underlying constant has type <i>format-as-underlying-type</i>
 appertains to the definition of <code class="highlight"><c- n>E</c-></code>, and <code class="highlight">false</code> otherwise.</p>
-   <p>Let <em>format-as-identifier</em> be defined analogously for <code class="highlight"><c- n>format_as_identifier_t</c-></code>.</p>
+   <p>Let <em>format-as-identifier</em> be defined analogously for
+<i>format-as-identifier-type</i>.</p>
    <p>An enumeration type shall not be both <em>format-as-underlying</em> and
 <em>format-as-identifier</em>.</p>
    <p>Modify the format argument mapping in
@@ -2633,10 +2636,10 @@ additional formatting options.</p>
 [<a href="https://eel.is/c++draft/cstddef.syn">cstddef.syn</a>] as follows:</p>
 <pre class="highlight"><c- k>enum</c-> <c- k>class</c-> <ins><c- p>[[</c-><c- o>=</c-><c- n>format_as_underlying</c-><c- p>]]</c-></ins> <c- n>byte</c-> <c- o>:</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- p>{};</c->
 </pre>
-   <h2 class="heading settled" data-level="13" id="feature-test"><span class="secno">13. </span><span class="content">Feature-test macro</span><a class="self-link" href="#feature-test"></a></h2>
+   <h2 class="heading settled" data-level="14" id="feature-test"><span class="secno">14. </span><span class="content">Feature-test macro</span><a class="self-link" href="#feature-test"></a></h2>
    <p>Set the value of <code class="highlight"><c- n>__cpp_lib_format</c-></code> to a value corresponding to the date
 of adoption of this proposal.</p>
-   <h2 class="heading settled" data-level="14" id="acknowledgements"><span class="secno">14. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
+   <h2 class="heading settled" data-level="15" id="acknowledgements"><span class="secno">15. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledgements"></a></h2>
    <p>Thanks to Avi Kivity for implementing annotation-based enumerator identifier
 formatting in {fmt} and providing valuable implementation experience.</p>
    <p>Thanks to Matthias Wippich for suggesting annotations as an opt-in mechanism
@@ -2778,6 +2781,8 @@ for enum stringification.</p>
    <dd>Microsoft. <a href="https://learn.microsoft.com/dotnet/api/system.enum.tostring"><cite>Enum.ToString Method</cite></a>. URL: <a href="https://learn.microsoft.com/dotnet/api/system.enum.tostring">https://learn.microsoft.com/dotnet/api/system.enum.tostring</a>
    <dt id="biblio-elixir-derive">[ELIXIR-DERIVE]
    <dd>The Elixir Team. <a href="https://elixir.hexdocs.pm/Inspect.html"><cite>Inspect</cite></a>. URL: <a href="https://elixir.hexdocs.pm/Inspect.html">https://elixir.hexdocs.pm/Inspect.html</a>
+   <dt id="biblio-fmt">[FMT]
+   <dd>Victor Zverovich; et al. <a href="https://github.com/fmtlib/fmt"><cite>The {fmt} library</cite></a>. URL: <a href="https://github.com/fmtlib/fmt">https://github.com/fmtlib/fmt</a>
    <dt id="biblio-groovy-tostring">[GROOVY-TOSTRING]
    <dd>The Apache Software Foundation. <a href="https://groovy-lang.org/metaprogramming.html#xform-ToString"><cite>Code generation transformations — @ToString</cite></a>. URL: <a href="https://groovy-lang.org/metaprogramming.html#xform-ToString">https://groovy-lang.org/metaprogramming.html#xform-ToString</a>
    <dt id="biblio-p2279">[P2279]

@@ -1,14 +1,14 @@
 <pre class='metadata'>
 Title: Formatting Enums, Upon Reflection
 Shortname: P4267
-Revision: 0
+Revision: 1
 Audience: SG16, LEWG
 Status: P
 Group: WG21
 URL:
 Editor: Victor Zverovich, victor.zverovich@gmail.com
 No abstract: true
-Date: 2026-08-20
+Date: 2026-09-26
 Markup Shorthands: markdown yes
 </pre>
 
@@ -35,6 +35,13 @@ including formatting enumerators as strings.
 The underlying-type formatting proposal also makes `std::byte` formattable by
 annotating its definition, so that it supports integer formatting and is mapped
 to its underlying type before type erasure.
+
+# Changes since R0 # {#changes0}
+
+- Made the annotation marker types exposition only.
+- Clarified the discussion of ADL, overload resolution and the difference
+    between argument mapping and formatter forwarding.
+- Streamlined the motivation and rationale.
 
 # Motivation and scope # {#motivation}
 
@@ -69,7 +76,7 @@ film f = kevin_namespacy::se7en;
 auto s = std::format("{}", std::to_underlying(f));
 ```
 
-This reduces formatting overhead but requires the conversion to be repeated at
+This removes one-off boilerplate but requires the conversion to be repeated at
 every call site.
 
 P3070 tried to address both problems with an ADL customization:
@@ -153,7 +160,8 @@ diagnostic size. `format_as` is less problematic because only overloads with one
 name participate, but there is no benefit in introducing this cost when the
 customization can be expressed without overload resolution.
 
-Annotations require neither lookup nor overload resolution.
+Annotation-based formatting requires no ADL and introduces no customization
+overload set to resolve at formatting call sites.
 
 ## `format_as` requires unnecessary boilerplate for enums ## {#enum-boilerplate}
 
@@ -180,8 +188,7 @@ specifications such as `noexcept`.
 
 These issues should be addressed before standardizing a general `format_as`
 facility. The annotation-based approach proposed here can be extended to
-user-defined types in the future once these design questions have been
-resolved.
+user-defined types in the future.
 
 The motivating enum use case does not require arbitrary conversion. Conversion
 from an enum to its underlying type is defined by the language, nonthrowing,
@@ -190,8 +197,8 @@ and has no side effects.
 # Argument mapping is not formatter forwarding # {#argument-mapping}
 
 P3070 states that the semantics of `format_as` are the same as those of a
-forwarding `formatter` specialization. This is not quite true when the
-conversion is performed before type erasure.
+forwarding `formatter` specialization. This is mostly correct, except for the
+subtle case where the conversion is performed before type erasure.
 
 Consider:
 
@@ -350,14 +357,6 @@ enum class [[=std::format_as_underlying]] color {
 
 `<format>` includes `<format_annotations>`.
 
-The intended dependency is therefore:
-
-```text
-<format_annotations>
-        ↑
-     <format>
-```
-
 The lightweight header does not need to include `<format>` or `<meta>`. It only
 declares the annotation values used at the type declaration.
 
@@ -367,7 +366,7 @@ unit that sees the declaration.
 
 # Formatting as an identifier # {#identifier}
 
-Reflection enables another common enum formatting mode that does not require
+Reflection enables formatting enum values as enumerator identifiers without
 user-written conversion code.
 
 This paper additionally proposes:
@@ -493,9 +492,6 @@ a whole. P3394 motivates annotations with declaration-level library
 customization such as serialization, command-line parsing and test
 parametrization. Formatting is another instance of the same pattern.
 
-Finally, reflection makes identifier-based formatting possible without code
-generation or manually maintained lookup tables.
-
 # Prior art # {#prior-art}
 
 Declaration-site opt-in for generated textual representations is common in
@@ -527,9 +523,9 @@ C++26 reflection facilities.
 # Implementation experience # {#implementation}
 
 The underlying-type annotation can use the same format argument mapping that
-{fmt} already uses for arithmetic `format_as` results, except that the
-conversion is fixed to `std::to_underlying` and cannot invoke arbitrary user
-code.
+the {fmt} library ([[FMT]]) already uses for arithmetic `format_as` results,
+except that the conversion is fixed to `std::to_underlying` and cannot invoke
+arbitrary user code.
 
 {fmt} also has a prototype for formatting enumerators as identifiers:
 
@@ -551,14 +547,13 @@ Add a new header `<format_annotations>` with:
 ```cpp
 namespace std {
 
-struct format_as_underlying_t {};
-inline constexpr format_as_underlying_t format_as_underlying;
-
-struct format_as_identifier_t {};
-inline constexpr format_as_identifier_t format_as_identifier;
+inline constexpr struct {} format_as_underlying {};
+inline constexpr struct {} format_as_identifier {};
 
 }
 ```
+
+The types of the annotation marker objects are exposition only.
 
 `<format>` includes `<format_annotations>`.
 
@@ -593,20 +588,21 @@ Add a new subclause [format.annotations] and header synopsis:
 
 namespace std {
 
-  struct format_as_underlying_t {};
-  inline constexpr format_as_underlying_t format_as_underlying;
+  struct <i>format-as-underlying-type</i> {};  // <i>exposition only</i>
+  inline constexpr <i>format-as-underlying-type</i> format_as_underlying;
 
-  struct format_as_identifier_t {};
-  inline constexpr format_as_identifier_t format_as_identifier;
+  struct <i>format-as-identifier-type</i> {};  // <i>exposition only</i>
+  inline constexpr <i>format-as-identifier-type</i> format_as_identifier;
 
 }
 </pre>
 
 For an enumeration type `E`, let *format-as-underlying* be `true` if an
-annotation whose underlying constant has type `format_as_underlying_t`
+annotation whose underlying constant has type <i>format-as-underlying-type</i>
 appertains to the definition of `E`, and `false` otherwise.
 
-Let *format-as-identifier* be defined analogously for `format_as_identifier_t`.
+Let *format-as-identifier* be defined analogously for
+<i>format-as-identifier-type</i>.
 
 An enumeration type shall not be both *format-as-underlying* and
 *format-as-identifier*.
