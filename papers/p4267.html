@@ -1563,7 +1563,7 @@ Possible extra rowspan handling
   </style>
   <meta content="Bikeshed version d113b2e81, updated Tue Jun 9 14:57:55 2026 -0700" name="generator">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="6abd66031cc998aa8653c354aa8ad3b147fc6a2a" name="revision">
+  <meta content="49e0b4b6ec95c86bcde803dfbcd7a6b62ea78d17" name="revision">
   <meta content="dark light" name="color-scheme">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
@@ -2270,23 +2270,18 @@ the possibility of interaction.</p>
 </pre>
    <p>The formatting behavior is explicitly attached to the declaration it affects.</p>
    <h3 class="heading settled" data-level="4.2" id="adl-overloads"><span class="secno">4.2. </span><span class="content">ADL pollutes the overload set</span><a class="self-link" href="#adl-overloads"></a></h3>
-   <p>ADL adds functions from associated namespaces and classes to the overload set.
-For a class template specialization, associated entities can include the types
-of its template arguments, making the lookup nonlocal.</p>
-   <p>For example, a call involving a type such as:</p>
+   <p>ADL considers functions declared in associated namespaces and namespace-scope
+friends declared in associated classes. For a class template specialization,
+the associated namespaces include those of its template arguments.</p>
+   <p>For example, lookup for <code class="highlight"><c- n>format_as</c-></code> with</p>
 <pre class="highlight language-cpp"><c- n>wrapper</c-><c- o>&lt;</c-><c- n>some_namespace</c-><c- o>::</c-><c- n>widget</c-><c- o>></c->
 </pre>
-   <p>can consider <code class="highlight"><c- n>format_as</c-></code> overloads from both the namespace containing <code class="highlight"><c- n>wrapper</c-></code>
-and the namespace containing <code class="highlight"><c- n>widget</c-></code>.</p>
-   <p>This can increase compile time and make diagnostics include unrelated overload
-candidates.</p>
-   <p><a data-link-type="biblio" href="#biblio-p2547" title="Language Support for Customisable Functions">[P2547]</a> discusses a more severe version of the same problem for
-<code class="highlight"><c- n>tag_invoke</c-></code>, where large ADL overload sets increase compilation cost and
-diagnostic size. <code class="highlight"><c- n>format_as</c-></code> is less problematic because only overloads with one
-name participate, but there is no benefit in introducing this cost when the
-customization can be expressed without overload resolution.</p>
-   <p>Annotation-based formatting requires no ADL and introduces no customization
-overload set to resolve at formatting call sites.</p>
+   <p>considers overloads from both the namespace containing <code class="highlight"><c- n>wrapper</c-></code> and
+<code class="highlight"><c- n>some_namespace</c-></code>, including overloads unrelated to <code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code>. Larger overload
+sets can increase compile time and add irrelevant candidates to diagnostics.</p>
+   <p><a data-link-type="biblio" href="#biblio-p2547" title="Language Support for Customisable Functions">[P2547]</a> discusses a more severe version of this problem for <code class="highlight"><c- n>tag_invoke</c-></code>,
+which is intended to support many customization points.</p>
+   <p>Annotations don’t use ADL and therefore avoid this problem.</p>
    <h3 class="heading settled" data-level="4.3" id="enum-boilerplate"><span class="secno">4.3. </span><span class="content"><code class="highlight"><c- n>format_as</c-></code> requires unnecessary boilerplate for enums</span><a class="self-link" href="#enum-boilerplate"></a></h3>
    <p>For the common case of formatting an enum as its underlying type, the conversion
 is already defined by the language. With format_as, the user must still define a
@@ -2389,10 +2384,9 @@ underlying type before type erasure. For example:</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>byte</c-></code> retains its type safety outside formatting while behaving like its
 underlying integer where the formatting facility specifically requires an
 integer argument.</p>
-   <p>P3070 showed that mapping an enum to a built-in formatting argument before type
-erasure can be approximately twice as fast as dispatching through a custom
-formatter for this use case. The same speedup applies to this proposal because
-it uses the same argument-mapping mechanism.</p>
+   <p>In the P3070 benchmark, mapping an enum before type erasure is about twice as
+fast as dispatching through a custom formatter. This proposal uses the same
+mapping.</p>
 <pre class="highlight"><c- o>---------------------------------------------------------------------</c->
 <c- n>Benchmark</c->                           <c- n>Time</c->             <c- n>CPU</c->   <c- n>Iterations</c->
 <c- o>---------------------------------------------------------------------</c->
@@ -2497,21 +2491,10 @@ representations and are mutually exclusive.</p>
    <p>The two parts of this proposal are otherwise independent and can be polled
 separately.</p>
    <h2 class="heading settled" data-level="9" id="why-annotations"><span class="secno">9. </span><span class="content">Why annotations?</span><a class="self-link" href="#why-annotations"></a></h2>
-   <p>Annotations have several useful properties for this facility.</p>
-   <p>First, the opt-in is local and explicit:</p>
-<pre class="highlight language-cpp"><c- k>enum</c-> <c- k>class</c-> <c- p>[[</c-><c- o>=</c-><c- n>std</c-><c- o>::</c-><c- n>format_as_underlying</c-><c- p>]]</c-> <c- n>color</c-> <c- p>{</c->
-  <c- c1>// ...</c->
-<c- p>};</c->
-</pre>
-   <p>A reader can determine the enum’s default formatting behavior from its
-declaration.</p>
-   <p>Second, annotations do not introduce a customization name into associated
-namespaces. There is no overload set, no ADL and no possibility that an
-unrelated function accidentally becomes part of the formatting protocol.</p>
-   <p>Third, annotations are well suited to properties that apply to a declaration as
-a whole. P3394 motivates annotations with declaration-level library
-customization such as serialization, command-line parsing and test
-parametrization. Formatting is another instance of the same pattern.</p>
+   <p>Default formatting is a property of the enum declaration, which makes an
+annotation a natural fit. The opt-in is visible at the definition and
+introduces neither an ADL customization name nor an overload set. This follows
+the declaration-level customization model proposed in P3394.</p>
    <h2 class="heading settled" data-level="10" id="prior-art"><span class="secno">10. </span><span class="content">Prior art</span><a class="self-link" href="#prior-art"></a></h2>
    <p>Declaration-site opt-in for generated textual representations is common in
 other languages.</p>

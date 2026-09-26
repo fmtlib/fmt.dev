@@ -138,30 +138,24 @@ The formatting behavior is explicitly attached to the declaration it affects.
 
 ## ADL pollutes the overload set ## {#adl-overloads}
 
-ADL adds functions from associated namespaces and classes to the overload set.
-For a class template specialization, associated entities can include the types
-of its template arguments, making the lookup nonlocal.
+ADL considers functions declared in associated namespaces and namespace-scope
+friends declared in associated classes. For a class template specialization,
+the associated namespaces include those of its template arguments.
 
-For example, a call involving a type such as:
+For example, lookup for `format_as` with
 
 ```cpp
 wrapper<some_namespace::widget>
 ```
 
-can consider `format_as` overloads from both the namespace containing `wrapper`
-and the namespace containing `widget`.
+considers overloads from both the namespace containing `wrapper` and
+`some_namespace`, including overloads unrelated to `std::format`. Larger overload
+sets can increase compile time and add irrelevant candidates to diagnostics.
 
-This can increase compile time and make diagnostics include unrelated overload
-candidates.
+[[P2547]] discusses a more severe version of this problem for `tag_invoke`,
+which is intended to support many customization points.
 
-[[P2547]] discusses a more severe version of the same problem for
-`tag_invoke`, where large ADL overload sets increase compilation cost and
-diagnostic size. `format_as` is less problematic because only overloads with one
-name participate, but there is no benefit in introducing this cost when the
-customization can be expressed without overload resolution.
-
-Annotation-based formatting requires no ADL and introduces no customization
-overload set to resolve at formatting call sites.
+Annotations don't use ADL and therefore avoid this problem.
 
 ## `format_as` requires unnecessary boilerplate for enums ## {#enum-boilerplate}
 
@@ -310,10 +304,9 @@ std::format("{:x}", std::byte{42});     // "2a"
 underlying integer where the formatting facility specifically requires an
 integer argument.
 
-P3070 showed that mapping an enum to a built-in formatting argument before type
-erasure can be approximately twice as fast as dispatching through a custom
-formatter for this use case. The same speedup applies to this proposal because
-it uses the same argument-mapping mechanism.
+In the P3070 benchmark, mapping an enum before type erasure is about twice as
+fast as dispatching through a custom formatter. This proposal uses the same
+mapping.
 
 <pre>
 ---------------------------------------------------------------------
@@ -470,27 +463,10 @@ separately.
 
 # Why annotations? # {#why-annotations}
 
-Annotations have several useful properties for this facility.
-
-First, the opt-in is local and explicit:
-
-```cpp
-enum class [[=std::format_as_underlying]] color {
-  // ...
-};
-```
-
-A reader can determine the enum's default formatting behavior from its
-declaration.
-
-Second, annotations do not introduce a customization name into associated
-namespaces. There is no overload set, no ADL and no possibility that an
-unrelated function accidentally becomes part of the formatting protocol.
-
-Third, annotations are well suited to properties that apply to a declaration as
-a whole. P3394 motivates annotations with declaration-level library
-customization such as serialization, command-line parsing and test
-parametrization. Formatting is another instance of the same pattern.
+Default formatting is a property of the enum declaration, which makes an
+annotation a natural fit. The opt-in is visible at the definition and
+introduces neither an ADL customization name nor an overload set. This follows
+the declaration-level customization model proposed in P3394.
 
 # Prior art # {#prior-art}
 
