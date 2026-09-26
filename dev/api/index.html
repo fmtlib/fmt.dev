@@ -1797,7 +1797,17 @@ declaration is used. A value that doesn't match any enumerator is represented
 as its underlying value in decimal before applying string formatting:</p>
 <pre class="highlight"><code>fmt::print("{}", static_cast&lt;color&gt;(42));
 // Output: 42</code></pre>
-<p>Enums without the annotation are not affected and are formatted as before, i.e.
+<p>An enum annotated with <code>fmt::as_underlying</code> is instead formatted as its
+underlying value using the integer <a href="../syntax/#format-specification">Format Specification</a>:</p>
+<pre class="highlight"><code>enum class [[=fmt::as_underlying]] color { red = 1, green = 2, blue = 4 };
+
+fmt::print("{:04x}", color::blue);
+// Output: 0004</code></pre>
+<p>Such an enum is mapped to its underlying type before type erasure, so it can
+also be used as dynamic width or precision. Unlike <code>fmt::as_identifiers</code>, it
+works with all character types. The two annotations specify different
+representations and cannot be combined.</p>
+<p>Enums without an annotation are not affected and are formatted as before, i.e.
 scoped enums require <code>format_as</code> or a <code>formatter</code> specialization, see
 <a href="#udt">Formatting User-Defined Types</a>.</p>
 <p>This uses two C++26 features:
