@@ -42,6 +42,8 @@ to its underlying type before type erasure.
 - Clarified the discussion of ADL, overload resolution and the difference
     between argument mapping and formatter forwarding.
 - Streamlined the motivation and rationale.
+- Updated implementation experience to reflect implementations of both
+    annotations in {fmt}.
 
 # Motivation and scope # {#motivation}
 
@@ -498,12 +500,11 @@ C++26 reflection facilities.
 
 # Implementation experience # {#implementation}
 
-The underlying-type annotation can use the same format argument mapping that
-the {fmt} library ([[FMT]]) already uses for arithmetic `format_as` results,
-except that the conversion is fixed to `std::to_underlying` and cannot invoke
-arbitrary user code.
+The {fmt} library ([[FMT]]) implements the proposed underlying-type annotation
+as `fmt::as_underlying`. Annotated enums are mapped to `std::to_underlying`
+before type erasure.
 
-{fmt} also has a prototype for formatting enumerators as identifiers:
+{fmt} also implements formatting enumerators as identifiers:
 
 ```cpp
 enum class [[=fmt::as_identifiers]] color {
