@@ -19,9 +19,9 @@ import cppLogo from './assets/cpp-logo.png'
     <img class="cpp-logo" :src="cppLogo" alt="C++">
   </div>
   <div class="title-details">
-    <div><strong>P4267R0</strong></div>
+    <div><strong>P4267R1</strong></div>
     <div>Victor Zverovich</div>
-    <div>SG16 — August 26, 2026</div>
+    <div>SG16, LEWG</div>
   </div>
 </div>
 
@@ -93,6 +93,22 @@ layout: default
 layout: default
 ---
 
+# Changes since R0
+
+- Made the annotation marker types exposition only.
+
+- Clarified the discussion of ADL, overload resolution and the difference
+  between argument mapping and formatter forwarding.
+
+- Streamlined the motivation and rationale.
+
+- Updated implementation experience to reflect implementations of both
+  annotations in {fmt}.
+
+---
+layout: default
+---
+
 # Existing options
 
 Formatting as the underlying type requires a custom formatter:
@@ -127,8 +143,9 @@ layout: default
 - **ADL claims a generic name.** An unrelated `format_as` function in an
   associated namespace can accidentally acquire formatting semantics.
 
-- **ADL makes lookup nonlocal.** Associated entities of template arguments can
-  add unrelated overloads, increasing compile time and diagnostic size.
+- **ADL pollutes the overload set.** Associated namespaces, including those of
+  template arguments, can contribute overloads unrelated to `std::format`,
+  increasing compile time and adding irrelevant candidates to diagnostics.
 
 - **Enums still need boilerplate.** The conversion to the underlying type is
   already defined by the language.
@@ -196,7 +213,7 @@ layout: default
 
 # Mapping before type erasure
 
-The mapped value is type-erased as its underlying type, avoiding a custom-type
+The mapped value is type-erased as its mapped type, avoiding a custom-type
 handle and formatter dispatch.
 
 Under this proposal, `std::byte` opts in using the same annotation:
@@ -279,6 +296,9 @@ layout: default
 
 # Why annotations?
 
+- Default formatting is a **property of the enum declaration**, which makes an
+  annotation a natural fit.
+
 - The opt-in is **local and explicit** on the declaration it affects.
 
 - There is **no customization name in associated namespaces**, no overload set
@@ -287,13 +307,8 @@ layout: default
 - Declaration-level customization is already a motivating use case for C++26
   annotations.
 
-- Reflection generates identifier-based formatting without code generation or
-  manually maintained tables.
-
 Prior art includes Rust `#[derive(Debug)]`, Elixir `@derive Inspect`, Groovy
 `@ToString` and name-oriented versus numeric enum formatting in C#.
-
-The identifier-based design has been implemented in {fmt}.
 
 ---
 layout: default
@@ -323,6 +338,28 @@ does not need to include `<format>` or `<meta>`, and `<format>` includes it.
 layout: default
 ---
 
+# Implementation experience
+
+Both annotations are implemented in {fmt}:
+
+```cpp
+enum class [[=fmt::as_underlying]] flags { red = 1, green = 2, blue = 4 };
+enum class [[=fmt::as_identifiers]] color { red, green, blue };
+
+fmt::format("{:04x}", flags::blue);  // "0004"
+fmt::format("{}", color::green);     // "green"
+```
+
+Enums annotated with `fmt::as_underlying` are mapped to `std::to_underlying`
+before type erasure.
+
+Identifier formatting uses C++26 reflection to retrieve the enumerators and
+their identifiers, with the annotation providing the opt-in.
+
+---
+layout: default
+---
+
 # Proposal
 
 Add a lightweight `<format_annotations>` header containing:
@@ -330,20 +367,18 @@ Add a lightweight `<format_annotations>` header containing:
 ```cpp
 namespace std {
 
-struct format_as_underlying_t {};
-inline constexpr format_as_underlying_t format_as_underlying;
-
-struct format_as_identifier_t {};
-inline constexpr format_as_identifier_t format_as_identifier;
+inline constexpr struct {} format_as_underlying {};
+inline constexpr struct {} format_as_identifier {};
 
 }
 ```
 
+- Make the annotation marker types exposition only.
 - Map underlying-annotated enums before normal format argument mapping.
 - Add identifier formatting using C++26 reflection.
 - Annotate `std::byte` with `format_as_underlying`.
 - Keep the annotations mutually exclusive.
 
 <div class="paper-link">
-Paper: <a href="https://wg21.link/P4267R0">https://wg21.link/P4267R0</a>
+Paper: <a href="https://wg21.link/P4267R1">https://wg21.link/P4267R1</a>
 </div>
