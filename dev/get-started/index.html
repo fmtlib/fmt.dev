@@ -791,9 +791,16 @@ import fmt;
 int main() {
   fmt::print("Hello, world!\n");
 }</code></pre>
-<p>When using CMake's native C++ module support, you need CMake 3.28 or newer,
-Ninja 1.11 or newer (with the Ninja generator), and GCC 15 or newer (with GCC).
-{fmt} also provides a fallback build path for other toolchains.</p>
+<p>{fmt} builds the module with CMake's native C++ module support when using
+CMake 3.28 or newer with the Ninja generator (Ninja 1.11 or newer) and GCC 15
+or Clang 16 (with <code>clang-scan-deps</code>) or newer, or with Visual Studio 2022 17.4
+or newer. The module is only installed when built this way with Ninja, and
+CMake can only import an installed module in projects that also use Ninja, so
+configure both accordingly, for example:</p>
+<pre class="highlight"><code>cmake -G Ninja -DFMT_MODULE=ON ..</code></pre>
+<p>With other toolchains, {fmt} falls back to building the module directly, which
+works with <code>FetchContent</code> and <code>add_subdirectory</code> but doesn't install
+<code>fmt::fmt-module</code>. The fallback is not available with GCC.</p>
 <h2 id="installation">Installation</h2>
 <h3 id="debianubuntu">Debian/Ubuntu</h3>
 <p>To install {fmt} on Debian, Ubuntu, or any other Debian-based Linux
